@@ -1,0 +1,1089 @@
+{
+  "metadata": {
+    "generatedAt": "2026-03-27",
+    "organization": "skelloApp",
+    "totalRepos": 52,
+    "totalSharedPackages": 47
+  },
+  "repos": [
+    {
+      "name": "skello-app",
+      "type": "rails-monolith",
+      "packageJson": null,
+      "gemfile": "Ruby 2.7.3, Rails ~> 6.0.0, Sidekiq ~> 6.4.0, Devise ~> 4.8.0, pg ~> 1.1.4, redis ~> 4.2.1",
+      "internalDependencies": ["skello-auth-client"],
+      "externalDependencies": { "rails": "~> 6.0.0", "pg": "~> 1.1.4", "redis": "~> 4.2.1", "sidekiq": "~> 6.4.0", "devise": "~> 4.8.0", "aws-sdk-dynamodb": "~> 1.58.0", "aws-sdk-s3": "~> 1.83.1", "stripe": "~> 5.21.0" }
+    },
+    {
+      "name": "skello-app-front",
+      "type": "vue-frontend",
+      "packageJson": { "name": "@skelloapp/skello-app-front", "version": "1.0.0" },
+      "gemfile": null,
+      "internalDependencies": [],
+      "externalDependencies": { "vue": "^3.x", "vite": "^5.x" }
+    },
+    {
+      "name": "skello-libs-ts",
+      "type": "monorepo",
+      "packageJson": { "name": "@skelloapp/skello-libs-ts", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [],
+      "externalDependencies": { "tslib": "^2.8.1", "nx": "22.5.2" },
+      "publishedPackages": [
+        "@skelloapp/aws-sdk-lib",
+        "@skelloapp/client-http-lib",
+        "@skelloapp/conventional-changelog-skello",
+        "@skelloapp/data-platform-svc-ingestion-sdk",
+        "@skelloapp/dynamo-lib",
+        "@skelloapp/eslint-lib",
+        "@skelloapp/expo-sso-lib",
+        "@skelloapp/github-reporter-lib",
+        "@skelloapp/i18n-lib",
+        "@skelloapp/lambda-io-lib",
+        "@skelloapp/lambda-logger-lib",
+        "@skelloapp/lambda-logger-js",
+        "@skelloapp/lib-anonymizer",
+        "@skelloapp/mongodb-lib",
+        "@skelloapp/release-lib",
+        "@skelloapp/serverless-lib",
+        "@skelloapp/serverless-plugin-typeorm",
+        "@skelloapp/skello-absences",
+        "@skelloapp/skello-annualization",
+        "@skelloapp/skello-app-sdk",
+        "@skelloapp/svc-automatic-scheduling-sdk",
+        "@skelloapp/svc-bff-sdk",
+        "@skelloapp/svc-billing-automation-sdk",
+        "@skelloapp/svc-communications-v2-sdk",
+        "@skelloapp/svc-documents-v2-client",
+        "@skelloapp/svc-employees-client",
+        "@skelloapp/svc-enrollment-sdk",
+        "@skelloapp/svc-esignature-sdk",
+        "@skelloapp/svc-events-sdk",
+        "@skelloapp/svc-hris-sdk",
+        "@skelloapp/svc-intelligence-sdk",
+        "@skelloapp/svc-kpis-sdk",
+        "@skelloapp/svc-kpis-v2-sdk",
+        "@skelloapp/svc-labour-laws-sdk",
+        "@skelloapp/svc-modularisation-sdk",
+        "@skelloapp/svc-pos-sdk",
+        "@skelloapp/svc-punch-sdk",
+        "@skelloapp/svc-punch-js",
+        "@skelloapp/svc-reports-sdk",
+        "@skelloapp/svc-requests-sdk",
+        "@skelloapp/svc-search-sdk",
+        "@skelloapp/svc-shifts-sdk",
+        "@skelloapp/svc-shops-sdk",
+        "@skelloapp/svc-skello-assistant-sdk",
+        "@skelloapp/svc-trackers-sdk",
+        "@skelloapp/svc-users-sdk",
+        "@skelloapp/workload-plan-sdk"
+      ]
+    },
+    {
+      "name": "skello-design",
+      "type": "monorepo",
+      "packageJson": { "name": "@skelloapp/skello-design", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [],
+      "externalDependencies": { "vue": "^3.x" },
+      "publishedPackages": ["@skelloapp/skello-ui", "@skelloapp/skello-ds-web"]
+    },
+    {
+      "name": "skello-auth-client",
+      "type": "npm-package",
+      "packageJson": { "name": "@skelloapp/skello-auth-client", "version": "1.4.x" },
+      "gemfile": null,
+      "internalDependencies": [],
+      "externalDependencies": {},
+      "publishedPackages": ["@skelloapp/skello-auth-client"]
+    },
+    {
+      "name": "eslint-config-skello",
+      "type": "npm-package",
+      "packageJson": { "name": "@skelloapp/eslint-config-skello", "version": "0.x.x" },
+      "gemfile": null,
+      "internalDependencies": [],
+      "externalDependencies": {},
+      "publishedPackages": ["@skelloapp/eslint-config-skello-ts", "@skelloapp/eslint-config-skello-vue", "@skelloapp/eslint-config-skello"]
+    },
+    {
+      "name": "skello-planning-helper",
+      "type": "npm-package",
+      "packageJson": { "name": "@skelloapp/skello-planning-helper", "version": "0.0.12" },
+      "gemfile": null,
+      "internalDependencies": [],
+      "externalDependencies": {},
+      "publishedPackages": ["@skelloapp/skello-planning-helper"]
+    },
+    {
+      "name": "skello-shifts-alerts",
+      "type": "npm-package",
+      "packageJson": { "name": "@skelloapp/skello-shifts-alerts", "version": "2.1.0" },
+      "gemfile": null,
+      "internalDependencies": ["@skelloapp/eslint-config-skello"],
+      "externalDependencies": { "change-case": "^4.1.2", "dayjs": "^1.10.5" },
+      "publishedPackages": ["@skelloapp/skello-shifts-alerts"]
+    },
+    {
+      "name": "cz-emoji-skello",
+      "type": "npm-package",
+      "packageJson": { "name": "@skelloapp/cz-emoji-skello", "version": "0.0.x" },
+      "gemfile": null,
+      "internalDependencies": [],
+      "externalDependencies": {},
+      "publishedPackages": ["@skelloapp/cz-emoji-skello"]
+    },
+    {
+      "name": "svc-communications",
+      "type": "rails-microservice",
+      "packageJson": { "name": "@skelloapp/svc-communications", "version": "0.0.0", "devDependencies": { "@skelloapp/release-lib": "^1.2.12" } },
+      "gemfile": "Ruby ~> 2.7, Rails ~> 6.1.7.3, sib-api-v3-sdk 9.1.0, aws-sdk-s3, shoryuken",
+      "internalDependencies": ["@skelloapp/release-lib"],
+      "externalDependencies": { "rails": "~> 6.1.7.3", "sib-api-v3-sdk": "9.1.0", "aws-sdk-s3": "*", "shoryuken": "*" }
+    },
+    {
+      "name": "svc-documents",
+      "type": "rails-microservice",
+      "packageJson": null,
+      "gemfile": "Ruby ~> 2.7, Rails ~> 6.1.7.3, skello-auth-client =0.0.26",
+      "internalDependencies": ["skello-auth-client"],
+      "externalDependencies": { "rails": "~> 6.1.7.3", "aws-sdk-s3": "~> 1.121.0", "wicked_pdf": "1.4.0", "lockbox": "~> 1.2.0" }
+    },
+    {
+      "name": "svc-intelligence",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-intelligence", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/lambda-io-lib",
+        "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-documents-v2-client", "@skelloapp/svc-esignature-sdk",
+        "@skelloapp/svc-intelligence-sdk", "@skelloapp/eslint-config-skello-ts", "@skelloapp/serverless-lib"
+      ],
+      "externalDependencies": { "openai": "4.77.4", "langfuse": "^3.38.6", "mongodb": "^6.21.0", "mongoose": "^8.17.1" }
+    },
+    {
+      "name": "skello-notifications",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/skello-notifications", "version": "1.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-logger-lib", "@skelloapp/conventional-changelog-skello", "@skelloapp/eslint-config-skello-ts"
+      ],
+      "externalDependencies": { "axios": "^1.7.9", "@slack/webhook": "^6.1.0" }
+    },
+    {
+      "name": "svc-events",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-events", "version": "0.1.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/i18n-lib",
+        "@skelloapp/dynamo-lib", "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/svc-communications-v2-sdk",
+        "@skelloapp/svc-events-sdk", "@skelloapp/eslint-config-skello-ts", "@skelloapp/release-lib"
+      ],
+      "externalDependencies": { "dayjs": "*", "axios": "*" }
+    },
+    {
+      "name": "svc-communications-v2",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-communications-v2", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/i18n-lib",
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-communications-v2-sdk", "@skelloapp/svc-documents-v2-client",
+        "@skelloapp/svc-events-sdk", "@skelloapp/svc-requests-sdk",
+        "@skelloapp/eslint-lib", "@skelloapp/conventional-changelog-skello"
+      ],
+      "externalDependencies": { "dayjs": "*", "axios": "*" }
+    },
+    {
+      "name": "svc-skello-assistant",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-skello-assistant", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/lambda-io-lib",
+        "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-billing-automation-sdk", "@skelloapp/svc-communications-v2-sdk",
+        "@skelloapp/svc-documents-v2-client", "@skelloapp/svc-esignature-sdk",
+        "@skelloapp/svc-skello-assistant-sdk"
+      ],
+      "externalDependencies": { "openai": "*", "langfuse": "*" }
+    },
+    {
+      "name": "svc-pos",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-pos", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/svc-pos-sdk", "@skelloapp/eslint-lib",
+        "@skelloapp/github-reporter-lib"
+      ],
+      "externalDependencies": { "mongoose": "*", "dayjs": "*" }
+    },
+    {
+      "name": "svc-punch",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-punch", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib",
+        "@skelloapp/lambda-logger-js", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-punch-sdk", "@skelloapp/eslint-lib"
+      ],
+      "externalDependencies": { "dayjs": "*" }
+    },
+    {
+      "name": "svc-trackers",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-trackers", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/mongodb-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/skello-app-sdk",
+        "@skelloapp/svc-search-sdk", "@skelloapp/svc-trackers-sdk", "@skelloapp/eslint-lib",
+        "@skelloapp/serverless-lib"
+      ],
+      "externalDependencies": { "mongoose": "*", "dayjs": "*" }
+    },
+    {
+      "name": "svc-kpis",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-kpis", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-kpis-sdk", "@skelloapp/eslint-config-skello-ts",
+        "@skelloapp/conventional-changelog-skello"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "svc-workload-plan",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-workload-plan", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/mongodb-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/svc-kpis-v2-sdk",
+        "@skelloapp/workload-plan-sdk", "@skelloapp/eslint-lib", "@skelloapp/release-lib"
+      ],
+      "externalDependencies": { "mongoose": "*" }
+    },
+    {
+      "name": "svc-billing-automation",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-billing-automation", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/dynamo-lib",
+        "@skelloapp/i18n-lib", "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/svc-billing-automation-sdk",
+        "@skelloapp/svc-communications-v2-sdk", "@skelloapp/svc-modularisation-sdk",
+        "@skelloapp/eslint-config-skello-ts", "@skelloapp/eslint-lib"
+      ],
+      "externalDependencies": { "stripe": "*", "dayjs": "*" }
+    },
+    {
+      "name": "svc-labour-laws",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-labour-laws", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/lambda-logger-js",
+        "@skelloapp/skello-auth-client", "@skelloapp/svc-labour-laws-sdk",
+        "@skelloapp/eslint-config-skello-ts", "@skelloapp/eslint-lib", "@skelloapp/release-lib"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "svc-documents-v2",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-documents-v2", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/dynamo-lib",
+        "@skelloapp/i18n-lib", "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/svc-communications-v2-sdk",
+        "@skelloapp/svc-documents-v2-client", "@skelloapp/svc-intelligence-sdk",
+        "@skelloapp/conventional-changelog-skello", "@skelloapp/eslint-config-skello-ts"
+      ],
+      "externalDependencies": { "aws-sdk-s3": "*", "dayjs": "*" }
+    },
+    {
+      "name": "svc-documents-esignature",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-documents-esignature", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/client-http-lib", "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/svc-documents-v2-client",
+        "@skelloapp/eslint-config-skello-ts"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "svc-employees",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-employees", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/i18n-lib",
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/lambda-logger-js",
+        "@skelloapp/mongodb-lib", "@skelloapp/skello-annualization", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-communications-v2-sdk", "@skelloapp/svc-employees-client",
+        "@skelloapp/svc-events-sdk", "@skelloapp/eslint-config-skello-ts",
+        "@skelloapp/eslint-lib", "@skelloapp/release-lib"
+      ],
+      "externalDependencies": { "mongoose": "*", "dayjs": "*" }
+    },
+    {
+      "name": "svc-feature-flags",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-feature-flags", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/eslint-config-skello-ts", "@skelloapp/eslint-lib", "@skelloapp/cz-emoji-skello"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "svc-users",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-users", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/client-http-lib", "@skelloapp/i18n-lib", "@skelloapp/lambda-io-lib",
+        "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-communications-v2-sdk", "@skelloapp/svc-punch-sdk",
+        "@skelloapp/svc-users-sdk"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "svc-shops",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-shops", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/lambda-io-lib",
+        "@skelloapp/lambda-logger-lib", "@skelloapp/mongodb-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-employees-client", "@skelloapp/svc-search-sdk",
+        "@skelloapp/svc-shops-sdk", "@skelloapp/eslint-lib"
+      ],
+      "externalDependencies": { "mongoose": "*" }
+    },
+    {
+      "name": "svc-reports",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-reports", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/svc-reports-sdk",
+        "@skelloapp/conventional-changelog-skello", "@skelloapp/eslint-config-skello-ts",
+        "@skelloapp/serverless-lib", "@skelloapp/release-lib"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "svc-requests",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-requests", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/i18n-lib",
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-communications-v2-sdk", "@skelloapp/svc-events-sdk",
+        "@skelloapp/svc-requests-sdk", "@skelloapp/eslint-config-skello-ts", "@skelloapp/release-lib"
+      ],
+      "externalDependencies": { "dayjs": "*" }
+    },
+    {
+      "name": "svc-shifts",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-shifts", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-shifts-sdk", "@skelloapp/eslint-config-skello-ts",
+        "@skelloapp/eslint-lib", "@skelloapp/serverless-lib"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "svc-hris",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-hris", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/dynamo-lib",
+        "@skelloapp/i18n-lib", "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/skello-app-sdk",
+        "@skelloapp/svc-communications-v2-sdk", "@skelloapp/svc-employees-client",
+        "@skelloapp/svc-hris-sdk", "@skelloapp/svc-shops-sdk",
+        "@skelloapp/eslint-config-skello-ts", "@skelloapp/eslint-lib", "@skelloapp/serverless-lib"
+      ],
+      "externalDependencies": { "mongoose": "*", "dayjs": "*" }
+    },
+    {
+      "name": "svc-kpis-v2",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-kpis-v2", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/mongodb-lib",
+        "@skelloapp/skello-auth-client", "@skelloapp/svc-employees-client",
+        "@skelloapp/svc-kpis-v2-sdk", "@skelloapp/svc-pos-sdk", "@skelloapp/svc-search-sdk",
+        "@skelloapp/eslint-lib"
+      ],
+      "externalDependencies": { "mongoose": "*", "dayjs": "*" }
+    },
+    {
+      "name": "svc-search",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-search", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/skello-app-sdk", "@skelloapp/svc-search-sdk",
+        "@skelloapp/conventional-changelog-skello", "@skelloapp/eslint-config-skello-ts",
+        "@skelloapp/serverless-lib"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "svc-modularisation",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-modularisation", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-js", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-modularisation-sdk", "@skelloapp/eslint-config-skello-ts",
+        "@skelloapp/eslint-lib", "@skelloapp/release-lib"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "svc-bitly-v2",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-bitly-v2", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-logger-lib", "@skelloapp/eslint-config-skello-ts"
+      ],
+      "externalDependencies": { "axios": "*" }
+    },
+    {
+      "name": "svc-enrollment",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-enrollment", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/dynamo-lib", "@skelloapp/lambda-io-lib",
+        "@skelloapp/lambda-logger-lib", "@skelloapp/serverless-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-enrollment-sdk", "@skelloapp/conventional-changelog-skello",
+        "@skelloapp/eslint-config-skello-ts"
+      ],
+      "externalDependencies": { "dayjs": "*", "axios": "*" }
+    },
+    {
+      "name": "svc-bff",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-bff", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/client-http-lib", "@skelloapp/lambda-io-lib",
+        "@skelloapp/lambda-logger-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-bff-sdk", "@skelloapp/svc-documents-v2-client", "@skelloapp/svc-kpis-v2-sdk",
+        "@skelloapp/conventional-changelog-skello", "@skelloapp/eslint-config-skello-ts"
+      ],
+      "externalDependencies": { "dayjs": "*", "axios": "*" }
+    },
+    {
+      "name": "svc-automatic-scheduling",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-automatic-scheduling", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/data-platform-svc-ingestion-sdk",
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/skello-app-sdk",
+        "@skelloapp/skello-planning-helper", "@skelloapp/skello-shifts-alerts",
+        "@skelloapp/svc-automatic-scheduling-sdk", "@skelloapp/svc-search-sdk",
+        "@skelloapp/eslint-lib", "@skelloapp/serverless-lib", "@skelloapp/skello-auth-client"
+      ],
+      "externalDependencies": { "mongoose": "*", "dayjs": "*", "axios": "*" }
+    },
+    {
+      "name": "svc-bff-planning",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/svc-bff-planning", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/skello-app-sdk",
+        "@skelloapp/skello-planning-helper", "@skelloapp/skello-shifts-alerts",
+        "@skelloapp/svc-automatic-scheduling-sdk", "@skelloapp/svc-search-sdk",
+        "@skelloapp/eslint-lib", "@skelloapp/serverless-lib", "@skelloapp/skello-auth-client"
+      ],
+      "externalDependencies": { "mongoose": "*", "dayjs": "*", "axios": "*" }
+    },
+    {
+      "name": "websocket",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/websocket", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-js",
+        "@skelloapp/conventional-changelog-skello", "@skelloapp/eslint-config-skello-ts"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "skello-app-to-data",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/skello-app-to-data", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/aws-sdk-lib", "@skelloapp/lambda-logger-lib",
+        "@skelloapp/eslint-config-skello-ts"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "skello-mobile-link",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/skello-mobile-link", "version": "0.0.1" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-lib", "@skelloapp/eslint-lib"
+      ],
+      "externalDependencies": { "handlebars": "^4.7.8" }
+    },
+    {
+      "name": "skello-dynamodb-full-load",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/dynamodb-full-load", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-logger-lib", "@skelloapp/eslint-lib"
+      ],
+      "externalDependencies": {}
+    },
+    {
+      "name": "poc-graphql-server",
+      "type": "typescript-microservice",
+      "packageJson": { "name": "@skelloapp/poc-graphql-server", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/lambda-io-lib", "@skelloapp/lambda-logger-js",
+        "@skelloapp/eslint-config-skello-ts", "@skelloapp/release-lib"
+      ],
+      "externalDependencies": { "dynamodb-toolbox": "^0.9.5" }
+    },
+    {
+      "name": "superadmin",
+      "type": "vue-frontend",
+      "packageJson": { "name": "@skelloapp/superadmin", "version": "1.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/client-http-lib", "@skelloapp/skello-auth-client", "@skelloapp/skello-ui",
+        "@skelloapp/svc-billing-automation-sdk", "@skelloapp/svc-communications-v2-sdk",
+        "@skelloapp/svc-employees-client", "@skelloapp/svc-events-sdk",
+        "@skelloapp/svc-labour-laws-sdk", "@skelloapp/svc-punch-sdk",
+        "@skelloapp/svc-reports-sdk", "@skelloapp/svc-shops-sdk",
+        "@skelloapp/svc-trackers-sdk"
+      ],
+      "externalDependencies": { "vue": "^3.x", "vue-router": "*", "pinia": "*", "axios": "*" }
+    },
+    {
+      "name": "skello-onboarding",
+      "type": "vue-frontend",
+      "packageJson": { "name": "@skelloapp/skello-onboarding", "version": "1.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/skello-auth-client", "@skelloapp/skello-ui",
+        "@skelloapp/svc-billing-automation-sdk", "@skelloapp/eslint-config-skello-vue"
+      ],
+      "externalDependencies": { "vue": "^3.x", "vue-router": "*", "axios": "*" }
+    },
+    {
+      "name": "skello-self-serve",
+      "type": "vue-frontend",
+      "packageJson": { "name": "skello-self-serve", "version": "1.0.0" },
+      "gemfile": null,
+      "internalDependencies": ["@skelloapp/skello-ui"],
+      "externalDependencies": { "vue": "^3.5.13", "vue-i18n": "^11.1.3", "vue-router": "^4.5.0", "axios": "^1.8.4" }
+    },
+    {
+      "name": "skello-mobile",
+      "type": "react-native",
+      "packageJson": { "name": "@skelloapp/skello-mobile", "version": "0.0.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/expo-sso-lib", "@skelloapp/github-reporter-lib", "@skelloapp/i18n-lib",
+        "@skelloapp/skello-absences", "@skelloapp/skello-annualization",
+        "@skelloapp/skello-app-sdk", "@skelloapp/skello-auth-client",
+        "@skelloapp/skello-planning-helper", "@skelloapp/svc-documents-v2-client",
+        "@skelloapp/svc-employees-client", "@skelloapp/svc-punch-js",
+        "@skelloapp/svc-punch-sdk", "@skelloapp/svc-requests-sdk",
+        "@skelloapp/svc-shops-sdk", "@skelloapp/svc-users-sdk"
+      ],
+      "externalDependencies": { "react": "*", "react-native": "*", "expo": "*" }
+    },
+    {
+      "name": "skello-punchclock",
+      "type": "react-native",
+      "packageJson": { "name": "@skelloapp/skello-punchclock", "version": "4.19.0" },
+      "gemfile": null,
+      "internalDependencies": [
+        "@skelloapp/expo-sso-lib", "@skelloapp/skello-auth-client",
+        "@skelloapp/svc-punch-sdk", "@skelloapp/svc-users-sdk"
+      ],
+      "externalDependencies": { "expo": "54.0.23", "react": "19.1.0", "react-native": "0.81.5", "axios": "^1.10.0" }
+    },
+    {
+      "name": "skello-qa",
+      "type": "other",
+      "packageJson": { "name": "skello-testing", "version": null },
+      "gemfile": null,
+      "internalDependencies": ["@skelloapp/eslint-config-skello-ts", "@skelloapp/eslint-lib"],
+      "externalDependencies": { "webdriverio": "9.21.0", "langfuse": "^3.37.4", "dayjs": "^1.11.9" }
+    },
+    {
+      "name": "skello-cli",
+      "type": "other",
+      "packageJson": { "name": "@skelloapp/skello-cli", "version": "1.4.0" },
+      "gemfile": null,
+      "internalDependencies": ["@skelloapp/release-lib"],
+      "externalDependencies": { "@oclif/core": "^4.5.3", "simple-git": "^3.28.0", "listr2": "^8.3.3" }
+    },
+    {
+      "name": "svc-punch-infra",
+      "type": "other",
+      "packageJson": { "name": "@skelloapp/svc-punch-cf", "version": "0.1.0" },
+      "gemfile": null,
+      "internalDependencies": ["@skelloapp/cz-emoji-skello", "@skelloapp/eslint-config-skello-ts"],
+      "externalDependencies": { "aws-cdk-lib": "^2.91.0" }
+    },
+    {
+      "name": "slackbot",
+      "type": "other",
+      "packageJson": null,
+      "gemfile": "Ruby 2.7.3, sinatra, slack-ruby-bot, puma",
+      "internalDependencies": [],
+      "externalDependencies": { "sinatra": "*", "slack-ruby-bot": "*", "slack-ruby-client": "*" }
+    }
+  ],
+  "sharedPackages": [
+    {
+      "name": "@skelloapp/skello-auth-client",
+      "sourceRepo": "skello-auth-client",
+      "category": "auth",
+      "usedBy": [
+        "svc-intelligence", "skello-punchclock", "skello-mobile", "svc-events",
+        "svc-communications-v2", "svc-skello-assistant", "svc-pos", "svc-punch",
+        "svc-trackers", "svc-kpis", "svc-workload-plan", "svc-billing-automation",
+        "svc-labour-laws", "svc-documents-v2", "svc-documents-esignature", "svc-employees",
+        "svc-feature-flags", "svc-users", "svc-shops", "svc-reports", "svc-requests",
+        "svc-shifts", "svc-hris", "svc-bff", "svc-enrollment", "svc-kpis-v2",
+        "svc-automatic-scheduling", "svc-bff-planning", "svc-search", "superadmin",
+        "skello-onboarding", "skello-app", "svc-documents"
+      ]
+    },
+    {
+      "name": "@skelloapp/lambda-logger-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "infrastructure",
+      "usedBy": [
+        "svc-intelligence", "skello-notifications", "svc-events", "svc-communications-v2",
+        "svc-skello-assistant", "svc-pos", "svc-punch", "svc-trackers", "svc-kpis",
+        "svc-billing-automation", "svc-bitly-v2", "svc-documents-esignature", "svc-labour-laws",
+        "svc-documents-v2", "skello-app-to-data", "svc-employees", "svc-shops", "svc-reports",
+        "svc-requests", "svc-shifts", "svc-hris", "svc-bff", "svc-enrollment", "svc-kpis-v2",
+        "svc-search", "skello-mobile-link", "svc-bff-planning", "svc-automatic-scheduling",
+        "skello-dynamodb-full-load", "svc-workload-plan"
+      ]
+    },
+    {
+      "name": "@skelloapp/lambda-io-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "infrastructure",
+      "usedBy": [
+        "svc-intelligence", "svc-events", "svc-communications-v2", "svc-skello-assistant",
+        "svc-pos", "svc-punch", "svc-trackers", "svc-kpis", "svc-workload-plan",
+        "svc-billing-automation", "svc-labour-laws", "svc-documents-v2", "svc-employees",
+        "svc-shops", "svc-reports", "svc-requests", "svc-shifts", "svc-hris", "svc-bff",
+        "svc-enrollment", "svc-search", "skello-mobile-link", "svc-bff-planning",
+        "svc-automatic-scheduling", "poc-graphql-server", "svc-kpis-v2", "websocket",
+        "svc-documents-esignature", "svc-feature-flags", "svc-modularisation"
+      ]
+    },
+    {
+      "name": "@skelloapp/aws-sdk-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "infrastructure",
+      "usedBy": [
+        "svc-intelligence", "svc-events", "svc-communications-v2", "svc-skello-assistant",
+        "svc-pos", "svc-punch", "svc-trackers", "svc-billing-automation", "svc-documents-v2",
+        "svc-employees", "skello-app-to-data", "svc-shops", "svc-reports", "svc-requests",
+        "svc-hris", "svc-bff", "svc-enrollment", "svc-automatic-scheduling", "svc-bff-planning"
+      ]
+    },
+    {
+      "name": "@skelloapp/client-http-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "infrastructure",
+      "usedBy": [
+        "svc-intelligence", "svc-events", "svc-communications-v2", "svc-billing-automation",
+        "svc-documents-esignature", "svc-documents-v2", "svc-employees", "svc-shops",
+        "svc-requests", "svc-hris", "svc-users", "svc-bff", "svc-bff-planning", "superadmin"
+      ]
+    },
+    {
+      "name": "@skelloapp/eslint-config-skello-ts",
+      "sourceRepo": "eslint-config-skello",
+      "category": "tooling",
+      "usedBy": [
+        "skello-qa", "svc-intelligence", "skello-notifications", "svc-kpis",
+        "svc-billing-automation", "svc-bitly-v2", "svc-documents-esignature", "svc-labour-laws",
+        "svc-employees", "svc-feature-flags", "svc-modularisation", "websocket", "svc-shops",
+        "svc-reports", "svc-requests", "svc-shifts", "svc-hris", "svc-bff", "svc-enrollment",
+        "svc-search", "skello-app-to-data", "svc-punch-infra", "poc-graphql-server",
+        "svc-documents-v2", "svc-automatic-scheduling", "svc-bff-planning"
+      ]
+    },
+    {
+      "name": "@skelloapp/eslint-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "tooling",
+      "usedBy": [
+        "svc-communications-v2", "svc-pos", "svc-punch", "svc-trackers", "svc-billing-automation",
+        "svc-labour-laws", "svc-documents-v2", "svc-modularisation", "svc-users", "svc-shifts",
+        "svc-hris", "svc-kpis-v2", "skello-mobile-link", "svc-bff-planning",
+        "svc-automatic-scheduling", "svc-feature-flags", "skello-dynamodb-full-load",
+        "svc-workload-plan", "skello-qa", "svc-shops"
+      ]
+    },
+    {
+      "name": "@skelloapp/serverless-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "infrastructure",
+      "usedBy": [
+        "svc-intelligence", "svc-trackers", "svc-reports", "svc-hris", "svc-shifts",
+        "svc-enrollment", "svc-automatic-scheduling", "svc-bff-planning", "svc-search",
+        "svc-employees"
+      ]
+    },
+    {
+      "name": "@skelloapp/release-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "tooling",
+      "usedBy": [
+        "svc-communications", "svc-events", "svc-employees", "svc-modularisation",
+        "svc-labour-laws", "svc-requests", "skello-cli", "poc-graphql-server", "svc-workload-plan",
+        "svc-reports"
+      ]
+    },
+    {
+      "name": "@skelloapp/conventional-changelog-skello",
+      "sourceRepo": "skello-libs-ts",
+      "category": "tooling",
+      "usedBy": [
+        "skello-notifications", "svc-kpis", "svc-documents-v2", "websocket", "svc-reports",
+        "svc-enrollment", "svc-bff", "svc-search", "svc-events", "svc-communications-v2"
+      ]
+    },
+    {
+      "name": "@skelloapp/i18n-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "shared-lib",
+      "usedBy": [
+        "svc-events", "svc-communications-v2", "svc-billing-automation", "svc-documents-v2",
+        "svc-users", "svc-requests", "svc-hris", "skello-mobile", "svc-employees"
+      ]
+    },
+    {
+      "name": "@skelloapp/dynamo-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "infrastructure",
+      "usedBy": [
+        "svc-events", "svc-billing-automation", "svc-documents-v2", "svc-hris",
+        "svc-reports", "svc-enrollment"
+      ]
+    },
+    {
+      "name": "@skelloapp/mongodb-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "infrastructure",
+      "usedBy": [
+        "svc-trackers", "svc-workload-plan", "svc-employees", "svc-shops", "svc-kpis-v2"
+      ]
+    },
+    {
+      "name": "@skelloapp/skello-ui",
+      "sourceRepo": "skello-design",
+      "category": "ui",
+      "usedBy": ["skello-onboarding", "superadmin", "skello-self-serve"]
+    },
+    {
+      "name": "@skelloapp/svc-communications-v2-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": [
+        "svc-events", "svc-communications-v2", "svc-skello-assistant", "svc-billing-automation",
+        "svc-documents-v2", "svc-hris", "svc-users", "svc-requests", "superadmin", "svc-employees"
+      ]
+    },
+    {
+      "name": "@skelloapp/svc-documents-v2-client",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": [
+        "svc-intelligence", "svc-communications-v2", "svc-skello-assistant",
+        "svc-documents-esignature", "svc-documents-v2", "skello-mobile", "svc-bff"
+      ]
+    },
+    {
+      "name": "@skelloapp/svc-employees-client",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": [
+        "svc-employees", "svc-shops", "svc-hris", "svc-kpis-v2", "superadmin", "skello-mobile"
+      ]
+    },
+    {
+      "name": "@skelloapp/svc-search-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": [
+        "svc-trackers", "svc-employees", "svc-shops", "svc-kpis-v2",
+        "svc-automatic-scheduling", "svc-bff-planning", "svc-search"
+      ]
+    },
+    {
+      "name": "@skelloapp/svc-punch-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["skello-punchclock", "svc-punch", "svc-users", "superadmin", "skello-mobile"]
+    },
+    {
+      "name": "@skelloapp/svc-billing-automation-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": [
+        "svc-billing-automation", "svc-skello-assistant", "skello-onboarding", "superadmin"
+      ]
+    },
+    {
+      "name": "@skelloapp/svc-events-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": [
+        "svc-events", "svc-communications-v2", "svc-employees", "svc-requests", "superadmin"
+      ]
+    },
+    {
+      "name": "@skelloapp/svc-shops-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-shops", "svc-hris", "superadmin", "skello-mobile"]
+    },
+    {
+      "name": "@skelloapp/svc-users-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["skello-punchclock", "svc-users", "skello-mobile"]
+    },
+    {
+      "name": "@skelloapp/svc-kpis-v2-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-workload-plan", "svc-kpis-v2", "svc-bff"]
+    },
+    {
+      "name": "@skelloapp/skello-app-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": [
+        "svc-trackers", "svc-hris", "svc-search", "svc-automatic-scheduling",
+        "svc-bff-planning", "skello-mobile"
+      ]
+    },
+    {
+      "name": "@skelloapp/skello-planning-helper",
+      "sourceRepo": "skello-planning-helper",
+      "category": "shared-lib",
+      "usedBy": ["skello-mobile", "svc-automatic-scheduling", "svc-bff-planning"]
+    },
+    {
+      "name": "@skelloapp/skello-shifts-alerts",
+      "sourceRepo": "skello-shifts-alerts",
+      "category": "shared-lib",
+      "usedBy": ["svc-automatic-scheduling", "svc-bff-planning"]
+    },
+    {
+      "name": "@skelloapp/svc-automatic-scheduling-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-automatic-scheduling", "svc-bff-planning"]
+    },
+    {
+      "name": "@skelloapp/svc-modularisation-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-modularisation", "svc-billing-automation"]
+    },
+    {
+      "name": "@skelloapp/svc-intelligence-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-intelligence", "svc-documents-v2"]
+    },
+    {
+      "name": "@skelloapp/svc-reports-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-reports", "superadmin"]
+    },
+    {
+      "name": "@skelloapp/svc-requests-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-requests", "svc-communications-v2", "skello-mobile"]
+    },
+    {
+      "name": "@skelloapp/svc-pos-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-pos", "svc-kpis-v2"]
+    },
+    {
+      "name": "@skelloapp/svc-hris-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-hris"]
+    },
+    {
+      "name": "@skelloapp/svc-labour-laws-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-labour-laws", "superadmin"]
+    },
+    {
+      "name": "@skelloapp/svc-kpis-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-kpis"]
+    },
+    {
+      "name": "@skelloapp/svc-punch-js",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["skello-mobile"]
+    },
+    {
+      "name": "@skelloapp/expo-sso-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "shared-lib",
+      "usedBy": ["skello-punchclock", "skello-mobile"]
+    },
+    {
+      "name": "@skelloapp/svc-trackers-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-trackers", "superadmin"]
+    },
+    {
+      "name": "@skelloapp/svc-enrollment-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-enrollment"]
+    },
+    {
+      "name": "@skelloapp/svc-esignature-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-intelligence", "svc-skello-assistant"]
+    },
+    {
+      "name": "@skelloapp/svc-bff-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-bff"]
+    },
+    {
+      "name": "@skelloapp/svc-shifts-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-shifts"]
+    },
+    {
+      "name": "@skelloapp/svc-skello-assistant-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-skello-assistant"]
+    },
+    {
+      "name": "@skelloapp/workload-plan-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-workload-plan"]
+    },
+    {
+      "name": "@skelloapp/data-platform-svc-ingestion-sdk",
+      "sourceRepo": "skello-libs-ts",
+      "category": "sdk",
+      "usedBy": ["svc-automatic-scheduling"]
+    },
+    {
+      "name": "@skelloapp/lambda-logger-js",
+      "sourceRepo": "skello-libs-ts",
+      "category": "infrastructure",
+      "usedBy": [
+        "svc-punch", "svc-labour-laws", "svc-employees", "svc-modularisation",
+        "websocket", "poc-graphql-server"
+      ]
+    },
+    {
+      "name": "@skelloapp/eslint-config-skello-vue",
+      "sourceRepo": "eslint-config-skello",
+      "category": "tooling",
+      "usedBy": ["skello-onboarding"]
+    },
+    {
+      "name": "@skelloapp/eslint-config-skello",
+      "sourceRepo": "eslint-config-skello",
+      "category": "tooling",
+      "usedBy": ["skello-shifts-alerts"]
+    },
+    {
+      "name": "@skelloapp/cz-emoji-skello",
+      "sourceRepo": "cz-emoji-skello",
+      "category": "tooling",
+      "usedBy": ["svc-punch-infra", "svc-feature-flags"]
+    },
+    {
+      "name": "@skelloapp/github-reporter-lib",
+      "sourceRepo": "skello-libs-ts",
+      "category": "tooling",
+      "usedBy": ["svc-pos", "skello-mobile"]
+    },
+    {
+      "name": "@skelloapp/skello-annualization",
+      "sourceRepo": "skello-libs-ts",
+      "category": "shared-lib",
+      "usedBy": ["svc-employees", "skello-mobile"]
+    },
+    {
+      "name": "@skelloapp/skello-absences",
+      "sourceRepo": "skello-libs-ts",
+      "category": "shared-lib",
+      "usedBy": ["skello-mobile"]
+    }
+  ]
+}
