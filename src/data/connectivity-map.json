@@ -4485,6 +4485,40 @@
       "description": "Planning BFF — assembles shift scheduling data with employee context for the planning page",
       "endpoints": [
         {
+          "id": "api-get-planning",
+          "path": "/planning",
+          "method": "GET",
+          "description": "Assemble and return the full planning page payload",
+          "useCase": "Called by skello-app-front to load all planning data in a single request",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "query",
+              "type": "string",
+              "required": true,
+              "description": "Target shop ID"
+            },
+            {
+              "name": "weekStart",
+              "in": "query",
+              "type": "string",
+              "required": true,
+              "description": "ISO date of the week start"
+            }
+          ],
+          "response": {
+            "200": "Planning payload",
+            "400": "Validation error",
+            "503": "Upstream dependency unavailable"
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-bff-planning"
+            }
+          ]
+        },
+        {
           "id": "api-compute-auto-scheduling",
           "path": "/auto_scheduling/compute",
           "method": "GET",
@@ -5244,6 +5278,66 @@
             {
               "type": "dynamodb",
               "name": "svcReports-{env}"
+            }
+          ]
+        },
+        {
+          "id": "api-trigger-report-export",
+          "path": "/reports",
+          "method": "POST",
+          "description": "Trigger an async planning report export job",
+          "useCase": "Called by skello-app-front to start a report export for a selected period",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Export configuration including period, shopId and format"
+            }
+          ],
+          "response": {
+            "202": "Job created — returns jobId",
+            "400": "Validation error"
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            },
+            {
+              "type": "lambda",
+              "name": "report-generator"
+            }
+          ]
+        },
+        {
+          "id": "api-get-report-job",
+          "path": "/reports/{jobId}",
+          "method": "GET",
+          "description": "Poll the status of an async report export job",
+          "useCase": "Called by skello-app-front to check if the report is ready; returns a pre-signed S3 URL on completion",
+          "params": [
+            {
+              "name": "jobId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "Report job ID returned by POST /reports"
+            }
+          ],
+          "response": {
+            "200": "Job status and optional signedUrl",
+            "404": "Job not found"
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "skello-reports-{env}"
             }
           ]
         }
@@ -7763,6 +7857,69 @@
       "usedEndpoints": [
         "api-event-create"
       ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-bff-planning",
+      "sdkPackage": "@skelloapp/svc-bff-planning-sdk",
+      "description": "Loads the planning page via the planning BFF",
+      "usedEndpoints": [
+        "api-get-planning"
+      ]
+    },
+    {
+      "from": "svc-bff-planning",
+      "to": "svc-shifts",
+      "sdkPackage": "@skelloapp/svc-shifts-sdk",
+      "description": "Fetches shift details and metrics for the planning view",
+      "usedEndpoints": [
+        "api-get-shift-details"
+      ]
+    },
+    {
+      "from": "svc-bff-planning",
+      "to": "svc-employees",
+      "sdkPackage": "@skelloapp/svc-employees-sdk",
+      "description": "Fetches team roster and contracts for the planning view",
+      "usedEndpoints": [
+        "api-get-employees"
+      ]
+    },
+    {
+      "from": "svc-bff-planning",
+      "to": "svc-labour-laws",
+      "sdkPackage": "@skelloapp/svc-labour-laws-sdk",
+      "description": "Fetches labour law rules and constraints for planning validation",
+      "usedEndpoints": [
+        "api-get-labour-laws"
+      ]
+    },
+    {
+      "from": "svc-bff-planning",
+      "to": "svc-workload-plan",
+      "sdkPackage": "@skelloapp/svc-workload-plan-sdk",
+      "description": "Fetches workload forecasts and rules for the planning view",
+      "usedEndpoints": [
+        "api-get-workload-plans-v2"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-shifts",
+      "sdkPackage": "@skelloapp/svc-shifts-sdk",
+      "description": "Updates shift metrics after creation, update or bulk operations",
+      "usedEndpoints": [
+        "api-get-shop-and-orga-shift-metrics"
+      ]
+    },
+    {
+      "from": "svc-reports",
+      "to": "svc-shifts",
+      "sdkPackage": "@skelloapp/svc-shifts-sdk",
+      "description": "Fetches detailed shift data for report generation",
+      "usedEndpoints": [
+        "api-get-shift-details"
+      ]
     }
   ],
   "flows": [
@@ -8845,6 +9002,332 @@
           "from": "svc-communications-v2",
           "to": "lambda-notify-replacement",
           "label": "invoke"
+        }
+      ]
+    },
+    {
+      "id": "planning-page-load",
+      "name": "Planning Page Load",
+      "description": "A manager opens the planning page. svc-bff-planning fans out 6 parallel requests — shifts, employees, labour laws, workload plan, scheduling suggestions and employee search — then assembles the full planning view before responding.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "svc-bff-planning",
+          "action": "GET /planning — request assembled planning page (shopId + week range)"
+        },
+        {
+          "from": "svc-bff-planning",
+          "to": "svc-shifts",
+          "action": "POST /shift-details — fetch all shifts for the selected week [parallel]"
+        },
+        {
+          "from": "svc-bff-planning",
+          "to": "svc-employees",
+          "action": "GET /employees — fetch full team roster with contracts [parallel]"
+        },
+        {
+          "from": "svc-bff-planning",
+          "to": "svc-labour-laws",
+          "action": "GET /labour-laws — retrieve labour law rules for the shop [parallel]"
+        },
+        {
+          "from": "svc-bff-planning",
+          "to": "svc-workload-plan",
+          "action": "GET /v2/workload-plans — fetch workload forecast for the week [parallel]"
+        },
+        {
+          "from": "svc-bff-planning",
+          "to": "svc-automatic-scheduling",
+          "action": "GET /auto_scheduling/compute — fetch auto-scheduling hints [parallel]"
+        },
+        {
+          "from": "svc-bff-planning",
+          "to": "svc-search",
+          "action": "GET /employees/search — search available staff for open slots [parallel]"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "mongo-bff-planning-cache",
+          "type": "mongodb",
+          "label": "svc-bff-planning",
+          "description": "Planning BFF response cache and auto-scheduling request state"
+        },
+        {
+          "id": "mongo-shifts-planning",
+          "type": "mongodb",
+          "label": "svc-shifts",
+          "description": "Aggregated shift metrics and shift detail store"
+        },
+        {
+          "id": "pg-employees-planning",
+          "type": "postgresql",
+          "label": "svcEmployees-{env}",
+          "description": "Employee contracts, absences and counters"
+        },
+        {
+          "id": "dynamo-labour-laws-planning",
+          "type": "dynamodb",
+          "label": "svcLabourLaws-{env}",
+          "description": "Labour law rule sets for compliance display"
+        },
+        {
+          "id": "dynamo-workload-planning",
+          "type": "dynamodb",
+          "label": "svcWorkloadPlan-{env}",
+          "description": "Workload plan forecasts and rules"
+        },
+        {
+          "id": "es-search-planning",
+          "type": "elasticsearch",
+          "label": "svc-search",
+          "description": "Employee availability and shift search index"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-bff-planning",
+          "to": "mongo-bff-planning-cache",
+          "label": "read/write cache"
+        },
+        {
+          "from": "svc-shifts",
+          "to": "mongo-shifts-planning",
+          "label": "read shifts"
+        },
+        {
+          "from": "svc-employees",
+          "to": "pg-employees-planning",
+          "label": "read roster"
+        },
+        {
+          "from": "svc-labour-laws",
+          "to": "dynamo-labour-laws-planning",
+          "label": "read rules"
+        },
+        {
+          "from": "svc-workload-plan",
+          "to": "dynamo-workload-planning",
+          "label": "read forecast"
+        },
+        {
+          "from": "svc-search",
+          "to": "es-search-planning",
+          "label": "query index"
+        }
+      ]
+    },
+    {
+      "id": "week-copy",
+      "name": "Week Copy",
+      "description": "A manager copies all shifts from one week to another. The monolith creates shifts in bulk, validates each against labour laws, updates shop and org planning metrics, then emits an event so affected employees are notified. Failed shift creations land in a DLQ for manual review.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "POST /v3/shifts/week-copy — submit bulk copy request with source and target week range"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-labour-laws",
+          "action": "POST /validate-batch — validate each copied shift against labour laws"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-shifts",
+          "action": "POST /shift-metrics/shop-and-orga — update shop and org-level planning metrics"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events — emit shifts.bulk-copied event"
+        },
+        {
+          "from": "svc-events",
+          "to": "svc-communications-v2",
+          "action": "SQS email-normal — notify affected employees of copied shifts"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "pg-skello-week-copy",
+          "type": "postgresql",
+          "label": "skello_production",
+          "description": "Bulk-inserts copied shifts in the monolith"
+        },
+        {
+          "id": "dynamo-labour-laws-copy",
+          "type": "dynamodb",
+          "label": "svcLabourLaws-{env}",
+          "description": "Labour law rule sets — read to validate each copied shift"
+        },
+        {
+          "id": "mongo-shifts-copy",
+          "type": "mongodb",
+          "label": "svc-shifts",
+          "description": "Updated shop and org planning metrics after the copy"
+        },
+        {
+          "id": "sqs-week-copy",
+          "type": "sqs",
+          "label": "skello-sqs-events",
+          "description": "Async event queue for bulk shift lifecycle events"
+        },
+        {
+          "id": "sqs-week-copy-dlq",
+          "type": "sqs",
+          "label": "skello-sqs-events-dlq",
+          "description": "Dead-letter queue capturing failed shift creations for manual review"
+        },
+        {
+          "id": "dynamo-events-week-copy",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Audit event store for shifts.bulk-copied"
+        },
+        {
+          "id": "lambda-notify-copy",
+          "type": "lambda",
+          "label": "shift-notify-dispatch",
+          "description": "Dispatches notifications to employees for each newly created shift"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "skello-app",
+          "to": "pg-skello-week-copy",
+          "label": "bulk insert"
+        },
+        {
+          "from": "svc-labour-laws",
+          "to": "dynamo-labour-laws-copy",
+          "label": "read rules"
+        },
+        {
+          "from": "svc-shifts",
+          "to": "mongo-shifts-copy",
+          "label": "write metrics"
+        },
+        {
+          "from": "skello-app",
+          "to": "sqs-week-copy",
+          "label": "enqueue"
+        },
+        {
+          "from": "sqs-week-copy",
+          "to": "sqs-week-copy-dlq",
+          "label": "on failure"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-week-copy",
+          "label": "write"
+        },
+        {
+          "from": "svc-communications-v2",
+          "to": "lambda-notify-copy",
+          "label": "invoke"
+        }
+      ]
+    },
+    {
+      "id": "planning-report-export",
+      "name": "Planning Report Export",
+      "description": "A manager triggers a planning report export. svc-reports creates an async job, pulls planning data from the monolith and shift details from svc-shifts, generates the report file via a Lambda, uploads it to S3, and returns a pre-signed download URL when the frontend polls for completion.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "svc-reports",
+          "action": "POST /reports — trigger planning report export for the selected period"
+        },
+        {
+          "from": "svc-reports",
+          "to": "skello-app",
+          "action": "GET /v3/planning/export — fetch planning data (shifts, employees, hours) for the period"
+        },
+        {
+          "from": "svc-reports",
+          "to": "svc-shifts",
+          "action": "POST /shift-details — fetch detailed shift metrics for the report"
+        },
+        {
+          "from": "skello-app-front",
+          "to": "svc-reports",
+          "action": "GET /reports/{jobId} — poll for report job completion"
+        },
+        {
+          "from": "svc-reports",
+          "to": "skello-app-front",
+          "action": "200 {signedUrl} — return pre-signed S3 URL for report download"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "dynamo-reports-jobs",
+          "type": "dynamodb",
+          "label": "svcReports-{env}",
+          "description": "Report job state — tracks pending, processing, complete and failed exports"
+        },
+        {
+          "id": "pg-skello-report-export",
+          "type": "postgresql",
+          "label": "skello_production",
+          "description": "Planning data source — shifts, employees and schedules pulled for the export"
+        },
+        {
+          "id": "mongo-shifts-export",
+          "type": "mongodb",
+          "label": "svc-shifts",
+          "description": "Detailed shift metrics included in the report"
+        },
+        {
+          "id": "s3-reports",
+          "type": "s3",
+          "label": "skello-reports-{env}",
+          "description": "Report file storage — completed files uploaded here and accessed via pre-signed URLs"
+        },
+        {
+          "id": "lambda-report-gen",
+          "type": "lambda",
+          "label": "report-generator",
+          "description": "Async Lambda that generates the report file and uploads it to S3"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-reports",
+          "to": "dynamo-reports-jobs",
+          "label": "create job"
+        },
+        {
+          "from": "skello-app",
+          "to": "pg-skello-report-export",
+          "label": "read planning data"
+        },
+        {
+          "from": "svc-shifts",
+          "to": "mongo-shifts-export",
+          "label": "read shifts"
+        },
+        {
+          "from": "svc-reports",
+          "to": "lambda-report-gen",
+          "label": "invoke async"
+        },
+        {
+          "from": "lambda-report-gen",
+          "to": "s3-reports",
+          "label": "upload report"
+        },
+        {
+          "from": "svc-reports",
+          "to": "dynamo-reports-jobs",
+          "label": "update status"
+        },
+        {
+          "from": "svc-reports",
+          "to": "s3-reports",
+          "label": "generate signed URL"
         }
       ]
     }
