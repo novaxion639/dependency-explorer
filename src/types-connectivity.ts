@@ -8,6 +8,11 @@ export interface EndpointParam {
   description: string
 }
 
+export interface AwsCall {
+  type: DatabaseType
+  name: string
+}
+
 export interface ServiceEndpoint {
   id: string
   path: string
@@ -16,9 +21,10 @@ export interface ServiceEndpoint {
   useCase: string
   params: EndpointParam[]
   response: Record<string, string>
+  awsCalls?: AwsCall[]
 }
 
-export type DatabaseType = 'postgresql' | 'redis' | 'dynamodb' | 'elasticsearch' | 'mongodb' | 's3' | 'sqs' | 'sns' | 'kinesis'
+export type DatabaseType = 'postgresql' | 'redis' | 'dynamodb' | 'elasticsearch' | 'mongodb' | 's3' | 'sqs' | 'sns' | 'kinesis' | 'lambda' | 'cdc'
 
 export interface ServiceDatabase {
   type: DatabaseType
@@ -49,11 +55,26 @@ export interface ServiceFlowStep {
   action: string
 }
 
+export interface FlowInfraNode {
+  id: string
+  type: DatabaseType
+  label: string
+  description?: string
+}
+
+export interface FlowInfraEdge {
+  from: string  // service name OR infra node id
+  to: string    // infra node id
+  label?: string
+}
+
 export interface ServiceFlow {
   id: string
   name: string
   description: string
   steps: ServiceFlowStep[]
+  infraNodes?: FlowInfraNode[]
+  infraEdges?: FlowInfraEdge[]
 }
 
 export interface ConnectivityMap {

@@ -35,21 +35,27 @@ export function buildConnectivityGraph(
   const allNames = new Set([selectedService, ...calleeNames, ...callerNames])
 
   // Layout: callers on left, selected in center, callees on right
-  const GAP_X = 320
   const CENTER_X = 500
+  const DB_RIGHT_GAP = 20  // horizontal gap between service right edge and first DB node
+  const DB_GAP_Y = 10
 
-  // Make vertical gap large enough that DB stacks don't overlap between rows.
-  // Each DB node is DB_NODE_H tall + DB_GAP_Y between nodes + DB_TOP_MARGIN above stack.
-  const DB_TOP_MARGIN_PREVIEW = 30
-  const DB_GAP_Y_PREVIEW = 10
+  // Compute max DB count per column to size gaps correctly
   const maxDbsInColumn = (names: string[]) =>
     Math.max(0, ...names.map(n => map.services.find(s => s.name === n)?.databases?.length ?? 0))
-  const dbStackHeight = (n: number) =>
-    n > 0 ? DB_TOP_MARGIN_PREVIEW + n * DB_NODE_H + (n - 1) * DB_GAP_Y_PREVIEW : 0
-  const maxCallerDbs  = maxDbsInColumn([...callerNames])
-  const maxCalleeDbs  = maxDbsInColumn([...calleeNames])
-  const maxSideDbs    = Math.max(maxCallerDbs, maxCalleeDbs)
-  const GAP_Y = Math.max(90, NODE_H + dbStackHeight(maxSideDbs) + 20)
+  const maxCallerDbs   = maxDbsInColumn([...callerNames])
+  const maxCalleeDbs   = maxDbsInColumn([...calleeNames])
+  const maxSelectedDbs = map.services.find(s => s.name === selectedService)?.databases?.length ?? 0
+  const maxSideDbs     = Math.max(maxCallerDbs, maxCalleeDbs, maxSelectedDbs)
+
+  // GAP_X: wide enough that DB nodes (placed to the right of their service) don't reach the next column
+  // NODE_W(200) + DB_RIGHT_GAP(20) + DB_NODE_W(160) + column_margin(60) = 440
+  const GAP_X = maxSideDbs > 0 ? 440 : 320
+
+  // GAP_Y: tall enough that stacked DB nodes in the same column don't overlap between rows
+  const dbStackForGap = maxSideDbs > 0
+    ? maxSideDbs * DB_NODE_H + (maxSideDbs - 1) * DB_GAP_Y + 10
+    : 0
+  const GAP_Y = Math.max(90, Math.max(NODE_H, dbStackForGap) + 20)
 
   const callers = [...callerNames]
   const callees = [...calleeNames]
@@ -148,10 +154,7 @@ export function buildConnectivityGraph(
     })
   }
 
-  // Add database nodes stacked vertically below each service node
-  const DB_GAP_Y = 10   // gap between stacked DB nodes
-  const DB_TOP_MARGIN = 30  // gap between service bottom and first DB
-
+  // Add database nodes stacked to the right of each service node
   for (const svcNode of [...nodes]) {
     if (svcNode.type !== 'serviceNode') continue
     const svc = map.services.find(s => s.name === svcNode.id)
@@ -159,9 +162,8 @@ export function buildConnectivityGraph(
 
     svc.databases.forEach((db, i) => {
       const dbId = `db:${svcNode.id}:${db.type}:${i}`
-      // Centre the DB node under the service node
-      const dbX = svcNode.position.x + (NODE_W - DB_NODE_W) / 2
-      const dbY = svcNode.position.y + NODE_H + DB_TOP_MARGIN + i * (DB_NODE_H + DB_GAP_Y)
+      const dbX = svcNode.position.x + NODE_W + DB_RIGHT_GAP
+      const dbY = svcNode.position.y + i * (DB_NODE_H + DB_GAP_Y)
 
       nodes.push({
         id: dbId,

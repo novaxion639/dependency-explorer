@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import type { DatabaseType } from '../../types-connectivity'
 
@@ -11,6 +12,8 @@ export const DB_COLORS: Record<DatabaseType, { color: string; label: string; ico
   sqs:           { color: '#e0761a', label: 'SQS',           icon: '📨' },
   sns:           { color: '#b0631a', label: 'SNS',           icon: '📣' },
   kinesis:       { color: '#9b59b6', label: 'Kinesis',       icon: '🌊' },
+  lambda:        { color: '#f97316', label: 'Lambda',        icon: 'λ' },
+  cdc:           { color: '#ec4899', label: 'CDC',           icon: '⚡' },
 }
 
 export interface DatabaseNodeData {
@@ -24,6 +27,7 @@ export interface DatabaseNodeData {
 export function DatabaseNode({ data }: any) {
   const { dbType, name, description } = data as DatabaseNodeData
   const meta = DB_COLORS[dbType as DatabaseType] ?? { color: '#64748b', label: dbType, icon: '💾' }
+  const [expanded, setExpanded] = useState(false)
 
   return (
     <>
@@ -40,24 +44,38 @@ export function DatabaseNode({ data }: any) {
         borderTop: `3px solid ${meta.color}`,
         cursor: 'default',
       }}>
-        {/* Top row: icon + type badge */}
+        {/* Top row: icon + type badge + caret */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
           <span style={{ fontSize: 12 }}>{meta.icon}</span>
           <span style={{
             fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
             background: meta.color + '22', color: meta.color, textTransform: 'uppercase',
-            letterSpacing: '0.05em',
+            letterSpacing: '0.05em', flex: 1,
           }}>
             {meta.label}
           </span>
+          {description && (
+            <button
+              className="nodrag nopan"
+              onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
+              title={expanded ? 'Hide description' : 'Show description'}
+              style={{
+                background: 'none', border: 'none', padding: 0,
+                cursor: 'pointer', color: meta.color + 'aa', fontSize: 10, lineHeight: 1,
+                display: 'flex', alignItems: 'center', flexShrink: 0,
+              }}
+            >
+              {expanded ? '▴' : '▾'}
+            </button>
+          )}
         </div>
         {/* Name */}
         <div style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {name}
         </div>
-        {/* Description */}
-        {description && (
-          <div style={{ fontSize: 10, color: '#475569', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {/* Description — expandable */}
+        {expanded && description && (
+          <div style={{ fontSize: 10, color: '#64748b', marginTop: 4, lineHeight: 1.5, whiteSpace: 'normal', wordBreak: 'break-word' }}>
             {description}
           </div>
         )}

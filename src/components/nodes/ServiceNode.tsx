@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import type { ServiceNodeData } from '../../utils/buildConnectivityGraph'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ServiceNode({ data }: any) {
   const { name, description, type, isSelected, isCaller, isCallee } = data as ServiceNodeData
+  const [expanded, setExpanded] = useState(false)
 
   const isVue = type === 'vue-frontend'
   const isRails = type === 'rails-monolith'
@@ -44,15 +46,36 @@ export function ServiceNode({ data }: any) {
           <span style={{ fontWeight: 700, fontSize: 12, color: '#e2e8f0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {name}
           </span>
-          {label && (
-            <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 4px', borderRadius: 3, background: labelColor + '22', color: labelColor, whiteSpace: 'nowrap' }}>
-              {label}
-            </span>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+            {label && (
+              <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 4px', borderRadius: 3, background: labelColor + '22', color: labelColor, whiteSpace: 'nowrap' }}>
+                {label}
+              </span>
+            )}
+            {description && (
+              <button
+                className="nodrag nopan"
+                onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
+                title={expanded ? 'Hide description' : 'Show description'}
+                style={{
+                  background: 'none', border: 'none', padding: 0,
+                  cursor: 'pointer', color: '#3e4363', fontSize: 10, lineHeight: 1,
+                  display: 'flex', alignItems: 'center',
+                }}
+              >
+                {expanded ? '▴' : '▾'}
+              </button>
+            )}
+          </div>
         </div>
-        <div style={{ fontSize: 10, color: '#64748b', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {description}
-        </div>
+        {expanded && description && (
+          <div style={{
+            fontSize: 10, color: '#94a3b8', marginTop: 6,
+            lineHeight: 1.5, whiteSpace: 'normal', wordBreak: 'break-word',
+          }}>
+            {description}
+          </div>
+        )}
       </div>
     </>
   )

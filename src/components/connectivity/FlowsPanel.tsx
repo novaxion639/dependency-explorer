@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import type { ServiceFlow, ConnectivityMap } from '../../types-connectivity'
+import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const TYPE_COLOR: Record<string, string> = {
   'typescript-microservice': '#3178c6',
@@ -13,9 +15,10 @@ interface Props {
   selectedService: string
   map: ConnectivityMap
   onSelectService: (name: string) => void
+  onOpenFlow: (flow: ServiceFlow) => void
 }
 
-export function FlowsPanel({ flows, selectedService, map, onSelectService }: Props) {
+export function FlowsPanel({ flows, selectedService, map, onSelectService, onOpenFlow }: Props) {
   const relevant = flows.filter(f =>
     f.steps.some(s => s.from === selectedService || s.to === selectedService),
   )
@@ -42,6 +45,7 @@ export function FlowsPanel({ flows, selectedService, map, onSelectService }: Pro
             selectedService={selectedService}
             map={map}
             onSelectService={onSelectService}
+            onOpen={() => onOpenFlow(flow)}
           />
         ))}
       </div>
@@ -49,12 +53,15 @@ export function FlowsPanel({ flows, selectedService, map, onSelectService }: Pro
   )
 }
 
-function FlowCard({ flow, selectedService, map, onSelectService }: {
+function FlowCard({ flow, selectedService, map, onSelectService, onOpen }: {
   flow: ServiceFlow
   selectedService: string
   map: ConnectivityMap
   onSelectService: (name: string) => void
+  onOpen: () => void
 }) {
+  const [expanded, setExpanded] = useState(false)
+
   // Deduplicate services in step order, preserving first appearance
   const stepServices: string[] = []
   for (const step of flow.steps) {
@@ -63,14 +70,37 @@ function FlowCard({ flow, selectedService, map, onSelectService }: {
   }
 
   return (
-    <div style={{
-      background: '#1a1d27',
-      border: '1px solid #2e3250',
-      borderRadius: 6,
-      padding: '8px 12px',
-    }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', marginBottom: 6 }}>
-        {flow.name}
+    <div
+      onClick={onOpen}
+      style={{
+        background: '#1a1d27',
+        border: '1px solid #2e3250',
+        borderRadius: 6,
+        padding: '8px 12px',
+        cursor: 'pointer',
+        transition: 'border-color 0.15s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = '#6366f1')}
+      onMouseLeave={e => (e.currentTarget.style.borderColor = '#2e3250')}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8' }}>{flow.name}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginLeft: 8 }}>
+          {flow.description && (
+            <button
+              onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
+              title={expanded ? 'Hide description' : 'Show description'}
+              style={{
+                background: 'none', border: 'none', padding: '0 2px',
+                cursor: 'pointer', color: '#3e4363', fontSize: 11, lineHeight: 1,
+                display: 'flex', alignItems: 'center',
+              }}
+            >
+              {expanded ? '▴' : '▾'}
+            </button>
+          )}
+          <span style={{ fontSize: 10, color: '#6366f1', fontWeight: 600 }}>View graph →</span>
+        </div>
       </div>
 
       {/* Step chain */}
@@ -85,7 +115,7 @@ function FlowCard({ flow, selectedService, map, onSelectService }: {
                 <span style={{ color: '#3e4363', fontSize: 12 }}>→</span>
               )}
               <button
-                onClick={() => onSelectService(name)}
+                onClick={e => { e.stopPropagation(); onSelectService(name) }}
                 title={flow.steps.find(s => s.from === name || s.to === name)?.action}
                 style={{
                   background: isSelected ? color + '22' : 'transparent',
@@ -107,7 +137,28 @@ function FlowCard({ flow, selectedService, map, onSelectService }: {
         })}
       </div>
 
-      <div style={{ fontSize: 10, color: '#3e4363', marginTop: 5 }}>{flow.description}</div>
+      {/* Infra badges */}
+      {(flow.infraNodes ?? []).length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+          {(flow.infraNodes ?? []).map(infra => {
+            const meta = DB_COLORS[infra.type] ?? { color: '#64748b', icon: '💾', label: infra.type }
+            return (
+              <span key={infra.id} title={infra.description} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 3,
+                fontSize: 9, padding: '1px 5px', borderRadius: 3,
+                background: meta.color + '14', border: `1px solid ${meta.color}33`,
+                color: meta.color,
+              }}>
+                {meta.icon} {infra.label}
+              </span>
+            )
+          })}
+        </div>
+      )}
+
+      {expanded && flow.description && (
+        <div style={{ fontSize: 10, color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>{flow.description}</div>
+      )}
     </div>
   )
 }

@@ -3,7 +3,7 @@
     {
       "name": "svc-events",
       "type": "typescript-microservice",
-      "description": "Domain event bus \u2014 publishes and routes domain events between services",
+      "description": "Domain event bus — publishes and routes domain events between services",
       "endpoints": [
         {
           "id": "api-event-create",
@@ -23,7 +23,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEvents-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-events.{env}"
+            }
+          ]
         },
         {
           "id": "get-events-api",
@@ -35,7 +45,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEvents-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-events.{env}"
+            }
+          ]
         },
         {
           "id": "api-get-activity-logs-lambda",
@@ -47,7 +67,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEvents-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-events.{env}"
+            }
+          ]
         },
         {
           "id": "api-trigger-download-activity-logs-lambda",
@@ -67,14 +97,24 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEvents-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-events.{env}"
+            }
+          ]
         }
       ],
       "databases": [
         {
           "type": "dynamodb",
           "name": "svcEvents-{env}",
-          "description": "Event records \u2014 audit trail of all user actions"
+          "description": "Event records — audit trail of all user actions"
         },
         {
           "type": "s3",
@@ -86,7 +126,7 @@
     {
       "name": "svc-communications-v2",
       "type": "typescript-microservice",
-      "description": "Centralised multi-channel messaging \u2014 email, SMS, push notifications and in-app messages",
+      "description": "Centralised multi-channel messaging — email, SMS, push notifications and in-app messages",
       "endpoints": [
         {
           "id": "bulk-create-high-priority-notification-route",
@@ -106,7 +146,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcCommunicationsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-communications-v2.attachments.{env}"
+            },
+            {
+              "type": "sqs",
+              "name": "email-high / email-low"
+            }
+          ]
         },
         {
           "id": "bulk-create-low-priority-notification-route",
@@ -126,7 +180,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcCommunicationsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-communications-v2.attachments.{env}"
+            },
+            {
+              "type": "sqs",
+              "name": "email-high / email-low"
+            }
+          ]
         },
         {
           "id": "bulk-create-high-priority-email-route",
@@ -146,7 +214,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcCommunicationsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-communications-v2.attachments.{env}"
+            },
+            {
+              "type": "sqs",
+              "name": "email-high / email-low"
+            }
+          ]
         },
         {
           "id": "bulk-create-low-priority-email-route",
@@ -166,7 +248,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcCommunicationsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-communications-v2.attachments.{env}"
+            },
+            {
+              "type": "sqs",
+              "name": "email-high / email-low"
+            }
+          ]
         },
         {
           "id": "bulk-create-high-priority-sms-route",
@@ -186,7 +282,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcCommunicationsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-communications-v2.attachments.{env}"
+            },
+            {
+              "type": "sqs",
+              "name": "email-high / email-low"
+            }
+          ]
         },
         {
           "id": "bulk-create-low-priority-sms-route",
@@ -206,7 +316,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcCommunicationsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-communications-v2.attachments.{env}"
+            },
+            {
+              "type": "sqs",
+              "name": "email-high / email-low"
+            }
+          ]
         },
         {
           "id": "callback-sms-mode-route",
@@ -226,7 +350,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcCommunicationsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-communications-v2.attachments.{env}"
+            },
+            {
+              "type": "sqs",
+              "name": "email-high / email-low"
+            }
+          ]
         }
       ],
       "databases": [
@@ -250,7 +388,7 @@
     {
       "name": "svc-employees",
       "type": "typescript-microservice",
-      "description": "Employee directory and contract management \u2014 source of truth for workforce data",
+      "description": "Employee directory and contract management — source of truth for workforce data",
       "endpoints": [
         {
           "id": "api-get-absence-configs",
@@ -262,7 +400,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-upsert-absence-config",
@@ -282,7 +430,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-get-annualization-configs",
@@ -294,7 +456,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-upsert-annualization-config",
@@ -314,7 +486,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-get-dpae-deposits",
@@ -326,7 +512,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-create-dpae-deposit",
@@ -346,7 +542,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-get-employee",
@@ -366,7 +576,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-get-employees",
@@ -378,7 +598,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-create-employee",
@@ -398,7 +628,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-update-employee",
@@ -425,7 +669,21 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-delete-employee",
@@ -445,7 +703,21 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-get-employee-contracts",
@@ -465,7 +737,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-create-employee-contract",
@@ -492,7 +774,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-update-employee-contract",
@@ -526,7 +822,21 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-delete-employee-contract",
@@ -553,7 +863,21 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-get-employee-counters",
@@ -573,7 +897,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-upsert-employee-counter",
@@ -600,7 +934,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-bulk-upsert-employees",
@@ -620,7 +968,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-get-shop-employee-attributes",
@@ -640,7 +1002,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-upsert-shop-employee-attributes",
@@ -667,7 +1039,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-get-time-off-counters",
@@ -679,7 +1065,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-upsert-time-off-counters",
@@ -699,7 +1095,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         },
         {
           "id": "api-get-working-time-configs",
@@ -711,7 +1121,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            }
+          ]
         },
         {
           "id": "api-upsert-working-time-config",
@@ -731,7 +1151,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEmployees-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-employees"
+            },
+            {
+              "type": "kinesis",
+              "name": "svc-employees-stream"
+            }
+          ]
         }
       ],
       "databases": [
@@ -760,7 +1194,7 @@
     {
       "name": "svc-documents-v2",
       "type": "typescript-microservice",
-      "description": "Document lifecycle management \u2014 creation, storage, versioning and access control",
+      "description": "Document lifecycle management — creation, storage, versioning and access control",
       "endpoints": [
         {
           "id": "api-bulk-send-signature-reminders",
@@ -780,7 +1214,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-documents-v2.{env}"
+            }
+          ]
         },
         {
           "id": "api-bulk-send-reminders-from-filters",
@@ -800,7 +1244,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-documents-v2.{env}"
+            }
+          ]
         },
         {
           "id": "cancel-signature-request-api",
@@ -820,7 +1274,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-documents-v2.{env}"
+            }
+          ]
         },
         {
           "id": "api-fetch-many-signatures",
@@ -840,7 +1304,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-documents-v2.{env}"
+            }
+          ]
         },
         {
           "id": "api-fetch-employee-signatures-by-document-ids",
@@ -860,7 +1334,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-documents-v2.{env}"
+            }
+          ]
         },
         {
           "id": "api-get-signature-document-url",
@@ -887,7 +1371,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-documents-v2.{env}"
+            }
+          ]
         },
         {
           "id": "api-is-signable-document",
@@ -899,7 +1393,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-documents-v2.{env}"
+            }
+          ]
         },
         {
           "id": "api-send-week-signature-documents-email",
@@ -919,7 +1423,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-documents-v2.{env}"
+            }
+          ]
         },
         {
           "id": "api-bulk-process-yousign-webhooks",
@@ -939,7 +1453,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsV2-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-documents-v2.{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -963,7 +1487,7 @@
     {
       "name": "svc-punch",
       "type": "typescript-microservice",
-      "description": "Punch-clock attendance tracking \u2014 records clock-in/out events and computes worked time",
+      "description": "Punch-clock attendance tracking — records clock-in/out events and computes worked time",
       "endpoints": [
         {
           "id": "api-get-clocks-in-out",
@@ -975,7 +1499,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-clock-in-out",
@@ -995,7 +1525,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-clock-in-out",
@@ -1022,7 +1558,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-clock-in-out",
@@ -1042,7 +1584,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-punch-settings",
@@ -1054,7 +1602,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-upsert-punch-settings",
@@ -1074,7 +1628,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-punch-histories",
@@ -1086,7 +1646,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-punch-users",
@@ -1098,7 +1664,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-punch-user",
@@ -1118,7 +1690,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-punch-user",
@@ -1145,7 +1723,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-punch-user",
@@ -1165,7 +1749,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-punch-mobile-permissions",
@@ -1177,7 +1767,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-upsert-punch-mobile-permissions",
@@ -1197,7 +1793,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-v1-clocks-in-out",
@@ -1209,7 +1811,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-v1-clock-in-out",
@@ -1229,7 +1837,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-v1-clock-in-out",
@@ -1256,7 +1870,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-v1-clock-in-out",
@@ -1276,7 +1896,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-v1-punch-settings",
@@ -1288,7 +1914,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-upsert-v1-punch-settings",
@@ -1308,7 +1940,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-v1-punch-users",
@@ -1320,14 +1958,20 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPunch-{env}"
+            }
+          ]
         }
       ],
       "databases": [
         {
           "type": "dynamodb",
           "name": "svcPunch-{env}",
-          "description": "Punch clock records \u2014 clock-in/out events per employee"
+          "description": "Punch clock records — clock-in/out events per employee"
         },
         {
           "type": "sqs",
@@ -1339,7 +1983,7 @@
     {
       "name": "svc-shops",
       "type": "typescript-microservice",
-      "description": "Location and team management \u2014 stores, teams, opening hours and capacity rules",
+      "description": "Location and team management — stores, teams, opening hours and capacity rules",
       "endpoints": [
         {
           "id": "api-get-organisations-config",
@@ -1359,7 +2003,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         },
         {
           "id": "api-upsert-organisation-config",
@@ -1386,7 +2036,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         },
         {
           "id": "api-get-shops",
@@ -1398,7 +2054,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         },
         {
           "id": "api-create-shop",
@@ -1418,7 +2080,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         },
         {
           "id": "api-update-shop",
@@ -1445,7 +2113,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         },
         {
           "id": "api-delete-shop",
@@ -1465,7 +2139,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         },
         {
           "id": "api-get-missions",
@@ -1477,7 +2157,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         },
         {
           "id": "api-create-mission",
@@ -1497,7 +2183,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         },
         {
           "id": "api-update-mission",
@@ -1524,7 +2216,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         },
         {
           "id": "api-delete-mission",
@@ -1544,7 +2242,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shops"
+            }
+          ]
         }
       ],
       "databases": [
@@ -1581,7 +2285,7 @@
     {
       "name": "svc-requests",
       "type": "typescript-microservice",
-      "description": "Leave and absence request workflow \u2014 creation, approval chains and calendar sync",
+      "description": "Leave and absence request workflow — creation, approval chains and calendar sync",
       "endpoints": [
         {
           "id": "api-get-leave-requests",
@@ -1593,7 +2297,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "postgresql",
+              "name": "svc_requests"
+            }
+          ]
         },
         {
           "id": "api-create-leave-request",
@@ -1613,7 +2323,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "postgresql",
+              "name": "svc_requests"
+            },
+            {
+              "type": "sns",
+              "name": "svc-requests-sns"
+            }
+          ]
         },
         {
           "id": "api-update-leave-request",
@@ -1640,7 +2360,17 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "postgresql",
+              "name": "svc_requests"
+            },
+            {
+              "type": "sns",
+              "name": "svc-requests-sns"
+            }
+          ]
         },
         {
           "id": "api-delete-leave-request",
@@ -1660,7 +2390,17 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "postgresql",
+              "name": "svc_requests"
+            },
+            {
+              "type": "sns",
+              "name": "svc-requests-sns"
+            }
+          ]
         },
         {
           "id": "api-get-leave-request-selected-manager",
@@ -1680,7 +2420,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "postgresql",
+              "name": "svc_requests"
+            }
+          ]
         },
         {
           "id": "api-update-leave-request-selected-manager",
@@ -1707,7 +2453,17 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "postgresql",
+              "name": "svc_requests"
+            },
+            {
+              "type": "sns",
+              "name": "svc-requests-sns"
+            }
+          ]
         }
       ],
       "databases": [
@@ -1746,7 +2502,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-quote",
@@ -1766,7 +2532,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-update-quote",
@@ -1793,7 +2573,21 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-create-checkout-session",
@@ -1813,7 +2607,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-create-portal-session",
@@ -1833,7 +2641,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-get-organisation",
@@ -1853,7 +2675,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-organisation",
@@ -1873,7 +2705,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-update-organisation",
@@ -1900,7 +2746,21 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-get-shop",
@@ -1920,7 +2780,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-shop",
@@ -1940,7 +2810,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-update-shop",
@@ -1967,7 +2851,21 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-get-chargebee-source",
@@ -1987,7 +2885,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-chargebee-source",
@@ -2007,7 +2915,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-delete-chargebee-source",
@@ -2027,7 +2949,21 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-get-chargebee-contact",
@@ -2047,7 +2983,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-chargebee-contact",
@@ -2067,7 +3013,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-update-chargebee-contact",
@@ -2094,7 +3054,21 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-get-billing",
@@ -2114,7 +3088,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-billing",
@@ -2134,7 +3118,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-update-billing",
@@ -2161,7 +3159,21 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-get-self-serve",
@@ -2181,7 +3193,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-self-serve",
@@ -2201,7 +3223,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-update-self-serve",
@@ -2228,7 +3264,21 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-get-company-registration",
@@ -2248,7 +3298,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-company-registration",
@@ -2268,7 +3328,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         },
         {
           "id": "api-get-pricing",
@@ -2280,7 +3354,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-get-credit-balance",
@@ -2292,7 +3376,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            }
+          ]
         },
         {
           "id": "api-add-credit-balance",
@@ -2312,7 +3406,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBillingAutomation-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-billing-automation.{env}"
+            },
+            {
+              "type": "sns",
+              "name": "svc-billing-automation-sns"
+            }
+          ]
         }
       ],
       "databases": [
@@ -2341,7 +3449,7 @@
     {
       "name": "svc-hris",
       "type": "typescript-microservice",
-      "description": "HR Information System bridge \u2014 syncs employee and organisation data from external HRIS providers",
+      "description": "HR Information System bridge — syncs employee and organisation data from external HRIS providers",
       "endpoints": [
         {
           "id": "api-get-hris-integrations",
@@ -2353,7 +3461,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-connect-hris-integration",
@@ -2373,7 +3491,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-disconnect-hris-integration",
@@ -2400,7 +3528,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-sync-hris-integration",
@@ -2427,7 +3565,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-preview-hris-sync",
@@ -2447,7 +3595,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-apply-hris-sync",
@@ -2474,7 +3632,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-get-hris-fields",
@@ -2494,7 +3662,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-update-hris-fields",
@@ -2521,7 +3699,17 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-get-hris-employees",
@@ -2541,7 +3729,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-get-kombo-link",
@@ -2553,7 +3751,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-kombo-webhook",
@@ -2573,7 +3781,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-get-hris-shops",
@@ -2585,7 +3803,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         },
         {
           "id": "api-update-hris-shop",
@@ -2612,7 +3840,17 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcHris-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-hris.{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -2636,7 +3874,7 @@
     {
       "name": "svc-intelligence",
       "type": "typescript-microservice",
-      "description": "AI-powered analysis layer \u2014 OpenAI integration for document processing and assistant features",
+      "description": "AI-powered analysis layer — OpenAI integration for document processing and assistant features",
       "endpoints": [
         {
           "id": "api-analyse",
@@ -2656,7 +3894,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcIntelligence-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-intelligence"
+            },
+            {
+              "type": "s3",
+              "name": "svc-intelligence.{env}"
+            }
+          ]
         },
         {
           "id": "api-dynamo-scan",
@@ -2676,7 +3928,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcIntelligence-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-intelligence"
+            },
+            {
+              "type": "s3",
+              "name": "svc-intelligence.{env}"
+            }
+          ]
         },
         {
           "id": "api-validate-llm-response",
@@ -2696,7 +3962,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcIntelligence-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-intelligence"
+            },
+            {
+              "type": "s3",
+              "name": "svc-intelligence.{env}"
+            }
+          ]
         },
         {
           "id": "api-get-validation-responses",
@@ -2708,7 +3988,21 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcIntelligence-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-intelligence"
+            },
+            {
+              "type": "s3",
+              "name": "svc-intelligence.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-validation-response",
@@ -2728,7 +4022,21 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcIntelligence-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-intelligence"
+            },
+            {
+              "type": "s3",
+              "name": "svc-intelligence.{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -2757,7 +4065,7 @@
     {
       "name": "svc-kpis-v2",
       "type": "typescript-microservice",
-      "description": "Real-time KPI computation and dashboarding \u2014 labour costs, productivity and turnover metrics",
+      "description": "Real-time KPI computation and dashboarding — labour costs, productivity and turnover metrics",
       "endpoints": [
         {
           "id": "api-get-activity-prediction-settings",
@@ -2769,7 +4077,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-kpis-v2"
+            }
+          ]
         },
         {
           "id": "api-upsert-activity-prediction-settings",
@@ -2789,7 +4103,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-kpis-v2"
+            }
+          ]
         },
         {
           "id": "api-get-reference-week",
@@ -2801,7 +4121,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-kpis-v2"
+            }
+          ]
         },
         {
           "id": "api-upsert-reference-week",
@@ -2821,7 +4147,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-kpis-v2"
+            }
+          ]
         },
         {
           "id": "api-get-kpis",
@@ -2833,7 +4165,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-kpis-v2"
+            }
+          ]
         },
         {
           "id": "api-create-kpis",
@@ -2853,7 +4191,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-kpis-v2"
+            }
+          ]
         },
         {
           "id": "api-update-kpis",
@@ -2880,21 +4224,27 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-kpis-v2"
+            }
+          ]
         }
       ],
       "databases": [
         {
           "type": "mongodb",
           "name": "svc-kpis-v2",
-          "description": "KPI time-series data \u2014 revenue, labour cost, hours"
+          "description": "KPI time-series data — revenue, labour cost, hours"
         }
       ]
     },
     {
       "name": "svc-trackers",
       "type": "typescript-microservice",
-      "description": "Time tracker \u2014 project and task-based time logging across the workforce",
+      "description": "Time tracker — project and task-based time logging across the workforce",
       "endpoints": [
         {
           "id": "api-activate-shop-tracker-settings",
@@ -2914,7 +4264,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-trackers"
+            }
+          ]
         },
         {
           "id": "api-list-shop-tracker-settings",
@@ -2926,7 +4282,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-trackers"
+            }
+          ]
         },
         {
           "id": "api-deactivate-shop-tracker-settings",
@@ -2946,7 +4308,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-trackers"
+            }
+          ]
         },
         {
           "id": "api-get-employee-tracker-settings",
@@ -2958,7 +4326,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-trackers"
+            }
+          ]
         },
         {
           "id": "api-upsert-employee-tracker-settings",
@@ -2978,7 +4352,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-trackers"
+            }
+          ]
         },
         {
           "id": "api-get-trackers",
@@ -2990,7 +4370,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-trackers"
+            }
+          ]
         },
         {
           "id": "api-upsert-tracker",
@@ -3010,7 +4396,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-trackers"
+            }
+          ]
         }
       ],
       "databases": [
@@ -3024,7 +4416,7 @@
     {
       "name": "svc-bff",
       "type": "typescript-microservice",
-      "description": "Backend-For-Frontend \u2014 aggregates data from multiple services into optimised frontend payloads",
+      "description": "Backend-For-Frontend — aggregates data from multiple services into optimised frontend payloads",
       "endpoints": [
         {
           "id": "api-orchestrate-documents",
@@ -3044,7 +4436,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBff-{env}"
+            }
+          ]
         },
         {
           "id": "api-bulk-update-kpis",
@@ -3064,7 +4462,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcBff-{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -3078,7 +4482,7 @@
     {
       "name": "svc-bff-planning",
       "type": "typescript-microservice",
-      "description": "Planning BFF \u2014 assembles shift scheduling data with employee context for the planning page",
+      "description": "Planning BFF — assembles shift scheduling data with employee context for the planning page",
       "endpoints": [
         {
           "id": "api-compute-auto-scheduling",
@@ -3090,7 +4494,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-bff-planning"
+            }
+          ]
         }
       ],
       "databases": [
@@ -3104,7 +4514,7 @@
     {
       "name": "svc-automatic-scheduling",
       "type": "typescript-microservice",
-      "description": "AI-powered automatic shift scheduling \u2014 generates optimal rotas based on constraints and forecasts",
+      "description": "AI-powered automatic shift scheduling — generates optimal rotas based on constraints and forecasts",
       "endpoints": [
         {
           "id": "api-get-shift-replacements",
@@ -3124,7 +4534,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-automatic-scheduling"
+            }
+          ]
         },
         {
           "id": "api-trigger-auto-scheduling",
@@ -3144,7 +4560,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-automatic-scheduling"
+            }
+          ]
         }
       ],
       "databases": [
@@ -3158,7 +4580,7 @@
     {
       "name": "svc-modularisation",
       "type": "typescript-microservice",
-      "description": "Feature module configuration \u2014 controls which product modules are enabled per account",
+      "description": "Feature module configuration — controls which product modules are enabled per account",
       "endpoints": [
         {
           "id": "api-get-modularisation",
@@ -3170,7 +4592,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcModularisation-{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -3184,7 +4612,7 @@
     {
       "name": "svc-shifts",
       "type": "typescript-microservice",
-      "description": "Shift scheduling engine \u2014 CRUD for shifts, validations and publication",
+      "description": "Shift scheduling engine — CRUD for shifts, validations and publication",
       "endpoints": [
         {
           "id": "api-get-employee-shift-metrics",
@@ -3204,7 +4632,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shifts"
+            }
+          ]
         },
         {
           "id": "api-get-employees-for-shifts",
@@ -3224,7 +4658,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shifts"
+            }
+          ]
         },
         {
           "id": "api-get-shop-and-orga-shift-metrics",
@@ -3244,7 +4684,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shifts"
+            }
+          ]
         },
         {
           "id": "api-get-shift-details",
@@ -3264,7 +4710,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-shifts"
+            }
+          ]
         }
       ],
       "databases": [
@@ -3278,7 +4730,7 @@
     {
       "name": "svc-reports",
       "type": "typescript-microservice",
-      "description": "Async report generation \u2014 exports timesheets, payroll summaries and compliance reports",
+      "description": "Async report generation — exports timesheets, payroll summaries and compliance reports",
       "endpoints": [
         {
           "id": "api-get-pam-configs",
@@ -3290,7 +4742,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-pam-config",
@@ -3310,7 +4768,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-pam-config",
@@ -3337,7 +4801,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-pam-config",
@@ -3357,7 +4827,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-variable-pay-elements-custom",
@@ -3369,7 +4845,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-variable-pay-element-custom",
@@ -3389,7 +4871,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-variable-pay-element-custom",
@@ -3416,7 +4904,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-variable-pay-element-custom",
@@ -3436,7 +4930,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-payroll-softwares",
@@ -3448,7 +4948,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-payroll-software",
@@ -3468,7 +4974,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-payroll-software",
@@ -3495,7 +5007,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-payroll-software",
@@ -3515,7 +5033,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-report-configs",
@@ -3527,7 +5051,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-report-config",
@@ -3547,7 +5077,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-report-config",
@@ -3574,7 +5110,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-report-config",
@@ -3594,7 +5136,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-column-sets",
@@ -3606,7 +5154,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-column-set",
@@ -3626,7 +5180,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-column-set",
@@ -3653,7 +5213,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-column-set",
@@ -3673,7 +5239,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcReports-{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -3687,7 +5259,7 @@
     {
       "name": "svc-enrollment",
       "type": "typescript-microservice",
-      "description": "Account onboarding orchestration \u2014 manages multi-step setup flow for new accounts",
+      "description": "Account onboarding orchestration — manages multi-step setup flow for new accounts",
       "endpoints": [
         {
           "id": "api-get-onboardings",
@@ -3699,7 +5271,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEnrollment-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-enrollment.conventions.{env}"
+            }
+          ]
         },
         {
           "id": "api-create-onboarding",
@@ -3719,7 +5301,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEnrollment-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-enrollment.conventions.{env}"
+            }
+          ]
         },
         {
           "id": "api-update-onboarding",
@@ -3746,7 +5338,17 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEnrollment-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-enrollment.conventions.{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-onboarding",
@@ -3766,7 +5368,17 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEnrollment-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-enrollment.conventions.{env}"
+            }
+          ]
         },
         {
           "id": "api-get-collective-agreements",
@@ -3778,7 +5390,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcEnrollment-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-enrollment.conventions.{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -3809,7 +5431,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcUsers-{env}"
+            },
+            {
+              "type": "postgresql",
+              "name": "svc_users"
+            }
+          ]
         },
         {
           "id": "api-sso-callback",
@@ -3829,7 +5461,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcUsers-{env}"
+            },
+            {
+              "type": "postgresql",
+              "name": "svc_users"
+            }
+          ]
         },
         {
           "id": "api-get-sso-configuration-by-organisation",
@@ -3841,7 +5483,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcUsers-{env}"
+            },
+            {
+              "type": "postgresql",
+              "name": "svc_users"
+            }
+          ]
         },
         {
           "id": "api-create-or-update-sso-configuration",
@@ -3861,7 +5513,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcUsers-{env}"
+            },
+            {
+              "type": "postgresql",
+              "name": "svc_users"
+            }
+          ]
         },
         {
           "id": "docs-swagger-api",
@@ -3873,7 +5535,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcUsers-{env}"
+            },
+            {
+              "type": "postgresql",
+              "name": "svc_users"
+            }
+          ]
         },
         {
           "id": "docs-public-swagger-api",
@@ -3885,7 +5557,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcUsers-{env}"
+            },
+            {
+              "type": "postgresql",
+              "name": "svc_users"
+            }
+          ]
         }
       ],
       "databases": [
@@ -3904,7 +5586,7 @@
     {
       "name": "svc-labour-laws",
       "type": "typescript-microservice",
-      "description": "Labour law rules engine \u2014 validates schedules against country-specific legal constraints",
+      "description": "Labour law rules engine — validates schedules against country-specific legal constraints",
       "endpoints": [
         {
           "id": "api-upsert-shop",
@@ -3924,7 +5606,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-batch-upsert-shops",
@@ -3944,7 +5632,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-labour-law-overrides",
@@ -3956,7 +5650,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-labour-law-override",
@@ -3976,7 +5676,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-labour-law-override",
@@ -4003,7 +5709,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-labour-law-override",
@@ -4023,7 +5735,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-labour-laws",
@@ -4035,7 +5753,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-labour-law",
@@ -4055,7 +5779,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-labour-law",
@@ -4082,7 +5812,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-labour-law",
@@ -4102,7 +5838,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-country-default-settings",
@@ -4114,7 +5856,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcLabourLaws-{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -4128,7 +5876,7 @@
     {
       "name": "svc-pos",
       "type": "typescript-microservice",
-      "description": "Point-of-sale integration \u2014 syncs revenue and transaction data from POS terminals for KPI forecasting",
+      "description": "Point-of-sale integration — syncs revenue and transaction data from POS terminals for KPI forecasting",
       "endpoints": [
         {
           "id": "api-get-chift-providers",
@@ -4140,7 +5888,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-handle-chift-webhook",
@@ -4160,7 +5914,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-activate-chift-integration",
@@ -4180,7 +5940,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-integrations",
@@ -4192,7 +5958,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-integration",
@@ -4212,7 +5984,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-integration",
@@ -4232,7 +6010,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-integration",
@@ -4259,7 +6043,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-integration",
@@ -4279,7 +6069,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-providers",
@@ -4291,7 +6087,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-provider",
@@ -4311,7 +6113,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-provider",
@@ -4331,7 +6139,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-provider",
@@ -4358,7 +6172,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-provider",
@@ -4378,7 +6198,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-shop-integrations",
@@ -4398,7 +6224,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-activate-shop-integration",
@@ -4425,7 +6257,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-deactivate-shop-integration",
@@ -4452,7 +6290,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-shop-sales",
@@ -4472,7 +6316,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcPos-{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -4486,7 +6336,7 @@
     {
       "name": "svc-skello-assistant",
       "type": "typescript-microservice",
-      "description": "AI assistant orchestrator \u2014 routes user queries to appropriate AI capabilities",
+      "description": "AI assistant orchestrator — routes user queries to appropriate AI capabilities",
       "endpoints": [
         {
           "id": "api-chat",
@@ -4506,7 +6356,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-skello-assistant"
+            }
+          ]
         },
         {
           "id": "api-conversation-feedback",
@@ -4533,7 +6389,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-skello-assistant"
+            }
+          ]
         },
         {
           "id": "api-chat-download",
@@ -4545,7 +6407,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-skello-assistant"
+            }
+          ]
         },
         {
           "id": "api-chat-conversations",
@@ -4557,7 +6425,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "mongodb",
+              "name": "svc-skello-assistant"
+            }
+          ]
         }
       ],
       "databases": [
@@ -4571,7 +6445,7 @@
     {
       "name": "svc-documents-esignature",
       "type": "typescript-microservice",
-      "description": "Electronic signature workflows \u2014 integrates with e-signature providers (DocuSign / Yousign)",
+      "description": "Electronic signature workflows — integrates with e-signature providers (DocuSign / Yousign)",
       "endpoints": [
         {
           "id": "api-attendance-sheet-signature-reminder",
@@ -4591,7 +6465,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsEsignature-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-esignature.{env}"
+            }
+          ]
         },
         {
           "id": "api-document-signable",
@@ -4603,7 +6487,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsEsignature-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-esignature.{env}"
+            }
+          ]
         },
         {
           "id": "api-document-signature-reminder",
@@ -4623,7 +6517,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsEsignature-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-esignature.{env}"
+            }
+          ]
         },
         {
           "id": "api-documents-status",
@@ -4635,7 +6539,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcDocumentsEsignature-{env}"
+            },
+            {
+              "type": "s3",
+              "name": "svc-esignature.{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -4659,7 +6573,7 @@
     {
       "name": "svc-workload-plan",
       "type": "typescript-microservice",
-      "description": "Workload forecasting \u2014 predicts staffing needs based on POS revenue and historical patterns",
+      "description": "Workload forecasting — predicts staffing needs based on POS revenue and historical patterns",
       "endpoints": [
         {
           "id": "api-get-workload-plans-v1",
@@ -4671,7 +6585,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcWorkloadPlan-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-workload-plan"
+            }
+          ]
         },
         {
           "id": "api-create-workload-plan-v1",
@@ -4691,7 +6615,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcWorkloadPlan-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-workload-plan"
+            }
+          ]
         },
         {
           "id": "api-get-workload-plans-v2",
@@ -4703,7 +6637,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcWorkloadPlan-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-workload-plan"
+            }
+          ]
         },
         {
           "id": "api-create-workload-plan-v2",
@@ -4723,7 +6667,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcWorkloadPlan-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-workload-plan"
+            }
+          ]
         },
         {
           "id": "api-get-workload-rules-v2",
@@ -4735,7 +6689,17 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcWorkloadPlan-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-workload-plan"
+            }
+          ]
         },
         {
           "id": "api-create-workload-rule-v2",
@@ -4755,7 +6719,17 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcWorkloadPlan-{env}"
+            },
+            {
+              "type": "mongodb",
+              "name": "svc-workload-plan"
+            }
+          ]
         }
       ],
       "databases": [
@@ -4779,7 +6753,7 @@
     {
       "name": "svc-feature-flags",
       "type": "typescript-microservice",
-      "description": "Feature flag management \u2014 controls feature rollout per account, percentage or user group",
+      "description": "Feature flag management — controls feature rollout per account, percentage or user group",
       "endpoints": [
         {
           "id": "api-get-feature-flags",
@@ -4791,7 +6765,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcFeatureFlags-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-feature-flag",
@@ -4811,7 +6791,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcFeatureFlags-{env}"
+            }
+          ]
         },
         {
           "id": "api-update-feature-flag",
@@ -4838,7 +6824,13 @@
           "response": {
             "200": "Updated",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcFeatureFlags-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-feature-flag",
@@ -4858,7 +6850,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcFeatureFlags-{env}"
+            }
+          ]
         },
         {
           "id": "api-get-feature-flags-dev",
@@ -4870,7 +6868,13 @@
           "response": {
             "200": "Success response",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcFeatureFlags-{env}"
+            }
+          ]
         },
         {
           "id": "api-create-feature-flag-dev",
@@ -4890,7 +6894,13 @@
           "response": {
             "201": "Created",
             "400": "Validation error"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcFeatureFlags-{env}"
+            }
+          ]
         },
         {
           "id": "api-delete-feature-flag-dev",
@@ -4910,7 +6920,13 @@
           "response": {
             "204": "Deleted",
             "404": "Not found"
-          }
+          },
+          "awsCalls": [
+            {
+              "type": "dynamodb",
+              "name": "svcFeatureFlags-{env}"
+            }
+          ]
         }
       ],
       "databases": [
@@ -4924,19 +6940,19 @@
     {
       "name": "superadmin",
       "type": "vue-frontend",
-      "description": "Internal admin dashboard for Skello operators \u2014 manages billing, organisations, employees and platform configuration",
+      "description": "Internal admin dashboard for Skello operators — manages billing, organisations, employees and platform configuration",
       "endpoints": []
     },
     {
       "name": "skello-app",
       "type": "rails-monolith",
-      "description": "Core Rails monolith \u2014 the main backend serving the Vue frontend, handling scheduling, payroll, HR and billing",
+      "description": "Core Rails monolith — the main backend serving the Vue frontend, handling scheduling, payroll, HR and billing",
       "endpoints": [],
       "databases": [
         {
           "type": "postgresql",
           "name": "skello_production",
-          "description": "Main relational database \u2014 all core Skello data"
+          "description": "Main relational database — all core Skello data"
         },
         {
           "type": "redis",
@@ -4963,7 +6979,7 @@
     {
       "name": "skello-app-front",
       "type": "vue-frontend",
-      "description": "Main Vue 2 frontend \u2014 scheduling, HR, reports, requests and planning for Skello operators",
+      "description": "Main Vue 2 frontend — scheduling, HR, reports, requests and planning for Skello operators",
       "endpoints": []
     }
   ],
@@ -5476,7 +7492,7 @@
       "from": "skello-app",
       "to": "svc-requests",
       "sdkPackage": "Microservices::RequestService (HTTParty)",
-      "description": "Manage leave requests on behalf of the mobile client \u2014 create, update and delete",
+      "description": "Manage leave requests on behalf of the mobile client — create, update and delete",
       "usedEndpoints": [
         "api-get-leave-requests",
         "api-create-leave-request",
@@ -5487,7 +7503,7 @@
       "from": "skello-app",
       "to": "svc-shops",
       "sdkPackage": "Microservices::ShopsService (HTTParty)",
-      "description": "Manage shop missions \u2014 fetch, purge and retrieve by ID",
+      "description": "Manage shop missions — fetch, purge and retrieve by ID",
       "usedEndpoints": [
         "api-get-organisations-config",
         "api-get-shops"
@@ -5526,7 +7542,7 @@
       "from": "skello-app-front",
       "to": "skello-app",
       "sdkPackage": "axios / @skelloapp/client-http-lib",
-      "description": "Core Rails API \u2014 auth, scheduling data, users, organisations and all legacy endpoints",
+      "description": "Core Rails API — auth, scheduling data, users, organisations and all legacy endpoints",
       "usedEndpoints": []
     },
     {
@@ -5543,7 +7559,7 @@
       "from": "skello-app-front",
       "to": "svc-bff",
       "sdkPackage": "@skelloapp/svc-bff-sdk",
-      "description": "BFF orchestration \u2014 batch document operations and KPI aggregation",
+      "description": "BFF orchestration — batch document operations and KPI aggregation",
       "usedEndpoints": [
         "api-orchestrate-documents",
         "api-bulk-update-kpis"
@@ -5622,7 +7638,7 @@
       "from": "skello-app-front",
       "to": "svc-kpis-v2",
       "sdkPackage": "@skelloapp/svc-kpis-v2-sdk",
-      "description": "Load KPI dashboards \u2014 revenue, labour cost, activity predictions",
+      "description": "Load KPI dashboards — revenue, labour cost, activity predictions",
       "usedEndpoints": [
         "api-get-activity-prediction-settings",
         "api-upsert-activity-prediction-settings"
@@ -5758,27 +7774,75 @@
         {
           "from": "skello-app-front",
           "to": "skello-app",
-          "action": "POST /v3/requests \u2014 submit leave request"
+          "action": "POST /v3/requests — submit leave request"
         },
         {
           "from": "skello-app",
           "to": "svc-requests",
-          "action": "POST /requests \u2014 persist leave request"
+          "action": "POST /requests — persist leave request"
         },
         {
           "from": "skello-app",
           "to": "svc-events",
-          "action": "POST /events \u2014 log audit event"
+          "action": "POST /events — log audit event"
         },
         {
           "from": "skello-app",
           "to": "svc-communications-v2",
-          "action": "SQS email-high \u2014 notify manager"
+          "action": "SQS email-high — notify manager"
         },
         {
           "from": "skello-app-front",
           "to": "svc-requests",
-          "action": "GET /requests \u2014 refresh request list"
+          "action": "GET /requests — refresh request list"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "pg-requests",
+          "type": "postgresql",
+          "label": "requests-db",
+          "description": "Stores all leave requests"
+        },
+        {
+          "id": "dynamo-events",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Audit event store"
+        },
+        {
+          "id": "s3-events",
+          "type": "s3",
+          "label": "svc-events.{env}",
+          "description": "Event payload archive"
+        },
+        {
+          "id": "sqs-email-high",
+          "type": "sqs",
+          "label": "email-high",
+          "description": "High-priority email queue"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-requests",
+          "to": "pg-requests",
+          "label": "write"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events",
+          "label": "write"
+        },
+        {
+          "from": "svc-events",
+          "to": "s3-events",
+          "label": "archive"
+        },
+        {
+          "from": "svc-communications-v2",
+          "to": "sqs-email-high",
+          "label": "enqueue"
         }
       ]
     },
@@ -5790,22 +7854,59 @@
         {
           "from": "skello-app-front",
           "to": "skello-app",
-          "action": "POST /v3/documents \u2014 request document"
+          "action": "POST /v3/documents — request document"
         },
         {
           "from": "skello-app",
           "to": "svc-documents-v2",
-          "action": "POST /documents/generate \u2014 generate PDF"
+          "action": "POST /documents/generate — generate PDF"
         },
         {
           "from": "skello-app",
           "to": "svc-documents-esignature",
-          "action": "POST /esignature \u2014 start signature flow"
+          "action": "POST /esignature — start signature flow"
         },
         {
           "from": "skello-app-front",
           "to": "svc-documents-v2",
-          "action": "GET /documents/:id \u2014 poll signature status"
+          "action": "GET /documents/:id — poll signature status"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "s3-docs",
+          "type": "s3",
+          "label": "documents-pdf.{env}",
+          "description": "PDF storage bucket"
+        },
+        {
+          "id": "lambda-sign",
+          "type": "lambda",
+          "label": "esignature-trigger",
+          "description": "Invokes DocuSign API"
+        },
+        {
+          "id": "pg-docs",
+          "type": "postgresql",
+          "label": "documents-db",
+          "description": "Document metadata store"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-documents-v2",
+          "to": "s3-docs",
+          "label": "store PDF"
+        },
+        {
+          "from": "svc-documents-v2",
+          "to": "pg-docs",
+          "label": "write metadata"
+        },
+        {
+          "from": "svc-documents-esignature",
+          "to": "lambda-sign",
+          "label": "invoke"
         }
       ]
     },
@@ -5817,76 +7918,933 @@
         {
           "from": "skello-app-front",
           "to": "svc-bff-planning",
-          "action": "POST /auto-scheduling \u2014 request AI schedule"
+          "action": "POST /auto-scheduling — request AI schedule"
         },
         {
           "from": "svc-bff-planning",
           "to": "svc-automatic-scheduling",
-          "action": "POST /trigger \u2014 compute optimised shifts"
+          "action": "POST /trigger — compute optimised shifts"
         },
         {
           "from": "skello-app-front",
           "to": "skello-app",
-          "action": "POST /v3/shifts \u2014 save generated planning"
+          "action": "POST /v3/shifts — save generated planning"
         },
         {
           "from": "skello-app",
           "to": "svc-events",
-          "action": "POST /events \u2014 log planning event"
+          "action": "POST /events — log planning event"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "lambda-auto-schedule",
+          "type": "lambda",
+          "label": "auto-schedule-compute",
+          "description": "ML optimisation job"
+        },
+        {
+          "id": "kinesis-shifts",
+          "type": "kinesis",
+          "label": "shifts-stream",
+          "description": "Real-time shift event stream"
+        },
+        {
+          "id": "dynamo-events-planning",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Planning audit events"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-automatic-scheduling",
+          "to": "lambda-auto-schedule",
+          "label": "invoke ML job"
+        },
+        {
+          "from": "svc-automatic-scheduling",
+          "to": "kinesis-shifts",
+          "label": "publish shifts"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-planning",
+          "label": "write"
         }
       ]
     },
     {
       "id": "employee-hris-sync",
       "name": "Employee HRIS Sync",
-      "description": "The frontend updates an employee profile. svc-employees pushes the change to the connected HRIS system and emits an audit event, then the frontend refreshes the profile.",
+      "description": "A manager updates an employee profile. The change is synced to the HRIS, an event is emitted, and the frontend refreshes the profile.",
       "steps": [
         {
           "from": "skello-app-front",
           "to": "svc-employees",
-          "action": "PUT /employees/:id \u2014 update employee profile"
+          "action": "PUT /employees/:id — update employee profile"
         },
         {
           "from": "svc-employees",
           "to": "svc-hris",
-          "action": "POST /sync \u2014 push employee to HRIS"
+          "action": "POST /sync — push employee to HRIS"
         },
         {
           "from": "svc-employees",
           "to": "svc-events",
-          "action": "POST /events \u2014 emit employee.updated event"
+          "action": "POST /events — emit employee.updated event"
         },
         {
           "from": "skello-app-front",
           "to": "svc-employees",
-          "action": "GET /employees/:id \u2014 fetch updated profile"
+          "action": "GET /employees/:id — fetch updated profile"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "cdc-employees",
+          "type": "cdc",
+          "label": "employees-cdc",
+          "description": "Change Data Capture on employees table"
+        },
+        {
+          "id": "pg-employees",
+          "type": "postgresql",
+          "label": "employees-db",
+          "description": "Core employee store"
+        },
+        {
+          "id": "dynamo-events-hris",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "HRIS audit events"
+        },
+        {
+          "id": "mongo-hris",
+          "type": "mongodb",
+          "label": "hris-mirror",
+          "description": "Denormalised HRIS read model"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-employees",
+          "to": "pg-employees",
+          "label": "write"
+        },
+        {
+          "from": "pg-employees",
+          "to": "cdc-employees",
+          "label": "change event"
+        },
+        {
+          "from": "svc-hris",
+          "to": "mongo-hris",
+          "label": "sync"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-hris",
+          "label": "write"
         }
       ]
     },
     {
       "id": "bff-dashboard-load",
       "name": "BFF Dashboard Aggregation",
-      "description": "The frontend requests the home dashboard through svc-bff which fans out to svc-kpis-v2 for metrics and svc-documents-v2 for recent documents, then returns an aggregated response.",
+      "description": "The frontend requests dashboard data. The main BFF fans out to svc-kpis-v2, svc-documents-v2, and svc-intelligence, then aggregates the responses.",
       "steps": [
         {
           "from": "skello-app-front",
           "to": "svc-bff",
-          "action": "GET /dashboard \u2014 request dashboard data"
+          "action": "GET /dashboard — request dashboard data"
         },
         {
           "from": "svc-bff",
           "to": "svc-kpis-v2",
-          "action": "GET /kpis \u2014 fetch activity KPIs"
+          "action": "GET /kpis — fetch activity KPIs"
         },
         {
           "from": "svc-bff",
           "to": "svc-documents-v2",
-          "action": "GET /documents \u2014 fetch recent documents"
+          "action": "GET /documents — fetch recent documents"
         },
         {
           "from": "skello-app-front",
           "to": "svc-intelligence",
-          "action": "GET /analyse \u2014 load workforce insights"
+          "action": "GET /analyse — load workforce insights"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "pg-kpis",
+          "type": "postgresql",
+          "label": "kpis-db",
+          "description": "KPI time-series data"
+        },
+        {
+          "id": "kinesis-kpis",
+          "type": "kinesis",
+          "label": "kpis-stream",
+          "description": "Real-time KPI event stream"
+        },
+        {
+          "id": "mongo-intelligence",
+          "type": "mongodb",
+          "label": "intelligence-db",
+          "description": "Workforce analytics store"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-kpis-v2",
+          "to": "pg-kpis",
+          "label": "read"
+        },
+        {
+          "from": "svc-kpis-v2",
+          "to": "kinesis-kpis",
+          "label": "consume"
+        },
+        {
+          "from": "svc-intelligence",
+          "to": "mongo-intelligence",
+          "label": "read"
+        }
+      ]
+    },
+    {
+      "id": "shift-creation",
+      "name": "Shift Creation",
+      "description": "A planner creates a shift on the planning page. The monolith validates it against labour laws, persists it, pushes metrics to svc-shifts, and emits an async event so the employee gets notified.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "svc-bff-planning",
+          "action": "GET /planning — load planning context (employees, shops)"
+        },
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "POST /v3/shifts — create new shift"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-labour-laws",
+          "action": "POST /validate — check labour law compliance"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-shifts",
+          "action": "POST /shift-metrics/employee — update shift metrics"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events — emit shift.created event"
+        },
+        {
+          "from": "svc-events",
+          "to": "svc-communications-v2",
+          "action": "SQS email-high — notify employee of new shift"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "pg-skello-shifts",
+          "type": "postgresql",
+          "label": "skello_production",
+          "description": "Persists shifts in the monolith"
+        },
+        {
+          "id": "dynamo-labour-laws",
+          "type": "dynamodb",
+          "label": "svcLabourLaws-{env}",
+          "description": "Labour law rule sets and shop compliance configs"
+        },
+        {
+          "id": "mongo-shifts",
+          "type": "mongodb",
+          "label": "svc-shifts",
+          "description": "Aggregated shift metrics store"
+        },
+        {
+          "id": "sqs-shift-events",
+          "type": "sqs",
+          "label": "skello-sqs-events",
+          "description": "Async event queue for shift lifecycle events"
+        },
+        {
+          "id": "dynamo-events-shift",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Audit event store for shift.created"
+        },
+        {
+          "id": "lambda-notify-shift",
+          "type": "lambda",
+          "label": "shift-notify-dispatch",
+          "description": "Dispatches employee shift notification emails"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "skello-app",
+          "to": "pg-skello-shifts",
+          "label": "write shift"
+        },
+        {
+          "from": "svc-labour-laws",
+          "to": "dynamo-labour-laws",
+          "label": "read rules"
+        },
+        {
+          "from": "svc-shifts",
+          "to": "mongo-shifts",
+          "label": "write metrics"
+        },
+        {
+          "from": "skello-app",
+          "to": "sqs-shift-events",
+          "label": "enqueue"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-shift",
+          "label": "write"
+        },
+        {
+          "from": "svc-communications-v2",
+          "to": "lambda-notify-shift",
+          "label": "invoke"
+        }
+      ]
+    },
+    {
+      "id": "shift-deletion",
+      "name": "Shift Deletion",
+      "description": "A planner deletes a shift on the planning page. The monolith validates the deletion against labour laws, removes the shift, recalculates metrics in svc-shifts, and emits an async event so the employee gets notified.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "DELETE /v3/shifts/:id — delete shift"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-labour-laws",
+          "action": "POST /validate — check deletion is labour-law compliant"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-shifts",
+          "action": "DELETE /shift-metrics/employee/:id — recalculate shift metrics"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events — emit shift.deleted event"
+        },
+        {
+          "from": "svc-events",
+          "to": "svc-communications-v2",
+          "action": "SQS email-high — notify employee of deleted shift"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "pg-skello-shifts-del",
+          "type": "postgresql",
+          "label": "skello_production",
+          "description": "Removes the shift row from the monolith"
+        },
+        {
+          "id": "dynamo-labour-laws-del",
+          "type": "dynamodb",
+          "label": "svcLabourLaws-{env}",
+          "description": "Labour law rule sets checked before deletion"
+        },
+        {
+          "id": "mongo-shifts-del",
+          "type": "mongodb",
+          "label": "svc-shifts",
+          "description": "Aggregated shift metrics store — recalculated after removal"
+        },
+        {
+          "id": "sqs-shift-events-del",
+          "type": "sqs",
+          "label": "skello-sqs-events",
+          "description": "Async event queue for shift lifecycle events"
+        },
+        {
+          "id": "dynamo-events-shift-del",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Audit event store for shift.deleted"
+        },
+        {
+          "id": "lambda-notify-shift-del",
+          "type": "lambda",
+          "label": "shift-notify-dispatch",
+          "description": "Dispatches employee shift cancellation notification emails"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "skello-app",
+          "to": "pg-skello-shifts-del",
+          "label": "delete shift"
+        },
+        {
+          "from": "svc-labour-laws",
+          "to": "dynamo-labour-laws-del",
+          "label": "read rules"
+        },
+        {
+          "from": "svc-shifts",
+          "to": "mongo-shifts-del",
+          "label": "recalculate metrics"
+        },
+        {
+          "from": "skello-app",
+          "to": "sqs-shift-events-del",
+          "label": "enqueue"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-shift-del",
+          "label": "write"
+        },
+        {
+          "from": "svc-communications-v2",
+          "to": "lambda-notify-shift-del",
+          "label": "invoke"
+        }
+      ]
+    },
+    {
+      "id": "shift-update",
+      "name": "Shift Update",
+      "description": "A planner edits an existing shift. The monolith validates the change against labour laws, persists it, recalculates metrics in svc-shifts, and emits an async event so the employee gets notified of the change.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "PATCH /v3/shifts/:id — update shift"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-labour-laws",
+          "action": "POST /validate — check updated shift is labour-law compliant"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-shifts",
+          "action": "PATCH /shift-metrics/employee/:id — recalculate shift metrics"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events — emit shift.updated event"
+        },
+        {
+          "from": "svc-events",
+          "to": "svc-communications-v2",
+          "action": "SQS email-high — notify employee of updated shift"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "pg-skello-shifts-upd",
+          "type": "postgresql",
+          "label": "skello_production",
+          "description": "Updates the shift row in the monolith"
+        },
+        {
+          "id": "dynamo-labour-laws-upd",
+          "type": "dynamodb",
+          "label": "svcLabourLaws-{env}",
+          "description": "Labour law rule sets checked before update"
+        },
+        {
+          "id": "mongo-shifts-upd",
+          "type": "mongodb",
+          "label": "svc-shifts",
+          "description": "Aggregated shift metrics store — recalculated after update"
+        },
+        {
+          "id": "sqs-shift-events-upd",
+          "type": "sqs",
+          "label": "skello-sqs-events",
+          "description": "Async event queue for shift lifecycle events"
+        },
+        {
+          "id": "dynamo-events-shift-upd",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Audit event store for shift.updated"
+        },
+        {
+          "id": "lambda-notify-shift-upd",
+          "type": "lambda",
+          "label": "shift-notify-dispatch",
+          "description": "Dispatches employee shift change notification emails"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "skello-app",
+          "to": "pg-skello-shifts-upd",
+          "label": "update shift"
+        },
+        {
+          "from": "svc-labour-laws",
+          "to": "dynamo-labour-laws-upd",
+          "label": "read rules"
+        },
+        {
+          "from": "svc-shifts",
+          "to": "mongo-shifts-upd",
+          "label": "recalculate metrics"
+        },
+        {
+          "from": "skello-app",
+          "to": "sqs-shift-events-upd",
+          "label": "enqueue"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-shift-upd",
+          "label": "write"
+        },
+        {
+          "from": "svc-communications-v2",
+          "to": "lambda-notify-shift-upd",
+          "label": "invoke"
+        }
+      ]
+    },
+    {
+      "id": "shift-publication",
+      "name": "Shift Publication",
+      "description": "A planner publishes the week’s planning. The monolith marks all draft shifts as published and bulk-enqueues employee notifications via SQS, with the event bus recording a planning.published audit event.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "POST /v3/shifts/publish — publish all draft shifts for the week"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events — emit planning.published event"
+        },
+        {
+          "from": "svc-events",
+          "to": "svc-communications-v2",
+          "action": "SQS email-high — bulk notify employees of published planning"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "pg-skello-shifts-pub",
+          "type": "postgresql",
+          "label": "skello_production",
+          "description": "Bulk-updates shift rows to published state"
+        },
+        {
+          "id": "sqs-shift-events-pub",
+          "type": "sqs",
+          "label": "skello-sqs-events",
+          "description": "Async event queue — one message per employee to notify"
+        },
+        {
+          "id": "dynamo-events-pub",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Audit event store for planning.published"
+        },
+        {
+          "id": "lambda-notify-pub",
+          "type": "lambda",
+          "label": "shift-notify-dispatch",
+          "description": "Dispatches bulk published-planning notification emails"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "skello-app",
+          "to": "pg-skello-shifts-pub",
+          "label": "bulk publish"
+        },
+        {
+          "from": "skello-app",
+          "to": "sqs-shift-events-pub",
+          "label": "bulk enqueue"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-pub",
+          "label": "write"
+        },
+        {
+          "from": "svc-communications-v2",
+          "to": "lambda-notify-pub",
+          "label": "invoke"
+        }
+      ]
+    },
+    {
+      "id": "leave-request-cancellation",
+      "name": "Leave Request Cancellation",
+      "description": "An employee or manager cancels a previously submitted leave request. The monolith removes it from svc-requests, logs an audit event, and notifies the other party via email.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "DELETE /v3/requests/:id — cancel leave request"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-requests",
+          "action": "DELETE /leave-requests/:id — remove leave request"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events — emit request.cancelled event"
+        },
+        {
+          "from": "svc-events",
+          "to": "svc-communications-v2",
+          "action": "SQS email-high — notify manager or employee of cancellation"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "pg-requests-cancel",
+          "type": "postgresql",
+          "label": "svc_requests",
+          "description": "Removes the leave request row"
+        },
+        {
+          "id": "sqs-request-cancel",
+          "type": "sqs",
+          "label": "svc-requests-sns",
+          "description": "SNS-backed queue for request lifecycle events"
+        },
+        {
+          "id": "dynamo-events-req-cancel",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Audit event store for request.cancelled"
+        },
+        {
+          "id": "lambda-notify-req-cancel",
+          "type": "lambda",
+          "label": "request-notify-dispatch",
+          "description": "Dispatches leave request cancellation notification"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-requests",
+          "to": "pg-requests-cancel",
+          "label": "delete"
+        },
+        {
+          "from": "svc-requests",
+          "to": "sqs-request-cancel",
+          "label": "enqueue"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-req-cancel",
+          "label": "write"
+        },
+        {
+          "from": "svc-communications-v2",
+          "to": "lambda-notify-req-cancel",
+          "label": "invoke"
+        }
+      ]
+    },
+    {
+      "id": "workload-plan-consultation",
+      "name": "Workload Plan Consultation",
+      "description": "A planner opens the workload forecasting view. The planning BFF fetches the current workload plan and rules from svc-workload-plan to display staffing forecasts alongside the planning grid.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "svc-bff-planning",
+          "action": "GET /planning — load planning context including workload forecast"
+        },
+        {
+          "from": "svc-bff-planning",
+          "to": "svc-workload-plan",
+          "action": "GET /workload-plans — fetch active workload plan"
+        },
+        {
+          "from": "svc-bff-planning",
+          "to": "svc-workload-plan",
+          "action": "GET /v2/workload-rules — fetch staffing rules"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "dynamo-workload",
+          "type": "dynamodb",
+          "label": "svcWorkloadPlan-{env}",
+          "description": "Workload plans and forecasting data"
+        },
+        {
+          "id": "sqs-workload-dlq",
+          "type": "sqs",
+          "label": "svc-workload-plan-dlq",
+          "description": "DLQ for failed workload plan processing jobs"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-workload-plan",
+          "to": "dynamo-workload",
+          "label": "read"
+        },
+        {
+          "from": "svc-workload-plan",
+          "to": "sqs-workload-dlq",
+          "label": "DLQ"
+        }
+      ]
+    },
+    {
+      "id": "leave-request-approval",
+      "name": "Leave Request Approval / Rejection",
+      "description": "A manager approves or rejects an employee’s leave request. The monolith updates the request status in svc-requests, logs an audit event, and notifies the employee of the decision via email.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "PATCH /v3/requests/:id — approve or reject leave request"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-requests",
+          "action": "PATCH /leave-requests/:id — update request status"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events — emit request.approved or request.rejected event"
+        },
+        {
+          "from": "svc-events",
+          "to": "svc-communications-v2",
+          "action": "SQS email-high — notify employee of manager decision"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "pg-requests-approval",
+          "type": "postgresql",
+          "label": "svc_requests",
+          "description": "Persists the updated request status (approved / rejected)"
+        },
+        {
+          "id": "sqs-request-approval",
+          "type": "sqs",
+          "label": "svc-requests-sns",
+          "description": "SNS-backed queue for request lifecycle events"
+        },
+        {
+          "id": "dynamo-events-req-approval",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Audit event store for request.approved / request.rejected"
+        },
+        {
+          "id": "lambda-notify-req-approval",
+          "type": "lambda",
+          "label": "request-notify-dispatch",
+          "description": "Dispatches leave request decision notification to the employee"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-requests",
+          "to": "pg-requests-approval",
+          "label": "update status"
+        },
+        {
+          "from": "svc-requests",
+          "to": "sqs-request-approval",
+          "label": "enqueue"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-req-approval",
+          "label": "write"
+        },
+        {
+          "from": "svc-communications-v2",
+          "to": "lambda-notify-req-approval",
+          "label": "invoke"
+        }
+      ]
+    },
+    {
+      "id": "workload-plan-creation",
+      "name": "Workload Plan Creation",
+      "description": "A planner creates a new workload forecast. The frontend posts directly to svc-workload-plan, which pulls revenue data from svc-pos to calibrate the staffing forecast before persisting the plan.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "svc-workload-plan",
+          "action": "POST /workload-plans — create new workload plan"
+        },
+        {
+          "from": "svc-workload-plan",
+          "to": "svc-pos",
+          "action": "GET /revenue — fetch POS revenue data to calibrate forecast"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "dynamo-workload-create",
+          "type": "dynamodb",
+          "label": "svcWorkloadPlan-{env}",
+          "description": "Persists the new workload plan and its forecast data"
+        },
+        {
+          "id": "sqs-workload-create-dlq",
+          "type": "sqs",
+          "label": "svc-workload-plan-dlq",
+          "description": "DLQ for failed workload plan processing jobs"
+        },
+        {
+          "id": "dynamo-pos-create",
+          "type": "dynamodb",
+          "label": "svcPos-{env}",
+          "description": "POS revenue data used to calibrate staffing forecast"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-workload-plan",
+          "to": "dynamo-workload-create",
+          "label": "write plan"
+        },
+        {
+          "from": "svc-workload-plan",
+          "to": "sqs-workload-create-dlq",
+          "label": "DLQ"
+        },
+        {
+          "from": "svc-pos",
+          "to": "dynamo-pos-create",
+          "label": "read revenue"
+        }
+      ]
+    },
+    {
+      "id": "shift-replacement-search",
+      "name": "Shift Replacement Search",
+      "description": "A planner searches for a replacement for an uncovered shift. The frontend queries svc-automatic-scheduling which ranks candidates by availability and contract data from svc-employees. The planner confirms an offer via the monolith, which emits an event and notifies the candidate by email.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "svc-automatic-scheduling",
+          "action": "POST /shift-replacements — find replacement candidates for uncovered shift"
+        },
+        {
+          "from": "svc-automatic-scheduling",
+          "to": "svc-employees",
+          "action": "GET /employees — fetch availability and contract data to rank candidates"
+        },
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "POST /v3/shifts/replacements — confirm offer to selected candidate"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events — emit shift.replacement-offered event"
+        },
+        {
+          "from": "svc-events",
+          "to": "svc-communications-v2",
+          "action": "SQS email-high — notify candidate of replacement offer"
+        }
+      ],
+      "infraNodes": [
+        {
+          "id": "lambda-replacement-rank",
+          "type": "lambda",
+          "label": "shift-replacement-rank",
+          "description": "ML job ranking replacement candidates by availability, contract and proximity"
+        },
+        {
+          "id": "pg-employees-replacement",
+          "type": "postgresql",
+          "label": "svcEmployees-{env}",
+          "description": "Employee contracts and availability — read to rank candidates"
+        },
+        {
+          "id": "pg-skello-replacement",
+          "type": "postgresql",
+          "label": "skello_production",
+          "description": "Records the replacement offer on the shift"
+        },
+        {
+          "id": "dynamo-events-replacement",
+          "type": "dynamodb",
+          "label": "svcEvents-{env}",
+          "description": "Audit event store for shift.replacement-offered"
+        },
+        {
+          "id": "sqs-replacement",
+          "type": "sqs",
+          "label": "skello-sqs-events",
+          "description": "Async event queue for shift replacement lifecycle"
+        },
+        {
+          "id": "lambda-notify-replacement",
+          "type": "lambda",
+          "label": "shift-notify-dispatch",
+          "description": "Dispatches replacement offer notification to the candidate"
+        }
+      ],
+      "infraEdges": [
+        {
+          "from": "svc-automatic-scheduling",
+          "to": "lambda-replacement-rank",
+          "label": "invoke ranking"
+        },
+        {
+          "from": "svc-employees",
+          "to": "pg-employees-replacement",
+          "label": "read contracts"
+        },
+        {
+          "from": "skello-app",
+          "to": "pg-skello-replacement",
+          "label": "record offer"
+        },
+        {
+          "from": "skello-app",
+          "to": "sqs-replacement",
+          "label": "enqueue"
+        },
+        {
+          "from": "svc-events",
+          "to": "dynamo-events-replacement",
+          "label": "write"
+        },
+        {
+          "from": "svc-communications-v2",
+          "to": "lambda-notify-replacement",
+          "label": "invoke"
         }
       ]
     }

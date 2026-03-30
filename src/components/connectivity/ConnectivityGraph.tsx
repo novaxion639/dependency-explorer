@@ -43,9 +43,10 @@ interface Props {
   map: ConnectivityMap
   selectedService: string | null
   onSelectService: (name: string) => void
+  onOpenFlows: (serviceName: string) => void
 }
 
-function FlowInner({ map, selectedService, onSelectService }: Props) {
+function FlowInner({ map, selectedService, onOpenFlows }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -76,11 +77,10 @@ function FlowInner({ map, selectedService, onSelectService }: Props) {
   const onNodeClick: NodeMouseHandler = useCallback(
     (_evt, node) => {
       if (node.type === 'databaseNode') return
-      if (node.id !== selectedService) {
-        onSelectService(node.id)
-      }
+      // Always open the flows modal on click — sidebar handles selection
+      onOpenFlows(node.id)
     },
-    [selectedService, onSelectService],
+    [onOpenFlows],
   )
 
   const onPaneClick = useCallback(() => setPopup(null), [])

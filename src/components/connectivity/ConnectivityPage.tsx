@@ -1,15 +1,21 @@
 import { useState } from 'react'
 import rawMap from '../../data/connectivity-map.json'
-import type { ConnectivityMap } from '../../types-connectivity'
+import type { ConnectivityMap, ServiceFlow } from '../../types-connectivity'
 import { ServiceSidebar } from './ServiceSidebar'
 import { ConnectivityGraph } from './ConnectivityGraph'
 import { FlowsPanel } from './FlowsPanel'
+import { FlowListModal } from './FlowListModal'
+import { FlowGraphModal } from './FlowGraphModal'
 
 const map = rawMap as unknown as ConnectivityMap
 
 export function ConnectivityPage() {
   const [selectedService, setSelectedService] = useState<string | null>(null)
   const [sidebarSearch, setSidebarSearch] = useState('')
+
+  // Flow modal state: null = closed, string = list open for service, ServiceFlow = graph open
+  const [flowModalService, setFlowModalService] = useState<string | null>(null)
+  const [selectedFlow, setSelectedFlow] = useState<ServiceFlow | null>(null)
 
   const selected = selectedService
     ? map.services.find(s => s.name === selectedService)
@@ -46,7 +52,7 @@ export function ConnectivityPage() {
               <Pill label="endpoints" count={selected.endpoints.length} color="#6366f1" />
             </div>
             <div style={{ fontSize: 11, color: '#3e4363' }}>
-              Click an edge to see endpoint details
+              Click a node to explore its flows · Click an edge for endpoint details
             </div>
           </div>
         )}
@@ -55,6 +61,10 @@ export function ConnectivityPage() {
           map={map}
           selectedService={selectedService}
           onSelectService={setSelectedService}
+          onOpenFlows={name => {
+            setFlowModalService(name)
+            setSelectedFlow(null)
+          }}
         />
 
         {selectedService && (
@@ -63,9 +73,34 @@ export function ConnectivityPage() {
             selectedService={selectedService}
             map={map}
             onSelectService={setSelectedService}
+            onOpenFlow={flow => setSelectedFlow(flow)}
           />
         )}
       </div>
+
+      {/* Flow list modal */}
+      {flowModalService && !selectedFlow && (
+        <FlowListModal
+          serviceName={flowModalService}
+          flows={map.flows ?? []}
+          map={map}
+          onSelectFlow={flow => setSelectedFlow(flow)}
+          onClose={() => setFlowModalService(null)}
+        />
+      )}
+
+      {/* Flow graph modal */}
+      {selectedFlow && (
+        <FlowGraphModal
+          flow={selectedFlow}
+          map={map}
+          onBack={() => setSelectedFlow(null)}
+          onClose={() => {
+            setSelectedFlow(null)
+            setFlowModalService(null)
+          }}
+        />
+      )}
     </div>
   )
 }

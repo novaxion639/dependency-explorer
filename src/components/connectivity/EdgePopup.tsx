@@ -1,4 +1,5 @@
 import type { ConnectivityMap, ServiceConnection, ServiceEndpoint } from '../../types-connectivity'
+import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const METHOD_COLOR: Record<string, string> = {
   GET: '#10b981',
@@ -84,6 +85,23 @@ export function EdgePopup({ connection, map, position, onSeeMore, onClose }: Pro
                 <code style={{ fontSize: 11, color: '#94a3b8' }}>{ep.path}</code>
               </div>
               <div style={{ fontSize: 11, color: '#64748b', marginTop: 2, paddingLeft: 50 }}>{ep.description}</div>
+              {ep.awsCalls && ep.awsCalls.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4, paddingLeft: 50 }}>
+                  {ep.awsCalls.map((c, i) => {
+                    const meta = DB_COLORS[c.type] ?? { color: '#64748b', icon: '💾', label: c.type }
+                    return (
+                      <span key={i} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 3,
+                        fontSize: 9, padding: '1px 5px', borderRadius: 3,
+                        background: meta.color + '18', border: `1px solid ${meta.color}44`,
+                        color: meta.color,
+                      }}>
+                        {meta.icon} {c.name}
+                      </span>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </div>

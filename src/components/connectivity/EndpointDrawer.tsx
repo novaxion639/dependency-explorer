@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { ServiceEndpoint, HttpMethod } from '../../types-connectivity'
+import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const METHOD_COLOR: Record<HttpMethod, string> = {
   GET: '#10b981',
@@ -77,6 +78,29 @@ export function EndpointDrawer({ serviceName, endpoints, onClose }: Props) {
               {/* Accordion body */}
               {isOpen && (
                 <div style={{ padding: '0 16px 14px 16px' }}>
+                  {/* AWS calls */}
+                  {ep.awsCalls && ep.awsCalls.length > 0 && (
+                    <div style={{ marginBottom: 10 }}>
+                      <Label>AWS resources</Label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                        {ep.awsCalls.map((c, i) => {
+                          const meta = DB_COLORS[c.type] ?? { color: '#64748b', icon: '💾', label: c.type }
+                          return (
+                            <span key={i} style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 4,
+                              fontSize: 11, padding: '2px 7px', borderRadius: 4,
+                              background: meta.color + '18', border: `1px solid ${meta.color}44`,
+                              color: meta.color,
+                            }}>
+                              {meta.icon} <span style={{ fontWeight: 600 }}>{meta.label}</span>
+                              <span style={{ color: meta.color + 'aa', fontSize: 10 }}>{c.name}</span>
+                            </span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Description */}
                   <div style={{ marginBottom: 10 }}>
                     <Label>Description</Label>
