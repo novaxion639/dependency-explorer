@@ -1,0 +1,1790 @@
+[
+  {
+    "service": "svc-events",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiEventCreate",
+        "path": "/events",
+        "method": "POST",
+        "description": "Create a new event",
+        "authorizer": null
+      },
+      {
+        "functionName": "GetEventsApi",
+        "path": "/events",
+        "method": "GET",
+        "description": "Get events",
+        "authorizer": null
+      },
+      {
+        "functionName": "ApiSwaggerIndex",
+        "path": "/",
+        "method": "GET",
+        "description": "Swagger index",
+        "authorizer": null
+      },
+      {
+        "functionName": "ApiSwaggerDocs",
+        "path": "/docs.json",
+        "method": "GET",
+        "description": "Swagger docs JSON",
+        "authorizer": null
+      },
+      {
+        "functionName": "apiGetActivityLogsLambda",
+        "path": "/activity-logs",
+        "method": "GET",
+        "description": "Get activity logs",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "apiTriggerDownloadActivityLogsLambda",
+        "path": "/activity-logs/download",
+        "method": "POST",
+        "description": "Trigger download of activity logs",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-communications-v2",
+    "source": "serverless.ts (ApiGatewayV2 custom routes via CloudFormation resources)",
+    "note": "Uses direct ApiGatewayV2 SQS integrations (not Lambda httpApi events). All routes use CUSTOM authorizer.",
+    "endpoints": [
+      {
+        "functionName": "BulkCreateHighPriorityNotificationRoute",
+        "path": "/notifications/high-priority",
+        "method": "POST",
+        "description": "Bulk create high priority push notifications (SQS integration)",
+        "authorizer": "SkelloLambdaAuthorizer"
+      },
+      {
+        "functionName": "BulkCreateLowPriorityNotificationRoute",
+        "path": "/notifications/low-priority",
+        "method": "POST",
+        "description": "Bulk create low priority push notifications (SQS integration)",
+        "authorizer": "SkelloLambdaAuthorizer"
+      },
+      {
+        "functionName": "BulkCreateHighPriorityEmailRoute",
+        "path": "/email/high-priority",
+        "method": "POST",
+        "description": "Bulk create high priority emails (SQS integration)",
+        "authorizer": "SkelloLambdaAuthorizer"
+      },
+      {
+        "functionName": "BulkCreateLowPriorityEmailRoute",
+        "path": "/email/low-priority",
+        "method": "POST",
+        "description": "Bulk create low priority emails (SQS integration)",
+        "authorizer": "SkelloLambdaAuthorizer"
+      },
+      {
+        "functionName": "BulkCreateHighPrioritySmsRoute",
+        "path": "/sms/high-priority",
+        "method": "POST",
+        "description": "Bulk create high priority SMS (SQS integration)",
+        "authorizer": "SkelloLambdaAuthorizer"
+      },
+      {
+        "functionName": "BulkCreateLowPrioritySMSRoute",
+        "path": "/sms/low-priority",
+        "method": "POST",
+        "description": "Bulk create low priority SMS (SQS integration)",
+        "authorizer": "SkelloLambdaAuthorizer"
+      },
+      {
+        "functionName": "CallbackSmsModeRoute",
+        "path": "/${self:custom.parameters.smsModeCallbackPath}",
+        "method": "POST",
+        "description": "SMS Mode callback webhook (dynamic path from config)",
+        "authorizer": "SkelloLambdaAuthorizerForApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-employees",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetAbsenceConfigs",
+        "path": "/absence-configs",
+        "method": "GET",
+        "description": "Get absence configurations",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertAbsenceConfig",
+        "path": "/absence-configs",
+        "method": "POST",
+        "description": "Upsert absence configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetAnnualizationConfigs",
+        "path": "/annualization-configs",
+        "method": "GET",
+        "description": "Get annualization configurations",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertAnnualizationConfig",
+        "path": "/annualization-configs",
+        "method": "POST",
+        "description": "Upsert annualization configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetDpaeDeposits",
+        "path": "/dpae-deposits",
+        "method": "GET",
+        "description": "Get DPAE deposits",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateDpaeDeposit",
+        "path": "/dpae-deposits",
+        "method": "POST",
+        "description": "Create DPAE deposit",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetEmployee",
+        "path": "/employees/{employeeId}",
+        "method": "GET",
+        "description": "Get employee by ID",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetEmployees",
+        "path": "/employees",
+        "method": "GET",
+        "description": "Get employees",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateEmployee",
+        "path": "/employees",
+        "method": "POST",
+        "description": "Create employee",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateEmployee",
+        "path": "/employees/{employeeId}",
+        "method": "PATCH",
+        "description": "Update employee",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteEmployee",
+        "path": "/employees/{employeeId}",
+        "method": "DELETE",
+        "description": "Delete employee",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetEmployeeContracts",
+        "path": "/employees/{employeeId}/contracts",
+        "method": "GET",
+        "description": "Get employee contracts",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateEmployeeContract",
+        "path": "/employees/{employeeId}/contracts",
+        "method": "POST",
+        "description": "Create employee contract",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateEmployeeContract",
+        "path": "/employees/{employeeId}/contracts/{contractId}",
+        "method": "PATCH",
+        "description": "Update employee contract",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteEmployeeContract",
+        "path": "/employees/{employeeId}/contracts/{contractId}",
+        "method": "DELETE",
+        "description": "Delete employee contract",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetEmployeeCounters",
+        "path": "/employees/{employeeId}/counters",
+        "method": "GET",
+        "description": "Get employee counters",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertEmployeeCounter",
+        "path": "/employees/{employeeId}/counters",
+        "method": "POST",
+        "description": "Upsert employee counter",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiBulkUpsertEmployees",
+        "path": "/employees/bulk",
+        "method": "POST",
+        "description": "Bulk upsert employees",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiGetShopEmployeeAttributes",
+        "path": "/shops/{shopId}/employee-attributes",
+        "method": "GET",
+        "description": "Get shop employee attributes",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertShopEmployeeAttributes",
+        "path": "/shops/{shopId}/employee-attributes",
+        "method": "POST",
+        "description": "Upsert shop employee attributes",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetTimeOffCounters",
+        "path": "/time-off-counters",
+        "method": "GET",
+        "description": "Get time off counters",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertTimeOffCounters",
+        "path": "/time-off-counters",
+        "method": "POST",
+        "description": "Upsert time off counters",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetWorkingTimeConfigs",
+        "path": "/working-time-configs",
+        "method": "GET",
+        "description": "Get working time configurations",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertWorkingTimeConfig",
+        "path": "/working-time-configs",
+        "method": "POST",
+        "description": "Upsert working time configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-punch",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetClocksInOut",
+        "path": "/clocks-in-out",
+        "method": "GET",
+        "description": "Get clocks in/out records",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateClockInOut",
+        "path": "/clocks-in-out",
+        "method": "POST",
+        "description": "Create clock in/out record",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateClockInOut",
+        "path": "/clocks-in-out/{id}",
+        "method": "PATCH",
+        "description": "Update clock in/out record",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteClockInOut",
+        "path": "/clocks-in-out/{id}",
+        "method": "DELETE",
+        "description": "Delete clock in/out record",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetPunchSettings",
+        "path": "/settings",
+        "method": "GET",
+        "description": "Get punch settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertPunchSettings",
+        "path": "/settings",
+        "method": "POST",
+        "description": "Upsert punch settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetPunchHistories",
+        "path": "/histories",
+        "method": "GET",
+        "description": "Get punch histories",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetPunchUsers",
+        "path": "/users",
+        "method": "GET",
+        "description": "Get punch users",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreatePunchUser",
+        "path": "/users",
+        "method": "POST",
+        "description": "Create punch user",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdatePunchUser",
+        "path": "/users/{userId}",
+        "method": "PATCH",
+        "description": "Update punch user",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeletePunchUser",
+        "path": "/users/{userId}",
+        "method": "DELETE",
+        "description": "Delete punch user",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetPunchMobilePermissions",
+        "path": "/mobile-permissions",
+        "method": "GET",
+        "description": "Get punch mobile permissions",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertPunchMobilePermissions",
+        "path": "/mobile-permissions",
+        "method": "POST",
+        "description": "Upsert punch mobile permissions",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetV1ClocksInOut",
+        "path": "/v1/public/clocks-in-out",
+        "method": "GET",
+        "description": "Public v1 get clocks in/out",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiCreateV1ClockInOut",
+        "path": "/v1/public/clocks-in-out",
+        "method": "POST",
+        "description": "Public v1 create clock in/out",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiUpdateV1ClockInOut",
+        "path": "/v1/public/clocks-in-out/{id}",
+        "method": "PATCH",
+        "description": "Public v1 update clock in/out",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiDeleteV1ClockInOut",
+        "path": "/v1/public/clocks-in-out/{id}",
+        "method": "DELETE",
+        "description": "Public v1 delete clock in/out",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiGetV1PunchSettings",
+        "path": "/v1/public/settings",
+        "method": "GET",
+        "description": "Public v1 get punch settings",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiUpsertV1PunchSettings",
+        "path": "/v1/public/settings",
+        "method": "POST",
+        "description": "Public v1 upsert punch settings",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiGetV1PunchUsers",
+        "path": "/v1/public/users",
+        "method": "GET",
+        "description": "Public v1 get punch users",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-shops",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetOrganisationsConfig",
+        "path": "/organisations/{organisationId}/config",
+        "method": "GET",
+        "description": "Get organisation configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertOrganisationConfig",
+        "path": "/organisations/{organisationId}/config",
+        "method": "POST",
+        "description": "Upsert organisation configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetShops",
+        "path": "/shops",
+        "method": "GET",
+        "description": "Get shops",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateShop",
+        "path": "/shops",
+        "method": "POST",
+        "description": "Create shop",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateShop",
+        "path": "/shops/{shopId}",
+        "method": "PATCH",
+        "description": "Update shop",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteShop",
+        "path": "/shops/{shopId}",
+        "method": "DELETE",
+        "description": "Delete shop",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetMissions",
+        "path": "/missions",
+        "method": "GET",
+        "description": "Get missions",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateMission",
+        "path": "/missions",
+        "method": "POST",
+        "description": "Create mission",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateMission",
+        "path": "/missions/{missionId}",
+        "method": "PATCH",
+        "description": "Update mission",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteMission",
+        "path": "/missions/{missionId}",
+        "method": "DELETE",
+        "description": "Delete mission",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-search",
+    "source": "serverless.ts + serverless/functions/stream.ts",
+    "note": "No HTTP API endpoints. Service is purely event-driven: Kinesis, S3, and DynamoDB stream handlers only.",
+    "endpoints": []
+  },
+  {
+    "service": "svc-requests",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetLeaveRequests",
+        "path": "/leave-requests",
+        "method": "GET",
+        "description": "Get leave requests",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateLeaveRequest",
+        "path": "/leave-requests",
+        "method": "POST",
+        "description": "Create leave request",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateLeaveRequest",
+        "path": "/leave-requests/{id}",
+        "method": "PATCH",
+        "description": "Update leave request",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteLeaveRequest",
+        "path": "/leave-requests/{id}",
+        "method": "DELETE",
+        "description": "Delete leave request",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetLeaveRequestSelectedManager",
+        "path": "/leave-requests/{id}/selected-manager",
+        "method": "GET",
+        "description": "Get selected manager for leave request",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateLeaveRequestSelectedManager",
+        "path": "/leave-requests/{id}/selected-manager",
+        "method": "PATCH",
+        "description": "Update selected manager for leave request",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-documents-v2",
+    "source": "serverless.ts + serverless/resources/lambdas/Signature/*.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiBulkSendSignatureReminders",
+        "path": "/signatures/reminders",
+        "method": "POST",
+        "description": "Send signature reminders in bulk for documents",
+        "authorizer": "SkelloLambdaAuthorizerWithAllManagedUsers"
+      },
+      {
+        "functionName": "ApiBulkSendRemindersFromFilters",
+        "path": "/signatures/reminders/from-filters",
+        "method": "POST",
+        "description": "Send signature reminders in bulk based on filters",
+        "authorizer": "SkelloLambdaAuthorizerWithAllManagedUsers"
+      },
+      {
+        "functionName": "CancelSignatureRequestAPI",
+        "path": "/signatures/cancel",
+        "method": "POST",
+        "description": "Cancel signature request",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiFetchManySignatures",
+        "path": "/signatures/fetch",
+        "method": "POST",
+        "description": "Retrieve multiple signatures based on provided criteria",
+        "authorizer": "SkelloLambdaAuthorizerWithAllManagedUsers"
+      },
+      {
+        "functionName": "ApiFetchEmployeeSignaturesByDocumentIds",
+        "path": "/signatures/fetch-by-employee-documents",
+        "method": "POST",
+        "description": "Retrieve employee signatures associated with specific document IDs",
+        "authorizer": "SkelloLambdaAuthorizerWithAllManagedUsers"
+      },
+      {
+        "functionName": "ApiGetSignatureDocumentUrl",
+        "path": "/signatures/{shopId}/{documentId}/url",
+        "method": "GET",
+        "description": "Get signature document URL",
+        "authorizer": "SkelloLambdaAuthorizerWithAllManagedUsers"
+      },
+      {
+        "functionName": "ApiIsSignableDocument",
+        "path": "/documents/signable",
+        "method": "GET",
+        "description": "Check if the document is signable or not",
+        "authorizer": "SkelloLambdaAuthorizerWithAllManagedUsers"
+      },
+      {
+        "functionName": "ApiSendWeekSignatureDocumentsEmail",
+        "path": "/signatures/week-documents-email",
+        "method": "POST",
+        "description": "Download week signature documents as ZIP and send via email",
+        "authorizer": "SkelloLambdaAuthorizerWithAllManagedUsers"
+      },
+      {
+        "functionName": "ApiBulkProcessYousignWebhooks",
+        "path": "/yousign/webhooks/bulk",
+        "method": "POST",
+        "description": "Push a batch of Yousign webhook payloads to the processing SQS queue",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-billing-automation",
+    "source": "serverless/functions/api.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetQuote",
+        "path": "/quotes/{quoteId}",
+        "method": "GET",
+        "description": "Get a quote by ID",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateQuote",
+        "path": "/quotes",
+        "method": "POST",
+        "description": "Create a quote",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateQuote",
+        "path": "/quotes/{quoteId}",
+        "method": "PATCH",
+        "description": "Update a quote",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateCheckoutSession",
+        "path": "/checkout/sessions",
+        "method": "POST",
+        "description": "Create a checkout session",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreatePortalSession",
+        "path": "/portal/sessions",
+        "method": "POST",
+        "description": "Create a billing portal session",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetOrganisation",
+        "path": "/organisations/{organisationId}",
+        "method": "GET",
+        "description": "Get organisation billing info",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateOrganisation",
+        "path": "/organisations",
+        "method": "POST",
+        "description": "Create organisation for billing",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateOrganisation",
+        "path": "/organisations/{organisationId}",
+        "method": "PATCH",
+        "description": "Update organisation billing info",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetShop",
+        "path": "/shops/{shopId}",
+        "method": "GET",
+        "description": "Get shop billing info",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateShop",
+        "path": "/shops",
+        "method": "POST",
+        "description": "Create shop for billing",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateShop",
+        "path": "/shops/{shopId}",
+        "method": "PATCH",
+        "description": "Update shop billing info",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetChargebeeSource",
+        "path": "/chargebee/sources/{sourceId}",
+        "method": "GET",
+        "description": "Get Chargebee payment source",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateChargebeeSource",
+        "path": "/chargebee/sources",
+        "method": "POST",
+        "description": "Create Chargebee payment source",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteChargebeeSource",
+        "path": "/chargebee/sources/{sourceId}",
+        "method": "DELETE",
+        "description": "Delete Chargebee payment source",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetChargebeeContact",
+        "path": "/chargebee/contacts/{contactId}",
+        "method": "GET",
+        "description": "Get Chargebee contact",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateChargebeeContact",
+        "path": "/chargebee/contacts",
+        "method": "POST",
+        "description": "Create Chargebee contact",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateChargebeeContact",
+        "path": "/chargebee/contacts/{contactId}",
+        "method": "PATCH",
+        "description": "Update Chargebee contact",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetBilling",
+        "path": "/billing/{billingId}",
+        "method": "GET",
+        "description": "Get billing record",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateBilling",
+        "path": "/billing",
+        "method": "POST",
+        "description": "Create billing record",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateBilling",
+        "path": "/billing/{billingId}",
+        "method": "PATCH",
+        "description": "Update billing record",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetSelfServe",
+        "path": "/self-serve/{selfServeId}",
+        "method": "GET",
+        "description": "Get self-serve record",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateSelfServe",
+        "path": "/self-serve",
+        "method": "POST",
+        "description": "Create self-serve record",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateSelfServe",
+        "path": "/self-serve/{selfServeId}",
+        "method": "PATCH",
+        "description": "Update self-serve record",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetCompanyRegistration",
+        "path": "/company-registrations/{registrationId}",
+        "method": "GET",
+        "description": "Get company registration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateCompanyRegistration",
+        "path": "/company-registrations",
+        "method": "POST",
+        "description": "Create company registration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetPricing",
+        "path": "/pricing",
+        "method": "GET",
+        "description": "Get pricing information",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetCreditBalance",
+        "path": "/credit-balance",
+        "method": "GET",
+        "description": "Get credit balance",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiAddCreditBalance",
+        "path": "/credit-balance",
+        "method": "POST",
+        "description": "Add credit balance",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-hris",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetHrisIntegrations",
+        "path": "/integrations",
+        "method": "GET",
+        "description": "Get HRIS integrations",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiConnectHrisIntegration",
+        "path": "/integrations/connect",
+        "method": "POST",
+        "description": "Connect HRIS integration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDisconnectHrisIntegration",
+        "path": "/integrations/{integrationId}/disconnect",
+        "method": "POST",
+        "description": "Disconnect HRIS integration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiSyncHrisIntegration",
+        "path": "/integrations/{integrationId}/sync",
+        "method": "POST",
+        "description": "Sync HRIS integration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiPreviewHrisSync",
+        "path": "/integrations/{integrationId}/sync/preview",
+        "method": "GET",
+        "description": "Preview HRIS sync",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiApplyHrisSync",
+        "path": "/integrations/{integrationId}/sync/apply",
+        "method": "POST",
+        "description": "Apply HRIS sync",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetHrisFields",
+        "path": "/integrations/{integrationId}/fields",
+        "method": "GET",
+        "description": "Get HRIS integration fields",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateHrisFields",
+        "path": "/integrations/{integrationId}/fields",
+        "method": "PATCH",
+        "description": "Update HRIS integration fields mapping",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetHrisEmployees",
+        "path": "/integrations/{integrationId}/employees",
+        "method": "GET",
+        "description": "Get HRIS employees",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetKomboLink",
+        "path": "/kombo/link",
+        "method": "GET",
+        "description": "Get Kombo integration link",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiKomboWebhook",
+        "path": "/kombo/webhook",
+        "method": "POST",
+        "description": "Handle Kombo webhook",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiGetHrisShops",
+        "path": "/shops",
+        "method": "GET",
+        "description": "Get HRIS shops",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateHrisShop",
+        "path": "/shops/{shopId}",
+        "method": "PATCH",
+        "description": "Update HRIS shop",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-intelligence",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiAnalyse",
+        "path": "/analyse",
+        "method": "POST",
+        "description": "Analyse data with AI/intelligence",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDynamoScan",
+        "path": "/dynamo-scan",
+        "method": "POST",
+        "description": "Scan DynamoDB for intelligence data",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiValidateLLMResponse",
+        "path": "/validate-llm-response",
+        "method": "POST",
+        "description": "Validate LLM response",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiGetValidationResponses",
+        "path": "/validation-responses",
+        "method": "GET",
+        "description": "Get validation responses",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiCreateValidationResponse",
+        "path": "/validation-responses",
+        "method": "POST",
+        "description": "Create validation response",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-kpis-v2",
+    "source": "serverless/functions/api.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetActivityPredictionSettings",
+        "path": "/activity-prediction/settings",
+        "method": "GET",
+        "description": "Get activity prediction settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertActivityPredictionSettings",
+        "path": "/activity-prediction/settings",
+        "method": "POST",
+        "description": "Upsert activity prediction settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetReferenceWeek",
+        "path": "/reference-week",
+        "method": "GET",
+        "description": "Get reference week data",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertReferenceWeek",
+        "path": "/reference-week",
+        "method": "POST",
+        "description": "Upsert reference week data",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetKpis",
+        "path": "/kpis",
+        "method": "GET",
+        "description": "Get KPIs",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateKpis",
+        "path": "/kpis",
+        "method": "POST",
+        "description": "Create KPIs",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateKpis",
+        "path": "/kpis/{kpiId}",
+        "method": "PATCH",
+        "description": "Update KPI",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-trackers",
+    "source": "serverless/functions/api.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiActivateShopTrackerSettings",
+        "path": "/shop-settings/activate",
+        "method": "POST",
+        "description": "Activate shop tracker settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiListShopTrackerSettings",
+        "path": "/shop-settings",
+        "method": "GET",
+        "description": "List shop tracker settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeactivateShopTrackerSettings",
+        "path": "/shop-settings/deactivate",
+        "method": "POST",
+        "description": "Deactivate shop tracker settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetEmployeeTrackerSettings",
+        "path": "/employee-settings",
+        "method": "GET",
+        "description": "Get employee tracker settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertEmployeeTrackerSettings",
+        "path": "/employee-settings",
+        "method": "POST",
+        "description": "Upsert employee tracker settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetTrackers",
+        "path": "/trackers",
+        "method": "GET",
+        "description": "Get trackers",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpsertTracker",
+        "path": "/trackers",
+        "method": "POST",
+        "description": "Upsert tracker",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-bff",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiOrchestrateDocuments",
+        "path": "/v1/documents",
+        "method": "POST",
+        "description": "BFF orchestration for documents",
+        "authorizer": "SkelloLambdaAuthorizerWithAllManagedUsers"
+      },
+      {
+        "functionName": "ApiBulkUpdateKpis",
+        "path": "/v1/kpis",
+        "method": "POST",
+        "description": "BFF bulk update KPIs",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-bff-planning",
+    "source": "serverless/functions/api.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiComputeAutoScheduling",
+        "path": "/auto_scheduling/compute",
+        "method": "GET",
+        "description": "Compute auto scheduling data for planning BFF",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-automatic-scheduling",
+    "source": "serverless/functions/api.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetShiftReplacements",
+        "path": "/shift-replacements",
+        "method": "POST",
+        "description": "Get shift replacements candidates",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiTriggerAutoScheduling",
+        "path": "/auto-scheduling/trigger",
+        "method": "POST",
+        "description": "Trigger auto scheduling computation",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-modularisation",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetModularisation",
+        "path": "/modularisation",
+        "method": "GET",
+        "description": "Get modularisation configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-shifts",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetEmployeeShiftMetrics",
+        "path": "/shift-metrics/employee",
+        "method": "POST",
+        "description": "Get shift metrics for an employee",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiGetEmployeesForShifts",
+        "path": "/employees-for-shifts",
+        "method": "POST",
+        "description": "Get employees eligible for shifts",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiGetShopAndOrgaShiftMetrics",
+        "path": "/shift-metrics/shop-and-orga",
+        "method": "POST",
+        "description": "Get shift metrics for shop and organisation",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiGetShiftDetails",
+        "path": "/shift-details",
+        "method": "POST",
+        "description": "Get shift details",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-reports",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetPamConfigs",
+        "path": "/pam-configs",
+        "method": "GET",
+        "description": "Get PAM configurations",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreatePamConfig",
+        "path": "/pam-configs",
+        "method": "POST",
+        "description": "Create PAM configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdatePamConfig",
+        "path": "/pam-configs/{configId}",
+        "method": "PATCH",
+        "description": "Update PAM configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeletePamConfig",
+        "path": "/pam-configs/{configId}",
+        "method": "DELETE",
+        "description": "Delete PAM configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetVariablePayElementsCustom",
+        "path": "/variable-pay-elements/custom",
+        "method": "GET",
+        "description": "Get custom variable pay elements",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateVariablePayElementCustom",
+        "path": "/variable-pay-elements/custom",
+        "method": "POST",
+        "description": "Create custom variable pay element",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateVariablePayElementCustom",
+        "path": "/variable-pay-elements/custom/{elementId}",
+        "method": "PATCH",
+        "description": "Update custom variable pay element",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteVariablePayElementCustom",
+        "path": "/variable-pay-elements/custom/{elementId}",
+        "method": "DELETE",
+        "description": "Delete custom variable pay element",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetPayrollSoftwares",
+        "path": "/payroll-softwares",
+        "method": "GET",
+        "description": "Get payroll softwares",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreatePayrollSoftware",
+        "path": "/payroll-softwares",
+        "method": "POST",
+        "description": "Create payroll software",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdatePayrollSoftware",
+        "path": "/payroll-softwares/{softwareId}",
+        "method": "PATCH",
+        "description": "Update payroll software",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeletePayrollSoftware",
+        "path": "/payroll-softwares/{softwareId}",
+        "method": "DELETE",
+        "description": "Delete payroll software",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetReportConfigs",
+        "path": "/report-configs",
+        "method": "GET",
+        "description": "Get report configurations",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateReportConfig",
+        "path": "/report-configs",
+        "method": "POST",
+        "description": "Create report configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateReportConfig",
+        "path": "/report-configs/{configId}",
+        "method": "PATCH",
+        "description": "Update report configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteReportConfig",
+        "path": "/report-configs/{configId}",
+        "method": "DELETE",
+        "description": "Delete report configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetColumnSets",
+        "path": "/column-sets",
+        "method": "GET",
+        "description": "Get column sets",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateColumnSet",
+        "path": "/column-sets",
+        "method": "POST",
+        "description": "Create column set",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateColumnSet",
+        "path": "/column-sets/{columnSetId}",
+        "method": "PATCH",
+        "description": "Update column set",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteColumnSet",
+        "path": "/column-sets/{columnSetId}",
+        "method": "DELETE",
+        "description": "Delete column set",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-enrollment",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetOnboardings",
+        "path": "/onboardings",
+        "method": "GET",
+        "description": "Get onboardings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateOnboarding",
+        "path": "/onboardings",
+        "method": "POST",
+        "description": "Create onboarding",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateOnboarding",
+        "path": "/onboardings/{id}",
+        "method": "PATCH",
+        "description": "Update onboarding",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteOnboarding",
+        "path": "/onboardings/{id}",
+        "method": "DELETE",
+        "description": "Delete onboarding",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetCollectiveAgreements",
+        "path": "/collective-agreements",
+        "method": "GET",
+        "description": "Get collective agreements",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-users",
+    "source": "serverless.ts + src/handlers.ts",
+    "note": "serverless.ts too large (51KB) to fetch fully; HTTP API endpoints inferred from handlers.ts API section",
+    "endpoints": [
+      {
+        "functionName": "apiLoginCapability",
+        "path": "/login/capability",
+        "method": "GET",
+        "description": "Get login capability (SSO vs password, etc.)",
+        "authorizer": null
+      },
+      {
+        "functionName": "apiSSOCallback",
+        "path": "/sso/{provider}/callback",
+        "method": "GET",
+        "description": "SSO provider callback",
+        "authorizer": null
+      },
+      {
+        "functionName": "apiGetSSOConfigurationByOrganisation",
+        "path": "/sso-configurations",
+        "method": "GET",
+        "description": "Get SSO configuration by organisation",
+        "authorizer": "SkelloLambdaAuthorizerJwt"
+      },
+      {
+        "functionName": "apiCreateOrUpdateSSOConfiguration",
+        "path": "/sso-configurations",
+        "method": "POST",
+        "description": "Create or update SSO configuration",
+        "authorizer": "SkelloLambdaAuthorizerJwt"
+      },
+      {
+        "functionName": "docsSwaggerApi",
+        "path": "/docs",
+        "method": "GET",
+        "description": "Swagger API docs",
+        "authorizer": null
+      },
+      {
+        "functionName": "docsPublicSwaggerApi",
+        "path": "/public/docs",
+        "method": "GET",
+        "description": "Public Swagger API docs",
+        "authorizer": null
+      }
+    ]
+  },
+  {
+    "service": "svc-labour-laws",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiUpsertShop",
+        "path": "/shops",
+        "method": "POST",
+        "description": "Upsert shop labour law data",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiBatchUpsertShops",
+        "path": "/shops/batch",
+        "method": "POST",
+        "description": "Batch upsert shops labour law data",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiGetLabourLawOverrides",
+        "path": "/overrides",
+        "method": "GET",
+        "description": "Get labour law overrides",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateLabourLawOverride",
+        "path": "/overrides",
+        "method": "POST",
+        "description": "Create labour law override",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateLabourLawOverride",
+        "path": "/overrides/{overrideId}",
+        "method": "PATCH",
+        "description": "Update labour law override",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteLabourLawOverride",
+        "path": "/overrides/{overrideId}",
+        "method": "DELETE",
+        "description": "Delete labour law override",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetLabourLaws",
+        "path": "/labour-laws",
+        "method": "GET",
+        "description": "Get labour laws",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateLabourLaw",
+        "path": "/labour-laws",
+        "method": "POST",
+        "description": "Create labour law",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateLabourLaw",
+        "path": "/labour-laws/{labourLawId}",
+        "method": "PATCH",
+        "description": "Update labour law",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteLabourLaw",
+        "path": "/labour-laws/{labourLawId}",
+        "method": "DELETE",
+        "description": "Delete labour law",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetCountryDefaultSettings",
+        "path": "/country-default-settings",
+        "method": "GET",
+        "description": "Get country default settings",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-pos",
+    "source": "serverless/functions/api.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetChiftProviders",
+        "path": "/chift/providers",
+        "method": "GET",
+        "description": "Get Chift POS providers",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiHandleChiftWebhook",
+        "path": "/chift/webhook",
+        "method": "POST",
+        "description": "Handle Chift webhook",
+        "authorizer": "SkelloLambdaAuthorizerApiKey"
+      },
+      {
+        "functionName": "ApiActivateChiftIntegration",
+        "path": "/chift/activate",
+        "method": "POST",
+        "description": "Activate Chift POS integration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetIntegrations",
+        "path": "/integrations",
+        "method": "GET",
+        "description": "Get POS integrations",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateIntegration",
+        "path": "/integrations",
+        "method": "POST",
+        "description": "Create POS integration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetIntegration",
+        "path": "/integrations/{integrationId}",
+        "method": "GET",
+        "description": "Get POS integration by ID",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateIntegration",
+        "path": "/integrations/{integrationId}",
+        "method": "PATCH",
+        "description": "Update POS integration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteIntegration",
+        "path": "/integrations/{integrationId}",
+        "method": "DELETE",
+        "description": "Delete POS integration",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetProviders",
+        "path": "/providers",
+        "method": "GET",
+        "description": "Get POS providers",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateProvider",
+        "path": "/providers",
+        "method": "POST",
+        "description": "Create POS provider",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetProvider",
+        "path": "/providers/{providerId}",
+        "method": "GET",
+        "description": "Get POS provider by ID",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateProvider",
+        "path": "/providers/{providerId}",
+        "method": "PATCH",
+        "description": "Update POS provider",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteProvider",
+        "path": "/providers/{providerId}",
+        "method": "DELETE",
+        "description": "Delete POS provider",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetShopIntegrations",
+        "path": "/shops/{shopId}/integrations",
+        "method": "GET",
+        "description": "Get POS integrations for a shop",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiActivateShopIntegration",
+        "path": "/shops/{shopId}/integrations/activate",
+        "method": "POST",
+        "description": "Activate POS integration for a shop",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeactivateShopIntegration",
+        "path": "/shops/{shopId}/integrations/deactivate",
+        "method": "POST",
+        "description": "Deactivate POS integration for a shop",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetShopSales",
+        "path": "/shops/{shopId}/sales",
+        "method": "GET",
+        "description": "Get POS sales data for a shop",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-skello-assistant",
+    "source": "serverless/serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiChat",
+        "path": "/chat",
+        "method": "POST",
+        "description": "Send a chat message to the Skello assistant",
+        "authorizer": "SkelloLambdaAuthorizerJwt"
+      },
+      {
+        "functionName": "ApiConversationFeedback",
+        "path": "/conversation/{id}/feedback",
+        "method": "POST",
+        "description": "Submit feedback on a conversation",
+        "authorizer": "SkelloLambdaAuthorizerJwt"
+      },
+      {
+        "functionName": "ApiChatDownload",
+        "path": "/chat/download",
+        "method": "GET",
+        "description": "Download chat conversation export",
+        "authorizer": "SkelloLambdaAuthorizerJwt"
+      },
+      {
+        "functionName": "ApiChatConversations",
+        "path": "/chat/conversations",
+        "method": "GET",
+        "description": "Get chat conversations list",
+        "authorizer": "SkelloLambdaAuthorizerJwt"
+      }
+    ]
+  },
+  {
+    "service": "svc-documents-esignature",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiAttendanceSheetSignatureReminder",
+        "path": "/attendance-sheet-signature-reminder",
+        "method": "POST",
+        "description": "Send attendance sheet signature reminder",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDocumentSignable",
+        "path": "/document-signable",
+        "method": "GET",
+        "description": "Check if document is signable",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDocumentSignatureReminder",
+        "path": "/document-signature-reminder",
+        "method": "POST",
+        "description": "Send document signature reminder",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDocumentsStatus",
+        "path": "/documents-status",
+        "method": "GET",
+        "description": "Get documents signature status",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-workload-plan",
+    "source": "serverless/functions/apiV1.ts + serverless/functions/apiV2.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetWorkloadPlansV1",
+        "path": "/workload-plans",
+        "method": "GET",
+        "description": "Get workload plans (v1)",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateWorkloadPlanV1",
+        "path": "/workload-plans",
+        "method": "POST",
+        "description": "Create workload plan (v1)",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetWorkloadPlansV2",
+        "path": "/v2/workload-plans",
+        "method": "GET",
+        "description": "Get workload plans (v2)",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateWorkloadPlanV2",
+        "path": "/v2/workload-plans",
+        "method": "POST",
+        "description": "Create workload plan (v2)",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetWorkloadRulesV2",
+        "path": "/v2/workload-rules",
+        "method": "GET",
+        "description": "Get workload rules (v2)",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateWorkloadRuleV2",
+        "path": "/v2/workload-rules",
+        "method": "POST",
+        "description": "Create workload rule (v2)",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  },
+  {
+    "service": "svc-feature-flags",
+    "source": "serverless.ts",
+    "endpoints": [
+      {
+        "functionName": "ApiGetFeatureFlags",
+        "path": "/feature-flags",
+        "method": "GET",
+        "description": "Get feature flags",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateFeatureFlag",
+        "path": "/feature-flags",
+        "method": "POST",
+        "description": "Create feature flag",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiUpdateFeatureFlag",
+        "path": "/feature-flags/{flagId}",
+        "method": "PATCH",
+        "description": "Update feature flag",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteFeatureFlag",
+        "path": "/feature-flags/{flagId}",
+        "method": "DELETE",
+        "description": "Delete feature flag",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiGetFeatureFlagsDev",
+        "path": "/feature-flags-dev",
+        "method": "GET",
+        "description": "Get dev feature flags",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiCreateFeatureFlagDev",
+        "path": "/feature-flags-dev",
+        "method": "POST",
+        "description": "Create dev feature flag",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      },
+      {
+        "functionName": "ApiDeleteFeatureFlagDev",
+        "path": "/feature-flags-dev/{flagId}",
+        "method": "DELETE",
+        "description": "Delete dev feature flag",
+        "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey"
+      }
+    ]
+  }
+]

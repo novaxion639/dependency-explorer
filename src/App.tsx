@@ -6,6 +6,7 @@ import { PackageCard } from './components/PackageCard'
 import { DetailPanel } from './components/DetailPanel'
 import { StatsBar } from './components/StatsBar'
 import { GraphView } from './components/GraphView'
+import { ConnectivityPage } from './components/connectivity/ConnectivityPage'
 
 const data = rawData as DependencyMap
 
@@ -34,7 +35,7 @@ export type Selection =
   | { kind: 'package'; item: SharedPackage }
   | null
 
-type MainView = 'repos' | 'packages' | 'graph'
+type MainView = 'repos' | 'packages' | 'graph' | 'connectivity'
 
 export default function App() {
   const [search, setSearch] = useState('')
@@ -70,6 +71,7 @@ export default function App() {
 
   const showTypeFilter = mainView === 'repos' || mainView === 'graph'
   const showCatFilter = mainView === 'packages' || mainView === 'graph'
+  const isConnectivity = mainView === 'connectivity'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
@@ -83,32 +85,36 @@ export default function App() {
       }}>
         {/* View toggle */}
         <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border)' }}>
-          {(['repos', 'packages', 'graph'] as const).map(v => (
+          {(['repos', 'packages', 'graph', 'connectivity'] as const).map(v => (
             <button key={v} onClick={() => setMainView(v)} style={{
               padding: '4px 14px', cursor: 'pointer', fontSize: 13, border: 'none',
-              borderRight: v !== 'graph' ? '1px solid var(--border)' : 'none',
+              borderRight: v !== 'connectivity' ? '1px solid var(--border)' : 'none',
               background: mainView === v ? 'var(--accent)' : 'transparent',
               color: mainView === v ? '#fff' : 'var(--text-muted)',
             }}>
               {v === 'repos' ? `Repos (${data.repos.length})`
                 : v === 'packages' ? `Packages (${data.sharedPackages.length})`
-                : '⬡ Graph'}
+                : v === 'graph' ? '⬡ Graph'
+                : '⇄ Connectivity'}
             </button>
           ))}
         </div>
 
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder={mainView === 'graph' ? 'Highlight nodes…' : 'Search…'}
-          style={{
-            flex: '1 1 200px', padding: '4px 10px', borderRadius: 6,
-            border: '1px solid var(--border)', background: 'var(--surface2)',
-            color: 'var(--text)', fontSize: 13, outline: 'none',
-          }}
-        />
+        {/* Hide search/filters on connectivity page — it has its own sidebar search */}
+        {!isConnectivity && (
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={mainView === 'graph' ? 'Highlight nodes…' : 'Search…'}
+            style={{
+              flex: '1 1 200px', padding: '4px 10px', borderRadius: 6,
+              border: '1px solid var(--border)', background: 'var(--surface2)',
+              color: 'var(--text)', fontSize: 13, outline: 'none',
+            }}
+          />
+        )}
 
-        {showTypeFilter && (
+        {showTypeFilter && !isConnectivity && (
           <select
             value={typeFilter}
             onChange={e => setTypeFilter(e.target.value as RepoType | '')}
@@ -119,7 +125,7 @@ export default function App() {
           </select>
         )}
 
-        {showCatFilter && (
+        {showCatFilter && !isConnectivity && (
           <select
             value={catFilter}
             onChange={e => setCatFilter(e.target.value as PackageCategory | '')}
@@ -143,6 +149,9 @@ export default function App() {
       {/* Main content */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
+        {/* Connectivity view — fully self-contained */}
+        {mainView === 'connectivity' && <ConnectivityPage />}
+
         {/* Graph view — takes full width minus detail panel */}
         {mainView === 'graph' && (
           <GraphView
@@ -156,7 +165,7 @@ export default function App() {
         )}
 
         {/* List views */}
-        {mainView !== 'graph' && (
+        {mainView !== 'graph' && mainView !== 'connectivity' && (
           <div style={{
             flex: 1, overflowY: 'auto', padding: 16,
             display: 'grid',
@@ -194,8 +203,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Detail panel — shared across all views */}
-        {selection && (
+        {/* Detail panel — shared across list/graph views, not connectivity (has its own drawer) */}
+        {selection && mainView !== 'connectivity' && (
           <DetailPanel
             selection={selection}
             data={data}

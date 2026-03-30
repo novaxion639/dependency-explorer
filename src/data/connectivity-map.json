@@ -1,0 +1,5894 @@
+{
+  "services": [
+    {
+      "name": "svc-events",
+      "type": "typescript-microservice",
+      "description": "Domain event bus \u2014 publishes and routes domain events between services",
+      "endpoints": [
+        {
+          "id": "api-event-create",
+          "path": "/events",
+          "method": "POST",
+          "description": "Create a new event",
+          "useCase": "Used by calling services to create a new event",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "get-events-api",
+          "path": "/events",
+          "method": "GET",
+          "description": "Get events",
+          "useCase": "Used by calling services to get events",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-activity-logs-lambda",
+          "path": "/activity-logs",
+          "method": "GET",
+          "description": "Get activity logs",
+          "useCase": "Used by calling services to get activity logs",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-trigger-download-activity-logs-lambda",
+          "path": "/activity-logs/download",
+          "method": "POST",
+          "description": "Trigger download of activity logs",
+          "useCase": "Used by calling services to trigger download of activity logs",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcEvents-{env}",
+          "description": "Event records \u2014 audit trail of all user actions"
+        },
+        {
+          "type": "s3",
+          "name": "svc-events.{env}",
+          "description": "Event payload archive"
+        }
+      ]
+    },
+    {
+      "name": "svc-communications-v2",
+      "type": "typescript-microservice",
+      "description": "Centralised multi-channel messaging \u2014 email, SMS, push notifications and in-app messages",
+      "endpoints": [
+        {
+          "id": "bulk-create-high-priority-notification-route",
+          "path": "/notifications/high-priority",
+          "method": "POST",
+          "description": "Bulk create high priority push notifications (SQS integration)",
+          "useCase": "Used by calling services to bulk create high priority push notifications (SQS integration)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "bulk-create-low-priority-notification-route",
+          "path": "/notifications/low-priority",
+          "method": "POST",
+          "description": "Bulk create low priority push notifications (SQS integration)",
+          "useCase": "Used by calling services to bulk create low priority push notifications (SQS integration)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "bulk-create-high-priority-email-route",
+          "path": "/email/high-priority",
+          "method": "POST",
+          "description": "Bulk create high priority emails (SQS integration)",
+          "useCase": "Used by calling services to bulk create high priority emails (SQS integration)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "bulk-create-low-priority-email-route",
+          "path": "/email/low-priority",
+          "method": "POST",
+          "description": "Bulk create low priority emails (SQS integration)",
+          "useCase": "Used by calling services to bulk create low priority emails (SQS integration)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "bulk-create-high-priority-sms-route",
+          "path": "/sms/high-priority",
+          "method": "POST",
+          "description": "Bulk create high priority SMS (SQS integration)",
+          "useCase": "Used by calling services to bulk create high priority SMS (SQS integration)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "bulk-create-low-priority-sms-route",
+          "path": "/sms/low-priority",
+          "method": "POST",
+          "description": "Bulk create low priority SMS (SQS integration)",
+          "useCase": "Used by calling services to bulk create low priority SMS (SQS integration)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "callback-sms-mode-route",
+          "path": "/${self:custom.parameters.smsModeCallbackPath}",
+          "method": "POST",
+          "description": "SMS Mode callback webhook (dynamic path from config)",
+          "useCase": "Used by calling services to sMS Mode callback webhook (dynamic path from config)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcCommunicationsV2-{env}",
+          "description": "Notification records and delivery state"
+        },
+        {
+          "type": "sqs",
+          "name": "email-high / email-low",
+          "description": "Priority-tiered email dispatch queues"
+        },
+        {
+          "type": "s3",
+          "name": "svc-communications-v2.attachments.{env}",
+          "description": "Email attachment storage"
+        }
+      ]
+    },
+    {
+      "name": "svc-employees",
+      "type": "typescript-microservice",
+      "description": "Employee directory and contract management \u2014 source of truth for workforce data",
+      "endpoints": [
+        {
+          "id": "api-get-absence-configs",
+          "path": "/absence-configs",
+          "method": "GET",
+          "description": "Get absence configurations",
+          "useCase": "Used by calling services to get absence configurations",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-absence-config",
+          "path": "/absence-configs",
+          "method": "POST",
+          "description": "Upsert absence configuration",
+          "useCase": "Used by calling services to upsert absence configuration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-annualization-configs",
+          "path": "/annualization-configs",
+          "method": "GET",
+          "description": "Get annualization configurations",
+          "useCase": "Used by calling services to get annualization configurations",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-annualization-config",
+          "path": "/annualization-configs",
+          "method": "POST",
+          "description": "Upsert annualization configuration",
+          "useCase": "Used by calling services to upsert annualization configuration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-dpae-deposits",
+          "path": "/dpae-deposits",
+          "method": "GET",
+          "description": "Get DPAE deposits",
+          "useCase": "Used by calling services to get DPAE deposits",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-dpae-deposit",
+          "path": "/dpae-deposits",
+          "method": "POST",
+          "description": "Create DPAE deposit",
+          "useCase": "Used by calling services to create DPAE deposit",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-employee",
+          "path": "/employees/{employeeId}",
+          "method": "GET",
+          "description": "Get employee by ID",
+          "useCase": "Used by calling services to get employee by ID",
+          "params": [
+            {
+              "name": "employeeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "employeeId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-employees",
+          "path": "/employees",
+          "method": "GET",
+          "description": "Get employees",
+          "useCase": "Used by calling services to get employees",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-employee",
+          "path": "/employees",
+          "method": "POST",
+          "description": "Create employee",
+          "useCase": "Used by calling services to create employee",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-employee",
+          "path": "/employees/{employeeId}",
+          "method": "PATCH",
+          "description": "Update employee",
+          "useCase": "Used by calling services to update employee",
+          "params": [
+            {
+              "name": "employeeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "employeeId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-employee",
+          "path": "/employees/{employeeId}",
+          "method": "DELETE",
+          "description": "Delete employee",
+          "useCase": "Used by calling services to delete employee",
+          "params": [
+            {
+              "name": "employeeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "employeeId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-employee-contracts",
+          "path": "/employees/{employeeId}/contracts",
+          "method": "GET",
+          "description": "Get employee contracts",
+          "useCase": "Used by calling services to get employee contracts",
+          "params": [
+            {
+              "name": "employeeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "employeeId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-employee-contract",
+          "path": "/employees/{employeeId}/contracts",
+          "method": "POST",
+          "description": "Create employee contract",
+          "useCase": "Used by calling services to create employee contract",
+          "params": [
+            {
+              "name": "employeeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "employeeId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-employee-contract",
+          "path": "/employees/{employeeId}/contracts/{contractId}",
+          "method": "PATCH",
+          "description": "Update employee contract",
+          "useCase": "Used by calling services to update employee contract",
+          "params": [
+            {
+              "name": "employeeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "employeeId identifier"
+            },
+            {
+              "name": "contractId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "contractId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-employee-contract",
+          "path": "/employees/{employeeId}/contracts/{contractId}",
+          "method": "DELETE",
+          "description": "Delete employee contract",
+          "useCase": "Used by calling services to delete employee contract",
+          "params": [
+            {
+              "name": "employeeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "employeeId identifier"
+            },
+            {
+              "name": "contractId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "contractId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-employee-counters",
+          "path": "/employees/{employeeId}/counters",
+          "method": "GET",
+          "description": "Get employee counters",
+          "useCase": "Used by calling services to get employee counters",
+          "params": [
+            {
+              "name": "employeeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "employeeId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-employee-counter",
+          "path": "/employees/{employeeId}/counters",
+          "method": "POST",
+          "description": "Upsert employee counter",
+          "useCase": "Used by calling services to upsert employee counter",
+          "params": [
+            {
+              "name": "employeeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "employeeId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-bulk-upsert-employees",
+          "path": "/employees/bulk",
+          "method": "POST",
+          "description": "Bulk upsert employees",
+          "useCase": "Used by calling services to bulk upsert employees",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-shop-employee-attributes",
+          "path": "/shops/{shopId}/employee-attributes",
+          "method": "GET",
+          "description": "Get shop employee attributes",
+          "useCase": "Used by calling services to get shop employee attributes",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-shop-employee-attributes",
+          "path": "/shops/{shopId}/employee-attributes",
+          "method": "POST",
+          "description": "Upsert shop employee attributes",
+          "useCase": "Used by calling services to upsert shop employee attributes",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-time-off-counters",
+          "path": "/time-off-counters",
+          "method": "GET",
+          "description": "Get time off counters",
+          "useCase": "Used by calling services to get time off counters",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-time-off-counters",
+          "path": "/time-off-counters",
+          "method": "POST",
+          "description": "Upsert time off counters",
+          "useCase": "Used by calling services to upsert time off counters",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-working-time-configs",
+          "path": "/working-time-configs",
+          "method": "GET",
+          "description": "Get working time configurations",
+          "useCase": "Used by calling services to get working time configurations",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-working-time-config",
+          "path": "/working-time-configs",
+          "method": "POST",
+          "description": "Upsert working time configuration",
+          "useCase": "Used by calling services to upsert working time configuration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcEmployees-{env}",
+          "description": "Employee profiles and absence configs"
+        },
+        {
+          "type": "mongodb",
+          "name": "svc-employees",
+          "description": "Legacy employee data store (migration in progress)"
+        },
+        {
+          "type": "sqs",
+          "name": "svc-employees-dlq",
+          "description": "Dead-letter queue for failed employee events"
+        },
+        {
+          "type": "kinesis",
+          "name": "svc-employees-stream",
+          "description": "Employee change event stream for downstream consumers"
+        }
+      ]
+    },
+    {
+      "name": "svc-documents-v2",
+      "type": "typescript-microservice",
+      "description": "Document lifecycle management \u2014 creation, storage, versioning and access control",
+      "endpoints": [
+        {
+          "id": "api-bulk-send-signature-reminders",
+          "path": "/signatures/reminders",
+          "method": "POST",
+          "description": "Send signature reminders in bulk for documents",
+          "useCase": "Used by calling services to send signature reminders in bulk for documents",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-bulk-send-reminders-from-filters",
+          "path": "/signatures/reminders/from-filters",
+          "method": "POST",
+          "description": "Send signature reminders in bulk based on filters",
+          "useCase": "Used by calling services to send signature reminders in bulk based on filters",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "cancel-signature-request-api",
+          "path": "/signatures/cancel",
+          "method": "POST",
+          "description": "Cancel signature request",
+          "useCase": "Used by calling services to cancel signature request",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-fetch-many-signatures",
+          "path": "/signatures/fetch",
+          "method": "POST",
+          "description": "Retrieve multiple signatures based on provided criteria",
+          "useCase": "Used by calling services to retrieve multiple signatures based on provided criteria",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-fetch-employee-signatures-by-document-ids",
+          "path": "/signatures/fetch-by-employee-documents",
+          "method": "POST",
+          "description": "Retrieve employee signatures associated with specific document IDs",
+          "useCase": "Used by calling services to retrieve employee signatures associated with specific document IDs",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-signature-document-url",
+          "path": "/signatures/{shopId}/{documentId}/url",
+          "method": "GET",
+          "description": "Get signature document URL",
+          "useCase": "Used by calling services to get signature document URL",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            },
+            {
+              "name": "documentId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "documentId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-is-signable-document",
+          "path": "/documents/signable",
+          "method": "GET",
+          "description": "Check if the document is signable or not",
+          "useCase": "Used by calling services to check if the document is signable or not",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-send-week-signature-documents-email",
+          "path": "/signatures/week-documents-email",
+          "method": "POST",
+          "description": "Download week signature documents as ZIP and send via email",
+          "useCase": "Used by calling services to download week signature documents as ZIP and send via email",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-bulk-process-yousign-webhooks",
+          "path": "/yousign/webhooks/bulk",
+          "method": "POST",
+          "description": "Push a batch of Yousign webhook payloads to the processing SQS queue",
+          "useCase": "Used by calling services to push a batch of Yousign webhook payloads to the processing SQS queue",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcDocumentsV2-{env}",
+          "description": "Document metadata, signatures and generation jobs"
+        },
+        {
+          "type": "s3",
+          "name": "svc-documents-v2.{env}",
+          "description": "Generated PDFs, XLSX and templates"
+        },
+        {
+          "type": "sqs",
+          "name": "svc-documents-v2-dlq",
+          "description": "Failed document generation retry queue"
+        }
+      ]
+    },
+    {
+      "name": "svc-punch",
+      "type": "typescript-microservice",
+      "description": "Punch-clock attendance tracking \u2014 records clock-in/out events and computes worked time",
+      "endpoints": [
+        {
+          "id": "api-get-clocks-in-out",
+          "path": "/clocks-in-out",
+          "method": "GET",
+          "description": "Get clocks in/out records",
+          "useCase": "Used by calling services to get clocks in/out records",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-clock-in-out",
+          "path": "/clocks-in-out",
+          "method": "POST",
+          "description": "Create clock in/out record",
+          "useCase": "Used by calling services to create clock in/out record",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-clock-in-out",
+          "path": "/clocks-in-out/{id}",
+          "method": "PATCH",
+          "description": "Update clock in/out record",
+          "useCase": "Used by calling services to update clock in/out record",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-clock-in-out",
+          "path": "/clocks-in-out/{id}",
+          "method": "DELETE",
+          "description": "Delete clock in/out record",
+          "useCase": "Used by calling services to delete clock in/out record",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-punch-settings",
+          "path": "/settings",
+          "method": "GET",
+          "description": "Get punch settings",
+          "useCase": "Used by calling services to get punch settings",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-punch-settings",
+          "path": "/settings",
+          "method": "POST",
+          "description": "Upsert punch settings",
+          "useCase": "Used by calling services to upsert punch settings",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-punch-histories",
+          "path": "/histories",
+          "method": "GET",
+          "description": "Get punch histories",
+          "useCase": "Used by calling services to get punch histories",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-punch-users",
+          "path": "/users",
+          "method": "GET",
+          "description": "Get punch users",
+          "useCase": "Used by calling services to get punch users",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-punch-user",
+          "path": "/users",
+          "method": "POST",
+          "description": "Create punch user",
+          "useCase": "Used by calling services to create punch user",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-punch-user",
+          "path": "/users/{userId}",
+          "method": "PATCH",
+          "description": "Update punch user",
+          "useCase": "Used by calling services to update punch user",
+          "params": [
+            {
+              "name": "userId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "userId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-punch-user",
+          "path": "/users/{userId}",
+          "method": "DELETE",
+          "description": "Delete punch user",
+          "useCase": "Used by calling services to delete punch user",
+          "params": [
+            {
+              "name": "userId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "userId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-punch-mobile-permissions",
+          "path": "/mobile-permissions",
+          "method": "GET",
+          "description": "Get punch mobile permissions",
+          "useCase": "Used by calling services to get punch mobile permissions",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-punch-mobile-permissions",
+          "path": "/mobile-permissions",
+          "method": "POST",
+          "description": "Upsert punch mobile permissions",
+          "useCase": "Used by calling services to upsert punch mobile permissions",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-v1-clocks-in-out",
+          "path": "/v1/public/clocks-in-out",
+          "method": "GET",
+          "description": "Public v1 get clocks in/out",
+          "useCase": "Used by calling services to public v1 get clocks in/out",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-v1-clock-in-out",
+          "path": "/v1/public/clocks-in-out",
+          "method": "POST",
+          "description": "Public v1 create clock in/out",
+          "useCase": "Used by calling services to public v1 create clock in/out",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-v1-clock-in-out",
+          "path": "/v1/public/clocks-in-out/{id}",
+          "method": "PATCH",
+          "description": "Public v1 update clock in/out",
+          "useCase": "Used by calling services to public v1 update clock in/out",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-v1-clock-in-out",
+          "path": "/v1/public/clocks-in-out/{id}",
+          "method": "DELETE",
+          "description": "Public v1 delete clock in/out",
+          "useCase": "Used by calling services to public v1 delete clock in/out",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-v1-punch-settings",
+          "path": "/v1/public/settings",
+          "method": "GET",
+          "description": "Public v1 get punch settings",
+          "useCase": "Used by calling services to public v1 get punch settings",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-v1-punch-settings",
+          "path": "/v1/public/settings",
+          "method": "POST",
+          "description": "Public v1 upsert punch settings",
+          "useCase": "Used by calling services to public v1 upsert punch settings",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-v1-punch-users",
+          "path": "/v1/public/users",
+          "method": "GET",
+          "description": "Public v1 get punch users",
+          "useCase": "Used by calling services to public v1 get punch users",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcPunch-{env}",
+          "description": "Punch clock records \u2014 clock-in/out events per employee"
+        },
+        {
+          "type": "sqs",
+          "name": "svc-punch-dlq",
+          "description": "Retry queue for failed punch sync"
+        }
+      ]
+    },
+    {
+      "name": "svc-shops",
+      "type": "typescript-microservice",
+      "description": "Location and team management \u2014 stores, teams, opening hours and capacity rules",
+      "endpoints": [
+        {
+          "id": "api-get-organisations-config",
+          "path": "/organisations/{organisationId}/config",
+          "method": "GET",
+          "description": "Get organisation configuration",
+          "useCase": "Used by calling services to get organisation configuration",
+          "params": [
+            {
+              "name": "organisationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "organisationId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-organisation-config",
+          "path": "/organisations/{organisationId}/config",
+          "method": "POST",
+          "description": "Upsert organisation configuration",
+          "useCase": "Used by calling services to upsert organisation configuration",
+          "params": [
+            {
+              "name": "organisationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "organisationId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-shops",
+          "path": "/shops",
+          "method": "GET",
+          "description": "Get shops",
+          "useCase": "Used by calling services to get shops",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-shop",
+          "path": "/shops",
+          "method": "POST",
+          "description": "Create shop",
+          "useCase": "Used by calling services to create shop",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-shop",
+          "path": "/shops/{shopId}",
+          "method": "PATCH",
+          "description": "Update shop",
+          "useCase": "Used by calling services to update shop",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-shop",
+          "path": "/shops/{shopId}",
+          "method": "DELETE",
+          "description": "Delete shop",
+          "useCase": "Used by calling services to delete shop",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-missions",
+          "path": "/missions",
+          "method": "GET",
+          "description": "Get missions",
+          "useCase": "Used by calling services to get missions",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-mission",
+          "path": "/missions",
+          "method": "POST",
+          "description": "Create mission",
+          "useCase": "Used by calling services to create mission",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-mission",
+          "path": "/missions/{missionId}",
+          "method": "PATCH",
+          "description": "Update mission",
+          "useCase": "Used by calling services to update mission",
+          "params": [
+            {
+              "name": "missionId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "missionId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-mission",
+          "path": "/missions/{missionId}",
+          "method": "DELETE",
+          "description": "Delete mission",
+          "useCase": "Used by calling services to delete mission",
+          "params": [
+            {
+              "name": "missionId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "missionId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "mongodb",
+          "name": "svc-shops",
+          "description": "Shop configuration, missions and organisation settings"
+        }
+      ]
+    },
+    {
+      "name": "svc-search",
+      "type": "typescript-microservice",
+      "description": "Full-text and faceted search across employees, shops, shifts and documents",
+      "endpoints": [],
+      "databases": [
+        {
+          "type": "mongodb",
+          "name": "svc-search",
+          "description": "Search indexes and cached query results"
+        },
+        {
+          "type": "s3",
+          "name": "svc-search.{env}",
+          "description": "Bulk index snapshots and export files"
+        },
+        {
+          "type": "sqs",
+          "name": "svc-search-index-dlq",
+          "description": "Failed index update retry queue"
+        }
+      ]
+    },
+    {
+      "name": "svc-requests",
+      "type": "typescript-microservice",
+      "description": "Leave and absence request workflow \u2014 creation, approval chains and calendar sync",
+      "endpoints": [
+        {
+          "id": "api-get-leave-requests",
+          "path": "/leave-requests",
+          "method": "GET",
+          "description": "Get leave requests",
+          "useCase": "Used by calling services to get leave requests",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-leave-request",
+          "path": "/leave-requests",
+          "method": "POST",
+          "description": "Create leave request",
+          "useCase": "Used by calling services to create leave request",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-leave-request",
+          "path": "/leave-requests/{id}",
+          "method": "PATCH",
+          "description": "Update leave request",
+          "useCase": "Used by calling services to update leave request",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-leave-request",
+          "path": "/leave-requests/{id}",
+          "method": "DELETE",
+          "description": "Delete leave request",
+          "useCase": "Used by calling services to delete leave request",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-leave-request-selected-manager",
+          "path": "/leave-requests/{id}/selected-manager",
+          "method": "GET",
+          "description": "Get selected manager for leave request",
+          "useCase": "Used by calling services to get selected manager for leave request",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-update-leave-request-selected-manager",
+          "path": "/leave-requests/{id}/selected-manager",
+          "method": "PATCH",
+          "description": "Update selected manager for leave request",
+          "useCase": "Used by calling services to update selected manager for leave request",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "postgresql",
+          "name": "svc_requests",
+          "description": "Leave requests and availability rules (relational)"
+        },
+        {
+          "type": "sns",
+          "name": "svc-requests-sns",
+          "description": "Request state change notifications"
+        }
+      ]
+    },
+    {
+      "name": "svc-billing-automation",
+      "type": "typescript-microservice",
+      "description": "Subscription billing and invoice automation via Stripe",
+      "endpoints": [
+        {
+          "id": "api-get-quote",
+          "path": "/quotes/{quoteId}",
+          "method": "GET",
+          "description": "Get a quote by ID",
+          "useCase": "Used by calling services to get a quote by ID",
+          "params": [
+            {
+              "name": "quoteId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "quoteId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-quote",
+          "path": "/quotes",
+          "method": "POST",
+          "description": "Create a quote",
+          "useCase": "Used by calling services to create a quote",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-quote",
+          "path": "/quotes/{quoteId}",
+          "method": "PATCH",
+          "description": "Update a quote",
+          "useCase": "Used by calling services to update a quote",
+          "params": [
+            {
+              "name": "quoteId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "quoteId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-checkout-session",
+          "path": "/checkout/sessions",
+          "method": "POST",
+          "description": "Create a checkout session",
+          "useCase": "Used by calling services to create a checkout session",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-create-portal-session",
+          "path": "/portal/sessions",
+          "method": "POST",
+          "description": "Create a billing portal session",
+          "useCase": "Used by calling services to create a billing portal session",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-organisation",
+          "path": "/organisations/{organisationId}",
+          "method": "GET",
+          "description": "Get organisation billing info",
+          "useCase": "Used by calling services to get organisation billing info",
+          "params": [
+            {
+              "name": "organisationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "organisationId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-organisation",
+          "path": "/organisations",
+          "method": "POST",
+          "description": "Create organisation for billing",
+          "useCase": "Used by calling services to create organisation for billing",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-organisation",
+          "path": "/organisations/{organisationId}",
+          "method": "PATCH",
+          "description": "Update organisation billing info",
+          "useCase": "Used by calling services to update organisation billing info",
+          "params": [
+            {
+              "name": "organisationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "organisationId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-shop",
+          "path": "/shops/{shopId}",
+          "method": "GET",
+          "description": "Get shop billing info",
+          "useCase": "Used by calling services to get shop billing info",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-shop",
+          "path": "/shops",
+          "method": "POST",
+          "description": "Create shop for billing",
+          "useCase": "Used by calling services to create shop for billing",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-shop",
+          "path": "/shops/{shopId}",
+          "method": "PATCH",
+          "description": "Update shop billing info",
+          "useCase": "Used by calling services to update shop billing info",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-chargebee-source",
+          "path": "/chargebee/sources/{sourceId}",
+          "method": "GET",
+          "description": "Get Chargebee payment source",
+          "useCase": "Used by calling services to get Chargebee payment source",
+          "params": [
+            {
+              "name": "sourceId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "sourceId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-chargebee-source",
+          "path": "/chargebee/sources",
+          "method": "POST",
+          "description": "Create Chargebee payment source",
+          "useCase": "Used by calling services to create Chargebee payment source",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-delete-chargebee-source",
+          "path": "/chargebee/sources/{sourceId}",
+          "method": "DELETE",
+          "description": "Delete Chargebee payment source",
+          "useCase": "Used by calling services to delete Chargebee payment source",
+          "params": [
+            {
+              "name": "sourceId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "sourceId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-chargebee-contact",
+          "path": "/chargebee/contacts/{contactId}",
+          "method": "GET",
+          "description": "Get Chargebee contact",
+          "useCase": "Used by calling services to get Chargebee contact",
+          "params": [
+            {
+              "name": "contactId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "contactId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-chargebee-contact",
+          "path": "/chargebee/contacts",
+          "method": "POST",
+          "description": "Create Chargebee contact",
+          "useCase": "Used by calling services to create Chargebee contact",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-chargebee-contact",
+          "path": "/chargebee/contacts/{contactId}",
+          "method": "PATCH",
+          "description": "Update Chargebee contact",
+          "useCase": "Used by calling services to update Chargebee contact",
+          "params": [
+            {
+              "name": "contactId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "contactId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-billing",
+          "path": "/billing/{billingId}",
+          "method": "GET",
+          "description": "Get billing record",
+          "useCase": "Used by calling services to get billing record",
+          "params": [
+            {
+              "name": "billingId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "billingId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-billing",
+          "path": "/billing",
+          "method": "POST",
+          "description": "Create billing record",
+          "useCase": "Used by calling services to create billing record",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-billing",
+          "path": "/billing/{billingId}",
+          "method": "PATCH",
+          "description": "Update billing record",
+          "useCase": "Used by calling services to update billing record",
+          "params": [
+            {
+              "name": "billingId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "billingId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-self-serve",
+          "path": "/self-serve/{selfServeId}",
+          "method": "GET",
+          "description": "Get self-serve record",
+          "useCase": "Used by calling services to get self-serve record",
+          "params": [
+            {
+              "name": "selfServeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "selfServeId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-self-serve",
+          "path": "/self-serve",
+          "method": "POST",
+          "description": "Create self-serve record",
+          "useCase": "Used by calling services to create self-serve record",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-self-serve",
+          "path": "/self-serve/{selfServeId}",
+          "method": "PATCH",
+          "description": "Update self-serve record",
+          "useCase": "Used by calling services to update self-serve record",
+          "params": [
+            {
+              "name": "selfServeId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "selfServeId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-company-registration",
+          "path": "/company-registrations/{registrationId}",
+          "method": "GET",
+          "description": "Get company registration",
+          "useCase": "Used by calling services to get company registration",
+          "params": [
+            {
+              "name": "registrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "registrationId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-company-registration",
+          "path": "/company-registrations",
+          "method": "POST",
+          "description": "Create company registration",
+          "useCase": "Used by calling services to create company registration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-pricing",
+          "path": "/pricing",
+          "method": "GET",
+          "description": "Get pricing information",
+          "useCase": "Used by calling services to get pricing information",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-credit-balance",
+          "path": "/credit-balance",
+          "method": "GET",
+          "description": "Get credit balance",
+          "useCase": "Used by calling services to get credit balance",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-add-credit-balance",
+          "path": "/credit-balance",
+          "method": "POST",
+          "description": "Add credit balance",
+          "useCase": "Used by calling services to add credit balance",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcBillingAutomation-{env}",
+          "description": "Subscription quotes, contracts and billing state"
+        },
+        {
+          "type": "s3",
+          "name": "svc-billing-automation.{env}",
+          "description": "Contract documents and export files"
+        },
+        {
+          "type": "sqs",
+          "name": "svc-billing-automation-dlq",
+          "description": "Failed billing event retry queue"
+        },
+        {
+          "type": "sns",
+          "name": "svc-billing-automation-sns",
+          "description": "Contract lifecycle change notifications"
+        }
+      ]
+    },
+    {
+      "name": "svc-hris",
+      "type": "typescript-microservice",
+      "description": "HR Information System bridge \u2014 syncs employee and organisation data from external HRIS providers",
+      "endpoints": [
+        {
+          "id": "api-get-hris-integrations",
+          "path": "/integrations",
+          "method": "GET",
+          "description": "Get HRIS integrations",
+          "useCase": "Used by calling services to get HRIS integrations",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-connect-hris-integration",
+          "path": "/integrations/connect",
+          "method": "POST",
+          "description": "Connect HRIS integration",
+          "useCase": "Used by calling services to connect HRIS integration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-disconnect-hris-integration",
+          "path": "/integrations/{integrationId}/disconnect",
+          "method": "POST",
+          "description": "Disconnect HRIS integration",
+          "useCase": "Used by calling services to disconnect HRIS integration",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-sync-hris-integration",
+          "path": "/integrations/{integrationId}/sync",
+          "method": "POST",
+          "description": "Sync HRIS integration",
+          "useCase": "Used by calling services to sync HRIS integration",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-preview-hris-sync",
+          "path": "/integrations/{integrationId}/sync/preview",
+          "method": "GET",
+          "description": "Preview HRIS sync",
+          "useCase": "Used by calling services to preview HRIS sync",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-apply-hris-sync",
+          "path": "/integrations/{integrationId}/sync/apply",
+          "method": "POST",
+          "description": "Apply HRIS sync",
+          "useCase": "Used by calling services to apply HRIS sync",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-hris-fields",
+          "path": "/integrations/{integrationId}/fields",
+          "method": "GET",
+          "description": "Get HRIS integration fields",
+          "useCase": "Used by calling services to get HRIS integration fields",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-update-hris-fields",
+          "path": "/integrations/{integrationId}/fields",
+          "method": "PATCH",
+          "description": "Update HRIS integration fields mapping",
+          "useCase": "Used by calling services to update HRIS integration fields mapping",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-hris-employees",
+          "path": "/integrations/{integrationId}/employees",
+          "method": "GET",
+          "description": "Get HRIS employees",
+          "useCase": "Used by calling services to get HRIS employees",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-kombo-link",
+          "path": "/kombo/link",
+          "method": "GET",
+          "description": "Get Kombo integration link",
+          "useCase": "Used by calling services to get Kombo integration link",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-kombo-webhook",
+          "path": "/kombo/webhook",
+          "method": "POST",
+          "description": "Handle Kombo webhook",
+          "useCase": "Used by calling services to handle Kombo webhook",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-hris-shops",
+          "path": "/shops",
+          "method": "GET",
+          "description": "Get HRIS shops",
+          "useCase": "Used by calling services to get HRIS shops",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-update-hris-shop",
+          "path": "/shops/{shopId}",
+          "method": "PATCH",
+          "description": "Update HRIS shop",
+          "useCase": "Used by calling services to update HRIS shop",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcHris-{env}",
+          "description": "HRIS integration credentials and sync state"
+        },
+        {
+          "type": "s3",
+          "name": "svc-hris.{env}",
+          "description": "Employee data exports and import files"
+        },
+        {
+          "type": "sqs",
+          "name": "svc-hris-sync-dlq",
+          "description": "Failed HRIS sync retry queue"
+        }
+      ]
+    },
+    {
+      "name": "svc-intelligence",
+      "type": "typescript-microservice",
+      "description": "AI-powered analysis layer \u2014 OpenAI integration for document processing and assistant features",
+      "endpoints": [
+        {
+          "id": "api-analyse",
+          "path": "/analyse",
+          "method": "POST",
+          "description": "Analyse data with AI/intelligence",
+          "useCase": "Used by calling services to analyse data with AI/intelligence",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-dynamo-scan",
+          "path": "/dynamo-scan",
+          "method": "POST",
+          "description": "Scan DynamoDB for intelligence data",
+          "useCase": "Used by calling services to scan DynamoDB for intelligence data",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-validate-llm-response",
+          "path": "/validate-llm-response",
+          "method": "POST",
+          "description": "Validate LLM response",
+          "useCase": "Used by calling services to validate LLM response",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-validation-responses",
+          "path": "/validation-responses",
+          "method": "GET",
+          "description": "Get validation responses",
+          "useCase": "Used by calling services to get validation responses",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-validation-response",
+          "path": "/validation-responses",
+          "method": "POST",
+          "description": "Create validation response",
+          "useCase": "Used by calling services to create validation response",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcIntelligence-{env}",
+          "description": "AI model inference cache and prediction results"
+        },
+        {
+          "type": "mongodb",
+          "name": "svc-intelligence",
+          "description": "Historical workforce data for model training"
+        },
+        {
+          "type": "s3",
+          "name": "svc-intelligence.{env}",
+          "description": "Model artefacts and training datasets"
+        },
+        {
+          "type": "sqs",
+          "name": "svc-intelligence-dlq",
+          "description": "Failed inference job retry queue"
+        }
+      ]
+    },
+    {
+      "name": "svc-kpis-v2",
+      "type": "typescript-microservice",
+      "description": "Real-time KPI computation and dashboarding \u2014 labour costs, productivity and turnover metrics",
+      "endpoints": [
+        {
+          "id": "api-get-activity-prediction-settings",
+          "path": "/activity-prediction/settings",
+          "method": "GET",
+          "description": "Get activity prediction settings",
+          "useCase": "Used by calling services to get activity prediction settings",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-activity-prediction-settings",
+          "path": "/activity-prediction/settings",
+          "method": "POST",
+          "description": "Upsert activity prediction settings",
+          "useCase": "Used by calling services to upsert activity prediction settings",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-reference-week",
+          "path": "/reference-week",
+          "method": "GET",
+          "description": "Get reference week data",
+          "useCase": "Used by calling services to get reference week data",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-reference-week",
+          "path": "/reference-week",
+          "method": "POST",
+          "description": "Upsert reference week data",
+          "useCase": "Used by calling services to upsert reference week data",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-kpis",
+          "path": "/kpis",
+          "method": "GET",
+          "description": "Get KPIs",
+          "useCase": "Used by calling services to get KPIs",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-kpis",
+          "path": "/kpis",
+          "method": "POST",
+          "description": "Create KPIs",
+          "useCase": "Used by calling services to create KPIs",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-kpis",
+          "path": "/kpis/{kpiId}",
+          "method": "PATCH",
+          "description": "Update KPI",
+          "useCase": "Used by calling services to update KPI",
+          "params": [
+            {
+              "name": "kpiId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "kpiId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "mongodb",
+          "name": "svc-kpis-v2",
+          "description": "KPI time-series data \u2014 revenue, labour cost, hours"
+        }
+      ]
+    },
+    {
+      "name": "svc-trackers",
+      "type": "typescript-microservice",
+      "description": "Time tracker \u2014 project and task-based time logging across the workforce",
+      "endpoints": [
+        {
+          "id": "api-activate-shop-tracker-settings",
+          "path": "/shop-settings/activate",
+          "method": "POST",
+          "description": "Activate shop tracker settings",
+          "useCase": "Used by calling services to activate shop tracker settings",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-list-shop-tracker-settings",
+          "path": "/shop-settings",
+          "method": "GET",
+          "description": "List shop tracker settings",
+          "useCase": "Used by calling services to list shop tracker settings",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-deactivate-shop-tracker-settings",
+          "path": "/shop-settings/deactivate",
+          "method": "POST",
+          "description": "Deactivate shop tracker settings",
+          "useCase": "Used by calling services to deactivate shop tracker settings",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-employee-tracker-settings",
+          "path": "/employee-settings",
+          "method": "GET",
+          "description": "Get employee tracker settings",
+          "useCase": "Used by calling services to get employee tracker settings",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-employee-tracker-settings",
+          "path": "/employee-settings",
+          "method": "POST",
+          "description": "Upsert employee tracker settings",
+          "useCase": "Used by calling services to upsert employee tracker settings",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-trackers",
+          "path": "/trackers",
+          "method": "GET",
+          "description": "Get trackers",
+          "useCase": "Used by calling services to get trackers",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-upsert-tracker",
+          "path": "/trackers",
+          "method": "POST",
+          "description": "Upsert tracker",
+          "useCase": "Used by calling services to upsert tracker",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "mongodb",
+          "name": "svc-trackers",
+          "description": "Tracker settings and geofencing rules per shop"
+        }
+      ]
+    },
+    {
+      "name": "svc-bff",
+      "type": "typescript-microservice",
+      "description": "Backend-For-Frontend \u2014 aggregates data from multiple services into optimised frontend payloads",
+      "endpoints": [
+        {
+          "id": "api-orchestrate-documents",
+          "path": "/v1/documents",
+          "method": "POST",
+          "description": "BFF orchestration for documents",
+          "useCase": "Used by calling services to bFF orchestration for documents",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-bulk-update-kpis",
+          "path": "/v1/kpis",
+          "method": "POST",
+          "description": "BFF bulk update KPIs",
+          "useCase": "Used by calling services to bFF bulk update KPIs",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcBff-{env}",
+          "description": "BFF request cache and orchestration state"
+        }
+      ]
+    },
+    {
+      "name": "svc-bff-planning",
+      "type": "typescript-microservice",
+      "description": "Planning BFF \u2014 assembles shift scheduling data with employee context for the planning page",
+      "endpoints": [
+        {
+          "id": "api-compute-auto-scheduling",
+          "path": "/auto_scheduling/compute",
+          "method": "GET",
+          "description": "Compute auto scheduling data for planning BFF",
+          "useCase": "Used by calling services to compute auto scheduling data for planning BFF",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "mongodb",
+          "name": "svc-bff-planning",
+          "description": "Planning BFF cache and auto-scheduling request state"
+        }
+      ]
+    },
+    {
+      "name": "svc-automatic-scheduling",
+      "type": "typescript-microservice",
+      "description": "AI-powered automatic shift scheduling \u2014 generates optimal rotas based on constraints and forecasts",
+      "endpoints": [
+        {
+          "id": "api-get-shift-replacements",
+          "path": "/shift-replacements",
+          "method": "POST",
+          "description": "Get shift replacements candidates",
+          "useCase": "Used by calling services to get shift replacements candidates",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-trigger-auto-scheduling",
+          "path": "/auto-scheduling/trigger",
+          "method": "POST",
+          "description": "Trigger auto scheduling computation",
+          "useCase": "Used by calling services to trigger auto scheduling computation",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "mongodb",
+          "name": "svc-automatic-scheduling",
+          "description": "Optimisation results and shift generation history"
+        }
+      ]
+    },
+    {
+      "name": "svc-modularisation",
+      "type": "typescript-microservice",
+      "description": "Feature module configuration \u2014 controls which product modules are enabled per account",
+      "endpoints": [
+        {
+          "id": "api-get-modularisation",
+          "path": "/modularisation",
+          "method": "GET",
+          "description": "Get modularisation configuration",
+          "useCase": "Used by calling services to get modularisation configuration",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcModularisation-{env}",
+          "description": "Module activation flags per shop and organisation"
+        }
+      ]
+    },
+    {
+      "name": "svc-shifts",
+      "type": "typescript-microservice",
+      "description": "Shift scheduling engine \u2014 CRUD for shifts, validations and publication",
+      "endpoints": [
+        {
+          "id": "api-get-employee-shift-metrics",
+          "path": "/shift-metrics/employee",
+          "method": "POST",
+          "description": "Get shift metrics for an employee",
+          "useCase": "Used by calling services to get shift metrics for an employee",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-employees-for-shifts",
+          "path": "/employees-for-shifts",
+          "method": "POST",
+          "description": "Get employees eligible for shifts",
+          "useCase": "Used by calling services to get employees eligible for shifts",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-shop-and-orga-shift-metrics",
+          "path": "/shift-metrics/shop-and-orga",
+          "method": "POST",
+          "description": "Get shift metrics for shop and organisation",
+          "useCase": "Used by calling services to get shift metrics for shop and organisation",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-shift-details",
+          "path": "/shift-details",
+          "method": "POST",
+          "description": "Get shift details",
+          "useCase": "Used by calling services to get shift details",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "mongodb",
+          "name": "svc-shifts",
+          "description": "Shift metrics and employee aggregated shift data"
+        }
+      ]
+    },
+    {
+      "name": "svc-reports",
+      "type": "typescript-microservice",
+      "description": "Async report generation \u2014 exports timesheets, payroll summaries and compliance reports",
+      "endpoints": [
+        {
+          "id": "api-get-pam-configs",
+          "path": "/pam-configs",
+          "method": "GET",
+          "description": "Get PAM configurations",
+          "useCase": "Used by calling services to get PAM configurations",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-pam-config",
+          "path": "/pam-configs",
+          "method": "POST",
+          "description": "Create PAM configuration",
+          "useCase": "Used by calling services to create PAM configuration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-pam-config",
+          "path": "/pam-configs/{configId}",
+          "method": "PATCH",
+          "description": "Update PAM configuration",
+          "useCase": "Used by calling services to update PAM configuration",
+          "params": [
+            {
+              "name": "configId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "configId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-pam-config",
+          "path": "/pam-configs/{configId}",
+          "method": "DELETE",
+          "description": "Delete PAM configuration",
+          "useCase": "Used by calling services to delete PAM configuration",
+          "params": [
+            {
+              "name": "configId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "configId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-variable-pay-elements-custom",
+          "path": "/variable-pay-elements/custom",
+          "method": "GET",
+          "description": "Get custom variable pay elements",
+          "useCase": "Used by calling services to get custom variable pay elements",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-variable-pay-element-custom",
+          "path": "/variable-pay-elements/custom",
+          "method": "POST",
+          "description": "Create custom variable pay element",
+          "useCase": "Used by calling services to create custom variable pay element",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-variable-pay-element-custom",
+          "path": "/variable-pay-elements/custom/{elementId}",
+          "method": "PATCH",
+          "description": "Update custom variable pay element",
+          "useCase": "Used by calling services to update custom variable pay element",
+          "params": [
+            {
+              "name": "elementId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "elementId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-variable-pay-element-custom",
+          "path": "/variable-pay-elements/custom/{elementId}",
+          "method": "DELETE",
+          "description": "Delete custom variable pay element",
+          "useCase": "Used by calling services to delete custom variable pay element",
+          "params": [
+            {
+              "name": "elementId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "elementId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-payroll-softwares",
+          "path": "/payroll-softwares",
+          "method": "GET",
+          "description": "Get payroll softwares",
+          "useCase": "Used by calling services to get payroll softwares",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-payroll-software",
+          "path": "/payroll-softwares",
+          "method": "POST",
+          "description": "Create payroll software",
+          "useCase": "Used by calling services to create payroll software",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-payroll-software",
+          "path": "/payroll-softwares/{softwareId}",
+          "method": "PATCH",
+          "description": "Update payroll software",
+          "useCase": "Used by calling services to update payroll software",
+          "params": [
+            {
+              "name": "softwareId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "softwareId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-payroll-software",
+          "path": "/payroll-softwares/{softwareId}",
+          "method": "DELETE",
+          "description": "Delete payroll software",
+          "useCase": "Used by calling services to delete payroll software",
+          "params": [
+            {
+              "name": "softwareId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "softwareId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-report-configs",
+          "path": "/report-configs",
+          "method": "GET",
+          "description": "Get report configurations",
+          "useCase": "Used by calling services to get report configurations",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-report-config",
+          "path": "/report-configs",
+          "method": "POST",
+          "description": "Create report configuration",
+          "useCase": "Used by calling services to create report configuration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-report-config",
+          "path": "/report-configs/{configId}",
+          "method": "PATCH",
+          "description": "Update report configuration",
+          "useCase": "Used by calling services to update report configuration",
+          "params": [
+            {
+              "name": "configId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "configId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-report-config",
+          "path": "/report-configs/{configId}",
+          "method": "DELETE",
+          "description": "Delete report configuration",
+          "useCase": "Used by calling services to delete report configuration",
+          "params": [
+            {
+              "name": "configId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "configId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-column-sets",
+          "path": "/column-sets",
+          "method": "GET",
+          "description": "Get column sets",
+          "useCase": "Used by calling services to get column sets",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-column-set",
+          "path": "/column-sets",
+          "method": "POST",
+          "description": "Create column set",
+          "useCase": "Used by calling services to create column set",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-column-set",
+          "path": "/column-sets/{columnSetId}",
+          "method": "PATCH",
+          "description": "Update column set",
+          "useCase": "Used by calling services to update column set",
+          "params": [
+            {
+              "name": "columnSetId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "columnSetId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-column-set",
+          "path": "/column-sets/{columnSetId}",
+          "method": "DELETE",
+          "description": "Delete column set",
+          "useCase": "Used by calling services to delete column set",
+          "params": [
+            {
+              "name": "columnSetId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "columnSetId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcReports-{env}",
+          "description": "PAM configs, payroll software mappings and report jobs"
+        }
+      ]
+    },
+    {
+      "name": "svc-enrollment",
+      "type": "typescript-microservice",
+      "description": "Account onboarding orchestration \u2014 manages multi-step setup flow for new accounts",
+      "endpoints": [
+        {
+          "id": "api-get-onboardings",
+          "path": "/onboardings",
+          "method": "GET",
+          "description": "Get onboardings",
+          "useCase": "Used by calling services to get onboardings",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-onboarding",
+          "path": "/onboardings",
+          "method": "POST",
+          "description": "Create onboarding",
+          "useCase": "Used by calling services to create onboarding",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-onboarding",
+          "path": "/onboardings/{id}",
+          "method": "PATCH",
+          "description": "Update onboarding",
+          "useCase": "Used by calling services to update onboarding",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-onboarding",
+          "path": "/onboardings/{id}",
+          "method": "DELETE",
+          "description": "Delete onboarding",
+          "useCase": "Used by calling services to delete onboarding",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-collective-agreements",
+          "path": "/collective-agreements",
+          "method": "GET",
+          "description": "Get collective agreements",
+          "useCase": "Used by calling services to get collective agreements",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcEnrollment-{env}",
+          "description": "Onboarding flows and shop enrollment state"
+        },
+        {
+          "type": "s3",
+          "name": "svc-enrollment.conventions.{env}",
+          "description": "Collective agreement documents"
+        }
+      ]
+    },
+    {
+      "name": "svc-users",
+      "type": "typescript-microservice",
+      "description": "User identity and authentication management",
+      "endpoints": [
+        {
+          "id": "api-login-capability",
+          "path": "/login/capability",
+          "method": "GET",
+          "description": "Get login capability (SSO vs password, etc.)",
+          "useCase": "Used by calling services to get login capability (SSO vs password, etc.)",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-sso-callback",
+          "path": "/sso/{provider}/callback",
+          "method": "GET",
+          "description": "SSO provider callback",
+          "useCase": "Used by calling services to sSO provider callback",
+          "params": [
+            {
+              "name": "provider",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "provider identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-sso-configuration-by-organisation",
+          "path": "/sso-configurations",
+          "method": "GET",
+          "description": "Get SSO configuration by organisation",
+          "useCase": "Used by calling services to get SSO configuration by organisation",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-or-update-sso-configuration",
+          "path": "/sso-configurations",
+          "method": "POST",
+          "description": "Create or update SSO configuration",
+          "useCase": "Used by calling services to create or update SSO configuration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "docs-swagger-api",
+          "path": "/docs",
+          "method": "GET",
+          "description": "Swagger API docs",
+          "useCase": "Used by calling services to swagger API docs",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "docs-public-swagger-api",
+          "path": "/public/docs",
+          "method": "GET",
+          "description": "Public Swagger API docs",
+          "useCase": "Used by calling services to public Swagger API docs",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcUsers-{env}",
+          "description": "User authentication tokens and SSO sessions"
+        },
+        {
+          "type": "postgresql",
+          "name": "svc_users",
+          "description": "User accounts and capability grants (relational)"
+        }
+      ]
+    },
+    {
+      "name": "svc-labour-laws",
+      "type": "typescript-microservice",
+      "description": "Labour law rules engine \u2014 validates schedules against country-specific legal constraints",
+      "endpoints": [
+        {
+          "id": "api-upsert-shop",
+          "path": "/shops",
+          "method": "POST",
+          "description": "Upsert shop labour law data",
+          "useCase": "Used by calling services to upsert shop labour law data",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-batch-upsert-shops",
+          "path": "/shops/batch",
+          "method": "POST",
+          "description": "Batch upsert shops labour law data",
+          "useCase": "Used by calling services to batch upsert shops labour law data",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-labour-law-overrides",
+          "path": "/overrides",
+          "method": "GET",
+          "description": "Get labour law overrides",
+          "useCase": "Used by calling services to get labour law overrides",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-labour-law-override",
+          "path": "/overrides",
+          "method": "POST",
+          "description": "Create labour law override",
+          "useCase": "Used by calling services to create labour law override",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-labour-law-override",
+          "path": "/overrides/{overrideId}",
+          "method": "PATCH",
+          "description": "Update labour law override",
+          "useCase": "Used by calling services to update labour law override",
+          "params": [
+            {
+              "name": "overrideId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "overrideId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-labour-law-override",
+          "path": "/overrides/{overrideId}",
+          "method": "DELETE",
+          "description": "Delete labour law override",
+          "useCase": "Used by calling services to delete labour law override",
+          "params": [
+            {
+              "name": "overrideId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "overrideId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-labour-laws",
+          "path": "/labour-laws",
+          "method": "GET",
+          "description": "Get labour laws",
+          "useCase": "Used by calling services to get labour laws",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-labour-law",
+          "path": "/labour-laws",
+          "method": "POST",
+          "description": "Create labour law",
+          "useCase": "Used by calling services to create labour law",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-labour-law",
+          "path": "/labour-laws/{labourLawId}",
+          "method": "PATCH",
+          "description": "Update labour law",
+          "useCase": "Used by calling services to update labour law",
+          "params": [
+            {
+              "name": "labourLawId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "labourLawId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-labour-law",
+          "path": "/labour-laws/{labourLawId}",
+          "method": "DELETE",
+          "description": "Delete labour law",
+          "useCase": "Used by calling services to delete labour law",
+          "params": [
+            {
+              "name": "labourLawId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "labourLawId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-country-default-settings",
+          "path": "/country-default-settings",
+          "method": "GET",
+          "description": "Get country default settings",
+          "useCase": "Used by calling services to get country default settings",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcLabourLaws-{env}",
+          "description": "Labour law rule sets and shop compliance configs"
+        }
+      ]
+    },
+    {
+      "name": "svc-pos",
+      "type": "typescript-microservice",
+      "description": "Point-of-sale integration \u2014 syncs revenue and transaction data from POS terminals for KPI forecasting",
+      "endpoints": [
+        {
+          "id": "api-get-chift-providers",
+          "path": "/chift/providers",
+          "method": "GET",
+          "description": "Get Chift POS providers",
+          "useCase": "Used by calling services to get Chift POS providers",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-handle-chift-webhook",
+          "path": "/chift/webhook",
+          "method": "POST",
+          "description": "Handle Chift webhook",
+          "useCase": "Used by calling services to handle Chift webhook",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-activate-chift-integration",
+          "path": "/chift/activate",
+          "method": "POST",
+          "description": "Activate Chift POS integration",
+          "useCase": "Used by calling services to activate Chift POS integration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-integrations",
+          "path": "/integrations",
+          "method": "GET",
+          "description": "Get POS integrations",
+          "useCase": "Used by calling services to get POS integrations",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-integration",
+          "path": "/integrations",
+          "method": "POST",
+          "description": "Create POS integration",
+          "useCase": "Used by calling services to create POS integration",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-integration",
+          "path": "/integrations/{integrationId}",
+          "method": "GET",
+          "description": "Get POS integration by ID",
+          "useCase": "Used by calling services to get POS integration by ID",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-update-integration",
+          "path": "/integrations/{integrationId}",
+          "method": "PATCH",
+          "description": "Update POS integration",
+          "useCase": "Used by calling services to update POS integration",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-integration",
+          "path": "/integrations/{integrationId}",
+          "method": "DELETE",
+          "description": "Delete POS integration",
+          "useCase": "Used by calling services to delete POS integration",
+          "params": [
+            {
+              "name": "integrationId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "integrationId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-providers",
+          "path": "/providers",
+          "method": "GET",
+          "description": "Get POS providers",
+          "useCase": "Used by calling services to get POS providers",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-provider",
+          "path": "/providers",
+          "method": "POST",
+          "description": "Create POS provider",
+          "useCase": "Used by calling services to create POS provider",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-provider",
+          "path": "/providers/{providerId}",
+          "method": "GET",
+          "description": "Get POS provider by ID",
+          "useCase": "Used by calling services to get POS provider by ID",
+          "params": [
+            {
+              "name": "providerId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "providerId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-update-provider",
+          "path": "/providers/{providerId}",
+          "method": "PATCH",
+          "description": "Update POS provider",
+          "useCase": "Used by calling services to update POS provider",
+          "params": [
+            {
+              "name": "providerId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "providerId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-provider",
+          "path": "/providers/{providerId}",
+          "method": "DELETE",
+          "description": "Delete POS provider",
+          "useCase": "Used by calling services to delete POS provider",
+          "params": [
+            {
+              "name": "providerId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "providerId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-shop-integrations",
+          "path": "/shops/{shopId}/integrations",
+          "method": "GET",
+          "description": "Get POS integrations for a shop",
+          "useCase": "Used by calling services to get POS integrations for a shop",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-activate-shop-integration",
+          "path": "/shops/{shopId}/integrations/activate",
+          "method": "POST",
+          "description": "Activate POS integration for a shop",
+          "useCase": "Used by calling services to activate POS integration for a shop",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-deactivate-shop-integration",
+          "path": "/shops/{shopId}/integrations/deactivate",
+          "method": "POST",
+          "description": "Deactivate POS integration for a shop",
+          "useCase": "Used by calling services to deactivate POS integration for a shop",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-shop-sales",
+          "path": "/shops/{shopId}/sales",
+          "method": "GET",
+          "description": "Get POS sales data for a shop",
+          "useCase": "Used by calling services to get POS sales data for a shop",
+          "params": [
+            {
+              "name": "shopId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "shopId identifier"
+            }
+          ],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcPos-{env}",
+          "description": "POS integration credentials and webhook state"
+        }
+      ]
+    },
+    {
+      "name": "svc-skello-assistant",
+      "type": "typescript-microservice",
+      "description": "AI assistant orchestrator \u2014 routes user queries to appropriate AI capabilities",
+      "endpoints": [
+        {
+          "id": "api-chat",
+          "path": "/chat",
+          "method": "POST",
+          "description": "Send a chat message to the Skello assistant",
+          "useCase": "Used by calling services to send a chat message to the Skello assistant",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-conversation-feedback",
+          "path": "/conversation/{id}/feedback",
+          "method": "POST",
+          "description": "Submit feedback on a conversation",
+          "useCase": "Used by calling services to submit feedback on a conversation",
+          "params": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "id identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-chat-download",
+          "path": "/chat/download",
+          "method": "GET",
+          "description": "Download chat conversation export",
+          "useCase": "Used by calling services to download chat conversation export",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-chat-conversations",
+          "path": "/chat/conversations",
+          "method": "GET",
+          "description": "Get chat conversations list",
+          "useCase": "Used by calling services to get chat conversations list",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "mongodb",
+          "name": "svc-skello-assistant",
+          "description": "LangGraph conversation state checkpoints (MongoDB)"
+        }
+      ]
+    },
+    {
+      "name": "svc-documents-esignature",
+      "type": "typescript-microservice",
+      "description": "Electronic signature workflows \u2014 integrates with e-signature providers (DocuSign / Yousign)",
+      "endpoints": [
+        {
+          "id": "api-attendance-sheet-signature-reminder",
+          "path": "/attendance-sheet-signature-reminder",
+          "method": "POST",
+          "description": "Send attendance sheet signature reminder",
+          "useCase": "Used by calling services to send attendance sheet signature reminder",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-document-signable",
+          "path": "/document-signable",
+          "method": "GET",
+          "description": "Check if document is signable",
+          "useCase": "Used by calling services to check if document is signable",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-document-signature-reminder",
+          "path": "/document-signature-reminder",
+          "method": "POST",
+          "description": "Send document signature reminder",
+          "useCase": "Used by calling services to send document signature reminder",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-documents-status",
+          "path": "/documents-status",
+          "method": "GET",
+          "description": "Get documents signature status",
+          "useCase": "Used by calling services to get documents signature status",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcDocumentsEsignature-{env}",
+          "description": "E-signature requests and signatory state"
+        },
+        {
+          "type": "s3",
+          "name": "svc-esignature.{env}",
+          "description": "Signed document storage"
+        },
+        {
+          "type": "sqs",
+          "name": "svc-esignature-dlq",
+          "description": "Failed signature event retry queue"
+        }
+      ]
+    },
+    {
+      "name": "svc-workload-plan",
+      "type": "typescript-microservice",
+      "description": "Workload forecasting \u2014 predicts staffing needs based on POS revenue and historical patterns",
+      "endpoints": [
+        {
+          "id": "api-get-workload-plans-v1",
+          "path": "/workload-plans",
+          "method": "GET",
+          "description": "Get workload plans (v1)",
+          "useCase": "Used by calling services to get workload plans (v1)",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-workload-plan-v1",
+          "path": "/workload-plans",
+          "method": "POST",
+          "description": "Create workload plan (v1)",
+          "useCase": "Used by calling services to create workload plan (v1)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-workload-plans-v2",
+          "path": "/v2/workload-plans",
+          "method": "GET",
+          "description": "Get workload plans (v2)",
+          "useCase": "Used by calling services to get workload plans (v2)",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-workload-plan-v2",
+          "path": "/v2/workload-plans",
+          "method": "POST",
+          "description": "Create workload plan (v2)",
+          "useCase": "Used by calling services to create workload plan (v2)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-get-workload-rules-v2",
+          "path": "/v2/workload-rules",
+          "method": "GET",
+          "description": "Get workload rules (v2)",
+          "useCase": "Used by calling services to get workload rules (v2)",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-workload-rule-v2",
+          "path": "/v2/workload-rules",
+          "method": "POST",
+          "description": "Create workload rule (v2)",
+          "useCase": "Used by calling services to create workload rule (v2)",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcWorkloadPlan-{env}",
+          "description": "Workload plans and staffing forecast records"
+        },
+        {
+          "type": "mongodb",
+          "name": "svc-workload-plan",
+          "description": "Historical workload data for forecast models"
+        },
+        {
+          "type": "sqs",
+          "name": "svc-workload-plan-dlq",
+          "description": "Failed plan computation retry queue"
+        }
+      ]
+    },
+    {
+      "name": "svc-feature-flags",
+      "type": "typescript-microservice",
+      "description": "Feature flag management \u2014 controls feature rollout per account, percentage or user group",
+      "endpoints": [
+        {
+          "id": "api-get-feature-flags",
+          "path": "/feature-flags",
+          "method": "GET",
+          "description": "Get feature flags",
+          "useCase": "Used by calling services to get feature flags",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-feature-flag",
+          "path": "/feature-flags",
+          "method": "POST",
+          "description": "Create feature flag",
+          "useCase": "Used by calling services to create feature flag",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-update-feature-flag",
+          "path": "/feature-flags/{flagId}",
+          "method": "PATCH",
+          "description": "Update feature flag",
+          "useCase": "Used by calling services to update feature flag",
+          "params": [
+            {
+              "name": "flagId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "flagId identifier"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "200": "Updated",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-delete-feature-flag",
+          "path": "/feature-flags/{flagId}",
+          "method": "DELETE",
+          "description": "Delete feature flag",
+          "useCase": "Used by calling services to delete feature flag",
+          "params": [
+            {
+              "name": "flagId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "flagId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-get-feature-flags-dev",
+          "path": "/feature-flags-dev",
+          "method": "GET",
+          "description": "Get dev feature flags",
+          "useCase": "Used by calling services to get dev feature flags",
+          "params": [],
+          "response": {
+            "200": "Success response",
+            "404": "Not found"
+          }
+        },
+        {
+          "id": "api-create-feature-flag-dev",
+          "path": "/feature-flags-dev",
+          "method": "POST",
+          "description": "Create dev feature flag",
+          "useCase": "Used by calling services to create dev feature flag",
+          "params": [
+            {
+              "name": "body",
+              "in": "body",
+              "type": "object",
+              "required": true,
+              "description": "Request payload"
+            }
+          ],
+          "response": {
+            "201": "Created",
+            "400": "Validation error"
+          }
+        },
+        {
+          "id": "api-delete-feature-flag-dev",
+          "path": "/feature-flags-dev/{flagId}",
+          "method": "DELETE",
+          "description": "Delete dev feature flag",
+          "useCase": "Used by calling services to delete dev feature flag",
+          "params": [
+            {
+              "name": "flagId",
+              "in": "path",
+              "type": "string",
+              "required": true,
+              "description": "flagId identifier"
+            }
+          ],
+          "response": {
+            "204": "Deleted",
+            "404": "Not found"
+          }
+        }
+      ],
+      "databases": [
+        {
+          "type": "dynamodb",
+          "name": "svcFeatureFlags-{env}",
+          "description": "Feature flag definitions and shop-level overrides"
+        }
+      ]
+    },
+    {
+      "name": "superadmin",
+      "type": "vue-frontend",
+      "description": "Internal admin dashboard for Skello operators \u2014 manages billing, organisations, employees and platform configuration",
+      "endpoints": []
+    },
+    {
+      "name": "skello-app",
+      "type": "rails-monolith",
+      "description": "Core Rails monolith \u2014 the main backend serving the Vue frontend, handling scheduling, payroll, HR and billing",
+      "endpoints": [],
+      "databases": [
+        {
+          "type": "postgresql",
+          "name": "skello_production",
+          "description": "Main relational database \u2014 all core Skello data"
+        },
+        {
+          "type": "redis",
+          "name": "skello-redis",
+          "description": "Sidekiq job queues, session store and caching"
+        },
+        {
+          "type": "dynamodb",
+          "name": "skello-dynamodb",
+          "description": "DynamoDB for high-throughput writes"
+        },
+        {
+          "type": "s3",
+          "name": "skello-assets.{env}",
+          "description": "User-uploaded files, documents and media"
+        },
+        {
+          "type": "sqs",
+          "name": "skello-sqs-events",
+          "description": "Async SQS messages to/from microservices"
+        }
+      ]
+    },
+    {
+      "name": "skello-app-front",
+      "type": "vue-frontend",
+      "description": "Main Vue 2 frontend \u2014 scheduling, HR, reports, requests and planning for Skello operators",
+      "endpoints": []
+    }
+  ],
+  "connections": [
+    {
+      "from": "svc-events",
+      "to": "svc-communications-v2",
+      "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+      "description": "Publishes event notifications to employees via email/push",
+      "usedEndpoints": [
+        "bulk-create-high-priority-email-route",
+        "bulk-create-low-priority-email-route",
+        "bulk-create-high-priority-notification-route"
+      ]
+    },
+    {
+      "from": "svc-skello-assistant",
+      "to": "svc-communications-v2",
+      "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+      "description": "Sends confirmation messages and summaries to users",
+      "usedEndpoints": [
+        "bulk-create-high-priority-email-route",
+        "bulk-create-low-priority-email-route",
+        "bulk-create-high-priority-notification-route"
+      ]
+    },
+    {
+      "from": "svc-billing-automation",
+      "to": "svc-communications-v2",
+      "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+      "description": "Sends invoices, payment failures and subscription notifications",
+      "usedEndpoints": [
+        "bulk-create-high-priority-email-route",
+        "bulk-create-low-priority-email-route",
+        "bulk-create-high-priority-sms-route"
+      ]
+    },
+    {
+      "from": "svc-documents-v2",
+      "to": "svc-communications-v2",
+      "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+      "description": "Notifies employees when a document is ready to sign",
+      "usedEndpoints": [
+        "bulk-create-high-priority-email-route",
+        "bulk-create-low-priority-email-route",
+        "bulk-create-high-priority-notification-route"
+      ]
+    },
+    {
+      "from": "svc-hris",
+      "to": "svc-communications-v2",
+      "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+      "description": "Sends HRIS sync completion and mismatch alerts",
+      "usedEndpoints": [
+        "bulk-create-high-priority-email-route",
+        "bulk-create-low-priority-email-route"
+      ]
+    },
+    {
+      "from": "svc-users",
+      "to": "svc-communications-v2",
+      "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+      "description": "Sends welcome emails and password reset emails on user creation",
+      "usedEndpoints": [
+        "bulk-create-high-priority-email-route",
+        "bulk-create-low-priority-email-route"
+      ]
+    },
+    {
+      "from": "svc-requests",
+      "to": "svc-communications-v2",
+      "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+      "description": "Notifies employees of request approval/rejection",
+      "usedEndpoints": [
+        "bulk-create-high-priority-email-route",
+        "bulk-create-low-priority-email-route",
+        "bulk-create-high-priority-notification-route"
+      ]
+    },
+    {
+      "from": "svc-employees",
+      "to": "svc-communications-v2",
+      "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+      "description": "Sends onboarding invitation emails to new employees",
+      "usedEndpoints": [
+        "bulk-create-high-priority-email-route",
+        "bulk-create-low-priority-email-route"
+      ]
+    },
+    {
+      "from": "svc-intelligence",
+      "to": "svc-documents-v2",
+      "sdkPackage": "@skelloapp/svc-documents-v2-client",
+      "description": "Fetches document content for AI processing and analysis",
+      "usedEndpoints": [
+        "api-bulk-send-signature-reminders",
+        "api-bulk-send-reminders-from-filters"
+      ]
+    },
+    {
+      "from": "svc-communications-v2",
+      "to": "svc-documents-v2",
+      "sdkPackage": "@skelloapp/svc-documents-v2-client",
+      "description": "Retrieves documents to attach to emails (e.g. payslips, contracts)",
+      "usedEndpoints": [
+        "api-bulk-send-signature-reminders",
+        "api-bulk-send-reminders-from-filters"
+      ]
+    },
+    {
+      "from": "svc-skello-assistant",
+      "to": "svc-documents-v2",
+      "sdkPackage": "@skelloapp/svc-documents-v2-client",
+      "description": "Fetches documents for AI analysis and answer grounding",
+      "usedEndpoints": [
+        "api-bulk-send-signature-reminders",
+        "api-bulk-send-reminders-from-filters"
+      ]
+    },
+    {
+      "from": "svc-documents-esignature",
+      "to": "svc-documents-v2",
+      "sdkPackage": "@skelloapp/svc-documents-v2-client",
+      "description": "Retrieves document file for e-signature provider and updates status after signing",
+      "usedEndpoints": [
+        "api-bulk-send-signature-reminders"
+      ]
+    },
+    {
+      "from": "svc-bff",
+      "to": "svc-documents-v2",
+      "sdkPackage": "@skelloapp/svc-documents-v2-client",
+      "description": "Aggregates employee documents for the BFF document list view",
+      "usedEndpoints": [
+        "api-bulk-send-signature-reminders",
+        "api-bulk-send-reminders-from-filters"
+      ]
+    },
+    {
+      "from": "svc-shops",
+      "to": "svc-employees",
+      "sdkPackage": "@skelloapp/svc-employees-client",
+      "description": "Looks up employee details when building shop/team rosters",
+      "usedEndpoints": [
+        "api-get-employees",
+        "api-get-employee"
+      ]
+    },
+    {
+      "from": "svc-hris",
+      "to": "svc-employees",
+      "sdkPackage": "@skelloapp/svc-employees-client",
+      "description": "Syncs HRIS employee data into Skello employee records",
+      "usedEndpoints": [
+        "api-bulk-upsert-employees",
+        "api-get-employee",
+        "api-update-employee"
+      ]
+    },
+    {
+      "from": "svc-kpis-v2",
+      "to": "svc-employees",
+      "sdkPackage": "@skelloapp/svc-employees-client",
+      "description": "Retrieves employee contract data (hours, costs) for KPI computation",
+      "usedEndpoints": [
+        "api-get-employees",
+        "api-get-employee-contracts"
+      ]
+    },
+    {
+      "from": "svc-trackers",
+      "to": "svc-search",
+      "sdkPackage": "@skelloapp/svc-search-sdk",
+      "description": "Indexes time tracker entries for project search",
+      "usedEndpoints": []
+    },
+    {
+      "from": "svc-shops",
+      "to": "svc-search",
+      "sdkPackage": "@skelloapp/svc-search-sdk",
+      "description": "Indexes shop locations for global search",
+      "usedEndpoints": []
+    },
+    {
+      "from": "svc-kpis-v2",
+      "to": "svc-search",
+      "sdkPackage": "@skelloapp/svc-search-sdk",
+      "description": "Indexes KPI snapshots for analytics search",
+      "usedEndpoints": []
+    },
+    {
+      "from": "svc-automatic-scheduling",
+      "to": "svc-search",
+      "sdkPackage": "@skelloapp/svc-search-sdk",
+      "description": "Queries employee and shop data for constraint-based scheduling",
+      "usedEndpoints": []
+    },
+    {
+      "from": "svc-bff-planning",
+      "to": "svc-search",
+      "sdkPackage": "@skelloapp/svc-search-sdk",
+      "description": "Searches employees and shops for the planning page",
+      "usedEndpoints": []
+    },
+    {
+      "from": "svc-users",
+      "to": "svc-punch",
+      "sdkPackage": "@skelloapp/svc-punch-sdk",
+      "description": "Provisions punch clock tokens for employees at login",
+      "usedEndpoints": [
+        "api-get-clocks-in-out",
+        "api-create-clock-in-out"
+      ]
+    },
+    {
+      "from": "svc-skello-assistant",
+      "to": "svc-billing-automation",
+      "sdkPackage": "@skelloapp/svc-billing-automation-sdk",
+      "description": "Answers billing and subscription questions from the assistant",
+      "usedEndpoints": [
+        "api-get-quote",
+        "api-create-quote"
+      ]
+    },
+    {
+      "from": "svc-communications-v2",
+      "to": "svc-events",
+      "sdkPackage": "@skelloapp/svc-events-sdk",
+      "description": "Publishes communication_sent and communication_failed events",
+      "usedEndpoints": [
+        "api-event-create"
+      ]
+    },
+    {
+      "from": "svc-employees",
+      "to": "svc-events",
+      "sdkPackage": "@skelloapp/svc-events-sdk",
+      "description": "Publishes employee.created, employee.updated, employee.deleted domain events",
+      "usedEndpoints": [
+        "api-event-create"
+      ]
+    },
+    {
+      "from": "svc-requests",
+      "to": "svc-events",
+      "sdkPackage": "@skelloapp/svc-events-sdk",
+      "description": "Publishes request.approved and request.rejected events for downstream consumers",
+      "usedEndpoints": [
+        "api-event-create"
+      ]
+    },
+    {
+      "from": "svc-hris",
+      "to": "svc-shops",
+      "sdkPackage": "@skelloapp/svc-shops-sdk",
+      "description": "Maps HRIS cost centres to Skello shop locations during sync",
+      "usedEndpoints": [
+        "api-get-shops"
+      ]
+    },
+    {
+      "from": "svc-workload-plan",
+      "to": "svc-kpis-v2",
+      "sdkPackage": "@skelloapp/svc-kpis-v2-sdk",
+      "description": "Fetches historical KPIs to train workload forecasting models",
+      "usedEndpoints": [
+        "api-get-activity-prediction-settings",
+        "api-upsert-activity-prediction-settings"
+      ]
+    },
+    {
+      "from": "svc-bff",
+      "to": "svc-kpis-v2",
+      "sdkPackage": "@skelloapp/svc-kpis-v2-sdk",
+      "description": "Includes KPI summary in the composite BFF dashboard response",
+      "usedEndpoints": [
+        "api-get-activity-prediction-settings",
+        "api-upsert-activity-prediction-settings"
+      ]
+    },
+    {
+      "from": "svc-bff-planning",
+      "to": "svc-automatic-scheduling",
+      "sdkPackage": "@skelloapp/svc-automatic-scheduling-sdk",
+      "description": "Proxies auto-schedule requests from the planning page to the scheduling engine",
+      "usedEndpoints": [
+        "api-get-shift-replacements",
+        "api-trigger-auto-scheduling"
+      ]
+    },
+    {
+      "from": "svc-documents-v2",
+      "to": "svc-intelligence",
+      "sdkPackage": "@skelloapp/svc-intelligence-sdk",
+      "description": "Delegates document content extraction and analysis to svc-intelligence",
+      "usedEndpoints": [
+        "api-analyse",
+        "api-dynamo-scan"
+      ]
+    },
+    {
+      "from": "svc-billing-automation",
+      "to": "svc-modularisation",
+      "sdkPackage": "@skelloapp/svc-modularisation-sdk",
+      "description": "Enables/disables product modules after subscription changes",
+      "usedEndpoints": [
+        "api-get-modularisation"
+      ]
+    },
+    {
+      "from": "svc-kpis-v2",
+      "to": "svc-pos",
+      "sdkPackage": "@skelloapp/svc-pos-sdk",
+      "description": "Fetches POS revenue data to compute labour cost ratio KPIs",
+      "usedEndpoints": [
+        "api-get-chift-providers",
+        "api-handle-chift-webhook"
+      ]
+    },
+    {
+      "from": "svc-communications-v2",
+      "to": "svc-requests",
+      "sdkPackage": "@skelloapp/svc-requests-sdk",
+      "description": "Reads request details to include in approval/rejection notification emails",
+      "usedEndpoints": [
+        "api-get-leave-requests"
+      ]
+    },
+    {
+      "from": "svc-intelligence",
+      "to": "svc-documents-esignature",
+      "sdkPackage": "@skelloapp/svc-esignature-sdk",
+      "description": "Initiates e-signature requests after AI document preparation",
+      "usedEndpoints": [
+        "api-attendance-sheet-signature-reminder",
+        "api-document-signable"
+      ]
+    },
+    {
+      "from": "svc-skello-assistant",
+      "to": "svc-documents-esignature",
+      "sdkPackage": "@skelloapp/svc-esignature-sdk",
+      "description": "Handles user requests to sign documents via the AI assistant",
+      "usedEndpoints": [
+        "api-attendance-sheet-signature-reminder",
+        "api-document-signable"
+      ]
+    },
+    {
+      "from": "superadmin",
+      "to": "svc-billing-automation",
+      "sdkPackage": "@skelloapp/svc-billing-automation-sdk",
+      "description": "Manage subscription quotes, contracts and billing lifecycle for organisations",
+      "usedEndpoints": [
+        "api-get-quote",
+        "api-create-quote"
+      ]
+    },
+    {
+      "from": "superadmin",
+      "to": "svc-communications-v2",
+      "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+      "description": "Send high and low priority notifications to users",
+      "usedEndpoints": [
+        "bulk-create-high-priority-notification-route",
+        "bulk-create-low-priority-notification-route"
+      ]
+    },
+    {
+      "from": "superadmin",
+      "to": "svc-employees",
+      "sdkPackage": "@skelloapp/svc-employees-client",
+      "description": "Read and configure employee absence settings and HR data",
+      "usedEndpoints": [
+        "api-get-absence-configs",
+        "api-upsert-absence-config"
+      ]
+    },
+    {
+      "from": "superadmin",
+      "to": "svc-events",
+      "sdkPackage": "@skelloapp/svc-events-sdk",
+      "description": "Create and query audit events for admin activity tracking",
+      "usedEndpoints": [
+        "api-event-create",
+        "get-events-api"
+      ]
+    },
+    {
+      "from": "superadmin",
+      "to": "svc-labour-laws",
+      "sdkPackage": "@skelloapp/svc-labour-laws-sdk",
+      "description": "Configure labour law rules and shop compliance settings",
+      "usedEndpoints": [
+        "api-upsert-shop",
+        "api-batch-upsert-shops"
+      ]
+    },
+    {
+      "from": "superadmin",
+      "to": "svc-punch",
+      "sdkPackage": "@skelloapp/svc-punch-sdk",
+      "description": "Access punch clock data for admin oversight and auditing",
+      "usedEndpoints": [
+        "api-get-clocks-in-out",
+        "api-create-clock-in-out"
+      ]
+    },
+    {
+      "from": "superadmin",
+      "to": "svc-reports",
+      "sdkPackage": "@skelloapp/svc-reports-sdk",
+      "description": "Generate and access operational and compliance reports",
+      "usedEndpoints": [
+        "api-get-pam-configs",
+        "api-create-pam-config"
+      ]
+    },
+    {
+      "from": "superadmin",
+      "to": "svc-shops",
+      "sdkPackage": "@skelloapp/svc-shops-sdk",
+      "description": "Read and update organisation and shop configuration",
+      "usedEndpoints": [
+        "api-get-organisations-config",
+        "api-upsert-organisation-config"
+      ]
+    },
+    {
+      "from": "superadmin",
+      "to": "svc-trackers",
+      "sdkPackage": "@skelloapp/svc-trackers-sdk",
+      "description": "Manage tracker settings for shops",
+      "usedEndpoints": [
+        "api-activate-shop-tracker-settings",
+        "api-list-shop-tracker-settings"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-billing-automation",
+      "sdkPackage": "Microservices::BillingAutomationService (HTTParty)",
+      "description": "Synchronise shops with billing, upsert and update shop contracts",
+      "usedEndpoints": [
+        "api-get-quote",
+        "api-create-quote"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-communications-v2",
+      "sdkPackage": "Microservices::Communications (SQS)",
+      "description": "Send high/low-priority email notifications to users via SQS queues",
+      "usedEndpoints": [
+        "bulk-create-high-priority-notification-route",
+        "bulk-create-low-priority-notification-route"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-documents-v2",
+      "sdkPackage": "Microservices::DocumentsV2Service (HTTParty)",
+      "description": "Print and generate PDF/XLSX documents, retrieve and delete employee documents",
+      "usedEndpoints": [
+        "api-bulk-send-signature-reminders",
+        "cancel-signature-request-api"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-employees",
+      "sdkPackage": "Microservices::EmployeeService (HTTParty)",
+      "description": "Read and write employee HR data, absence configurations and settings",
+      "usedEndpoints": [
+        "api-get-absence-configs",
+        "api-upsert-absence-config"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-events",
+      "sdkPackage": "Microservices::EventService (HTTParty + SQS)",
+      "description": "Create audit events on user actions and send activity logs asynchronously via SQS",
+      "usedEndpoints": [
+        "api-event-create",
+        "get-events-api"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-labour-laws",
+      "sdkPackage": "Microservices::LabourLawService (HTTParty)",
+      "description": "Upsert shop labour law config, update rule overrides, fetch enabled labour laws",
+      "usedEndpoints": [
+        "api-upsert-shop",
+        "api-batch-upsert-shops"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-reports",
+      "sdkPackage": "Microservices::ReportService (HTTParty)",
+      "description": "Fetch PAM configs and payroll software settings for export generation",
+      "usedEndpoints": [
+        "api-get-pam-configs",
+        "api-create-pam-config"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-requests",
+      "sdkPackage": "Microservices::RequestService (HTTParty)",
+      "description": "Manage leave requests on behalf of the mobile client \u2014 create, update and delete",
+      "usedEndpoints": [
+        "api-get-leave-requests",
+        "api-create-leave-request",
+        "api-update-leave-request"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-shops",
+      "sdkPackage": "Microservices::ShopsService (HTTParty)",
+      "description": "Manage shop missions \u2014 fetch, purge and retrieve by ID",
+      "usedEndpoints": [
+        "api-get-organisations-config",
+        "api-get-shops"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-documents-esignature",
+      "sdkPackage": "Microservices::EsignatureService (HTTParty)",
+      "description": "Trigger e-signature flows and query signature status for employee documents",
+      "usedEndpoints": [
+        "api-document-signable",
+        "api-document-signature-reminder"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-feature-flags",
+      "sdkPackage": "Microservices::FeatureFlagService (HTTParty)",
+      "description": "Read and toggle feature flags and dev flags at runtime",
+      "usedEndpoints": [
+        "api-get-feature-flags",
+        "api-update-feature-flag"
+      ]
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-modularisation",
+      "sdkPackage": "Microservices::ModularisationService (HTTParty)",
+      "description": "Query module activation status for shops and organisations",
+      "usedEndpoints": [
+        "api-get-modularisation"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "skello-app",
+      "sdkPackage": "axios / @skelloapp/client-http-lib",
+      "description": "Core Rails API \u2014 auth, scheduling data, users, organisations and all legacy endpoints",
+      "usedEndpoints": []
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-automatic-scheduling",
+      "sdkPackage": "@skelloapp/svc-automatic-scheduling-sdk",
+      "description": "Trigger AI-based automatic schedule generation for a shop",
+      "usedEndpoints": [
+        "api-trigger-auto-scheduling",
+        "api-get-shift-replacements"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-bff",
+      "sdkPackage": "@skelloapp/svc-bff-sdk",
+      "description": "BFF orchestration \u2014 batch document operations and KPI aggregation",
+      "usedEndpoints": [
+        "api-orchestrate-documents",
+        "api-bulk-update-kpis"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-billing-automation",
+      "sdkPackage": "@skelloapp/svc-billing-automation-sdk",
+      "description": "Read subscription quotes and billing state for the organisation",
+      "usedEndpoints": [
+        "api-get-quote",
+        "api-create-quote"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-documents-v2",
+      "sdkPackage": "@skelloapp/svc-documents-v2-client",
+      "description": "Print, generate and manage employee and planning documents",
+      "usedEndpoints": [
+        "api-bulk-send-signature-reminders",
+        "cancel-signature-request-api"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-employees",
+      "sdkPackage": "@skelloapp/svc-employees-client",
+      "description": "Read and update employee profiles, contracts and absence settings",
+      "usedEndpoints": [
+        "api-get-absence-configs",
+        "api-upsert-absence-config"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-enrollment",
+      "sdkPackage": "@skelloapp/svc-enrollment-sdk",
+      "description": "Drive employee and shop onboarding workflows",
+      "usedEndpoints": [
+        "api-get-onboardings",
+        "api-create-onboarding"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-events",
+      "sdkPackage": "@skelloapp/svc-events-sdk",
+      "description": "Stream audit events for the activity feed and change history",
+      "usedEndpoints": [
+        "api-event-create",
+        "get-events-api"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-hris",
+      "sdkPackage": "@skelloapp/svc-hris-sdk",
+      "description": "Connect and manage HRIS integrations for automatic employee sync",
+      "usedEndpoints": [
+        "api-get-hris-integrations",
+        "api-connect-hris-integration"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-intelligence",
+      "sdkPackage": "@skelloapp/svc-intelligence-sdk",
+      "description": "Fetch AI-powered workforce insights and activity predictions",
+      "usedEndpoints": [
+        "api-analyse"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-kpis-v2",
+      "sdkPackage": "@skelloapp/svc-kpis-v2-sdk",
+      "description": "Load KPI dashboards \u2014 revenue, labour cost, activity predictions",
+      "usedEndpoints": [
+        "api-get-activity-prediction-settings",
+        "api-upsert-activity-prediction-settings"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-labour-laws",
+      "sdkPackage": "@skelloapp/svc-labour-laws-sdk",
+      "description": "Fetch applicable labour laws and compliance rules for the shop",
+      "usedEndpoints": [
+        "api-upsert-shop",
+        "api-batch-upsert-shops"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-pos",
+      "sdkPackage": "@skelloapp/svc-pos-sdk",
+      "description": "Integrate POS systems for revenue data and shift reconciliation",
+      "usedEndpoints": [
+        "api-get-chift-providers",
+        "api-handle-chift-webhook"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-punch",
+      "sdkPackage": "@skelloapp/svc-punch-sdk",
+      "description": "Display and validate employee punch clock records",
+      "usedEndpoints": [
+        "api-get-clocks-in-out",
+        "api-create-clock-in-out"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-reports",
+      "sdkPackage": "@skelloapp/svc-reports-sdk",
+      "description": "Generate payroll exports, PAM configs and compliance reports",
+      "usedEndpoints": [
+        "api-get-pam-configs",
+        "api-create-pam-config"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-requests",
+      "sdkPackage": "@skelloapp/svc-requests-sdk",
+      "description": "Create, approve and track employee leave and availability requests",
+      "usedEndpoints": [
+        "api-get-leave-requests",
+        "api-create-leave-request",
+        "api-update-leave-request"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-shops",
+      "sdkPackage": "@skelloapp/svc-shops-sdk",
+      "description": "Load shop configuration, missions and organisation settings",
+      "usedEndpoints": [
+        "api-get-organisations-config",
+        "api-get-shops"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-skello-assistant",
+      "sdkPackage": "@skelloapp/svc-skello-assistant-sdk",
+      "description": "Chat with the AI assistant for scheduling help and recommendations",
+      "usedEndpoints": [
+        "api-chat",
+        "api-conversation-feedback"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-trackers",
+      "sdkPackage": "@skelloapp/svc-trackers-sdk",
+      "description": "Manage time tracker and geofencing settings for shops",
+      "usedEndpoints": [
+        "api-activate-shop-tracker-settings",
+        "api-list-shop-tracker-settings"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-users",
+      "sdkPackage": "@skelloapp/svc-users-sdk",
+      "description": "Handle user authentication, SSO and capability checks",
+      "usedEndpoints": [
+        "api-login-capability",
+        "api-sso-callback"
+      ]
+    },
+    {
+      "from": "skello-app-front",
+      "to": "svc-workload-plan",
+      "sdkPackage": "@skelloapp/workload-plan-sdk",
+      "description": "Create and manage workload plans for staffing forecasts",
+      "usedEndpoints": [
+        "api-get-workload-plans-v1",
+        "api-create-workload-plan-v1"
+      ]
+    },
+    {
+      "from": "svc-employees",
+      "to": "svc-hris",
+      "sdkPackage": "@skelloapp/svc-hris-sdk",
+      "description": "Sync employee records to connected HRIS integrations after create/update",
+      "usedEndpoints": [
+        "api-get-hris-integrations",
+        "api-connect-hris-integration"
+      ]
+    },
+    {
+      "from": "svc-employees",
+      "to": "svc-events",
+      "sdkPackage": "@skelloapp/svc-events-sdk",
+      "description": "Emit audit events on employee data changes",
+      "usedEndpoints": [
+        "api-event-create"
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "leave-request-lifecycle",
+      "name": "Leave Request Lifecycle",
+      "description": "An employee submits a leave request from the frontend. The monolith persists it in svc-requests, logs an audit event, and emails the manager via svc-communications-v2.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "POST /v3/requests \u2014 submit leave request"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-requests",
+          "action": "POST /requests \u2014 persist leave request"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events \u2014 log audit event"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-communications-v2",
+          "action": "SQS email-high \u2014 notify manager"
+        },
+        {
+          "from": "skello-app-front",
+          "to": "svc-requests",
+          "action": "GET /requests \u2014 refresh request list"
+        }
+      ]
+    },
+    {
+      "id": "document-generation-esignature",
+      "name": "Document Generation & E-Signature",
+      "description": "A manager requests a document. The monolith generates a PDF via svc-documents-v2, starts an e-signature flow, then the frontend polls for the result.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "POST /v3/documents \u2014 request document"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-documents-v2",
+          "action": "POST /documents/generate \u2014 generate PDF"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-documents-esignature",
+          "action": "POST /esignature \u2014 start signature flow"
+        },
+        {
+          "from": "skello-app-front",
+          "to": "svc-documents-v2",
+          "action": "GET /documents/:id \u2014 poll signature status"
+        }
+      ]
+    },
+    {
+      "id": "auto-planning-generation",
+      "name": "AI Auto-Planning Generation",
+      "description": "A planner requests an AI-optimised schedule. The frontend calls the planning BFF which delegates to svc-automatic-scheduling, then the result is saved to the monolith.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "svc-bff-planning",
+          "action": "POST /auto-scheduling \u2014 request AI schedule"
+        },
+        {
+          "from": "svc-bff-planning",
+          "to": "svc-automatic-scheduling",
+          "action": "POST /trigger \u2014 compute optimised shifts"
+        },
+        {
+          "from": "skello-app-front",
+          "to": "skello-app",
+          "action": "POST /v3/shifts \u2014 save generated planning"
+        },
+        {
+          "from": "skello-app",
+          "to": "svc-events",
+          "action": "POST /events \u2014 log planning event"
+        }
+      ]
+    },
+    {
+      "id": "employee-hris-sync",
+      "name": "Employee HRIS Sync",
+      "description": "The frontend updates an employee profile. svc-employees pushes the change to the connected HRIS system and emits an audit event, then the frontend refreshes the profile.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "svc-employees",
+          "action": "PUT /employees/:id \u2014 update employee profile"
+        },
+        {
+          "from": "svc-employees",
+          "to": "svc-hris",
+          "action": "POST /sync \u2014 push employee to HRIS"
+        },
+        {
+          "from": "svc-employees",
+          "to": "svc-events",
+          "action": "POST /events \u2014 emit employee.updated event"
+        },
+        {
+          "from": "skello-app-front",
+          "to": "svc-employees",
+          "action": "GET /employees/:id \u2014 fetch updated profile"
+        }
+      ]
+    },
+    {
+      "id": "bff-dashboard-load",
+      "name": "BFF Dashboard Aggregation",
+      "description": "The frontend requests the home dashboard through svc-bff which fans out to svc-kpis-v2 for metrics and svc-documents-v2 for recent documents, then returns an aggregated response.",
+      "steps": [
+        {
+          "from": "skello-app-front",
+          "to": "svc-bff",
+          "action": "GET /dashboard \u2014 request dashboard data"
+        },
+        {
+          "from": "svc-bff",
+          "to": "svc-kpis-v2",
+          "action": "GET /kpis \u2014 fetch activity KPIs"
+        },
+        {
+          "from": "svc-bff",
+          "to": "svc-documents-v2",
+          "action": "GET /documents \u2014 fetch recent documents"
+        },
+        {
+          "from": "skello-app-front",
+          "to": "svc-intelligence",
+          "action": "GET /analyse \u2014 load workforce insights"
+        }
+      ]
+    }
+  ]
+}
