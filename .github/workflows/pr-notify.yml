@@ -1,0 +1,100 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# PR Notifier — Caller Workflow
+# Copy this file to EVERY repo you want to monitor.
+# Path: .github/workflows/pr-notify.yml
+#
+# This file is intentionally thin — all logic lives in devops-workflows.
+# Only update needed: change `your-org` to your GitHub org name.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: PR Notifier
+
+on:
+  pull_request:
+    types:
+      - opened
+      - closed
+      - reopened
+      - edited
+      - synchronize
+      - review_requested
+      - converted_to_draft
+      - ready_for_review
+
+  pull_request_review:
+    types:
+      - submitted
+      - dismissed
+
+  pull_request_review_comment:
+    types:
+      - created
+
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  notify:
+    # Only run issue_comment events if they're on a PR (not a plain issue)
+    if: |
+      github.event_name != 'issue_comment' ||
+      github.event.issue.pull_request != null
+
+    uses: novaxion639/devops-workflows/.github/workflows/pr-notifier.yml@master
+
+    secrets:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+
+    with:
+      event_name: ${{ github.event_name }}
+      event_action: ${{ github.event.action }}
+
+      # PR fields — works across all event types
+      pr_number: >-
+        ${{ github.event.pull_request.number
+            || github.event.issue.number
+            || '' }}
+      pr_title: >-
+        ${{ github.event.pull_request.title
+            || github.event.issue.title
+            || '' }}
+      pr_url: >-
+        ${{ github.event.pull_request.html_url
+            || github.event.issue.html_url
+            || '' }}
+      pr_author: >-
+        ${{ github.event.pull_request.user.login
+            || github.event.issue.user.login
+            || '' }}
+      pr_body: ${{ github.event.pull_request.body || '' }}
+      pr_draft: ${{ toJson(github.event.pull_request.draft) || 'false' }}
+      pr_merged: ${{ toJson(github.event.pull_request.merged) || 'false' }}
+      pr_merged_by: ${{ github.event.pull_request.merged_by.login || '' }}
+      head_branch: ${{ github.event.pull_request.head.ref || '' }}
+      base_branch: ${{ github.event.pull_request.base.ref || '' }}
+      repo_name: ${{ github.repository }}
+      repo_url: ${{ github.event.repository.html_url }}
+      additions: ${{ toJson(github.event.pull_request.additions) || '0' }}
+      deletions: ${{ toJson(github.event.pull_request.deletions) || '0' }}
+      changed_files: ${{ toJson(github.event.pull_request.changed_files) || '0' }}
+      reviewers: >-
+        ${{ join(github.event.pull_request.requested_reviewers.*.login, ',') }}
+      labels: >-
+        ${{ join(github.event.pull_request.labels.*.name, ',') }}
+
+      # Review fields
+      review_state: ${{ github.event.review.state || '' }}
+      review_author: ${{ github.event.review.user.login || '' }}
+      review_body: ${{ github.event.review.body || '' }}
+      review_url: ${{ github.event.review.html_url || '' }}
+
+      # Comment fields
+      comment_author: ${{ github.event.comment.user.login || '' }}
+      comment_body: ${{ github.event.comment.body || '' }}
+      comment_url: ${{ github.event.comment.html_url || '' }}
+      comment_file: ${{ github.event.comment.path || '' }}
+      comment_line: ${{ toJson(github.event.comment.line) || '' }}
