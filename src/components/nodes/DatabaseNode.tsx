@@ -9,7 +9,7 @@ export const DB_COLORS: Record<DatabaseType, { color: string; label: string; ico
   mongodb:       { color: '#4db33d', label: 'MongoDB',       icon: '🍃' },
   elasticsearch: { color: '#00bfb3', label: 'Elasticsearch', icon: '🔍' },
   s3:            { color: '#569a31', label: 'S3',            icon: '🗄' },
-  sqs:           { color: '#e0761a', label: 'SQS',           icon: '📨' },
+  sqs:           { color: '#e0761b', label: 'SQS',           icon: '📨' },
   sns:           { color: '#b0631a', label: 'SNS',           icon: '📣' },
   kinesis:       { color: '#9b59b6', label: 'Kinesis',       icon: '🌊' },
   lambda:        { color: '#f97316', label: 'Lambda',        icon: 'λ' },
