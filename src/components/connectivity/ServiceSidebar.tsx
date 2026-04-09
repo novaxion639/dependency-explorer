@@ -1,4 +1,4 @@
-import type { ConnectivityService } from '../../types-connectivity'
+import type { ConnectivityService } from '../../data/schemas'
 
 interface Props {
   services: ConnectivityService[]

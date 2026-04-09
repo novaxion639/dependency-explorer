@@ -13,11 +13,11 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import type { ServiceFlow, ConnectivityMap } from '../../types-connectivity'
+import type { ServiceFlow, ConnectivityMap } from '../../data/schemas'
 import { buildFlowGraph } from '../../utils/buildFlowGraph'
 import { ServiceNode } from '../nodes/ServiceNode'
 import { DatabaseNode, DB_COLORS } from '../nodes/DatabaseNode'
-import type { DatabaseType } from '../../types-connectivity'
+import type { DatabaseType } from '../../data/schemas'
 import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
 

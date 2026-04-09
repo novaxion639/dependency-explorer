@@ -1,4 +1,4 @@
-import type { ServiceFlow, ConnectivityMap } from '../../types-connectivity'
+import type { ServiceFlow, ConnectivityMap } from '../../data/schemas'
 import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const TYPE_COLOR: Record<string, string> = {

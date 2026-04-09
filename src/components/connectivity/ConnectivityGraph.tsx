@@ -19,12 +19,12 @@ import '@xyflow/react/dist/style.css'
 import { buildConnectivityGraph } from '../../utils/buildConnectivityGraph'
 import { ServiceNode } from '../nodes/ServiceNode'
 import { DatabaseNode, DB_COLORS } from '../nodes/DatabaseNode'
-import type { DatabaseType } from '../../types-connectivity'
+import type { DatabaseType } from '../../data/schemas'
 import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
 import { EdgePopup } from './EdgePopup'
 import { EndpointDrawer } from './EndpointDrawer'
-import type { ConnectivityMap, ServiceConnection, ServiceEndpoint } from '../../types-connectivity'
+import type { ConnectivityMap, ServiceConnection, ServiceEndpoint } from '../../data/schemas'
 
 const nodeTypes = { serviceNode: ServiceNode, databaseNode: DatabaseNode }
 const edgeTypes = { connectivityEdge: ConnectivityEdge, floatingDbEdge: FloatingDbEdge }

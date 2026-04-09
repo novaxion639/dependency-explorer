@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Handle, Position } from '@xyflow/react'
-import type { DatabaseType } from '../../types-connectivity'
+import type { DatabaseType } from '../../data/schemas'
 
 export const DB_COLORS: Record<DatabaseType, { color: string; label: string; icon: string }> = {
   postgresql:    { color: '#336791', label: 'PostgreSQL',    icon: '🐘' },

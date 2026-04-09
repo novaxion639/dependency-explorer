@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ServiceEndpoint, HttpMethod } from '../../types-connectivity'
+import type { ServiceEndpoint, HttpMethod } from '../../data/schemas'
 import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const METHOD_COLOR: Record<HttpMethod, string> = {

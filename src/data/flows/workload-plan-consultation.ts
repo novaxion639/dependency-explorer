@@ -1,0 +1,53 @@
+import { ServiceFlowSchema } from '../schemas'
+import type { ServiceFlow } from '../schemas'
+
+const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
+  "id": "workload-plan-consultation",
+  "name": "Workload Plan Consultation",
+  "description": "A planner opens the workload forecasting view. The planning BFF fetches the current workload plan and rules from svc-workload-plan to display staffing forecasts alongside the planning grid.",
+  "steps": [
+    {
+      "from": "skello-app-front",
+      "to": "svc-bff-planning",
+      "action": "GET /planning — load planning context including workload forecast"
+    },
+    {
+      "from": "svc-bff-planning",
+      "to": "svc-workload-plan",
+      "action": "GET /workload-plans — fetch active workload plan"
+    },
+    {
+      "from": "svc-bff-planning",
+      "to": "svc-workload-plan",
+      "action": "GET /v2/workload-rules — fetch staffing rules"
+    }
+  ],
+  "infraNodes": [
+    {
+      "id": "dynamo-workload",
+      "type": "dynamodb",
+      "label": "svcWorkloadPlan-{env}",
+      "description": "Workload plans and forecasting data"
+    },
+    {
+      "id": "sqs-workload-dlq",
+      "type": "sqs",
+      "label": "svc-workload-plan-dlq",
+      "description": "DLQ for failed workload plan processing jobs"
+    }
+  ],
+  "infraEdges": [
+    {
+      "from": "svc-workload-plan",
+      "to": "dynamo-workload",
+      "label": "read"
+    },
+    {
+      "from": "svc-workload-plan",
+      "to": "sqs-workload-dlq",
+      "label": "DLQ"
+    }
+  ]
+})
+
+export default workload_plan_consultation

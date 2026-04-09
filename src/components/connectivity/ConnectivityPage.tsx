@@ -1,21 +1,26 @@
 import { useState } from 'react'
-import rawMap from '../../data/connectivity-map.json'
-import type { ConnectivityMap, ServiceFlow } from '../../types-connectivity'
+import type React from 'react'
+import type { ServiceFlow } from '../../data/schemas'
+import { useConnectivityMap } from '../../hooks/useConnectivityMap'
 import { ServiceSidebar } from './ServiceSidebar'
 import { ConnectivityGraph } from './ConnectivityGraph'
 import { FlowsPanel } from './FlowsPanel'
 import { FlowListModal } from './FlowListModal'
 import { FlowGraphModal } from './FlowGraphModal'
 
-const map = rawMap as unknown as ConnectivityMap
-
 export function ConnectivityPage() {
+  const state = useConnectivityMap()
   const [selectedService, setSelectedService] = useState<string | null>(null)
   const [sidebarSearch, setSidebarSearch] = useState('')
 
   // Flow modal state: null = closed, string = list open for service, ServiceFlow = graph open
   const [flowModalService, setFlowModalService] = useState<string | null>(null)
   const [selectedFlow, setSelectedFlow] = useState<ServiceFlow | null>(null)
+
+  if (state.status === 'loading') return <Centered>Loading…</Centered>
+  if (state.status === 'error') return <Centered>Failed to load: {state.message}</Centered>
+
+  const map = state.map
 
   const selected = selectedService
     ? map.services.find(s => s.name === selectedService)
@@ -101,6 +106,14 @@ export function ConnectivityPage() {
           }}
         />
       )}
+    </div>
+  )
+}
+
+function Centered({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: 14 }}>
+      {children}
     </div>
   )
 }

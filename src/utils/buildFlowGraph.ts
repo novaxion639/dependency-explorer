@@ -1,6 +1,6 @@
 import { MarkerType } from '@xyflow/react'
 import type { Node, Edge } from '@xyflow/react'
-import type { ServiceFlow, ServiceFlowStep, ConnectivityMap } from '../types-connectivity'
+import type { ServiceFlow, ServiceFlowStep, ConnectivityMap } from '../data/schemas'
 import type { ServiceNodeData } from './buildConnectivityGraph'
 import type { DatabaseNodeData } from '../components/nodes/DatabaseNode'
 import { DB_COLORS } from '../components/nodes/DatabaseNode'

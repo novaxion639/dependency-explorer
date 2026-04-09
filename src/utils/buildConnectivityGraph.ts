@@ -1,6 +1,6 @@
 import { MarkerType } from '@xyflow/react'
 import type { Node, Edge } from '@xyflow/react'
-import type { ConnectivityMap } from '../types-connectivity'
+import type { ConnectivityMap } from '../data/schemas'
 import type { DatabaseNodeData } from '../components/nodes/DatabaseNode'
 
 const NODE_W = 200

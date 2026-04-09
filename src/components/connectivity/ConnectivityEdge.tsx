@@ -1,5 +1,5 @@
 import { getBezierPath, EdgeLabelRenderer, BaseEdge, type EdgeProps } from '@xyflow/react'
-import type { ServiceConnection } from '../../types-connectivity'
+import type { ServiceConnection } from '../../data/schemas'
 
 interface Props extends EdgeProps {
   data?: { connection: ServiceConnection }
