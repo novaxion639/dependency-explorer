@@ -1,0 +1,19 @@
+{
+  "name": "@dependency-explorer/discovery",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "discover": "tsx src/discover.ts",
+    "discover:json": "tsx src/discover.ts --json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dependency-explorer/data": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.7.2"
+  }
+}

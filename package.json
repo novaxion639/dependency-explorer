@@ -1,40 +1,19 @@
 {
   "name": "dependency-explorer",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"tsx --watch server/index.ts\"",
-    "dev:client": "vite",
-    "dev:server": "tsx --watch server/index.ts",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "seed": "tsx scripts/seed.ts",
-    "discover": "tsx scripts/discover.ts",
-    "discover:json": "tsx scripts/discover.ts --json"
-  },
-  "dependencies": {
-    "@dagrejs/dagre": "^3.0.0",
-    "@xyflow/react": "^12.10.2",
-    "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "mongoose": "^9.3.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "zod": "^4.3.6",
-    "zod-to-mongoose": "^1.4.2"
+    "dev": "pnpm --filter @dependency-explorer/web dev",
+    "build": "pnpm --filter @dependency-explorer/web build",
+    "preview": "pnpm --filter @dependency-explorer/web preview",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "test": "pnpm -r --if-present run test",
+    "discover": "pnpm --filter @dependency-explorer/discovery discover",
+    "check": "pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "concurrently": "^9.2.1",
-    "tsx": "^4.21.0",
-    "typescript": "~5.7.2",
-    "vite": "^6.2.0"
+    "typescript": "~5.7.2"
   },
   "packageManager": "pnpm@10.30.2+sha512.36cdc707e7b7940a988c9c1ecf88d084f8514b5c3f085f53a2e244c2921d3b2545bc20dd4ebe1fc245feec463bb298aecea7a63ed1f7680b877dc6379d8d0cb4"
 }
