@@ -7,242 +7,124 @@ const svc_communications_v2: ConnectivityService = ConnectivityServiceSchema.par
   "description": "Centralised multi-channel messaging — email, SMS, push notifications and in-app messages",
   "endpoints": [
     {
-      "id": "bulk-create-high-priority-notification-route",
-      "path": "/notifications/high-priority",
+      "id": "api-create-device-token",
+      "path": "/push-notifications/token",
       "method": "POST",
-      "description": "Bulk create high priority push notifications (SQS integration)",
-      "useCase": "Used by calling services to bulk create high priority push notifications (SQS integration)",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcCommunicationsV2-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-communications-v2.attachments.{env}"
-        },
-        {
-          "type": "sqs",
-          "name": "email-high / email-low"
-        }
-      ]
+      "description": "Create a new notification token",
+      "useCase": "",
+      "params": [],
+      "response": {}
     },
     {
-      "id": "bulk-create-low-priority-notification-route",
-      "path": "/notifications/low-priority",
-      "method": "POST",
-      "description": "Bulk create low priority push notifications (SQS integration)",
-      "useCase": "Used by calling services to bulk create low priority push notifications (SQS integration)",
+      "id": "api-delete-device-token",
+      "path": "/push-notifications/token/{token}",
+      "method": "DELETE",
+      "description": "Delete a device token",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "token",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcCommunicationsV2-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-communications-v2.attachments.{env}"
-        },
-        {
-          "type": "sqs",
-          "name": "email-high / email-low"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "bulk-create-high-priority-email-route",
-      "path": "/email/high-priority",
-      "method": "POST",
-      "description": "Bulk create high priority emails (SQS integration)",
-      "useCase": "Used by calling services to bulk create high priority emails (SQS integration)",
+      "id": "api-find-one-blacklisted-phone",
+      "path": "/blacklisted-phone/{phone}",
+      "method": "GET",
+      "description": "Find one blacklisted phone",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "phone",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcCommunicationsV2-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-communications-v2.attachments.{env}"
-        },
-        {
-          "type": "sqs",
-          "name": "email-high / email-low"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "bulk-create-low-priority-email-route",
-      "path": "/email/low-priority",
-      "method": "POST",
-      "description": "Bulk create low priority emails (SQS integration)",
-      "useCase": "Used by calling services to bulk create low priority emails (SQS integration)",
+      "id": "api-find-one-blacklisted-email",
+      "path": "/blacklisted-email/{email}",
+      "method": "GET",
+      "description": "Find one blacklisted email",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "email",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcCommunicationsV2-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-communications-v2.attachments.{env}"
-        },
-        {
-          "type": "sqs",
-          "name": "email-high / email-low"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "bulk-create-high-priority-sms-route",
-      "path": "/sms/high-priority",
-      "method": "POST",
-      "description": "Bulk create high priority SMS (SQS integration)",
-      "useCase": "Used by calling services to bulk create high priority SMS (SQS integration)",
+      "id": "api-delete-blacklisted-phone",
+      "path": "/blacklisted-phone/{phone}",
+      "method": "DELETE",
+      "description": "Delete a blacklisted phone",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "phone",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcCommunicationsV2-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-communications-v2.attachments.{env}"
-        },
-        {
-          "type": "sqs",
-          "name": "email-high / email-low"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "bulk-create-low-priority-sms-route",
-      "path": "/sms/low-priority",
-      "method": "POST",
-      "description": "Bulk create low priority SMS (SQS integration)",
-      "useCase": "Used by calling services to bulk create low priority SMS (SQS integration)",
+      "id": "api-delete-blacklisted-email",
+      "path": "/blacklisted-email/{email}",
+      "method": "DELETE",
+      "description": "Delete a blacklisted email",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "email",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcCommunicationsV2-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-communications-v2.attachments.{env}"
-        },
-        {
-          "type": "sqs",
-          "name": "email-high / email-low"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "callback-sms-mode-route",
-      "path": "/${self:custom.parameters.smsModeCallbackPath}",
-      "method": "POST",
-      "description": "SMS Mode callback webhook (dynamic path from config)",
-      "useCase": "Used by calling services to sMS Mode callback webhook (dynamic path from config)",
+      "id": "api-email-display",
+      "path": "/email-display/{emailId}",
+      "method": "GET",
+      "description": "Display email content for SuperAdmin",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "emailId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcCommunicationsV2-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-communications-v2.attachments.{env}"
-        },
-        {
-          "type": "sqs",
-          "name": "email-high / email-low"
-        }
-      ]
+      "response": {}
+    },
+    {
+      "id": "api-send-test-email",
+      "path": "/emails/test",
+      "method": "POST",
+      "description": "Send a test email",
+      "useCase": "",
+      "params": [],
+      "response": {}
     }
   ],
   "databases": [

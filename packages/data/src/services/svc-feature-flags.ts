@@ -7,177 +7,115 @@ const svc_feature_flags: ConnectivityService = ConnectivityServiceSchema.parse({
   "description": "Feature flag management — controls feature rollout per account, percentage or user group",
   "endpoints": [
     {
-      "id": "api-get-feature-flags",
-      "path": "/feature-flags",
+      "id": "api-feature-flag-read",
+      "path": "/feature-flag/{name}",
       "method": "GET",
-      "description": "Get feature flags",
-      "useCase": "Used by calling services to get feature flags",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcFeatureFlags-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-create-feature-flag",
-      "path": "/feature-flags",
-      "method": "POST",
-      "description": "Create feature flag",
-      "useCase": "Used by calling services to create feature flag",
+      "description": "GET /feature-flag/{name}",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcFeatureFlags-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-update-feature-flag",
-      "path": "/feature-flags/{flagId}",
-      "method": "PATCH",
-      "description": "Update feature flag",
-      "useCase": "Used by calling services to update feature flag",
-      "params": [
-        {
-          "name": "flagId",
+          "name": "name",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "flagId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcFeatureFlags-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-delete-feature-flag",
-      "path": "/feature-flags/{flagId}",
+      "id": "api-feature-flag-upsert",
+      "path": "/feature-flag/{name}",
+      "method": "PUT",
+      "description": "PUT /feature-flag/{name}",
+      "useCase": "",
+      "params": [
+        {
+          "name": "name",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-feature-flag-delete",
+      "path": "/feature-flag/{name}",
       "method": "DELETE",
-      "description": "Delete feature flag",
-      "useCase": "Used by calling services to delete feature flag",
+      "description": "DELETE /feature-flag/{name}",
+      "useCase": "",
       "params": [
         {
-          "name": "flagId",
+          "name": "name",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "flagId identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcFeatureFlags-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-feature-flags-dev",
-      "path": "/feature-flags-dev",
+      "id": "api-feature-flag-dev-read",
+      "path": "/feature-flag-dev/{name}",
       "method": "GET",
-      "description": "Get dev feature flags",
-      "useCase": "Used by calling services to get dev feature flags",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcFeatureFlags-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-create-feature-flag-dev",
-      "path": "/feature-flags-dev",
-      "method": "POST",
-      "description": "Create dev feature flag",
-      "useCase": "Used by calling services to create dev feature flag",
+      "description": "GET /feature-flag-dev/{name}",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcFeatureFlags-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-delete-feature-flag-dev",
-      "path": "/feature-flags-dev/{flagId}",
-      "method": "DELETE",
-      "description": "Delete dev feature flag",
-      "useCase": "Used by calling services to delete dev feature flag",
-      "params": [
-        {
-          "name": "flagId",
+          "name": "name",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "flagId identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
+      "response": {}
+    },
+    {
+      "id": "api-feature-flag-dev-upsert",
+      "path": "/feature-flag-dev/{name}",
+      "method": "PUT",
+      "description": "PUT /feature-flag-dev/{name}",
+      "useCase": "",
+      "params": [
         {
-          "type": "dynamodb",
-          "name": "svcFeatureFlags-{env}"
+          "name": "name",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
-      ]
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-feature-flag-dev-delete",
+      "path": "/feature-flag-dev/{name}",
+      "method": "DELETE",
+      "description": "DELETE /feature-flag-dev/{name}",
+      "useCase": "",
+      "params": [
+        {
+          "name": "name",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-features-list",
+      "path": "/features",
+      "method": "GET",
+      "description": "GET /features",
+      "useCase": "",
+      "params": [],
+      "response": {}
     }
   ],
   "databases": [

@@ -59,56 +59,38 @@ const svc_events: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-get-activity-logs-lambda",
-      "path": "/activity-logs",
-      "method": "GET",
-      "description": "Get activity logs",
-      "useCase": "Used by calling services to get activity logs",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEvents-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-events.{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-trigger-download-activity-logs-lambda",
-      "path": "/activity-logs/download",
+      "id": "api-get-activity-logs",
+      "path": "/{organisationId}/activity-logs",
       "method": "POST",
-      "description": "Trigger download of activity logs",
-      "useCase": "Used by calling services to trigger download of activity logs",
+      "description": "Reads activity logs",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "organisationId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
+      "response": {}
+    },
+    {
+      "id": "api-trigger-download-activity-logs",
+      "path": "/{organisationId}/activity-logs/download",
+      "method": "POST",
+      "description": "Triggers activity logs CSV download via SQS",
+      "useCase": "",
+      "params": [
         {
-          "type": "dynamodb",
-          "name": "svcEvents-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-events.{env}"
+          "name": "organisationId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
-      ]
+      ],
+      "response": {}
     }
   ],
   "databases": [

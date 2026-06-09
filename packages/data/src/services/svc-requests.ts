@@ -122,67 +122,30 @@ const svc_requests: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-get-leave-request-selected-manager",
-      "path": "/leave-requests/{id}/selected-manager",
+      "id": "leave-request-get-one-api",
+      "path": "/leave-requests/{id}",
       "method": "GET",
-      "description": "Get selected manager for leave request",
-      "useCase": "Used by calling services to get selected manager for leave request",
+      "description": "GET /leave-requests/{id}",
+      "useCase": "",
       "params": [
         {
           "name": "id",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "id identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "postgresql",
-          "name": "svc_requests"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-update-leave-request-selected-manager",
-      "path": "/leave-requests/{id}/selected-manager",
-      "method": "PATCH",
-      "description": "Update selected manager for leave request",
-      "useCase": "Used by calling services to update selected manager for leave request",
-      "params": [
-        {
-          "name": "id",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "id identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "postgresql",
-          "name": "svc_requests"
-        },
-        {
-          "type": "sns",
-          "name": "svc-requests-sns"
-        }
-      ]
+      "id": "leave-request-get-pre-selected-manager-api",
+      "path": "/selected-manager",
+      "method": "GET",
+      "description": "GET /selected-manager",
+      "useCase": "",
+      "params": [],
+      "response": {}
     }
   ],
   "databases": [

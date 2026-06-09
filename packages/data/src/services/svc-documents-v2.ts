@@ -274,6 +274,380 @@ const svc_documents_v2: ConnectivityService = ConnectivityServiceSchema.parse({
           "name": "svc-documents-v2.{env}"
         }
       ]
+    },
+    {
+      "id": "api-create-documents",
+      "path": "/documents",
+      "method": "POST",
+      "description": "Create document(s) and return presigned upload url(s)",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-index-documents",
+      "path": "/documents",
+      "method": "GET",
+      "description": "find and return document(s)",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-purge-shifts-documents-for-shop",
+      "path": "/documents/shifts/purge",
+      "method": "DELETE",
+      "description": "Purge all shifts documents (not employee documents) associated with the specified shops",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-shifts-documents",
+      "path": "/documents/shifts",
+      "method": "GET",
+      "description": "find and return document(s) from shift(s)",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-url-document",
+      "path": "/documents/{documentId}/url",
+      "method": "GET",
+      "description": "get url document from documentId",
+      "useCase": "",
+      "params": [
+        {
+          "name": "documentId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-show-document",
+      "path": "/documents/{documentId}",
+      "method": "GET",
+      "description": "get full document from documentId",
+      "useCase": "",
+      "params": [
+        {
+          "name": "documentId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-delete-document",
+      "path": "/documents/{documentId}",
+      "method": "DELETE",
+      "description": "Soft delete a document by updating its deletedAt",
+      "useCase": "",
+      "params": [
+        {
+          "name": "documentId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-update-document",
+      "path": "/documents/{documentId}",
+      "method": "PUT",
+      "description": "update document name",
+      "useCase": "",
+      "params": [
+        {
+          "name": "documentId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-bulk-patch-document",
+      "path": "/documents",
+      "method": "PATCH",
+      "description": "Patch multliple documents",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-print-document",
+      "path": "/documents/print",
+      "method": "POST",
+      "description": "print document name",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-generate-document",
+      "path": "/documents/generate",
+      "method": "POST",
+      "description": "generate documents",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-mail-document-to-employee",
+      "path": "/documents/{documentId}/email",
+      "method": "POST",
+      "description": "Send document by email to the employee associated with the document",
+      "useCase": "",
+      "params": [
+        {
+          "name": "documentId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-extract-pages-from-document",
+      "path": "/documents/extract-pages",
+      "method": "POST",
+      "description": "extract and upload page from documents",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-expiring-documents",
+      "path": "/documents/expiring",
+      "method": "GET",
+      "description": "get expiring documents",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-index-folders",
+      "path": "/folders",
+      "method": "GET",
+      "description": "find and return folder(s)",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-update-folder",
+      "path": "/folders/{folderId}",
+      "method": "PATCH",
+      "description": "update folder attributes",
+      "useCase": "",
+      "params": [
+        {
+          "name": "folderId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-create-folder",
+      "path": "/folders",
+      "method": "POST",
+      "description": "create a folder",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-bulk-delete-documents",
+      "path": "/documents",
+      "method": "DELETE",
+      "description": "Soft delete multiple documents",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-delete-folder",
+      "path": "/folders/{folderId}",
+      "method": "DELETE",
+      "description": "delete a folder",
+      "useCase": "",
+      "params": [
+        {
+          "name": "folderId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-create-avatar",
+      "path": "/avatars",
+      "method": "POST",
+      "description": "Create avatar and return presigned upload url",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-delete-avatar",
+      "path": "/avatars/{avatarId}",
+      "method": "DELETE",
+      "description": "Delete avatar",
+      "useCase": "",
+      "params": [
+        {
+          "name": "avatarId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-index-avatars",
+      "path": "/avatars",
+      "method": "GET",
+      "description": "find and return avatar(s)",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-show-document-by-v1-id",
+      "path": "/documents/V1/{documentId}",
+      "method": "GET",
+      "description": "get document from V1 documentId",
+      "useCase": "",
+      "params": [
+        {
+          "name": "documentId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "reactivate-signature-request-api",
+      "path": "/signatures/reactivate",
+      "method": "POST",
+      "description": "Reactivate an expired signature request",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-create-template",
+      "path": "/templates",
+      "method": "POST",
+      "description": "Create a new template (empty or duplicate)",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-delete-template",
+      "path": "/templates/{templateId}",
+      "method": "DELETE",
+      "description": "Delete template",
+      "useCase": "",
+      "params": [
+        {
+          "name": "templateId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-get-template",
+      "path": "/templates/{templateId}",
+      "method": "GET",
+      "description": "Get a template by id, optionally with a presigned content download URL",
+      "useCase": "",
+      "params": [
+        {
+          "name": "templateId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-list-template",
+      "path": "/templates",
+      "method": "GET",
+      "description": "List the organisation templates",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-patch-template",
+      "path": "/templates/{templateId}",
+      "method": "PATCH",
+      "description": "Partially update a template (title, variableList, disabled)",
+      "useCase": "",
+      "params": [
+        {
+          "name": "templateId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-put-template-lock",
+      "path": "/templates/{templateId}/lock",
+      "method": "PUT",
+      "description": "Acquire or renew the editor lock on a template (acquire + save modes)",
+      "useCase": "",
+      "params": [
+        {
+          "name": "templateId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
     }
   ],
   "databases": [

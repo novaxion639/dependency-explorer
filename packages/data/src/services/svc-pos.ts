@@ -25,58 +25,6 @@ const svc_pos: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-handle-chift-webhook",
-      "path": "/chift/webhook",
-      "method": "POST",
-      "description": "Handle Chift webhook",
-      "useCase": "Used by calling services to handle Chift webhook",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-activate-chift-integration",
-      "path": "/chift/activate",
-      "method": "POST",
-      "description": "Activate Chift POS integration",
-      "useCase": "Used by calling services to activate Chift POS integration",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
-    },
-    {
       "id": "api-get-integrations",
       "path": "/integrations",
       "method": "GET",
@@ -112,91 +60,6 @@ const svc_pos: ConnectivityService = ConnectivityServiceSchema.parse({
       "response": {
         "201": "Created",
         "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-get-integration",
-      "path": "/integrations/{integrationId}",
-      "method": "GET",
-      "description": "Get POS integration by ID",
-      "useCase": "Used by calling services to get POS integration by ID",
-      "params": [
-        {
-          "name": "integrationId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "integrationId identifier"
-        }
-      ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-update-integration",
-      "path": "/integrations/{integrationId}",
-      "method": "PATCH",
-      "description": "Update POS integration",
-      "useCase": "Used by calling services to update POS integration",
-      "params": [
-        {
-          "name": "integrationId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "integrationId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-delete-integration",
-      "path": "/integrations/{integrationId}",
-      "method": "DELETE",
-      "description": "Delete POS integration",
-      "useCase": "Used by calling services to delete POS integration",
-      "params": [
-        {
-          "name": "integrationId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "integrationId identifier"
-        }
-      ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
       },
       "awsCalls": [
         {
@@ -250,207 +113,175 @@ const svc_pos: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-get-provider",
-      "path": "/providers/{providerId}",
-      "method": "GET",
-      "description": "Get POS provider by ID",
-      "useCase": "Used by calling services to get POS provider by ID",
+      "id": "api-chift-webhooks",
+      "path": "/chift/webhooks",
+      "method": "POST",
+      "description": "POST /chift/webhooks",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-chift-activate-provider",
+      "path": "/chift/{organisationId}/activate",
+      "method": "POST",
+      "description": "Activate a POS integration with Chift provider",
+      "useCase": "",
       "params": [
         {
-          "name": "providerId",
+          "name": "organisationId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "providerId identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-update-provider",
-      "path": "/providers/{providerId}",
-      "method": "PATCH",
-      "description": "Update POS provider",
-      "useCase": "Used by calling services to update POS provider",
-      "params": [
-        {
-          "name": "providerId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "providerId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-delete-provider",
-      "path": "/providers/{providerId}",
+      "id": "api-chift-delete",
+      "path": "/chift/{organisationId}",
       "method": "DELETE",
-      "description": "Delete POS provider",
-      "useCase": "Used by calling services to delete POS provider",
+      "description": "Delete Chift integration for an organisation",
+      "useCase": "",
       "params": [
         {
-          "name": "providerId",
+          "name": "organisationId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "providerId identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-shop-integrations",
-      "path": "/shops/{shopId}/integrations",
-      "method": "GET",
-      "description": "Get POS integrations for a shop",
-      "useCase": "Used by calling services to get POS integrations for a shop",
+      "id": "api-chift-delete-shop",
+      "path": "/chift/{organisationId}/shops/{shopId}",
+      "method": "DELETE",
+      "description": "Delete Chift integration for a shop",
+      "useCase": "",
       "params": [
         {
-          "name": "shopId",
+          "name": "organisationId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "shopId identifier"
-        }
-      ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-activate-shop-integration",
-      "path": "/shops/{shopId}/integrations/activate",
-      "method": "POST",
-      "description": "Activate POS integration for a shop",
-      "useCase": "Used by calling services to activate POS integration for a shop",
-      "params": [
-        {
-          "name": "shopId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "shopId identifier"
+          "description": ""
         },
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-deactivate-shop-integration",
-      "path": "/shops/{shopId}/integrations/deactivate",
-      "method": "POST",
-      "description": "Deactivate POS integration for a shop",
-      "useCase": "Used by calling services to deactivate POS integration for a shop",
-      "params": [
-        {
           "name": "shopId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "shopId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-shop-sales",
-      "path": "/shops/{shopId}/sales",
+      "id": "api-chift-locations-get",
+      "path": "/chift/{organisationId}/locations",
       "method": "GET",
-      "description": "Get POS sales data for a shop",
-      "useCase": "Used by calling services to get POS sales data for a shop",
+      "description": "List Chift provider locations for an organisation",
+      "useCase": "",
+      "params": [
+        {
+          "name": "organisationId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-integration-update",
+      "path": "/integrations",
+      "method": "PUT",
+      "description": "Updates an integration",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-integration-delete",
+      "path": "/integrations",
+      "method": "DELETE",
+      "description": "Deletes integration(s) based on query params",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-integration-run",
+      "path": "/integrations/{shopId}/run",
+      "method": "POST",
+      "description": "Runs an integration for a shopId",
+      "useCase": "",
       "params": [
         {
           "name": "shopId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "shopId identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
+      "response": {}
+    },
+    {
+      "id": "api-provider-requirements-find",
+      "path": "/providers/{providerType}/requirements",
+      "method": "GET",
+      "description": "Provides the requirements to integrate with a POS Provider",
+      "useCase": "",
+      "params": [
         {
-          "type": "dynamodb",
-          "name": "svcPos-{env}"
+          "name": "providerType",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
-      ]
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-pos-shop-find",
+      "path": "/providers/{organisationConfigId}/shops",
+      "method": "GET",
+      "description": "Get shops for a given organisation config",
+      "useCase": "",
+      "params": [
+        {
+          "name": "organisationConfigId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-provider-update",
+      "path": "/providers",
+      "method": "PATCH",
+      "description": "Partial update implemented provider in organisation configuration",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-provider-delete",
+      "path": "/providers",
+      "method": "DELETE",
+      "description": "Delete implemented provider in organisation configuration",
+      "useCase": "",
+      "params": [],
+      "response": {}
     }
   ],
   "databases": [

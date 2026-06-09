@@ -21,17 +21,22 @@ describe('parseServerlessState', () => {
       },
     }
     const facts = parseServerlessState(state)
-    expect(facts.endpoints).toContainEqual({ method: 'GET', path: '/v1/things/{id}' })
-    expect(facts.endpoints).toContainEqual({ method: 'POST', path: '/v1/things' })
+    expect(facts.endpoints).toContainEqual(
+      expect.objectContaining({ method: 'GET', path: '/v1/things/{id}', functionName: 'GetThing' }),
+    )
+    expect(facts.endpoints).toContainEqual(
+      expect.objectContaining({ method: 'POST', path: '/v1/things', functionName: 'Shorthand' }),
+    )
     expect(facts.queueNames).toContain('svcThingsIngest')
     expect(facts.queueNames).toContain('svcThingsUpdate')
   })
 })
 
 describe('parseServerlessStatic', () => {
-  it('mines block-form httpApi method/path pairs', () => {
+  it('mines block-form httpApi method/path pairs with function identity', () => {
     const src = `
     ApiCreate: {
+      description: 'Bulk create AbsenceConfig',
       events: [
         {
           httpApi: {
@@ -43,7 +48,14 @@ describe('parseServerlessStatic', () => {
       ],
     },`
     const facts = parseServerlessStatic(src)
-    expect(facts.endpoints).toEqual([{ method: 'POST', path: '/v1/absence-configs/bulk_create' }])
+    expect(facts.endpoints).toEqual([
+      expect.objectContaining({
+        method: 'POST',
+        path: '/v1/absence-configs/bulk_create',
+        functionName: 'ApiCreate',
+        description: 'Bulk create AbsenceConfig',
+      }),
+    ])
   })
 
   it('mines shorthand events and queue names with templates stripped', () => {
@@ -52,7 +64,7 @@ describe('parseServerlessStatic', () => {
       QueueName: \`svcEmployeesUpdate-\${stage}\`,
     `
     const facts = parseServerlessStatic(src)
-    expect(facts.endpoints).toEqual([{ method: 'GET', path: '/health' }])
+    expect(facts.endpoints).toEqual([expect.objectContaining({ method: 'GET', path: '/health' })])
     expect(facts.queueNames).toEqual(['svcEmployeesUpdate'])
   })
 })

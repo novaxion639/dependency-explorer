@@ -8,8 +8,8 @@ const svc_labour_laws: ConnectivityService = ConnectivityServiceSchema.parse({
   "endpoints": [
     {
       "id": "api-upsert-shop",
-      "path": "/shops",
-      "method": "POST",
+      "path": "/shop",
+      "method": "PUT",
       "description": "Upsert shop labour law data",
       "useCase": "Used by calling services to upsert shop labour law data",
       "params": [
@@ -24,135 +24,6 @@ const svc_labour_laws: ConnectivityService = ConnectivityServiceSchema.parse({
       "response": {
         "201": "Created",
         "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcLabourLaws-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-batch-upsert-shops",
-      "path": "/shops/batch",
-      "method": "POST",
-      "description": "Batch upsert shops labour law data",
-      "useCase": "Used by calling services to batch upsert shops labour law data",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcLabourLaws-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-get-labour-law-overrides",
-      "path": "/overrides",
-      "method": "GET",
-      "description": "Get labour law overrides",
-      "useCase": "Used by calling services to get labour law overrides",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcLabourLaws-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-create-labour-law-override",
-      "path": "/overrides",
-      "method": "POST",
-      "description": "Create labour law override",
-      "useCase": "Used by calling services to create labour law override",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcLabourLaws-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-update-labour-law-override",
-      "path": "/overrides/{overrideId}",
-      "method": "PATCH",
-      "description": "Update labour law override",
-      "useCase": "Used by calling services to update labour law override",
-      "params": [
-        {
-          "name": "overrideId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "overrideId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcLabourLaws-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-delete-labour-law-override",
-      "path": "/overrides/{overrideId}",
-      "method": "DELETE",
-      "description": "Delete labour law override",
-      "useCase": "Used by calling services to delete labour law override",
-      "params": [
-        {
-          "name": "overrideId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "overrideId identifier"
-        }
-      ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
       },
       "awsCalls": [
         {
@@ -180,91 +51,6 @@ const svc_labour_laws: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-create-labour-law",
-      "path": "/labour-laws",
-      "method": "POST",
-      "description": "Create labour law",
-      "useCase": "Used by calling services to create labour law",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcLabourLaws-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-update-labour-law",
-      "path": "/labour-laws/{labourLawId}",
-      "method": "PATCH",
-      "description": "Update labour law",
-      "useCase": "Used by calling services to update labour law",
-      "params": [
-        {
-          "name": "labourLawId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "labourLawId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcLabourLaws-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-delete-labour-law",
-      "path": "/labour-laws/{labourLawId}",
-      "method": "DELETE",
-      "description": "Delete labour law",
-      "useCase": "Used by calling services to delete labour law",
-      "params": [
-        {
-          "name": "labourLawId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "labourLawId identifier"
-        }
-      ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcLabourLaws-{env}"
-        }
-      ]
-    },
-    {
       "id": "api-get-country-default-settings",
       "path": "/country-default-settings",
       "method": "GET",
@@ -281,6 +67,86 @@ const svc_labour_laws: ConnectivityService = ConnectivityServiceSchema.parse({
           "name": "svcLabourLaws-{env}"
         }
       ]
+    },
+    {
+      "id": "api-batch-upsert-shop",
+      "path": "/shops/batch",
+      "method": "PUT",
+      "description": "PUT /shops/batch",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-update-shop-overrides",
+      "path": "/overrides",
+      "method": "PATCH",
+      "description": "PATCH /overrides",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-available-labour-law-upsert",
+      "path": "/labour_law",
+      "method": "PUT",
+      "description": "PUT /labour_law",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-available-labour-law-show",
+      "path": "/labour_law",
+      "method": "GET",
+      "description": "GET /labour_law",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-available-labour-law-delete",
+      "path": "/labour_law",
+      "method": "DELETE",
+      "description": "DELETE /labour_law",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-enabled-labour-laws-index",
+      "path": "/enabled_labour_laws",
+      "method": "GET",
+      "description": "GET /enabled_labour_laws",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-country-default-settings-create",
+      "path": "/country_default_settings",
+      "method": "POST",
+      "description": "Create countries default settings",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-country-default-settings-update",
+      "path": "/country_default_settings/{countryCode}",
+      "method": "PATCH",
+      "description": "Update countries default settings",
+      "useCase": "",
+      "params": [
+        {
+          "name": "countryCode",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
     }
   ],
   "databases": [

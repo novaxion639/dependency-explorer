@@ -7,28 +7,6 @@ const svc_users: ConnectivityService = ConnectivityServiceSchema.parse({
   "description": "User identity and authentication management",
   "endpoints": [
     {
-      "id": "api-login-capability",
-      "path": "/login/capability",
-      "method": "GET",
-      "description": "Get login capability (SSO vs password, etc.)",
-      "useCase": "Used by calling services to get login capability (SSO vs password, etc.)",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcUsers-{env}"
-        },
-        {
-          "type": "postgresql",
-          "name": "svc_users"
-        }
-      ]
-    },
-    {
       "id": "api-sso-callback",
       "path": "/sso/{provider}/callback",
       "method": "GET",
@@ -60,7 +38,7 @@ const svc_users: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "id": "api-get-sso-configuration-by-organisation",
-      "path": "/sso-configurations",
+      "path": "/sso/config/{organisationId}",
       "method": "GET",
       "description": "Get SSO configuration by organisation",
       "useCase": "Used by calling services to get SSO configuration by organisation",
@@ -82,7 +60,7 @@ const svc_users: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "id": "api-create-or-update-sso-configuration",
-      "path": "/sso-configurations",
+      "path": "/sso/config/{organisationId}",
       "method": "POST",
       "description": "Create or update SSO configuration",
       "useCase": "Used by calling services to create or update SSO configuration",
@@ -111,48 +89,94 @@ const svc_users: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "docs-swagger-api",
-      "path": "/docs",
+      "id": "api-public-swagger-docs",
+      "path": "/public/docs.json",
       "method": "GET",
-      "description": "Swagger API docs",
-      "useCase": "Used by calling services to swagger API docs",
+      "description": "GET /public/docs.json",
+      "useCase": "",
       "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcUsers-{env}"
-        },
-        {
-          "type": "postgresql",
-          "name": "svc_users"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "docs-public-swagger-api",
-      "path": "/public/docs",
+      "id": "api-get-user",
+      "path": "/user/me",
       "method": "GET",
-      "description": "Public Swagger API docs",
-      "useCase": "Used by calling services to public Swagger API docs",
+      "description": "Get authenticated user profile",
+      "useCase": "",
       "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcUsers-{env}"
-        },
-        {
-          "type": "postgresql",
-          "name": "svc_users"
-        }
-      ]
+      "response": {}
+    },
+    {
+      "id": "api-patch-user",
+      "path": "/user/me",
+      "method": "PATCH",
+      "description": "Patch user profile",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-confirm-user",
+      "path": "/private/user-confirm",
+      "method": "POST",
+      "description": "Confirm a user by email",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-token-employee",
+      "path": "/token-employee",
+      "method": "POST",
+      "description": "Generate fresh tokens scoped to a target employee credentials",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-change-password",
+      "path": "/user/me/password",
+      "method": "PATCH",
+      "description": "Change authenticated user password",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-invite-user",
+      "path": "/invitation",
+      "method": "POST",
+      "description": "Invite a user to join Skello",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-invite-user-2",
+      "path": "/private/invitation",
+      "method": "POST",
+      "description": "Invite a user to join Skello",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-check-user-exists",
+      "path": "/private/user-exists",
+      "method": "POST",
+      "description": "Check if a user exists by email (private, API key protected)",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "login-capability",
+      "path": "/login/_capability",
+      "method": "POST",
+      "description": "POST /login/_capability",
+      "useCase": "",
+      "params": [],
+      "response": {}
     }
   ],
   "databases": [

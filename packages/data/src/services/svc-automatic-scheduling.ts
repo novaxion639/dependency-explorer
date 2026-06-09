@@ -33,30 +33,73 @@ const svc_automatic_scheduling: ConnectivityService = ConnectivityServiceSchema.
       ]
     },
     {
-      "id": "api-trigger-auto-scheduling",
-      "path": "/auto_scheduling/compute",
+      "id": "api-trigger-automatic-assignment",
+      "path": "/automatic_assignment/compute",
       "method": "POST",
-      "description": "Start an auto-scheduling Step Functions execution for a shop and week",
-      "useCase": "Triggered by the frontend to launch the full SFN pipeline; returns immediately while the pipeline runs asynchronously",
+      "description": "Trigger automatic assignment: saves session to MongoDB",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-cancel-automatic-assignment-job",
+      "path": "/automatic_assignment/{jobId}/cancel",
+      "method": "PATCH",
+      "description": "Cancel an automatic assignment job by setting its status to CANCELLED",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "jobId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "shopId, weekStart, and scheduling constraints"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Execution started (jobId returned)",
-        "400": "Validation error"
-      },
-      "awsCalls": [
+      "response": {}
+    },
+    {
+      "id": "api-generate-unassigned-shifts",
+      "path": "/v1/auto_scheduling/generate_unassigned_shifts",
+      "method": "POST",
+      "description": "Start Job of generating unassigned shifts for a shop and date range",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-get-position-configs",
+      "path": "/v1/position-configs/{shopId}",
+      "method": "GET",
+      "description": "Get Automatic Shift Creation position configs for a shop",
+      "useCase": "",
+      "params": [
         {
-          "type": "lambda",
-          "name": "AutoScheduling-StepFunction"
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
-      ]
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-upsert-position-configs",
+      "path": "/v1/position-configs/{shopId}",
+      "method": "PATCH",
+      "description": "Upsert position configurations for a shop",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
     }
   ],
   "databases": [

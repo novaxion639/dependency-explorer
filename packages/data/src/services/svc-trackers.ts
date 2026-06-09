@@ -7,162 +7,258 @@ const svc_trackers: ConnectivityService = ConnectivityServiceSchema.parse({
   "description": "Time tracker — project and task-based time logging across the workforce",
   "endpoints": [
     {
-      "id": "api-activate-shop-tracker-settings",
-      "path": "/shop-settings/activate",
+      "id": "api-initialize-tracker",
+      "path": "/v1/shops/{shopId}/shop-settings/activation",
       "method": "POST",
-      "description": "Activate shop tracker settings",
-      "useCase": "Used by calling services to activate shop tracker settings",
+      "description": "Create settings for shop + employee and trackers",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-trackers"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-list-shop-tracker-settings",
-      "path": "/shop-settings",
+      "id": "api-list-shop-settings",
+      "path": "/v1/shops/{shopId}/shop-settings",
       "method": "GET",
-      "description": "List shop tracker settings",
-      "useCase": "Used by calling services to list shop tracker settings",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-trackers"
-        }
-      ]
-    },
-    {
-      "id": "api-deactivate-shop-tracker-settings",
-      "path": "/shop-settings/deactivate",
-      "method": "POST",
-      "description": "Deactivate shop tracker settings",
-      "useCase": "Used by calling services to deactivate shop tracker settings",
+      "description": "Get all shop settings for a given shop",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-trackers"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-employee-tracker-settings",
-      "path": "/employee-settings",
+      "id": "api-deactivate-tracker",
+      "path": "/v1/shops/{shopId}/shop-settings/{key}/deactivation",
+      "method": "DELETE",
+      "description": "Deactivates a tracker for a given shop",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "key",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-initialize-employee-tracker",
+      "path": "/v1/shops/{shopId}/employees/{employeeId}/employee-settings/activation",
+      "method": "POST",
+      "description": "Create setting for single employee and related tracker",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "employeeId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-get-employee-setting",
+      "path": "/v1/shops/{shopId}/employees/{employeeId}/employee-settings/{key}",
       "method": "GET",
-      "description": "Get employee tracker settings",
-      "useCase": "Used by calling services to get employee tracker settings",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-trackers"
-        }
-      ]
-    },
-    {
-      "id": "api-upsert-employee-tracker-settings",
-      "path": "/employee-settings",
-      "method": "POST",
-      "description": "Upsert employee tracker settings",
-      "useCase": "Used by calling services to upsert employee tracker settings",
+      "description": "Get employee setting for given employee, shop and key",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
+        },
+        {
+          "name": "employeeId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "key",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-trackers"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-trackers",
-      "path": "/trackers",
+      "id": "api-deactivate-employee-tracker",
+      "path": "/v1/shops/{shopId}/employees/{employeeId}/employee-settings/{key}/deactivation",
+      "method": "DELETE",
+      "description": "Deactivates a tracker for a given employee",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "employeeId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "key",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-get-employee-trackers",
+      "path": "/v1/shops/{shopId}/employees/{employeeId}/trackers/{key}",
       "method": "GET",
-      "description": "Get trackers",
-      "useCase": "Used by calling services to get trackers",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-trackers"
-        }
-      ]
-    },
-    {
-      "id": "api-upsert-tracker",
-      "path": "/trackers",
-      "method": "POST",
-      "description": "Upsert tracker",
-      "useCase": "Used by calling services to upsert tracker",
+      "description": "Get trackers for a given employee, shop, key and period",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
+        },
+        {
+          "name": "employeeId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "key",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
+      "response": {}
+    },
+    {
+      "id": "api-upsert-manual-changes",
+      "path": "/v1/shops/{shopId}/employees/{employeeId}/trackers/{key}/manual-changes",
+      "method": "PATCH",
+      "description": "Upsert manual changes for a given tracker",
+      "useCase": "",
+      "params": [
         {
-          "type": "mongodb",
-          "name": "svc-trackers"
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "employeeId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "key",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
-      ]
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-get-bulk-employee-trackers",
+      "path": "/v1/shops/{shopId}/employees/trackers/bulk-fetch",
+      "method": "POST",
+      "description": "Get trackers for multiple employees in a shop for a given key and period",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-get-previsional-tracker",
+      "path": "/v1/shops/{shopId}/employees/{employeeId}/trackers/{key}/previsional",
+      "method": "GET",
+      "description": "Get previsional tracker data for an employee",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "employeeId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "key",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
     }
   ],
   "databases": [

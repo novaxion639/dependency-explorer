@@ -7,74 +7,6 @@ const svc_intelligence: ConnectivityService = ConnectivityServiceSchema.parse({
   "description": "AI-powered analysis layer — OpenAI integration for document processing and assistant features",
   "endpoints": [
     {
-      "id": "api-analyse",
-      "path": "/analyse",
-      "method": "POST",
-      "description": "Analyse data with AI/intelligence",
-      "useCase": "Used by calling services to analyse data with AI/intelligence",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcIntelligence-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-intelligence"
-        },
-        {
-          "type": "s3",
-          "name": "svc-intelligence.{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-dynamo-scan",
-      "path": "/dynamo-scan",
-      "method": "POST",
-      "description": "Scan DynamoDB for intelligence data",
-      "useCase": "Used by calling services to scan DynamoDB for intelligence data",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcIntelligence-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-intelligence"
-        },
-        {
-          "type": "s3",
-          "name": "svc-intelligence.{env}"
-        }
-      ]
-    },
-    {
       "id": "api-validate-llm-response",
       "path": "/validate-llm-response",
       "method": "POST",
@@ -92,32 +24,6 @@ const svc_intelligence: ConnectivityService = ConnectivityServiceSchema.parse({
       "response": {
         "201": "Created",
         "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcIntelligence-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-intelligence"
-        },
-        {
-          "type": "s3",
-          "name": "svc-intelligence.{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-get-validation-responses",
-      "path": "/validation-responses",
-      "method": "GET",
-      "description": "Get validation responses",
-      "useCase": "Used by calling services to get validation responses",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
       },
       "awsCalls": [
         {
@@ -167,6 +73,49 @@ const svc_intelligence: ConnectivityService = ConnectivityServiceSchema.parse({
           "name": "svc-intelligence.{env}"
         }
       ]
+    },
+    {
+      "id": "api-request-analysis",
+      "path": "/analyse/{documentId}",
+      "method": "POST",
+      "description": "Request analysis of a document",
+      "useCase": "",
+      "params": [
+        {
+          "name": "documentId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "trigger-dynamo-scan",
+      "path": "/dynamoScan",
+      "method": "GET",
+      "description": "Scan the DynamoDB",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "get-validation-response",
+      "path": "/validationResponses/{documentId}",
+      "method": "GET",
+      "description": "Get validation response",
+      "useCase": "",
+      "params": [
+        {
+          "name": "documentId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
     }
   ],
   "databases": [

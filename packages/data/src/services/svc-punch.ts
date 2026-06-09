@@ -7,24 +7,6 @@ const svc_punch: ConnectivityService = ConnectivityServiceSchema.parse({
   "description": "Punch-clock attendance tracking — records clock-in/out events and computes worked time",
   "endpoints": [
     {
-      "id": "api-get-clocks-in-out",
-      "path": "/clocks-in-out",
-      "method": "GET",
-      "description": "Get clocks in/out records",
-      "useCase": "Used by calling services to get clocks in/out records",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
-    },
-    {
       "id": "api-create-clock-in-out",
       "path": "/clocks-in-out",
       "method": "POST",
@@ -154,334 +136,382 @@ const svc_punch: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-get-punch-histories",
+      "id": "api-public-swagger-index",
+      "path": "/public",
+      "method": "GET",
+      "description": "Shows public swagger",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-public-swagger-docs",
+      "path": "/public/docs.json",
+      "method": "GET",
+      "description": "Shows docs of public swagger",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-config-read",
+      "path": "/config",
+      "method": "GET",
+      "description": "Reads config for tablets",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-clocks-in-out-read-by-id",
+      "path": "/clocks-in-out/{id}",
+      "method": "GET",
+      "description": "Reads one clockInOut",
+      "useCase": "",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-clocks-in-out-by-multiple-shop-ids",
+      "path": "/v1/clocks-in-out/shops",
+      "method": "GET",
+      "description": "Reads clocksInOut by multiple shop Ids",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-clocks-in-out-by-multiple-user-ids",
+      "path": "/v1/clocks-in-out/users",
+      "method": "GET",
+      "description": "Reads clocksInOut by multiple user Ids",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-public-clocks-in-out-public-create",
+      "path": "/v1/clocks-in-out",
+      "method": "POST",
+      "description": "Creates clockInOut public",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-public-clocks-in-out-public-update",
+      "path": "/v1/clocks-in-out",
+      "method": "PATCH",
+      "description": "Updates clockInOut public",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-clocks-in-out-by-shop-id",
+      "path": "/clocks-in-out/shop/{shopId}",
+      "method": "GET",
+      "description": "Reads clocksInOut by shopId",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-clocks-in-out-by-user-id",
+      "path": "/clocks-in-out/user/{userId}",
+      "method": "GET",
+      "description": "Reads clocksInOut by userId",
+      "useCase": "",
+      "params": [
+        {
+          "name": "userId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-clocks-in-out-update",
+      "path": "/clocks-in-out/{id}",
+      "method": "PUT",
+      "description": "Updates one clockInOut",
+      "useCase": "",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-histories-read-by-id",
+      "path": "/histories/{id}",
+      "method": "GET",
+      "description": "Reads one history",
+      "useCase": "",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-histories-by-shop-id",
+      "path": "/histories/shop/{shopId}",
+      "method": "GET",
+      "description": "Reads history by shopId",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-histories-create",
       "path": "/histories",
-      "method": "GET",
-      "description": "Get punch histories",
-      "useCase": "Used by calling services to get punch histories",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-get-punch-users",
-      "path": "/users",
-      "method": "GET",
-      "description": "Get punch users",
-      "useCase": "Used by calling services to get punch users",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-create-punch-user",
-      "path": "/users",
       "method": "POST",
-      "description": "Create punch user",
-      "useCase": "Used by calling services to create punch user",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
+      "description": "Creates one history",
+      "useCase": "",
+      "params": [],
+      "response": {}
     },
     {
-      "id": "api-update-punch-user",
-      "path": "/users/{userId}",
-      "method": "PATCH",
-      "description": "Update punch user",
-      "useCase": "Used by calling services to update punch user",
+      "id": "api-setting-read-by-shop-id",
+      "path": "/settings/shop/{shopId}",
+      "method": "GET",
+      "description": "Reads settings by shopId",
+      "useCase": "",
       "params": [
         {
-          "name": "userId",
+          "name": "shopId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "userId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-delete-punch-user",
-      "path": "/users/{userId}",
+      "id": "api-setting-read-by-shop-id-2",
+      "path": "/settings/{shopId}",
+      "method": "GET",
+      "description": "Reads settings by shopId",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-setting-update",
+      "path": "/settings/shop/{shopId}",
+      "method": "PUT",
+      "description": "Updates one setting",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-setting-update-2",
+      "path": "/settings/{shopId}",
+      "method": "PUT",
+      "description": "Updates one setting",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-setting-partial-update",
+      "path": "/settings/shop/{shopId}",
+      "method": "PATCH",
+      "description": "Patch one setting",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-setting-partial-update-2",
+      "path": "/settings/{shopId}",
+      "method": "PATCH",
+      "description": "Patch one setting",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-setting-partial-update-by-mobile",
+      "path": "/settings/mobile/{shopId}",
+      "method": "PATCH",
+      "description": "Patch one setting by shop id for mobile",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-setting-delete",
+      "path": "/settings/shop/{shopId}",
       "method": "DELETE",
-      "description": "Delete punch user",
-      "useCase": "Used by calling services to delete punch user",
+      "description": "Deletes one setting",
+      "useCase": "",
       "params": [
         {
-          "name": "userId",
+          "name": "shopId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "userId identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-punch-mobile-permissions",
-      "path": "/mobile-permissions",
-      "method": "GET",
-      "description": "Get punch mobile permissions",
-      "useCase": "Used by calling services to get punch mobile permissions",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-upsert-punch-mobile-permissions",
-      "path": "/mobile-permissions",
-      "method": "POST",
-      "description": "Upsert punch mobile permissions",
-      "useCase": "Used by calling services to upsert punch mobile permissions",
+      "id": "api-setting-delete-2",
+      "path": "/settings/{shopId}",
+      "method": "DELETE",
+      "description": "Deletes one setting",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-v1-clocks-in-out",
-      "path": "/v1/public/clocks-in-out",
+      "id": "api-users-read-by-id",
+      "path": "/users/{id}",
       "method": "GET",
-      "description": "Public v1 get clocks in/out",
-      "useCase": "Used by calling services to public v1 get clocks in/out",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-create-v1-clock-in-out",
-      "path": "/v1/public/clocks-in-out",
-      "method": "POST",
-      "description": "Public v1 create clock in/out",
-      "useCase": "Used by calling services to public v1 create clock in/out",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-update-v1-clock-in-out",
-      "path": "/v1/public/clocks-in-out/{id}",
-      "method": "PATCH",
-      "description": "Public v1 update clock in/out",
-      "useCase": "Used by calling services to public v1 update clock in/out",
+      "description": "Reads one user",
+      "useCase": "",
       "params": [
         {
           "name": "id",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "id identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-delete-v1-clock-in-out",
-      "path": "/v1/public/clocks-in-out/{id}",
-      "method": "DELETE",
-      "description": "Public v1 delete clock in/out",
-      "useCase": "Used by calling services to public v1 delete clock in/out",
+      "id": "api-users-by-shop-id",
+      "path": "/users/shop/{shopId}",
+      "method": "GET",
+      "description": "Reads clocksInOut by shopId",
+      "useCase": "",
       "params": [
         {
-          "name": "id",
+          "name": "shopId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "id identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-v1-punch-settings",
-      "path": "/v1/public/settings",
+      "id": "api-users-by-user-id",
+      "path": "/users/user/{userId}",
       "method": "GET",
-      "description": "Public v1 get punch settings",
-      "useCase": "Used by calling services to public v1 get punch settings",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-upsert-v1-punch-settings",
-      "path": "/v1/public/settings",
-      "method": "POST",
-      "description": "Public v1 upsert punch settings",
-      "useCase": "Used by calling services to public v1 upsert punch settings",
+      "description": "Reads clocksInOut by userId",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "userId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-get-v1-punch-users",
-      "path": "/v1/public/users",
-      "method": "GET",
-      "description": "Public v1 get punch users",
-      "useCase": "Used by calling services to public v1 get punch users",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcPunch-{env}"
-        }
-      ]
+      "response": {}
     }
   ],
   "databases": [

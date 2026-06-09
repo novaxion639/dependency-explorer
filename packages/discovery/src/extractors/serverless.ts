@@ -4,6 +4,10 @@ import * as path from 'node:path'
 export interface DiscoveredEndpoint {
   method: string
   path: string
+  /** serverless function key (e.g. "ApiAbsenceConfigBulkCreate") when identifiable */
+  functionName?: string
+  /** serverless function description when present */
+  description?: string
 }
 
 export interface ServerlessFacts {
@@ -42,28 +46,29 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
     }
   }
 
-  for (const fn of Object.values<any>(state?.service?.functions ?? {})) {
+  for (const [fnKey, fn] of Object.entries<any>(state?.service?.functions ?? {})) {
+    const identity = { functionName: fnKey, description: typeof fn?.description === 'string' ? fn.description : undefined }
     for (const event of fn?.events ?? []) {
       const httpApi = event?.httpApi
       if (httpApi) {
         if (typeof httpApi === 'object' && httpApi.resolvedMethod) {
-          endpoints.push({ method: String(httpApi.resolvedMethod).toUpperCase(), path: httpApi.resolvedPath ?? '/' })
+          endpoints.push({ method: String(httpApi.resolvedMethod).toUpperCase(), path: httpApi.resolvedPath ?? '/', ...identity })
         } else if (typeof httpApi === 'object' && httpApi.method) {
-          endpoints.push({ method: String(httpApi.method).toUpperCase(), path: httpApi.path ?? '/' })
+          endpoints.push({ method: String(httpApi.method).toUpperCase(), path: httpApi.path ?? '/', ...identity })
         } else if (typeof httpApi === 'string') {
           const [method, p] = httpApi.split(/\s+/)
-          if (method && p) endpoints.push({ method: method.toUpperCase(), path: p })
+          if (method && p) endpoints.push({ method: method.toUpperCase(), path: p, ...identity })
         }
         continue
       }
       const http = event?.http
       if (http && typeof http === 'object' && http.method) {
-        endpoints.push({ method: String(http.method).toUpperCase(), path: http.path?.startsWith('/') ? http.path : `/${http.path ?? ''}` })
+        endpoints.push({ method: String(http.method).toUpperCase(), path: http.path?.startsWith('/') ? http.path : `/${http.path ?? ''}`, ...identity })
         continue
       }
       if (typeof http === 'string') {
         const [method, p] = http.split(/\s+/)
-        if (method && p) endpoints.push({ method: method.toUpperCase(), path: p.startsWith('/') ? p : `/${p}` })
+        if (method && p) endpoints.push({ method: method.toUpperCase(), path: p.startsWith('/') ? p : `/${p}`, ...identity })
         continue
       }
       const sqsArn = event?.sqs?.arn ?? (typeof event?.sqs === 'string' ? event.sqs : null)
@@ -81,6 +86,34 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
 
 const HTTP_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 
+/**
+ * Walk backward from an event line to identify the enclosing serverless
+ * function: the nearest `Identifier: {` line with smaller indentation, plus
+ * any `description: '…'` between it and the event. Heuristic — returns {}
+ * rather than guessing when nothing plausible is found.
+ */
+function findFunctionIdentity(lines: string[], eventLineIdx: number): { functionName?: string; description?: string } {
+  const eventIndent = lines[eventLineIdx]!.match(/^\s*/)![0].length
+  let description: string | undefined
+  for (let j = eventLineIdx - 1; j >= Math.max(0, eventLineIdx - 60); j--) {
+    const line = lines[j]!
+    const indent = line.match(/^\s*/)![0].length
+    if (!line.trim()) continue
+    if (indent < eventIndent) {
+      const d = line.match(/^\s*description:\s*['"`]([^'"`]+)['"`]/)
+      if (d && !description) {
+        description = d[1]!
+        continue
+      }
+      const fn = line.match(/^\s*([A-Za-z][A-Za-z0-9_]*):\s*\{\s*$/)
+      if (fn && !['events', 'httpApi', 'http', 'tags', 'environment', 'vpc', 'authorizer'].includes(fn[1]!)) {
+        return { functionName: fn[1]!, description }
+      }
+    }
+  }
+  return { description }
+}
+
 /** Mine method/path literals from serverless TypeScript source. Exported for tests. */
 export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 'source'> {
   const endpoints: DiscoveredEndpoint[] = []
@@ -93,7 +126,7 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     // Shorthand: httpApi: 'GET /path'
     const shorthand = line.match(/\bhttpApi:\s*['"`]([A-Z]+)\s+([^'"`]+)['"`]/)
     if (shorthand && HTTP_METHODS.has(shorthand[1]!)) {
-      endpoints.push({ method: shorthand[1]!, path: shorthand[2]! })
+      endpoints.push({ method: shorthand[1]!, path: shorthand[2]!, ...findFunctionIdentity(lines, i) })
       continue
     }
 
@@ -111,7 +144,7 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
         if (method && epPath) break
       }
       if (method && epPath && HTTP_METHODS.has(method)) {
-        endpoints.push({ method, path: epPath })
+        endpoints.push({ method, path: epPath, ...findFunctionIdentity(lines, i) })
       }
       continue
     }

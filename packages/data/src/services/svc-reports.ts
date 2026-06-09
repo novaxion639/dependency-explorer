@@ -52,8 +52,8 @@ const svc_reports: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "id": "api-update-pam-config",
-      "path": "/pam-configs/{configId}",
-      "method": "PATCH",
+      "path": "/v1/pam-configs/{id}",
+      "method": "PUT",
       "description": "Update PAM configuration",
       "useCase": "Used by calling services to update PAM configuration",
       "params": [
@@ -154,39 +154,6 @@ const svc_reports: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-update-variable-pay-element-custom",
-      "path": "/variable-pay-elements/custom/{elementId}",
-      "method": "PATCH",
-      "description": "Update custom variable pay element",
-      "useCase": "Used by calling services to update custom variable pay element",
-      "params": [
-        {
-          "name": "elementId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "elementId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
-    },
-    {
       "id": "api-delete-variable-pay-element-custom",
       "path": "/variable-pay-elements/custom/{elementId}",
       "method": "DELETE",
@@ -213,26 +180,8 @@ const svc_reports: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-get-payroll-softwares",
-      "path": "/payroll-softwares",
-      "method": "GET",
-      "description": "Get payroll softwares",
-      "useCase": "Used by calling services to get payroll softwares",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
-    },
-    {
       "id": "api-create-payroll-software",
-      "path": "/payroll-softwares",
+      "path": "/v1/payroll-software",
       "method": "POST",
       "description": "Create payroll software",
       "useCase": "Used by calling services to create payroll software",
@@ -258,8 +207,8 @@ const svc_reports: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "id": "api-update-payroll-software",
-      "path": "/payroll-softwares/{softwareId}",
-      "method": "PATCH",
+      "path": "/v1/payroll-software/{id}",
+      "method": "PUT",
       "description": "Update payroll software",
       "useCase": "Used by calling services to update payroll software",
       "params": [
@@ -291,7 +240,7 @@ const svc_reports: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "id": "api-delete-payroll-software",
-      "path": "/payroll-softwares/{softwareId}",
+      "path": "/v1/payroll-software/{id}",
       "method": "DELETE",
       "description": "Delete payroll software",
       "useCase": "Used by calling services to delete payroll software",
@@ -316,270 +265,132 @@ const svc_reports: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-get-report-configs",
-      "path": "/report-configs",
+      "id": "api-find-one-pam-config",
+      "path": "/v1/pam-configs/{id}",
       "method": "GET",
-      "description": "Get report configurations",
-      "useCase": "Used by calling services to get report configurations",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-create-report-config",
-      "path": "/report-configs",
-      "method": "POST",
-      "description": "Create report configuration",
-      "useCase": "Used by calling services to create report configuration",
+      "description": "Find a PAM config",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "id",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-update-report-config",
-      "path": "/report-configs/{configId}",
+      "id": "api-assign-shops-to-pam-config",
+      "path": "/v1/pam-configs/{id}/enabled-shops",
       "method": "PATCH",
-      "description": "Update report configuration",
-      "useCase": "Used by calling services to update report configuration",
+      "description": "Assign shops to a PAM config",
+      "useCase": "",
       "params": [
         {
-          "name": "configId",
+          "name": "id",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "configId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-delete-report-config",
-      "path": "/report-configs/{configId}",
-      "method": "DELETE",
-      "description": "Delete report configuration",
-      "useCase": "Used by calling services to delete report configuration",
-      "params": [
-        {
-          "name": "configId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "configId identifier"
-        }
-      ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-get-column-sets",
-      "path": "/column-sets",
-      "method": "GET",
-      "description": "Get column sets",
-      "useCase": "Used by calling services to get column sets",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-create-column-set",
-      "path": "/column-sets",
-      "method": "POST",
-      "description": "Create column set",
-      "useCase": "Used by calling services to create column set",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-update-column-set",
-      "path": "/column-sets/{columnSetId}",
+      "id": "api-update-schedule-in-pam-config",
+      "path": "/v1/pam-configs/{id}/schedule",
       "method": "PATCH",
-      "description": "Update column set",
-      "useCase": "Used by calling services to update column set",
+      "description": "Update schedule in PAM Config",
+      "useCase": "",
       "params": [
         {
-          "name": "columnSetId",
+          "name": "id",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "columnSetId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-delete-column-set",
-      "path": "/column-sets/{columnSetId}",
+      "id": "api-delete-schedule-in-pam-config",
+      "path": "/v1/pam-configs/{id}/schedule",
       "method": "DELETE",
-      "description": "Delete column set",
-      "useCase": "Used by calling services to delete column set",
+      "description": "Delete schedule in PAM Config",
+      "useCase": "",
       "params": [
         {
-          "name": "columnSetId",
+          "name": "id",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "columnSetId identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-trigger-report-export",
-      "path": "/reports",
-      "method": "POST",
-      "description": "Trigger an async planning report export job",
-      "useCase": "Called by skello-app-front to start a report export for a selected period",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Export configuration including period, shopId and format"
-        }
-      ],
-      "response": {
-        "202": "Job created — returns jobId",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        },
-        {
-          "type": "lambda",
-          "name": "report-generator"
-        }
-      ]
-    },
-    {
-      "id": "api-get-report-job",
-      "path": "/reports/{jobId}",
+      "id": "api-find-one-variable-pay-elements-custom",
+      "path": "/v1/variable-pay-elements/custom/{id}",
       "method": "GET",
-      "description": "Poll the status of an async report export job",
-      "useCase": "Called by skello-app-front to check if the report is ready; returns a pre-signed S3 URL on completion",
+      "description": "Find a variable pay elements custom",
+      "useCase": "",
       "params": [
         {
-          "name": "jobId",
+          "name": "id",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "Report job ID returned by POST /reports"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Job status and optional signedUrl",
-        "404": "Job not found"
-      },
-      "awsCalls": [
+      "response": {}
+    },
+    {
+      "id": "api-update-variable-pay-elements-custom",
+      "path": "/v1/variable-pay-elements/custom/{id}",
+      "method": "PUT",
+      "description": "Update a variable pay elements custome",
+      "useCase": "",
+      "params": [
         {
-          "type": "dynamodb",
-          "name": "svcReports-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "skello-reports-{env}"
+          "name": "id",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
-      ]
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-find-all-payroll-sofware",
+      "path": "/v1/payroll-software",
+      "method": "GET",
+      "description": "Get all payroll software",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-find-one-payroll-software",
+      "path": "/v1/payroll-software/{id}",
+      "method": "GET",
+      "description": "Find a payroll software",
+      "useCase": "",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
     }
   ],
   "databases": [

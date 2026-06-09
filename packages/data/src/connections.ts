@@ -16,11 +16,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Publishes event notifications to employees via email/push",
-    "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route",
-      "bulk-create-high-priority-notification-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-skello-assistant",
@@ -30,11 +26,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Sends confirmation messages and summaries to users",
-    "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route",
-      "bulk-create-high-priority-notification-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-billing-automation",
@@ -44,11 +36,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Sends invoices, payment failures and subscription notifications",
-    "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route",
-      "bulk-create-high-priority-sms-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-documents-v2",
@@ -58,11 +46,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Notifies employees when a document is ready to sign",
-    "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route",
-      "bulk-create-high-priority-notification-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-hris",
@@ -72,10 +56,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Sends HRIS sync completion and mismatch alerts",
-    "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-users",
@@ -85,10 +66,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Sends welcome emails and password reset emails on user creation",
-    "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-requests",
@@ -98,11 +76,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Notifies employees of request approval/rejection",
-    "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route",
-      "bulk-create-high-priority-notification-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-employees",
@@ -112,10 +86,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Sends onboarding invitation emails to new employees",
-    "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-intelligence",
@@ -190,7 +161,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Looks up employee details when building shop/team rosters",
     "usedEndpoints": [
-      "api-get-employees",
       "api-get-employee"
     ]
   },
@@ -203,9 +173,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Syncs HRIS employee data into Skello employee records",
     "usedEndpoints": [
-      "api-bulk-upsert-employees",
-      "api-get-employee",
-      "api-update-employee"
+      "api-get-employee"
     ]
   },
   {
@@ -216,10 +184,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Retrieves employee contract data (hours, costs) for KPI computation",
-    "usedEndpoints": [
-      "api-get-employees",
-      "api-get-employee-contracts"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-trackers",
@@ -280,7 +245,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Provisions punch clock tokens for employees at login",
     "usedEndpoints": [
-      "api-get-clocks-in-out",
       "api-create-clock-in-out"
     ]
   },
@@ -292,10 +256,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Answers billing and subscription questions from the assistant",
-    "usedEndpoints": [
-      "api-get-quote",
-      "api-create-quote"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-communications-v2",
@@ -341,9 +302,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Maps HRIS cost centres to Skello shop locations during sync",
-    "usedEndpoints": [
-      "api-get-shops"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-workload-plan",
@@ -353,10 +312,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Fetches historical KPIs to train workload forecasting models",
-    "usedEndpoints": [
-      "api-get-activity-prediction-settings",
-      "api-upsert-activity-prediction-settings"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-bff",
@@ -366,10 +322,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Includes KPI summary in the composite BFF dashboard response",
-    "usedEndpoints": [
-      "api-get-activity-prediction-settings",
-      "api-upsert-activity-prediction-settings"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-documents-v2",
@@ -379,10 +332,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Delegates document content extraction and analysis to svc-intelligence",
-    "usedEndpoints": [
-      "api-analyse",
-      "api-dynamo-scan"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "svc-billing-automation",
@@ -405,8 +355,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Fetches POS revenue data to compute labour cost ratio KPIs",
     "usedEndpoints": [
-      "api-get-chift-providers",
-      "api-handle-chift-webhook"
+      "api-get-chift-providers"
     ]
   },
   {
@@ -455,10 +404,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Manage subscription quotes, contracts and billing lifecycle for organisations",
-    "usedEndpoints": [
-      "api-get-quote",
-      "api-create-quote"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "superadmin",
@@ -468,10 +414,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Send high and low priority notifications to users",
-    "usedEndpoints": [
-      "bulk-create-high-priority-notification-route",
-      "bulk-create-low-priority-notification-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "superadmin",
@@ -482,7 +425,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Read and configure employee absence settings and HR data",
     "usedEndpoints": [
-      "api-get-absence-configs",
       "api-upsert-absence-config"
     ]
   },
@@ -508,8 +450,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Configure labour law rules and shop compliance settings",
     "usedEndpoints": [
-      "api-upsert-shop",
-      "api-batch-upsert-shops"
+      "api-upsert-shop"
     ]
   },
   {
@@ -521,7 +462,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Access punch clock data for admin oversight and auditing",
     "usedEndpoints": [
-      "api-get-clocks-in-out",
       "api-create-clock-in-out"
     ]
   },
@@ -547,8 +487,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Read and update organisation and shop configuration",
     "usedEndpoints": [
-      "api-get-organisations-config",
-      "api-upsert-organisation-config"
+      "api-get-organisations-config"
     ]
   },
   {
@@ -559,10 +498,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Manage tracker settings for shops",
-    "usedEndpoints": [
-      "api-activate-shop-tracker-settings",
-      "api-list-shop-tracker-settings"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "skello-app",
@@ -572,10 +508,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "internal",
     "description": "Synchronise shops with billing, upsert and update shop contracts",
-    "usedEndpoints": [
-      "api-get-quote",
-      "api-create-quote"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "skello-app",
@@ -585,10 +518,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "sqs",
     "authType": "iam-role",
     "description": "Send high/low-priority email notifications to users via SQS queues",
-    "usedEndpoints": [
-      "bulk-create-high-priority-notification-route",
-      "bulk-create-low-priority-notification-route"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "skello-app",
@@ -612,7 +542,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "internal",
     "description": "Read and write employee HR data, absence configurations and settings",
     "usedEndpoints": [
-      "api-get-absence-configs",
       "api-upsert-absence-config"
     ]
   },
@@ -638,8 +567,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "internal",
     "description": "Upsert shop labour law config, update rule overrides, fetch enabled labour laws",
     "usedEndpoints": [
-      "api-upsert-shop",
-      "api-batch-upsert-shops"
+      "api-upsert-shop"
     ]
   },
   {
@@ -678,8 +606,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "internal",
     "description": "Manage shop missions — fetch, purge and retrieve by ID",
     "usedEndpoints": [
-      "api-get-organisations-config",
-      "api-get-shops"
+      "api-get-organisations-config"
     ]
   },
   {
@@ -703,10 +630,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "internal",
     "description": "Read and toggle feature flags and dev flags at runtime",
-    "usedEndpoints": [
-      "api-get-feature-flags",
-      "api-update-feature-flag"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "skello-app",
@@ -739,7 +663,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Trigger AI-based automatic schedule generation for a shop",
     "usedEndpoints": [
-      "api-trigger-auto-scheduling",
+      "api-trigger-automatic-assignment",
       "api-get-shift-replacements"
     ]
   },
@@ -764,10 +688,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Read subscription quotes and billing state for the organisation",
-    "usedEndpoints": [
-      "api-get-quote",
-      "api-create-quote"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "skello-app-front",
@@ -791,7 +712,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Read and update employee profiles, contracts and absence settings",
     "usedEndpoints": [
-      "api-get-absence-configs",
       "api-upsert-absence-config"
     ]
   },
@@ -804,7 +724,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Drive employee and shop onboarding workflows",
     "usedEndpoints": [
-      "api-get-onboardings",
       "api-create-onboarding"
     ]
   },
@@ -830,7 +749,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Connect and manage HRIS integrations for automatic employee sync",
     "usedEndpoints": [
-      "api-get-hris-integrations",
       "api-connect-hris-integration"
     ]
   },
@@ -842,9 +760,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Fetch AI-powered workforce insights and activity predictions",
-    "usedEndpoints": [
-      "api-analyse"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "skello-app-front",
@@ -854,10 +770,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Load KPI dashboards — revenue, labour cost, activity predictions",
-    "usedEndpoints": [
-      "api-get-activity-prediction-settings",
-      "api-upsert-activity-prediction-settings"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "skello-app-front",
@@ -868,8 +781,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Fetch applicable labour laws and compliance rules for the shop",
     "usedEndpoints": [
-      "api-upsert-shop",
-      "api-batch-upsert-shops"
+      "api-upsert-shop"
     ]
   },
   {
@@ -881,8 +793,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Integrate POS systems for revenue data and shift reconciliation",
     "usedEndpoints": [
-      "api-get-chift-providers",
-      "api-handle-chift-webhook"
+      "api-get-chift-providers"
     ]
   },
   {
@@ -894,7 +805,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Display and validate employee punch clock records",
     "usedEndpoints": [
-      "api-get-clocks-in-out",
       "api-create-clock-in-out"
     ]
   },
@@ -934,8 +844,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Load shop configuration, missions and organisation settings",
     "usedEndpoints": [
-      "api-get-organisations-config",
-      "api-get-shops"
+      "api-get-organisations-config"
     ]
   },
   {
@@ -959,10 +868,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Manage time tracker and geofencing settings for shops",
-    "usedEndpoints": [
-      "api-activate-shop-tracker-settings",
-      "api-list-shop-tracker-settings"
-    ]
+    "usedEndpoints": []
   },
   {
     "from": "skello-app-front",
@@ -973,7 +879,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Handle user authentication, SSO and capability checks",
     "usedEndpoints": [
-      "api-login-capability",
       "api-sso-callback"
     ]
   },
@@ -999,7 +904,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Sync employee records to connected HRIS integrations after create/update",
     "usedEndpoints": [
-      "api-get-hris-integrations",
       "api-connect-hris-integration"
     ]
   },

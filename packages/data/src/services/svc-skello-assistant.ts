@@ -100,6 +100,15 @@ const svc_skello_assistant: ConnectivityService = ConnectivityServiceSchema.pars
           "name": "svc-skello-assistant"
         }
       ]
+    },
+    {
+      "id": "download-message-source-json",
+      "path": "/chat/download/json",
+      "method": "GET",
+      "description": "Download conversation results as JSON (React agent)",
+      "useCase": "",
+      "params": [],
+      "response": {}
     }
   ],
   "databases": [

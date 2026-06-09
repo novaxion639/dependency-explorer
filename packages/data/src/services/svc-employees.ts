@@ -7,28 +7,6 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
   "description": "Employee directory and contract management — source of truth for workforce data",
   "endpoints": [
     {
-      "id": "api-get-absence-configs",
-      "path": "/absence-configs",
-      "method": "GET",
-      "description": "Get absence configurations",
-      "useCase": "Used by calling services to get absence configurations",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        }
-      ]
-    },
-    {
       "id": "api-upsert-absence-config",
       "path": "/absence-configs",
       "method": "POST",
@@ -59,28 +37,6 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
         {
           "type": "kinesis",
           "name": "svc-employees-stream"
-        }
-      ]
-    },
-    {
-      "id": "api-get-annualization-configs",
-      "path": "/annualization-configs",
-      "method": "GET",
-      "description": "Get annualization configurations",
-      "useCase": "Used by calling services to get annualization configurations",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
         }
       ]
     },
@@ -119,64 +75,8 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-get-dpae-deposits",
-      "path": "/dpae-deposits",
-      "method": "GET",
-      "description": "Get DPAE deposits",
-      "useCase": "Used by calling services to get DPAE deposits",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        }
-      ]
-    },
-    {
-      "id": "api-create-dpae-deposit",
-      "path": "/dpae-deposits",
-      "method": "POST",
-      "description": "Create DPAE deposit",
-      "useCase": "Used by calling services to create DPAE deposit",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
-    },
-    {
       "id": "api-get-employee",
-      "path": "/employees/{employeeId}",
+      "path": "/v1/employees",
       "method": "GET",
       "description": "Get employee by ID",
       "useCase": "Used by calling services to get employee by ID",
@@ -189,28 +89,6 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
           "description": "employeeId identifier"
         }
       ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        }
-      ]
-    },
-    {
-      "id": "api-get-employees",
-      "path": "/employees",
-      "method": "GET",
-      "description": "Get employees",
-      "useCase": "Used by calling services to get employees",
-      "params": [],
       "response": {
         "200": "Success response",
         "404": "Not found"
@@ -261,527 +139,412 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-update-employee",
-      "path": "/employees/{employeeId}",
-      "method": "PATCH",
-      "description": "Update employee",
-      "useCase": "Used by calling services to update employee",
-      "params": [
-        {
-          "name": "employeeId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "employeeId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
+      "id": "api-public-swagger-docs",
+      "path": "/public/swagger-docs.json",
+      "method": "GET",
+      "description": "GET /public/swagger-docs.json",
+      "useCase": "",
+      "params": [],
+      "response": {}
     },
     {
-      "id": "api-delete-employee",
-      "path": "/employees/{employeeId}",
+      "id": "api-absence-config-bulk-create",
+      "path": "/v1/absence-configs/bulk_create",
+      "method": "POST",
+      "description": "Bulk create AbsenceConfig",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-absence-config-bulk-delete",
+      "path": "/v1/absence-configs/{shopId}/{absenceType}",
       "method": "DELETE",
-      "description": "Delete employee",
-      "useCase": "Used by calling services to delete employee",
-      "params": [
-        {
-          "name": "employeeId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "employeeId identifier"
-        }
-      ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
-    },
-    {
-      "id": "api-get-employee-contracts",
-      "path": "/employees/{employeeId}/contracts",
-      "method": "GET",
-      "description": "Get employee contracts",
-      "useCase": "Used by calling services to get employee contracts",
-      "params": [
-        {
-          "name": "employeeId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "employeeId identifier"
-        }
-      ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        }
-      ]
-    },
-    {
-      "id": "api-create-employee-contract",
-      "path": "/employees/{employeeId}/contracts",
-      "method": "POST",
-      "description": "Create employee contract",
-      "useCase": "Used by calling services to create employee contract",
-      "params": [
-        {
-          "name": "employeeId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "employeeId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
-    },
-    {
-      "id": "api-update-employee-contract",
-      "path": "/employees/{employeeId}/contracts/{contractId}",
-      "method": "PATCH",
-      "description": "Update employee contract",
-      "useCase": "Used by calling services to update employee contract",
-      "params": [
-        {
-          "name": "employeeId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "employeeId identifier"
-        },
-        {
-          "name": "contractId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "contractId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
-    },
-    {
-      "id": "api-delete-employee-contract",
-      "path": "/employees/{employeeId}/contracts/{contractId}",
-      "method": "DELETE",
-      "description": "Delete employee contract",
-      "useCase": "Used by calling services to delete employee contract",
-      "params": [
-        {
-          "name": "employeeId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "employeeId identifier"
-        },
-        {
-          "name": "contractId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "contractId identifier"
-        }
-      ],
-      "response": {
-        "204": "Deleted",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
-    },
-    {
-      "id": "api-get-employee-counters",
-      "path": "/employees/{employeeId}/counters",
-      "method": "GET",
-      "description": "Get employee counters",
-      "useCase": "Used by calling services to get employee counters",
-      "params": [
-        {
-          "name": "employeeId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "employeeId identifier"
-        }
-      ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        }
-      ]
-    },
-    {
-      "id": "api-upsert-employee-counter",
-      "path": "/employees/{employeeId}/counters",
-      "method": "POST",
-      "description": "Upsert employee counter",
-      "useCase": "Used by calling services to upsert employee counter",
-      "params": [
-        {
-          "name": "employeeId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "employeeId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
-    },
-    {
-      "id": "api-bulk-upsert-employees",
-      "path": "/employees/bulk",
-      "method": "POST",
-      "description": "Bulk upsert employees",
-      "useCase": "Used by calling services to bulk upsert employees",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
-    },
-    {
-      "id": "api-get-shop-employee-attributes",
-      "path": "/shops/{shopId}/employee-attributes",
-      "method": "GET",
-      "description": "Get shop employee attributes",
-      "useCase": "Used by calling services to get shop employee attributes",
+      "description": "Bulk delete AbsenceConfig",
+      "useCase": "",
       "params": [
         {
           "name": "shopId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "shopId identifier"
-        }
-      ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
+          "description": ""
         },
         {
-          "type": "mongodb",
-          "name": "svc-employees"
+          "name": "absenceType",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
-      ]
+      ],
+      "response": {}
     },
     {
-      "id": "api-upsert-shop-employee-attributes",
-      "path": "/shops/{shopId}/employee-attributes",
-      "method": "POST",
-      "description": "Upsert shop employee attributes",
-      "useCase": "Used by calling services to upsert shop employee attributes",
+      "id": "api-absence-config-get-all",
+      "path": "/v1/absence-configs/{shopId}/{absenceType}",
+      "method": "GET",
+      "description": "Get All Employees AbsenceConfig by shopdId and absenceType",
+      "useCase": "",
       "params": [
         {
           "name": "shopId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "shopId identifier"
+          "description": ""
         },
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "absenceType",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-time-off-counters",
-      "path": "/time-off-counters",
+      "id": "api-absence-config-get-one",
+      "path": "/v1/absence-configs/{shopId}/{absenceType}/{userId}",
       "method": "GET",
-      "description": "Get time off counters",
-      "useCase": "Used by calling services to get time off counters",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        }
-      ]
-    },
-    {
-      "id": "api-upsert-time-off-counters",
-      "path": "/time-off-counters",
-      "method": "POST",
-      "description": "Upsert time off counters",
-      "useCase": "Used by calling services to upsert time off counters",
+      "description": "Get One Employee AbsenceConfig by shopdId, userId and absenceType",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
+        },
+        {
+          "name": "absenceType",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-working-time-configs",
-      "path": "/working-time-configs",
-      "method": "GET",
-      "description": "Get working time configurations",
-      "useCase": "Used by calling services to get working time configurations",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        }
-      ]
-    },
-    {
-      "id": "api-upsert-working-time-config",
-      "path": "/working-time-configs",
-      "method": "POST",
-      "description": "Upsert working time configuration",
-      "useCase": "Used by calling services to upsert working time configuration",
+      "id": "api-absence-config-update",
+      "path": "/v1/absence-configs/{shopId}/{absenceType}/{userId}",
+      "method": "PATCH",
+      "description": "Updates UserAbsenceConfig by shopId, userId and absenceType",
+      "useCase": "",
       "params": [
         {
-          "name": "body",
-          "in": "body",
-          "type": "object",
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
           "required": true,
-          "description": "Request payload"
+          "description": ""
+        },
+        {
+          "name": "absenceType",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
+      "response": {}
+    },
+    {
+      "id": "api-annualization-config-bulk-create",
+      "path": "/v1/annualization-configs/bulk_create",
+      "method": "POST",
+      "description": "Bulk create AnnualizationConfig",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-annualization-config-bulk-delete",
+      "path": "/v1/annualization-configs/{shopId}",
+      "method": "DELETE",
+      "description": "Bulk delete AnnualizationConfig",
+      "useCase": "",
+      "params": [
         {
-          "type": "dynamodb",
-          "name": "svcEmployees-{env}"
-        },
-        {
-          "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
-      ]
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-annualization-config-bulk-update",
+      "path": "/v1/annualization-configs/{shopId}",
+      "method": "PATCH",
+      "description": "Bulk update AnnualizationConfig",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-annualization-config-get-all",
+      "path": "/v1/annualization-configs/{shopId}",
+      "method": "GET",
+      "description": "Get All Employees AnnualizationConfig by shopdId",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-annualization-config-get-one",
+      "path": "/v1/annualization-configs/{shopId}/{userId}",
+      "method": "GET",
+      "description": "Get One Employee AnnualizationConfig by shopdId and userId",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-annualization-config-update",
+      "path": "/v1/annualization-configs/{shopId}/{userId}",
+      "method": "PATCH",
+      "description": "Update Employee AnnualizationConfig",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-annualization-config-upsert",
+      "path": "/v1/annualization-configs/{shopId}/{userId}",
+      "method": "PUT",
+      "description": "Upsert Employee AnnualizationConfig",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-annualization-config-delete",
+      "path": "/v1/annualization-configs/{shopId}/{userId}",
+      "method": "DELETE",
+      "description": "Delete Employee AnnualizationConfig",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "userId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-dpae-create",
+      "path": "/v1/dpae-deposits/shops/{shopId}/employees/{employeeId}/contracts/{contractId}",
+      "method": "POST",
+      "description": "Create a DPAE deposit on Urssaf",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "employeeId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "contractId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-get-active-contracts",
+      "path": "/v1/employees/active-contracts",
+      "method": "POST",
+      "description": "Get active contracts for an array of employees each at a specific date",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-get-employees-by-organisation",
+      "path": "/v1/employees/organisation",
+      "method": "GET",
+      "description": "Get all employees by organisation ID",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-upsert-employee",
+      "path": "/v1/employees/{id}",
+      "method": "PUT",
+      "description": "Upsert an employee",
+      "useCase": "",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-compute-annualization-v2",
+      "path": "/compute-annualization",
+      "method": "POST",
+      "description": "Compute annualization data",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-query-document-variables-for-employees-lambda",
+      "path": "/v1/employees/document-variables",
+      "method": "POST",
+      "description": "Query document-generation variables for one or more employees",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "api-dpae-get-lambda",
+      "path": "/v1/dpae-deposits/shops/{shopId}/employees/{employeeId}/contracts/{contractId}",
+      "method": "GET",
+      "description": "Get the last DPAE deposit for a contract",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "employeeId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "contractId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-get-sst-codes",
+      "path": "/v1/sst-codes",
+      "method": "GET",
+      "description": "Get SST codes from S3",
+      "useCase": "",
+      "params": [],
+      "response": {}
     }
   ],
   "databases": [

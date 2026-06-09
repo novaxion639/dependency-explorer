@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url'
 import { connectivityMap } from '@dependency-explorer/data'
 import type { DiscoveredOverlay } from '@dependency-explorer/schema'
 import { IGNORED_SDKS, sdkToServiceName } from './mapping'
+import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
 import { extractRailsMonolith } from './extractors/rails'
 import { extractServerless, type ServerlessFacts } from './extractors/serverless'
@@ -104,27 +105,6 @@ function pickTeamId(githubTeams: Record<string, number>): string | undefined {
   return mapped.length ? slugToTeamId.get(mapped[0]![0]) : undefined
 }
 
-/**
- * "GET /v1/dynamoScan/{id}/" and "GET /v1/dynamo-scan/:id" normalize
- * identically: params collapse to {}, segments are lowercased with -/_
- * stripped (camelCase vs kebab-case). Method and segment count stay strict —
- * list-vs-get-one or POST-vs-PUT differences are real drift, never matched.
- */
-function normalizeEndpoint(method: string, rawPath: string): string {
-  let p = rawPath
-  if (!p.startsWith('/')) p = `/${p}`
-  p = p.replace(/\{[^}]+\}/g, '{}').replace(/:[A-Za-z0-9_]+/g, '{}')
-  const segments = p.split('/').map(seg => seg === '{}' ? seg : seg.toLowerCase().replace(/[-_]/g, ''))
-  p = segments.join('/').replace(/\/+/g, '/').replace(/\/$/, '') || '/'
-  return `${method.toUpperCase()} ${p}`
-}
-
-/** Same, with a single leading version segment (/v1, /v2…) stripped — the
- *  dataset often omits it while serverless configs include it. */
-function normalizeEndpointVersionless(method: string, rawPath: string): string {
-  const stripped = rawPath.replace(/^\/?v\d+(\/|$)/, '/')
-  return normalizeEndpoint(method, stripped)
-}
 
 // ── Scan ──────────────────────────────────────────────────────────────────────
 
@@ -279,13 +259,15 @@ function run(): Report {
         missing.push(ep.id)
       }
     }
+    const meaningfulCode = sls.endpoints.filter(e =>
+      matchedCode.has(e) || !isBoilerplateEndpoint(e.method, e.path))
     report.endpointChecks.push({
       service: svc.name,
       source: sls.source,
       verified,
       total: svc.endpoints.length,
       missingInCode: missing,
-      extraInCode: sls.endpoints.length - matchedCode.size,
+      extraInCode: meaningfulCode.length - matchedCode.size,
     })
   }
 

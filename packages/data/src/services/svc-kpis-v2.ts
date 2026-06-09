@@ -7,112 +7,6 @@ const svc_kpis_v2: ConnectivityService = ConnectivityServiceSchema.parse({
   "description": "Real-time KPI computation and dashboarding — labour costs, productivity and turnover metrics",
   "endpoints": [
     {
-      "id": "api-get-activity-prediction-settings",
-      "path": "/activity-prediction/settings",
-      "method": "GET",
-      "description": "Get activity prediction settings",
-      "useCase": "Used by calling services to get activity prediction settings",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-kpis-v2"
-        }
-      ]
-    },
-    {
-      "id": "api-upsert-activity-prediction-settings",
-      "path": "/activity-prediction/settings",
-      "method": "POST",
-      "description": "Upsert activity prediction settings",
-      "useCase": "Used by calling services to upsert activity prediction settings",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-kpis-v2"
-        }
-      ]
-    },
-    {
-      "id": "api-get-reference-week",
-      "path": "/reference-week",
-      "method": "GET",
-      "description": "Get reference week data",
-      "useCase": "Used by calling services to get reference week data",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-kpis-v2"
-        }
-      ]
-    },
-    {
-      "id": "api-upsert-reference-week",
-      "path": "/reference-week",
-      "method": "POST",
-      "description": "Upsert reference week data",
-      "useCase": "Used by calling services to upsert reference week data",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-kpis-v2"
-        }
-      ]
-    },
-    {
-      "id": "api-get-kpis",
-      "path": "/kpis",
-      "method": "GET",
-      "description": "Get KPIs",
-      "useCase": "Used by calling services to get KPIs",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-kpis-v2"
-        }
-      ]
-    },
-    {
       "id": "api-create-kpis",
       "path": "/kpis",
       "method": "POST",
@@ -139,37 +33,81 @@ const svc_kpis_v2: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-update-kpis",
-      "path": "/kpis/{kpiId}",
-      "method": "PATCH",
-      "description": "Update KPI",
-      "useCase": "Used by calling services to update KPI",
+      "id": "api-read-setting-activity-prediction",
+      "path": "/setting/activity-prediction/{shopId}",
+      "method": "GET",
+      "description": "Get the activity prediction settings for a shop",
+      "useCase": "",
       "params": [
         {
-          "name": "kpiId",
+          "name": "shopId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "kpiId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
+      "response": {}
+    },
+    {
+      "id": "api-upsert-setting-activity-prediction",
+      "path": "/setting/activity-prediction/{shopId}",
+      "method": "PUT",
+      "description": "Create or update the activity prediction settings for a shop",
+      "useCase": "",
+      "params": [
         {
-          "type": "mongodb",
-          "name": "svc-kpis-v2"
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
         }
-      ]
+      ],
+      "response": {}
+    },
+    {
+      "id": "fetch-activity-prediction-reference-week",
+      "path": "/setting/activity-prediction/{shopId}/reference-week",
+      "method": "GET",
+      "description": "Fetch the activity prediction reference week by shop ID",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "update-manual-kpis-bulk",
+      "path": "/kpis-manual/_bulk",
+      "method": "PATCH",
+      "description": "Update the manual kpis in bulk",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "upsert-activity-prediction-reference-week",
+      "path": "/setting/activity-prediction/{shopId}/reference-week",
+      "method": "PUT",
+      "description": "Upsert the activity prediction reference week for provided shop",
+      "useCase": "",
+      "params": [
+        {
+          "name": "shopId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
     }
   ],
   "databases": [

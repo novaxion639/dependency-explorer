@@ -7,71 +7,12 @@ const svc_hris: ConnectivityService = ConnectivityServiceSchema.parse({
   "description": "HR Information System bridge — syncs employee and organisation data from external HRIS providers",
   "endpoints": [
     {
-      "id": "api-get-hris-integrations",
-      "path": "/integrations",
-      "method": "GET",
-      "description": "Get HRIS integrations",
-      "useCase": "Used by calling services to get HRIS integrations",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
-    },
-    {
       "id": "api-connect-hris-integration",
       "path": "/integrations/connect",
       "method": "POST",
       "description": "Connect HRIS integration",
       "useCase": "Used by calling services to connect HRIS integration",
       "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-disconnect-hris-integration",
-      "path": "/integrations/{integrationId}/disconnect",
-      "method": "POST",
-      "description": "Disconnect HRIS integration",
-      "useCase": "Used by calling services to disconnect HRIS integration",
-      "params": [
-        {
-          "name": "integrationId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "integrationId identifier"
-        },
         {
           "name": "body",
           "in": "body",
@@ -133,279 +74,175 @@ const svc_hris: ConnectivityService = ConnectivityServiceSchema.parse({
       ]
     },
     {
-      "id": "api-preview-hris-sync",
-      "path": "/integrations/{integrationId}/sync/preview",
+      "id": "api-integration-status",
+      "path": "/v1/integrations/{organisationId}/status",
       "method": "GET",
-      "description": "Preview HRIS sync",
-      "useCase": "Used by calling services to preview HRIS sync",
+      "description": "Retrieve the current status for organisation",
+      "useCase": "",
+      "params": [
+        {
+          "name": "organisationId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-integration-disconnect",
+      "path": "/v1/integrations/{integrationId}",
+      "method": "DELETE",
+      "description": "Remove a specific integration with HR tool",
+      "useCase": "",
       "params": [
         {
           "name": "integrationId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "integrationId identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-apply-hris-sync",
-      "path": "/integrations/{integrationId}/sync/apply",
+      "id": "api-integration-disconnect-by-organisation",
+      "path": "/v1/integrations/organisation/{organisationId}",
+      "method": "DELETE",
+      "description": "Remove all integrations for an organisation",
+      "useCase": "",
+      "params": [
+        {
+          "name": "organisationId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-integration-preview",
+      "path": "/v1/integrations/{integrationId}/preview",
+      "method": "GET",
+      "description": "Get the sync changes for user review, creating and updating employees in svc-employees service",
+      "useCase": "",
+      "params": [
+        {
+          "name": "integrationId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-integration-apply",
+      "path": "/v1/integrations/{integrationId}/apply",
       "method": "POST",
-      "description": "Apply HRIS sync",
-      "useCase": "Used by calling services to apply HRIS sync",
+      "description": "Apply the sync changes after user review, creating and updating employees in svc-employees service",
+      "useCase": "",
       "params": [
         {
           "name": "integrationId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "integrationId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-hris-fields",
-      "path": "/integrations/{integrationId}/fields",
-      "method": "GET",
-      "description": "Get HRIS integration fields",
-      "useCase": "Used by calling services to get HRIS integration fields",
-      "params": [
-        {
-          "name": "integrationId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "integrationId identifier"
-        }
-      ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-update-hris-fields",
-      "path": "/integrations/{integrationId}/fields",
+      "id": "api-integration-update-send-email-invitation",
+      "path": "/v1/integrations/organisation/{organisationId}/send-email-invitations",
       "method": "PATCH",
-      "description": "Update HRIS integration fields mapping",
-      "useCase": "Used by calling services to update HRIS integration fields mapping",
+      "description": "Update the sendEmployeeEmailInvitation setting for integrations within an organisation",
+      "useCase": "",
+      "params": [
+        {
+          "name": "organisationId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-integration-get-work-locations",
+      "path": "/v1/integrations/{integrationId}/work-locations",
+      "method": "GET",
+      "description": "Retrieve work locations from Kombo for a specific integration",
+      "useCase": "",
       "params": [
         {
           "name": "integrationId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "integrationId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-hris-employees",
-      "path": "/integrations/{integrationId}/employees",
-      "method": "GET",
-      "description": "Get HRIS employees",
-      "useCase": "Used by calling services to get HRIS employees",
+      "id": "integration-update-shop-mapping-api",
+      "path": "/v1/integrations/{integrationId}/shops-mapping",
+      "method": "PATCH",
+      "description": "Updates shop to work location mapping for an integration",
+      "useCase": "",
       "params": [
         {
           "name": "integrationId",
           "in": "path",
           "type": "string",
           "required": true,
-          "description": "integrationId identifier"
+          "description": ""
         }
       ],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-get-kombo-link",
-      "path": "/kombo/link",
+      "id": "api-integration-get-tools",
+      "path": "/v1/integrations/tools",
       "method": "GET",
-      "description": "Get Kombo integration link",
-      "useCase": "Used by calling services to get Kombo integration link",
+      "description": "Retrieve available HRIS integration tools from Kombo",
+      "useCase": "",
       "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
+      "response": {}
     },
     {
-      "id": "api-kombo-webhook",
-      "path": "/kombo/webhook",
+      "id": "api-integration-get-general-info",
+      "path": "/v1/integrations/{organisationId}/general-info",
+      "method": "GET",
+      "description": "Retrieve general information about HRIS integrations from Kombo",
+      "useCase": "",
+      "params": [
+        {
+          "name": "organisationId",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "response": {}
+    },
+    {
+      "id": "api-webhook-kombo",
+      "path": "/webhook/kombo",
       "method": "POST",
-      "description": "Handle Kombo webhook",
-      "useCase": "Used by calling services to handle Kombo webhook",
-      "params": [
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "201": "Created",
-        "400": "Validation error"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-get-hris-shops",
-      "path": "/shops",
-      "method": "GET",
-      "description": "Get HRIS shops",
-      "useCase": "Used by calling services to get HRIS shops",
+      "description": "POST /webhook/kombo",
+      "useCase": "",
       "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
-    },
-    {
-      "id": "api-update-hris-shop",
-      "path": "/shops/{shopId}",
-      "method": "PATCH",
-      "description": "Update HRIS shop",
-      "useCase": "Used by calling services to update HRIS shop",
-      "params": [
-        {
-          "name": "shopId",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": "shopId identifier"
-        },
-        {
-          "name": "body",
-          "in": "body",
-          "type": "object",
-          "required": true,
-          "description": "Request payload"
-        }
-      ],
-      "response": {
-        "200": "Updated",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcHris-{env}"
-        },
-        {
-          "type": "s3",
-          "name": "svc-hris.{env}"
-        }
-      ]
+      "response": {}
     }
   ],
   "databases": [
