@@ -34,6 +34,16 @@ export const AuthTypeSchema = z.enum(['jwt', 'api-key', 'internal', 'iam-role', 
 
 export const CrudOperationSchema = z.enum(['create', 'read', 'update', 'delete'])
 
+// ── Provenance ────────────────────────────────────────────────────────────────
+// Every discovered fact records where it came from and when it was last
+// confirmed against code (ADR-0004). Entities without provenance are manual.
+
+export const ProvenanceSchema = z.object({
+  source: z.enum(['manual', 'discovered']),
+  lastVerified: z.string().optional(),
+  evidence: z.string().optional(),
+})
+
 // ── Endpoint ──────────────────────────────────────────────────────────────────
 
 export const EndpointParamSchema = z.object({
@@ -77,6 +87,7 @@ export const ConnectivityServiceSchema = z.object({
   teamId: z.string().optional(),
   repoUrl: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  provenance: ProvenanceSchema.optional(),
 })
 
 // ── Connection ────────────────────────────────────────────────────────────────
@@ -87,9 +98,11 @@ export const ServiceConnectionSchema = z.object({
   sdkPackage: z.string(),
   description: z.string(),
   usedEndpoints: z.array(z.string()),
-  communicationType: CommunicationTypeSchema.optional(),
-  protocol: ProtocolSchema.optional(),
-  authType: AuthTypeSchema.optional(),
+  // Explicit on every connection — never inferred from sdkPackage naming (ADR-0004)
+  communicationType: CommunicationTypeSchema,
+  protocol: ProtocolSchema,
+  authType: AuthTypeSchema,
+  provenance: ProvenanceSchema.optional(),
 })
 
 // ── Flow ──────────────────────────────────────────────────────────────────────
@@ -130,6 +143,9 @@ export const TeamSchema = z.object({
   name: z.string(),
   slackChannel: z.string().optional(),
   onCallUrl: z.string().optional(),
+  // GitHub team slugs (from CODEOWNERS, e.g. "@skelloapp/squad-planning")
+  // that map to this team — used by discovery to assign service ownership.
+  githubTeams: z.array(z.string()).optional(),
 })
 
 // ── Domain (bounded context) ─────────────────────────────────────────────────
@@ -143,6 +159,28 @@ export const DomainSchema = z.object({
   dataEntities: z.array(z.string()).optional(),
   publishedEvents: z.array(z.string()).optional(),
   consumedEvents: z.array(z.string()).optional(),
+})
+
+// ── Discovered overlay ────────────────────────────────────────────────────────
+// Output of `pnpm discover --apply`: machine-verified facts merged into the
+// manual dataset at load time (ADR-0004). Only contains facts about entities
+// that already exist in the manual layer — new findings go to the drift
+// report for human adoption via PR, never silently into the map.
+
+export const DiscoveredOverlaySchema = z.object({
+  generatedAt: z.string(),
+  scannedRepos: z.array(z.string()),
+  // serviceName → discovered facts
+  services: z.record(z.string(), z.object({
+    repoUrl: z.string().optional(),
+    teamId: z.string().optional(),
+    githubTeams: z.array(z.string()).optional(),
+  })),
+  // "from→to" → verification stamp
+  connections: z.record(z.string(), z.object({
+    lastVerified: z.string(),
+    evidence: z.string(),
+  })),
 })
 
 // ── Top-level map ─────────────────────────────────────────────────────────────
@@ -164,6 +202,8 @@ export type CommunicationType = z.infer<typeof CommunicationTypeSchema>
 export type Protocol = z.infer<typeof ProtocolSchema>
 export type AuthType = z.infer<typeof AuthTypeSchema>
 export type CrudOperation = z.infer<typeof CrudOperationSchema>
+export type Provenance = z.infer<typeof ProvenanceSchema>
+export type DiscoveredOverlay = z.infer<typeof DiscoveredOverlaySchema>
 export type EndpointParam = z.infer<typeof EndpointParamSchema>
 export type AwsCall = z.infer<typeof AwsCallSchema>
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>

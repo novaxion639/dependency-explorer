@@ -1,0 +1,64 @@
+/**
+ * Classification tables for discovery — kept small and explicit.
+ *
+ * A wrong mapping fabricates an architecture fact, so anything ambiguous
+ * stays unmapped (null) and is surfaced in the drift report for a human
+ * decision — never guessed (see docs/flow-authoring-guide.md §1).
+ */
+
+// @skelloapp packages that are shared libraries or external platforms —
+// their presence in package.json is NOT a service-to-service connection.
+export const IGNORED_SDKS: Record<string, string> = {
+  '@skelloapp/aws-sdk-lib': 'shared AWS helper library',
+  '@skelloapp/skello-auth-client': 'JWT auth client library (used by every service)',
+  '@skelloapp/data-platform-svc-ingestion-sdk': 'data-platform ingestion — external to this map',
+}
+
+// SDKs whose target does not follow the `@skelloapp/svc-<name>-sdk` convention.
+export const SDK_SERVICE_OVERRIDES: Record<string, string> = {
+  '@skelloapp/skello-app-sdk': 'skello-app',
+  '@skelloapp/svc-esignature-sdk': 'svc-documents-esignature',
+  '@skelloapp/workload-plan-sdk': 'svc-workload-plan',
+}
+
+/** Resolve an SDK package to a service name; null = ignored library/external. */
+export function sdkToServiceName(sdkPkg: string): string | null {
+  if (sdkPkg in IGNORED_SDKS) return null
+  const override = SDK_SERVICE_OVERRIDES[sdkPkg]
+  if (override) return override
+  const name = sdkPkg.replace('@skelloapp/', '').replace(/-sdk$/, '').replace(/-client$/, '')
+  return name.startsWith('svc-') ? name : `svc-${name}`
+}
+
+// Rails monolith outbound clients: app/services/microservices/*.rb → target.
+// null = recognised client file whose target is ambiguous — reported, not guessed.
+export const RAILS_CLIENT_TARGETS: Record<string, string | null> = {
+  'billing_automation_service.rb': 'svc-billing-automation',
+  'documents_v2_service.rb': 'svc-documents-v2',
+  'employee_service.rb': 'svc-employees',
+  'esignature_service.rb': 'svc-documents-esignature',
+  'event_service.rb': 'svc-events',
+  'feature_flag_service.rb': 'svc-feature-flags',
+  'labour_law_service.rb': 'svc-labour-laws',
+  'modularisation_service.rb': 'svc-modularisation',
+  'report_service.rb': 'svc-reports',
+  'request_service.rb': 'svc-requests',
+  'shops_service.rb': 'svc-shops',
+  'trackers_service.rb': 'svc-trackers',
+  'user_service.rb': 'svc-users',
+  // Ambiguous — needs a human decision before mapping:
+  'activity_log_service.rb': null,
+  'brain_service.rb': null,
+  'communications.rb': null, // legacy v1 or svc-communications-v2?
+  'documents_service.rb': null, // legacy documents v1?
+  'generate_documents_service.rb': null,
+}
+
+// Subdirectories of microservices/ acting as clients of a single service.
+export const RAILS_CLIENT_DIR_TARGETS: Record<string, string | null> = {
+  'communications_v2': 'svc-communications-v2',
+  'punch': 'svc-punch',
+  'automatic_planning': null, // svc-automatic-scheduling vs legacy solver path — confirm first
+  'generate_documents': null,
+  'transformers': null, // serializers, not a client
+}

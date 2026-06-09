@@ -1,8 +1,9 @@
-import { ConnectivityMapSchema } from '@dependency-explorer/schema'
+import { ConnectivityMapSchema, DiscoveredOverlaySchema } from '@dependency-explorer/schema'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import connections from './connections'
 import teams from './teams'
 import domains from './domains'
+import discoveredJson from './generated/discovered.json'
 
 import svc_events from './services/svc-events'
 import svc_communications_v2 from './services/svc-communications-v2'
@@ -59,8 +60,41 @@ import shift_swap from './flows/shift-swap'
 import planning_event_management from './flows/planning-event-management'
 import planning_template from './flows/planning-template'
 
+// ── Discovered overlay merge (ADR-0004) ──────────────────────────────────────
+// Machine-verified facts from `pnpm discover:apply` enrich the manual layer:
+// repoUrl/teamId fill in on services, verification stamps on connections.
+// The overlay never adds or removes entities — only annotates existing ones.
+
+const overlay = DiscoveredOverlaySchema.parse(discoveredJson)
+const verifiedOn = overlay.generatedAt.slice(0, 10)
+
+function enrichServices(services: unknown[]): unknown[] {
+  return (services as Array<Record<string, unknown>>).map(svc => {
+    const facts = overlay.services[svc.name as string]
+    if (!facts) return svc
+    return {
+      ...svc,
+      repoUrl: facts.repoUrl ?? svc.repoUrl,
+      teamId: facts.teamId ?? svc.teamId,
+      provenance: {
+        source: 'discovered',
+        lastVerified: verifiedOn,
+        evidence: 'repo scan (package.json + CODEOWNERS)',
+      },
+    }
+  })
+}
+
+function enrichConnections(conns: typeof connections): typeof connections {
+  return conns.map(conn => {
+    const stamp = overlay.connections[`${conn.from}→${conn.to}`]
+    if (!stamp) return conn
+    return { ...conn, provenance: { source: 'discovered' as const, ...stamp } }
+  })
+}
+
 export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
-  services: [
+  services: enrichServices([
   svc_events,
   svc_communications_v2,
   svc_employees,
@@ -91,8 +125,8 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   superadmin,
   skello_app,
   skello_app_front,
-  ],
-  connections,
+  ]),
+  connections: enrichConnections(connections),
   flows: [
   leave_request_lifecycle,
   document_generation_esignature,

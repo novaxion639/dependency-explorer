@@ -1,0 +1,405 @@
+{
+  "generatedAt": "2026-06-09T20:03:04.312Z",
+  "scannedRepos": [
+    "skello-app",
+    "skello-app-front",
+    "superadmin",
+    "svc-automatic-scheduling",
+    "svc-bff",
+    "svc-bff-planning",
+    "svc-billing-automation",
+    "svc-communications",
+    "svc-communications-v2",
+    "svc-documents-v2",
+    "svc-employees",
+    "svc-events",
+    "svc-feature-flags",
+    "svc-intelligence",
+    "svc-kpis",
+    "svc-kpis-v2",
+    "svc-labour-laws",
+    "svc-pos",
+    "svc-punch",
+    "svc-requests",
+    "svc-search",
+    "svc-shifts",
+    "svc-shops",
+    "svc-users",
+    "svc-websockets-v2",
+    "svc-workload-plan"
+  ],
+  "services": {
+    "skello-app": {
+      "repoUrl": "https://github.com/skelloapp/skello-app",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-data",
+        "@skelloapp/team-roquefort"
+      ]
+    },
+    "skello-app-front": {
+      "repoUrl": "https://github.com/skelloapp/skello-app-front",
+      "githubTeams": [
+        "@skelloapp/squad-front",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-salsa"
+      ]
+    },
+    "superadmin": {
+      "repoUrl": "https://github.com/skelloapp/superadmin",
+      "githubTeams": [
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev",
+        "@skelloapp/team-pesto"
+      ]
+    },
+    "svc-automatic-scheduling": {
+      "repoUrl": "https://github.com/skelloapp/svc-automatic-scheduling",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev",
+        "@skelloapp/team-salsa"
+      ]
+    },
+    "svc-bff": {
+      "repoUrl": "https://github.com/skelloapp/svc-bff",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-bff-planning": {
+      "repoUrl": "https://github.com/skelloapp/svc-bff-planning",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-billing-automation": {
+      "repoUrl": "https://github.com/skelloapp/svc-billing-automation",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-communications-v2": {
+      "repoUrl": "https://github.com/skelloapp/svc-communications-v2",
+      "githubTeams": [
+        "@skelloapp/squad-data",
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-documents-v2": {
+      "repoUrl": "https://github.com/skelloapp/svc-documents-v2",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-employees": {
+      "repoUrl": "https://github.com/skelloapp/svc-employees",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-events": {
+      "repoUrl": "https://github.com/skelloapp/svc-events",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-feature-flags": {
+      "repoUrl": "https://github.com/skelloapp/svc-feature-flags",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-intelligence": {
+      "repoUrl": "https://github.com/skelloapp/svc-intelligence",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-kpis-v2": {
+      "repoUrl": "https://github.com/skelloapp/svc-kpi-v2",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-labour-laws": {
+      "repoUrl": "https://github.com/skelloapp/svc-labour-laws",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-pos": {
+      "repoUrl": "https://github.com/skelloapp/svc-pos",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-data",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-punch": {
+      "repoUrl": "https://github.com/skelloapp/svc-punch",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-requests": {
+      "repoUrl": "https://github.com/skelloapp/svc-requests",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-data",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-search": {
+      "repoUrl": "https://github.com/skelloapp/svc-search",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-shifts": {
+      "repoUrl": "https://github.com/skelloapp/svc-shifts",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-shops": {
+      "repoUrl": "https://github.com/skelloapp/svc-shops",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-users": {
+      "repoUrl": "https://github.com/skelloapp/svc-users",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
+    "svc-workload-plan": {
+      "repoUrl": "https://github.com/skelloapp/svc-workload-plan",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-data",
+        "@skelloapp/team-dev"
+      ]
+    }
+  },
+  "connections": {
+    "superadmin→svc-billing-automation": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-billing-automation-sdk"
+    },
+    "superadmin→svc-communications-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-communications-v2-sdk"
+    },
+    "superadmin→svc-employees": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-employees-client"
+    },
+    "superadmin→svc-events": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-events-sdk"
+    },
+    "superadmin→svc-labour-laws": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-labour-laws-sdk"
+    },
+    "superadmin→svc-punch": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-punch-sdk"
+    },
+    "superadmin→svc-reports": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-reports-sdk"
+    },
+    "superadmin→svc-shops": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-shops-sdk"
+    },
+    "superadmin→svc-trackers": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-trackers-sdk"
+    },
+    "svc-automatic-scheduling→skello-app": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/skello-app-sdk"
+    },
+    "svc-automatic-scheduling→svc-search": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-search-sdk"
+    },
+    "svc-bff→svc-documents-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-documents-v2-client"
+    },
+    "svc-bff-planning→skello-app": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/skello-app-sdk"
+    },
+    "svc-bff-planning→svc-search": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-search-sdk"
+    },
+    "svc-billing-automation→svc-communications-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-communications-v2-sdk"
+    },
+    "svc-billing-automation→svc-modularisation": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-modularisation-sdk"
+    },
+    "svc-communications-v2→svc-documents-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-documents-v2-client"
+    },
+    "svc-communications-v2→svc-events": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-events-sdk"
+    },
+    "svc-communications-v2→svc-requests": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-requests-sdk"
+    },
+    "svc-documents-v2→svc-communications-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-communications-v2-sdk"
+    },
+    "svc-documents-v2→svc-intelligence": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-intelligence-sdk"
+    },
+    "svc-employees→svc-events": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-events-sdk"
+    },
+    "svc-events→svc-communications-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-communications-v2-sdk"
+    },
+    "svc-intelligence→svc-documents-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-documents-v2-client"
+    },
+    "svc-intelligence→svc-documents-esignature": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-esignature-sdk"
+    },
+    "svc-kpis-v2→svc-employees": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-employees-client"
+    },
+    "svc-kpis-v2→svc-pos": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-pos-sdk"
+    },
+    "svc-kpis-v2→svc-search": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-search-sdk"
+    },
+    "svc-requests→svc-communications-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-communications-v2-sdk"
+    },
+    "svc-shops→svc-employees": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-employees-client"
+    },
+    "svc-shops→svc-search": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-search-sdk"
+    },
+    "svc-users→svc-punch": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-punch-sdk"
+    },
+    "svc-workload-plan→svc-kpis-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "package.json: @skelloapp/svc-kpis-v2-sdk"
+    },
+    "skello-app→svc-billing-automation": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/billing_automation_service.rb"
+    },
+    "skello-app→svc-communications-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/communications_v2/"
+    },
+    "skello-app→svc-documents-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/documents_v2_service.rb"
+    },
+    "skello-app→svc-employees": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/employee_service.rb"
+    },
+    "skello-app→svc-documents-esignature": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/esignature_service.rb"
+    },
+    "skello-app→svc-events": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/event_service.rb"
+    },
+    "skello-app→svc-feature-flags": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/feature_flag_service.rb"
+    },
+    "skello-app→svc-labour-laws": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/labour_law_service.rb"
+    },
+    "skello-app→svc-modularisation": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/modularisation_service.rb"
+    },
+    "skello-app→svc-reports": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/report_service.rb"
+    },
+    "skello-app→svc-requests": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/request_service.rb"
+    },
+    "skello-app→svc-shops": {
+      "lastVerified": "2026-06-09",
+      "evidence": "app/services/microservices/shops_service.rb"
+    }
+  }
+}

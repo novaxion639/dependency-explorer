@@ -99,6 +99,16 @@ export function ConnectivityPage() {
                   {selectedTeam.slackChannel}
                 </span>
               )}
+              {selected.repoUrl && (
+                <a
+                  href={selected.repoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: 11, color: '#818cf8', marginLeft: 8, textDecoration: 'none' }}
+                >
+                  repo ↗
+                </a>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 12, marginLeft: 'auto', flexWrap: 'wrap', alignItems: 'center' }}>
               <Pill label="calls" count={outCount} color="#4f6ef7" />

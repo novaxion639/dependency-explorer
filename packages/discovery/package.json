@@ -6,14 +6,18 @@
   "scripts": {
     "discover": "tsx src/discover.ts",
     "discover:json": "tsx src/discover.ts --json",
-    "typecheck": "tsc --noEmit"
+    "discover:apply": "tsx src/discover.ts --apply",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@dependency-explorer/data": "workspace:*"
+    "@dependency-explorer/data": "workspace:*",
+    "@dependency-explorer/schema": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "tsx": "^4.21.0",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.2",
+    "vitest": "^3.2.0"
   }
 }

@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
 import { connectivityMap } from './index'
+import discoveredJson from './generated/discovered.json'
 
 const { services, connections, flows, teams, domains } = connectivityMap
 
@@ -119,6 +121,31 @@ describe('domains', () => {
     const covered = new Set((domains ?? []).flatMap(d => d.serviceNames))
     for (const svc of services) {
       expect(covered.has(svc.name), `service ${svc.name} belongs to no domain`).toBe(true)
+    }
+  })
+})
+
+describe('discovered overlay', () => {
+  const overlay = DiscoveredOverlaySchema.parse(discoveredJson)
+
+  it('only annotates services that exist in the manual layer', () => {
+    for (const name of Object.keys(overlay.services)) {
+      expect(serviceNames.has(name), `overlay enriches unknown service ${name}`).toBe(true)
+    }
+  })
+
+  it('only stamps connections that exist in the manual layer', () => {
+    const keys = new Set(connections.map(c => `${c.from}→${c.to}`))
+    for (const key of Object.keys(overlay.connections)) {
+      expect(keys.has(key), `overlay stamps unknown connection ${key}`).toBe(true)
+    }
+  })
+
+  it('assigns only known teamIds', () => {
+    for (const [name, facts] of Object.entries(overlay.services)) {
+      if (facts.teamId) {
+        expect(teamIds.has(facts.teamId), `overlay gives ${name} unknown team ${facts.teamId}`).toBe(true)
+      }
     }
   })
 })

@@ -91,6 +91,27 @@ export function EdgePopup({ connection, map, position, onSeeMore, onClose }: Pro
                 {connection.authType}
               </span>
             )}
+            {connection.provenance?.source === 'discovered' ? (
+              <span
+                title={connection.provenance.evidence}
+                style={{
+                  fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 3,
+                  background: '#10b98122', color: '#10b981', marginLeft: 'auto',
+                }}
+              >
+                ✓ verified in code {connection.provenance.lastVerified}
+              </span>
+            ) : (
+              <span
+                title="Declared manually — no machine evidence yet (run pnpm discover)"
+                style={{
+                  fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 3,
+                  background: '#64748b22', color: '#64748b', marginLeft: 'auto',
+                }}
+              >
+                manual
+              </span>
+            )}
           </div>
         </div>
 

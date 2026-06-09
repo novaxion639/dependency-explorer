@@ -38,12 +38,13 @@ That's it. No database, no seeding, no Docker: the dataset is imported at build 
 ## Commands
 
 ```bash
-pnpm dev          # run the app locally
-pnpm build        # typecheck + production build (static bundle in packages/web/dist)
-pnpm typecheck    # typecheck all packages
-pnpm test         # data referential-integrity suite
-pnpm discover     # scan sibling Skello repos and report dataset drift
-pnpm check        # everything CI runs
+pnpm dev             # run the app locally
+pnpm build           # typecheck + production build (static bundle in packages/web/dist)
+pnpm typecheck       # typecheck all packages
+pnpm test            # data integrity + discovery mapping suites
+pnpm discover        # scan sibling Skello repos → classified drift report
+pnpm discover:apply  # same + regenerate the discovered overlay (provenance stamps)
+pnpm check           # everything CI runs
 ```
 
 ## Contributing data
@@ -57,7 +58,8 @@ pnpm check        # everything CI runs
 | Phase | Scope | Status |
 |---|---|---|
 | 0 | Reboot: static SPA, workspace structure, integrity gates, CI | ✅ done |
-| 1 | Automation-first: extractors (serverless configs, Rails routes, CODEOWNERS, AWS read-only), provenance metadata, nightly drift PRs | next |
+| 1 | Automation-first: SDK + Rails + CODEOWNERS extractors, provenance metadata, two-layer merge, classified drift report ([ADR-0007](docs/adr/0007-discovery-semantics.md)) | ✅ done (nightly drift PRs pending org token — Infra discussion) |
+| 1.5 | More extractors: serverless configs (endpoints/infra), Rails routes dump, frontend HTTP calls, AWS read-only verification | next |
 | 2 | Org-audience features: permalinks, global search, ownership pages, export | |
 | 3 | "Suggest edit" → pre-filled PR via GitHub App, permissions from GitHub teams | |
 | 4 | Live operational overlays (deploys, alarms, queue depth, on-call) via a read-only API | |
