@@ -4,14 +4,14 @@ import type { ConnectivityService } from '../schemas'
 const svc_bff_planning: ConnectivityService = ConnectivityServiceSchema.parse({
   "name": "svc-bff-planning",
   "type": "typescript-microservice",
-  "description": "Planning BFF — assembles shift scheduling data with employee context for the planning page",
+  "description": "Standalone auto-scheduling engine — fetches planning context from skello-app, runs CP-SAT eligibility computation across 13 rule classes, and invokes a co-deployed Python OR-Tools solver Lambda. Not deployed on sandbox (decommissioned there in favour of svc-automatic-scheduling).",
   "endpoints": [
     {
-      "id": "api-get-planning",
-      "path": "/planning",
+      "id": "api-compute-auto-scheduling",
+      "path": "/auto_scheduling/compute",
       "method": "GET",
-      "description": "Assemble and return the full planning page payload",
-      "useCase": "Called by skello-app-front to load all planning data in a single request",
+      "description": "Run the full eligibility + OR-Tools CP-SAT scheduling computation for a shop and week",
+      "useCase": "Invoked to generate an optimised shift roster; invokes svcBffPlanning-solver Lambda synchronously",
       "params": [
         {
           "name": "shopId",
@@ -29,41 +29,27 @@ const svc_bff_planning: ConnectivityService = ConnectivityServiceSchema.parse({
         }
       ],
       "response": {
-        "200": "Planning payload",
-        "400": "Validation error",
-        "503": "Upstream dependency unavailable"
+        "200": "Optimised shift assignments",
+        "400": "Validation error"
       },
       "awsCalls": [
         {
-          "type": "mongodb",
-          "name": "svc-bff-planning"
-        }
-      ]
-    },
-    {
-      "id": "api-compute-auto-scheduling",
-      "path": "/auto_scheduling/compute",
-      "method": "GET",
-      "description": "Compute auto scheduling data for planning BFF",
-      "useCase": "Used by calling services to compute auto scheduling data for planning BFF",
-      "params": [],
-      "response": {
-        "200": "Success response",
-        "404": "Not found"
-      },
-      "awsCalls": [
-        {
-          "type": "mongodb",
-          "name": "svc-bff-planning"
+          "type": "lambda",
+          "name": "svcBffPlanning-solver"
         }
       ]
     }
   ],
   "databases": [
     {
+      "type": "lambda",
+      "name": "svcBffPlanning-solver",
+      "description": "Python 3.13 OR-Tools CP-SAT solver Lambda — invoked synchronously (RequestResponse) with the eligibility payload; 10 GB RAM, 900 s timeout"
+    },
+    {
       "type": "mongodb",
-      "name": "svc-bff-planning",
-      "description": "Planning BFF cache and auto-scheduling request state"
+      "name": "svc-search DB (direct read)",
+      "description": "Reads shifts and postes directly from svc-search's MongoDB over VPC (no HTTP — ShiftRepository + PosteRepository collections)"
     }
   ]
 })

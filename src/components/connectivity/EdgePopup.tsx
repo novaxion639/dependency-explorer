@@ -64,6 +64,34 @@ export function EdgePopup({ connection, map, position, onSeeMore, onClose }: Pro
           <div style={{ fontSize: 10, color: '#3b82f6', marginTop: 2 }}>
             via <code style={{ fontSize: 10 }}>{connection.sdkPackage}</code>
           </div>
+          <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+            {connection.communicationType && (
+              <span style={{
+                fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 3,
+                background: connection.communicationType === 'async' ? '#e0761b22' : '#3b82f622',
+                color: connection.communicationType === 'async' ? '#e0761b' : '#3b82f6',
+              }}>
+                {connection.communicationType}
+              </span>
+            )}
+            {connection.protocol && (
+              <span style={{
+                fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 3,
+                background: '#64748b22', color: '#94a3b8',
+                textTransform: 'uppercase',
+              }}>
+                {connection.protocol}
+              </span>
+            )}
+            {connection.authType && (
+              <span style={{
+                fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 3,
+                background: '#6366f122', color: '#818cf8',
+              }}>
+                {connection.authType}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Top 3 endpoints */}

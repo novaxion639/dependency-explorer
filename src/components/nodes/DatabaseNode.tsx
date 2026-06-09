@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import type { DatabaseType } from '../../data/schemas'
 
@@ -16,18 +15,25 @@ export const DB_COLORS: Record<DatabaseType, { color: string; label: string; ico
   cdc:           { color: '#ec4899', label: 'CDC',           icon: '⚡' },
 }
 
+const CRUD_STYLE: Record<string, { bg: string; color: string }> = {
+  create: { bg: '#10b98122', color: '#10b981' },
+  read:   { bg: '#3b82f622', color: '#3b82f6' },
+  update: { bg: '#f59e0b22', color: '#f59e0b' },
+  delete: { bg: '#ef444422', color: '#ef4444' },
+}
+
 export interface DatabaseNodeData {
   dbType: DatabaseType
   name: string
   description: string
+  crud?: string[]
   [key: string]: unknown
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function DatabaseNode({ data }: any) {
-  const { dbType, name, description } = data as DatabaseNodeData
+  const { dbType, name, description, crud } = data as DatabaseNodeData
   const meta = DB_COLORS[dbType as DatabaseType] ?? { color: '#64748b', label: dbType, icon: '💾' }
-  const [expanded, setExpanded] = useState(false)
 
   return (
     <>
@@ -36,7 +42,7 @@ export function DatabaseNode({ data }: any) {
       <Handle type="target" position={Position.Left}   id="left"   style={{ opacity: 0 }} />
       <Handle type="target" position={Position.Right}  id="right"  style={{ opacity: 0 }} />
       <div style={{
-        width: 160,
+        width: 180,
         padding: '6px 10px',
         borderRadius: 6,
         background: '#0f1117',
@@ -44,7 +50,7 @@ export function DatabaseNode({ data }: any) {
         borderTop: `3px solid ${meta.color}`,
         cursor: 'default',
       }}>
-        {/* Top row: icon + type badge + caret */}
+        {/* Top row: icon + type badge */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 }}>
           <span style={{ fontSize: 12 }}>{meta.icon}</span>
           <span style={{
@@ -54,28 +60,29 @@ export function DatabaseNode({ data }: any) {
           }}>
             {meta.label}
           </span>
-          {description && (
-            <button
-              className="nodrag nopan"
-              onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
-              title={expanded ? 'Hide description' : 'Show description'}
-              style={{
-                background: 'none', border: 'none', padding: 0,
-                cursor: 'pointer', color: meta.color + 'aa', fontSize: 10, lineHeight: 1,
-                display: 'flex', alignItems: 'center', flexShrink: 0,
-              }}
-            >
-              {expanded ? '▴' : '▾'}
-            </button>
-          )}
         </div>
         {/* Name */}
         <div style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {name}
         </div>
-        {/* Description — expandable */}
-        {expanded && description && (
-          <div style={{ fontSize: 10, color: '#64748b', marginTop: 4, lineHeight: 1.5, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+        {/* CRUD operations */}
+        {crud && crud.length > 0 && (
+          <div style={{ display: 'flex', gap: 3, marginTop: 3 }}>
+            {crud.map(op => (
+              <span key={op} style={{
+                fontSize: 8, fontWeight: 700, padding: '1px 4px', borderRadius: 3,
+                textTransform: 'uppercase', letterSpacing: '0.04em',
+                background: CRUD_STYLE[op]?.bg ?? '#64748b22',
+                color: CRUD_STYLE[op]?.color ?? '#64748b',
+              }}>
+                {op}
+              </span>
+            ))}
+          </div>
+        )}
+        {/* Description */}
+        {description && (
+          <div style={{ fontSize: 10, color: '#64748b', marginTop: 4, lineHeight: 1.4, whiteSpace: 'normal', wordBreak: 'break-word' }}>
             {description}
           </div>
         )}

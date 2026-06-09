@@ -68,17 +68,20 @@ const planning_report_export: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-reports",
       "to": "dynamo-reports-jobs",
-      "label": "create job"
+      "label": "create job",
+      "crud": ["create"]
     },
     {
       "from": "skello-app",
       "to": "pg-skello-report-export",
-      "label": "read planning data"
+      "label": "read planning data",
+      "crud": ["read"]
     },
     {
       "from": "svc-shifts",
       "to": "mongo-shifts-export",
-      "label": "read shifts"
+      "label": "read shifts",
+      "crud": ["read"]
     },
     {
       "from": "svc-reports",
@@ -93,7 +96,8 @@ const planning_report_export: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-reports",
       "to": "dynamo-reports-jobs",
-      "label": "update status"
+      "label": "update status",
+      "crud": ["update"]
     },
     {
       "from": "svc-reports",

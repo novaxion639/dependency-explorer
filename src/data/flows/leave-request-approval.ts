@@ -57,7 +57,8 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-requests",
       "to": "pg-requests-approval",
-      "label": "update status"
+      "label": "update status",
+      "crud": ["update"]
     },
     {
       "from": "svc-requests",
@@ -67,7 +68,8 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-req-approval",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-communications-v2",

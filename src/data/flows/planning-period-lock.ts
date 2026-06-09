@@ -34,7 +34,8 @@ const planning_period_lock: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-lock-period",
-      "label": "write lock state"
+      "label": "write lock state",
+      "crud": ["update"]
     }
   ]
 })

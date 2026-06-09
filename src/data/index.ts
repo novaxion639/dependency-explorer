@@ -1,6 +1,8 @@
 import { ConnectivityMapSchema } from './schemas'
 import type { ConnectivityMap } from './schemas'
 import connections from './connections'
+import teams from './teams'
+import domains from './domains'
 
 import svc_events from './services/svc-events'
 import svc_communications_v2 from './services/svc-communications-v2'
@@ -116,6 +118,8 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   planning_event_management,
   planning_template,
   ],
+  teams,
+  domains,
 })
 
 export * from './schemas'

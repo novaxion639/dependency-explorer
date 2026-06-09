@@ -34,7 +34,8 @@ const planning_event_management: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-planning-events",
-      "label": "create / update / delete"
+      "label": "create / update / delete",
+      "crud": ["create", "update", "delete"]
     }
   ]
 })

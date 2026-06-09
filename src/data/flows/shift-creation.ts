@@ -4,7 +4,7 @@ import type { ServiceFlow } from '../schemas'
 const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-creation",
   "name": "Shift Creation",
-  "description": "A planner creates a shift on the planning page. The monolith validates it against labour laws, persists it, pushes metrics to svc-shifts, and emits an async event so the employee gets notified.",
+  "description": "A planner creates a shift on the planning page. The monolith validates params, persists the shift to PostgreSQL within a transaction, runs sync tracker updates, then enqueues async Sidekiq jobs for cache refreshes. For absence shifts only, an ActivityJob posts an audit event to svc-events. Labour law compliance is NOT checked at creation — alerts are fetched separately via GET /alerts.",
   "steps": [
     {
       "from": "skello-app-front",
@@ -14,27 +14,12 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "POST /v3/shifts — create new shift"
-    },
-    {
-      "from": "skello-app",
-      "to": "svc-labour-laws",
-      "action": "POST /validate — check labour law compliance"
-    },
-    {
-      "from": "skello-app",
-      "to": "svc-shifts",
-      "action": "POST /shift-metrics/employee — update shift metrics"
+      "action": "POST /v3/shifts — create new shift (sync response with created shift)"
     },
     {
       "from": "skello-app",
       "to": "svc-events",
-      "action": "POST /events — emit shift.created event"
-    },
-    {
-      "from": "svc-events",
-      "to": "svc-communications-v2",
-      "action": "SQS email-high — notify employee of new shift"
+      "action": "POST /events — audit event via ActivityJob (async Sidekiq, absence shifts only)"
     }
   ],
   "infraNodes": [
@@ -42,69 +27,38 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-shifts",
       "type": "postgresql",
       "label": "skello_production",
-      "description": "Persists shifts in the monolith"
+      "description": "Persists the shift row within an ActiveRecord transaction. Also triggers after_commit Sidekiq jobs for cache updates (WeeklyOption, shift data, paid leaves)."
     },
     {
-      "id": "dynamo-labour-laws",
-      "type": "dynamodb",
-      "label": "svcLabourLaws-{env}",
-      "description": "Labour law rule sets and shop compliance configs"
-    },
-    {
-      "id": "mongo-shifts",
-      "type": "mongodb",
-      "label": "svc-shifts",
-      "description": "Aggregated shift metrics store"
-    },
-    {
-      "id": "sqs-shift-events",
-      "type": "sqs",
-      "label": "skello-sqs-events",
-      "description": "Async event queue for shift lifecycle events"
+      "id": "redis-skello-shifts",
+      "type": "redis",
+      "label": "skello-redis",
+      "description": "First-shift cache refresh (after_save) and Sidekiq job broker for async callbacks"
     },
     {
       "id": "dynamo-events-shift",
       "type": "dynamodb",
       "label": "svcEvents-{env}",
-      "description": "Audit event store for shift.created"
-    },
-    {
-      "id": "lambda-notify-shift",
-      "type": "lambda",
-      "label": "shift-notify-dispatch",
-      "description": "Dispatches employee shift notification emails"
+      "description": "Audit event store — BatchWriteItem for shift.created (absence shifts only)"
     }
   ],
   "infraEdges": [
     {
       "from": "skello-app",
       "to": "pg-skello-shifts",
-      "label": "write shift"
-    },
-    {
-      "from": "svc-labour-laws",
-      "to": "dynamo-labour-laws",
-      "label": "read rules"
-    },
-    {
-      "from": "svc-shifts",
-      "to": "mongo-shifts",
-      "label": "write metrics"
+      "label": "persist shift + trackers",
+      "crud": ["create"]
     },
     {
       "from": "skello-app",
-      "to": "sqs-shift-events",
-      "label": "enqueue"
+      "to": "redis-skello-shifts",
+      "label": "cache refresh + enqueue Sidekiq jobs"
     },
     {
       "from": "svc-events",
       "to": "dynamo-events-shift",
-      "label": "write"
-    },
-    {
-      "from": "svc-communications-v2",
-      "to": "lambda-notify-shift",
-      "label": "invoke"
+      "label": "BatchWriteItem",
+      "crud": ["create"]
     }
   ]
 })

@@ -80,17 +80,20 @@ const week_copy: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-skello-week-copy",
-      "label": "bulk insert"
+      "label": "bulk insert",
+      "crud": ["create"]
     },
     {
       "from": "svc-labour-laws",
       "to": "dynamo-labour-laws-copy",
-      "label": "read rules"
+      "label": "read rules",
+      "crud": ["read"]
     },
     {
       "from": "svc-shifts",
       "to": "mongo-shifts-copy",
-      "label": "write metrics"
+      "label": "write metrics",
+      "crud": ["create"]
     },
     {
       "from": "skello-app",
@@ -105,7 +108,8 @@ const week_copy: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-week-copy",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-communications-v2",

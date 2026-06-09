@@ -62,12 +62,14 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-requests",
       "to": "pg-requests",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-events",
       "to": "dynamo-events",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-events",

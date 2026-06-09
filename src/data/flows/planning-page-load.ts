@@ -4,62 +4,35 @@ import type { ServiceFlow } from '../schemas'
 const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
   "id": "planning-page-load",
   "name": "Planning Page Load",
-  "description": "A manager opens the planning page. svc-bff-planning fans out 6 parallel requests — shifts, employees, labour laws, workload plan, scheduling suggestions and employee search — then assembles the full planning view before responding.",
+  "description": "A manager opens the planning page. The frontend calls the Rails monolith for the planning context (shifts, employees, labour laws), and fetches workload plan data and employee search from dedicated microservices. svc-bff-planning has been decommissioned from sandbox and is no longer in this flow.",
   "steps": [
     {
       "from": "skello-app-front",
-      "to": "svc-bff-planning",
-      "action": "GET /planning — request assembled planning page (shopId + week range)"
+      "to": "skello-app",
+      "action": "GET /v3/plannings — fetch planning context (shifts + employees + contracts for shop + week)"
     },
     {
-      "from": "svc-bff-planning",
-      "to": "svc-shifts",
-      "action": "POST /shift-details — fetch all shifts for the selected week [parallel]"
-    },
-    {
-      "from": "svc-bff-planning",
-      "to": "svc-employees",
-      "action": "GET /employees — fetch full team roster with contracts [parallel]"
-    },
-    {
-      "from": "svc-bff-planning",
-      "to": "svc-labour-laws",
-      "action": "GET /labour-laws — retrieve labour law rules for the shop [parallel]"
-    },
-    {
-      "from": "svc-bff-planning",
+      "from": "skello-app-front",
       "to": "svc-workload-plan",
-      "action": "GET /v2/workload-plans — fetch workload forecast for the week [parallel]"
+      "action": "GET /v2/workload-plans — fetch workload forecast for the week"
     },
     {
-      "from": "svc-bff-planning",
-      "to": "svc-automatic-scheduling",
-      "action": "GET /auto_scheduling/compute — fetch auto-scheduling hints [parallel]"
-    },
-    {
-      "from": "svc-bff-planning",
+      "from": "skello-app-front",
       "to": "svc-search",
-      "action": "GET /employees/search — search available staff for open slots [parallel]"
+      "action": "GET /employees/search — search available staff for open slots"
+    },
+    {
+      "from": "skello-app",
+      "to": "svc-labour-laws",
+      "action": "GET /labour-laws — retrieve applicable labour law rules for the shop"
     }
   ],
   "infraNodes": [
     {
-      "id": "mongo-bff-planning-cache",
-      "type": "mongodb",
-      "label": "svc-bff-planning",
-      "description": "Planning BFF response cache and auto-scheduling request state"
-    },
-    {
-      "id": "mongo-shifts-planning",
-      "type": "mongodb",
-      "label": "svc-shifts",
-      "description": "Aggregated shift metrics and shift detail store"
-    },
-    {
-      "id": "pg-employees-planning",
+      "id": "pg-skello-planning",
       "type": "postgresql",
-      "label": "svcEmployees-{env}",
-      "description": "Employee contracts, absences and counters"
+      "label": "skello_production",
+      "description": "Shifts, employees, contracts and planning data — primary monolith DB"
     },
     {
       "id": "dynamo-labour-laws-planning",
@@ -71,7 +44,7 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
       "id": "dynamo-workload-planning",
       "type": "dynamodb",
       "label": "svcWorkloadPlan-{env}",
-      "description": "Workload plan forecasts and rules"
+      "description": "Workload plan forecasts and staffing rules"
     },
     {
       "id": "es-search-planning",
@@ -82,34 +55,28 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
   ],
   "infraEdges": [
     {
-      "from": "svc-bff-planning",
-      "to": "mongo-bff-planning-cache",
-      "label": "read/write cache"
-    },
-    {
-      "from": "svc-shifts",
-      "to": "mongo-shifts-planning",
-      "label": "read shifts"
-    },
-    {
-      "from": "svc-employees",
-      "to": "pg-employees-planning",
-      "label": "read roster"
+      "from": "skello-app",
+      "to": "pg-skello-planning",
+      "label": "read planning data",
+      "crud": ["read"]
     },
     {
       "from": "svc-labour-laws",
       "to": "dynamo-labour-laws-planning",
-      "label": "read rules"
+      "label": "read rules",
+      "crud": ["read"]
     },
     {
       "from": "svc-workload-plan",
       "to": "dynamo-workload-planning",
-      "label": "read forecast"
+      "label": "read forecast",
+      "crud": ["read"]
     },
     {
       "from": "svc-search",
       "to": "es-search-planning",
-      "label": "query index"
+      "label": "query index",
+      "crud": ["read"]
     }
   ]
 })

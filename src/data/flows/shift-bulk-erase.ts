@@ -52,12 +52,14 @@ const shift_bulk_erase: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-bulk-erase",
-      "label": "bulk delete"
+      "label": "bulk delete",
+      "crud": ["delete"]
     },
     {
       "from": "svc-shifts",
       "to": "mongo-shifts-erase",
-      "label": "write metrics"
+      "label": "write metrics",
+      "crud": ["update"]
     },
     {
       "from": "skello-app",
@@ -67,7 +69,8 @@ const shift_bulk_erase: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-erase",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     }
   ]
 })

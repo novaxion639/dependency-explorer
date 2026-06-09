@@ -63,12 +63,14 @@ const shift_swap: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-shift-swap",
-      "label": "atomic swap"
+      "label": "atomic swap",
+      "crud": ["update"]
     },
     {
       "from": "svc-labour-laws",
       "to": "dynamo-labour-laws-swap",
-      "label": "read rules"
+      "label": "read rules",
+      "crud": ["read"]
     },
     {
       "from": "skello-app",
@@ -78,7 +80,8 @@ const shift_swap: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-swap",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-communications-v2",

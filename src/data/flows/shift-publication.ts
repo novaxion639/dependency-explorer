@@ -52,7 +52,8 @@ const shift_publication: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-skello-shifts-pub",
-      "label": "bulk publish"
+      "label": "bulk publish",
+      "crud": ["update"]
     },
     {
       "from": "skello-app",
@@ -62,7 +63,8 @@ const shift_publication: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-pub",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-communications-v2",

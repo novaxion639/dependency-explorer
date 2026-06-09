@@ -41,7 +41,8 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-workload-plan",
       "to": "dynamo-workload-create",
-      "label": "write plan"
+      "label": "write plan",
+      "crud": ["create"]
     },
     {
       "from": "svc-workload-plan",
@@ -51,7 +52,8 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-pos",
       "to": "dynamo-pos-create",
-      "label": "read revenue"
+      "label": "read revenue",
+      "crud": ["read"]
     }
   ]
 })

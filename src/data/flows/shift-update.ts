@@ -74,17 +74,20 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-skello-shifts-upd",
-      "label": "update shift"
+      "label": "update shift",
+      "crud": ["update"]
     },
     {
       "from": "svc-labour-laws",
       "to": "dynamo-labour-laws-upd",
-      "label": "read rules"
+      "label": "read rules",
+      "crud": ["read"]
     },
     {
       "from": "svc-shifts",
       "to": "mongo-shifts-upd",
-      "label": "recalculate metrics"
+      "label": "recalculate metrics",
+      "crud": ["update"]
     },
     {
       "from": "skello-app",
@@ -94,7 +97,8 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-shift-upd",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-communications-v2",

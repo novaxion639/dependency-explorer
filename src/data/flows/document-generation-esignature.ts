@@ -56,7 +56,8 @@ const document_generation_esignature: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-documents-v2",
       "to": "pg-docs",
-      "label": "write metadata"
+      "label": "write metadata",
+      "crud": ["create"]
     },
     {
       "from": "svc-documents-esignature",

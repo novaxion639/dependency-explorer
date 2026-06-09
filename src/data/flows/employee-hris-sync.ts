@@ -57,7 +57,8 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-employees",
       "to": "pg-employees",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "pg-employees",
@@ -67,12 +68,14 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-hris",
       "to": "mongo-hris",
-      "label": "sync"
+      "label": "sync",
+      "crud": ["update"]
     },
     {
       "from": "svc-events",
       "to": "dynamo-events-hris",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     }
   ]
 })

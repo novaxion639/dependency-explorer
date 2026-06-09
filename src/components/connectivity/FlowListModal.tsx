@@ -1,4 +1,4 @@
-import type { ServiceFlow, ConnectivityMap } from '../../data/schemas'
+import type { ServiceFlow, ConnectivityMap, Domain } from '../../data/schemas'
 import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const TYPE_COLOR: Record<string, string> = {
@@ -7,6 +7,15 @@ const TYPE_COLOR: Record<string, string> = {
   'rails-monolith':          '#cc342d',
   'vue-frontend':            '#42b883',
   'react-native':            '#61dafb',
+}
+
+function getFlowDomains(flow: ServiceFlow, domains: Domain[]): Domain[] {
+  const serviceNames = new Set<string>()
+  for (const step of flow.steps) {
+    serviceNames.add(step.from)
+    serviceNames.add(step.to)
+  }
+  return domains.filter(d => d.serviceNames.some(s => serviceNames.has(s)))
 }
 
 interface Props {
@@ -113,12 +122,13 @@ function FlowCard({ flow, serviceName, map, onSelect }: {
   map: ConnectivityMap
   onSelect: () => void
 }) {
-  // Unique services in visit order
   const stepServices: string[] = []
   for (const step of flow.steps) {
     if (!stepServices.includes(step.from)) stepServices.push(step.from)
     if (!stepServices.includes(step.to))   stepServices.push(step.to)
   }
+
+  const flowDomains = getFlowDomains(flow, map.domains ?? [])
 
   return (
     <div
@@ -138,6 +148,20 @@ function FlowCard({ flow, serviceName, map, onSelect }: {
         <div style={{ fontWeight: 700, fontSize: 12, color: '#e2e8f0' }}>{flow.name}</div>
         <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{flow.description}</div>
       </div>
+
+      {/* Domain badges */}
+      {flowDomains.length > 0 && (
+        <div style={{ padding: '4px 14px 2px', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+          {flowDomains.map(d => (
+            <span key={d.id} style={{
+              fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 3,
+              background: d.color + '18', border: `1px solid ${d.color}33`, color: d.color,
+            }}>
+              {d.name}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Service chain */}
       <div style={{ padding: '8px 14px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
@@ -169,6 +193,11 @@ function FlowCard({ flow, serviceName, map, onSelect }: {
         <div style={{ padding: '0 14px 8px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
           {(flow.infraNodes ?? []).map(infra => {
             const meta = DB_COLORS[infra.type] ?? { color: '#64748b', icon: '💾', label: infra.type }
+            const cruds = (flow.infraEdges ?? [])
+              .filter(e => e.to === infra.id && e.crud?.length)
+              .flatMap(e => e.crud!)
+            const uniqueCruds = [...new Set(cruds)]
+            const crudLabel = uniqueCruds.length ? uniqueCruds.map(c => c[0]!.toUpperCase()).join('') : ''
             return (
               <span
                 key={infra.id}
@@ -183,6 +212,7 @@ function FlowCard({ flow, serviceName, map, onSelect }: {
                 <span>{meta.icon}</span>
                 <span style={{ fontWeight: 600 }}>{meta.label}</span>
                 <span style={{ opacity: 0.7 }}>{infra.label}</span>
+                {crudLabel && <span style={{ fontWeight: 700, fontSize: 9, opacity: 0.8 }}>[{crudLabel}]</span>}
               </span>
             )
           })}

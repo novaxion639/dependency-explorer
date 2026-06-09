@@ -5,8 +5,8 @@ import type { DatabaseNodeData } from '../components/nodes/DatabaseNode'
 
 const NODE_W = 200
 const NODE_H = 60
-const DB_NODE_W = 160
-const DB_NODE_H = 64
+const DB_NODE_W = 180
+const DB_NODE_H = 130
 
 export interface ServiceNodeData {
   name: string
@@ -15,6 +15,7 @@ export interface ServiceNodeData {
   isSelected: boolean
   isCaller: boolean
   isCallee: boolean
+  teamName?: string
   [key: string]: unknown
 }
 
@@ -23,6 +24,9 @@ export function buildConnectivityGraph(
   selectedService: string | null,
 ): { nodes: Node[]; edges: Edge[] } {
   if (!selectedService) return { nodes: [], edges: [] }
+
+  // Build team lookup
+  const teamById = new Map((map.teams ?? []).map(t => [t.id, t]))
 
   // Find all direct connections involving the selected service
   const outgoing = map.connections.filter(c => c.from === selectedService)
@@ -66,22 +70,26 @@ export function buildConnectivityGraph(
   // Position center node
   const centerY = Math.max(callers.length, callees.length, 1) * GAP_Y / 2
 
+  const selectedSvc = map.services.find(s => s.name === selectedService)
+
   nodes.push({
     id: selectedService,
     type: 'serviceNode',
     position: { x: CENTER_X, y: centerY - NODE_H / 2 },
     data: {
       name: selectedService,
-      description: map.services.find(s => s.name === selectedService)?.description ?? '',
-      type: map.services.find(s => s.name === selectedService)?.type ?? '',
+      description: selectedSvc?.description ?? '',
+      type: selectedSvc?.type ?? '',
       isSelected: true,
       isCaller: false,
       isCallee: false,
+      teamName: selectedSvc?.teamId ? teamById.get(selectedSvc.teamId)?.name : undefined,
     } satisfies ServiceNodeData,
   })
 
   // Position caller nodes (left column)
   callers.forEach((name, i) => {
+    const svc = map.services.find(s => s.name === name)
     const y = i * GAP_Y + (Math.max(callers.length, 1) - callers.length) * GAP_Y / 2
     nodes.push({
       id: name,
@@ -89,17 +97,19 @@ export function buildConnectivityGraph(
       position: { x: CENTER_X - GAP_X, y: y },
       data: {
         name,
-        description: map.services.find(s => s.name === name)?.description ?? '',
-        type: map.services.find(s => s.name === name)?.type ?? '',
+        description: svc?.description ?? '',
+        type: svc?.type ?? '',
         isSelected: false,
         isCaller: true,
         isCallee: false,
+        teamName: svc?.teamId ? teamById.get(svc.teamId)?.name : undefined,
       } satisfies ServiceNodeData,
     })
   })
 
   // Position callee nodes (right column)
   callees.forEach((name, i) => {
+    const svc = map.services.find(s => s.name === name)
     const y = i * GAP_Y + (Math.max(callees.length, 1) - callees.length) * GAP_Y / 2
     nodes.push({
       id: name,
@@ -107,11 +117,12 @@ export function buildConnectivityGraph(
       position: { x: CENTER_X + GAP_X, y: y },
       data: {
         name,
-        description: map.services.find(s => s.name === name)?.description ?? '',
-        type: map.services.find(s => s.name === name)?.type ?? '',
+        description: svc?.description ?? '',
+        type: svc?.type ?? '',
         isSelected: false,
         isCaller: false,
         isCallee: true,
+        teamName: svc?.teamId ? teamById.get(svc.teamId)?.name : undefined,
       } satisfies ServiceNodeData,
     })
   })
@@ -130,27 +141,31 @@ export function buildConnectivityGraph(
   // Build edges
   for (const conn of outgoing) {
     if (!allNames.has(conn.to)) continue
+    const isAsync = conn.communicationType === 'async'
+    const strokeColor = isAsync ? '#e0761b' : '#4f6ef7'
     edges.push({
       id: `${conn.from}→${conn.to}`,
       source: conn.from,
       target: conn.to,
       type: 'connectivityEdge',
       data: { connection: conn },
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#4f6ef7', width: 14, height: 14 },
-      style: { stroke: '#4f6ef7', strokeWidth: 2 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: strokeColor, width: 14, height: 14 },
+      style: { stroke: strokeColor, strokeWidth: 2, ...(isAsync ? { strokeDasharray: '8 4' } : {}) },
     })
   }
 
   for (const conn of incoming) {
     if (!allNames.has(conn.from)) continue
+    const isAsync = conn.communicationType === 'async'
+    const strokeColor = isAsync ? '#e0761b' : '#818cf8'
     edges.push({
       id: `${conn.from}→${conn.to}`,
       source: conn.from,
       target: conn.to,
       type: 'connectivityEdge',
       data: { connection: conn },
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#818cf8', width: 14, height: 14 },
-      style: { stroke: '#818cf8', strokeWidth: 2 },
+      markerEnd: { type: MarkerType.ArrowClosed, color: strokeColor, width: 14, height: 14 },
+      style: { stroke: strokeColor, strokeWidth: 2, ...(isAsync ? { strokeDasharray: '8 4' } : {}) },
     })
   }
 

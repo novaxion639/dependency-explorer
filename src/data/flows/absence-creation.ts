@@ -74,17 +74,20 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-absence",
-      "label": "write absence"
+      "label": "write absence",
+      "crud": ["create"]
     },
     {
       "from": "svc-labour-laws",
       "to": "dynamo-labour-laws-absence",
-      "label": "read entitlements"
+      "label": "read entitlements",
+      "crud": ["read"]
     },
     {
       "from": "svc-shifts",
       "to": "mongo-shifts-absence",
-      "label": "write metrics"
+      "label": "write metrics",
+      "crud": ["update"]
     },
     {
       "from": "skello-app",
@@ -94,7 +97,8 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-absence",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-communications-v2",

@@ -57,7 +57,8 @@ const leave_request_cancellation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-requests",
       "to": "pg-requests-cancel",
-      "label": "delete"
+      "label": "delete",
+      "crud": ["delete"]
     },
     {
       "from": "svc-requests",
@@ -67,7 +68,8 @@ const leave_request_cancellation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-req-cancel",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-communications-v2",

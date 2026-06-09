@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ConnectivityMapSchema } from '../data/schemas'
 import type { ConnectivityMap } from '../data/schemas'
 
@@ -7,10 +7,12 @@ type State =
   | { status: 'error'; message: string }
   | { status: 'ok'; map: ConnectivityMap }
 
-export function useConnectivityMap(): State {
+export function useConnectivityMap(): State & { reload: () => void } {
   const [state, setState] = useState<State>({ status: 'loading' })
+  const [tick, setTick] = useState(0)
 
   useEffect(() => {
+    setState({ status: 'loading' })
     fetch('/api/map')
       .then(res => {
         if (!res.ok) throw new Error(`Server returned ${res.status}`)
@@ -23,7 +25,9 @@ export function useConnectivityMap(): State {
       .catch(err => {
         setState({ status: 'error', message: err.message })
       })
-  }, [])
+  }, [tick])
 
-  return state
+  const reload = useCallback(() => setTick(t => t + 1), [])
+
+  return { ...state, reload }
 }

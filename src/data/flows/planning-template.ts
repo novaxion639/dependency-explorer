@@ -85,22 +85,26 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-templates",
-      "label": "write template"
+      "label": "write template",
+      "crud": ["create"]
     },
     {
       "from": "skello-app",
       "to": "pg-template-shifts",
-      "label": "bulk insert shifts"
+      "label": "bulk insert shifts",
+      "crud": ["create"]
     },
     {
       "from": "svc-labour-laws",
       "to": "dynamo-labour-laws-template",
-      "label": "read rules"
+      "label": "read rules",
+      "crud": ["read"]
     },
     {
       "from": "svc-shifts",
       "to": "mongo-shifts-template",
-      "label": "write metrics"
+      "label": "write metrics",
+      "crud": ["create"]
     },
     {
       "from": "skello-app",
@@ -110,7 +114,8 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-template",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-communications-v2",

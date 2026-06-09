@@ -74,17 +74,20 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "pg-skello-shifts-del",
-      "label": "delete shift"
+      "label": "delete shift",
+      "crud": ["delete"]
     },
     {
       "from": "svc-labour-laws",
       "to": "dynamo-labour-laws-del",
-      "label": "read rules"
+      "label": "read rules",
+      "crud": ["read"]
     },
     {
       "from": "svc-shifts",
       "to": "mongo-shifts-del",
-      "label": "recalculate metrics"
+      "label": "recalculate metrics",
+      "crud": ["update"]
     },
     {
       "from": "skello-app",
@@ -94,7 +97,8 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-events",
       "to": "dynamo-events-shift-del",
-      "label": "write"
+      "label": "write",
+      "crud": ["create"]
     },
     {
       "from": "svc-communications-v2",

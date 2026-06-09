@@ -51,7 +51,8 @@ const bff_dashboard_load: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-kpis-v2",
       "to": "pg-kpis",
-      "label": "read"
+      "label": "read",
+      "crud": ["read"]
     },
     {
       "from": "svc-kpis-v2",
@@ -61,7 +62,8 @@ const bff_dashboard_load: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-intelligence",
       "to": "mongo-intelligence",
-      "label": "read"
+      "label": "read",
+      "crud": ["read"]
     }
   ]
 })

@@ -4,102 +4,62 @@ import type { ServiceFlow } from '../schemas'
 const shift_replacement_search: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-replacement-search",
   "name": "Shift Replacement Search",
-  "description": "A planner searches for a replacement for an uncovered shift. The frontend queries svc-automatic-scheduling which ranks candidates by availability and contract data from svc-employees. The planner confirms an offer via the monolith, which emits an event and notifies the candidate by email.",
+  "description": "A planner searches for a replacement for an uncovered shift. The frontend calls svc-automatic-scheduling (single synchronous Lambda, 29s timeout) which reads the target shift and postes from svc-search's MongoDB over VPC, fetches shop + users data from skello-app (with shift_id param to exclude already-replaced users via the shift_replacements table), reads all candidate assigned shifts from MongoDB, then runs 13 eligibility rule classes in-memory to rank candidates by availability and contract fit. A metrics report is sent to SQS and consumed by a separate Lambda that forwards to the data platform ingestion API.",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "svc-automatic-scheduling",
-      "action": "POST /shift-replacements — find replacement candidates for uncovered shift"
+      "action": "Trigger — GET /shifts/{shiftId}/employee_replacements (JWT + API key auth)"
     },
     {
       "from": "svc-automatic-scheduling",
-      "to": "svc-employees",
-      "action": "GET /employees — fetch availability and contract data to rank candidates"
-    },
-    {
-      "from": "skello-app-front",
       "to": "skello-app",
-      "action": "POST /v3/shifts/replacements — confirm offer to selected candidate"
+      "action": "GET shop + users data (parallel) — users endpoint includes shift_id to exclude already-replaced users via shift_replacements table"
     },
     {
-      "from": "skello-app",
-      "to": "svc-events",
-      "action": "POST /events — emit shift.replacement-offered event"
-    },
-    {
-      "from": "svc-events",
-      "to": "svc-communications-v2",
-      "action": "SQS email-high — notify candidate of replacement offer"
+      "from": "svc-automatic-scheduling",
+      "to": "skello-app-front-response",
+      "action": "HTTP 200 — ranked replacement candidates sorted by availability and contract fit"
     }
   ],
   "infraNodes": [
     {
-      "id": "lambda-replacement-rank",
-      "type": "lambda",
-      "label": "shift-replacement-rank",
-      "description": "ML job ranking replacement candidates by availability, contract and proximity"
+      "id": "mongo-svc-search",
+      "type": "mongodb",
+      "label": "svc-search DB (direct VPC)",
+      "description": "4 read queries: (1) shift by skelloId, (2) poste for shift, (3) assigned shifts for all candidate users in the week, (4) postes for those shifts — collections: shifts, rawPoste"
     },
     {
-      "id": "pg-employees-replacement",
+      "id": "pg-skello-read",
       "type": "postgresql",
-      "label": "svcEmployees-{env}",
-      "description": "Employee contracts and availability — read to rank candidates"
+      "label": "skello_production (RDS)",
+      "description": "Read shop, alerts config, weekly options, users, contracts, dpae_deposits, prospects, shift_replacements (for exclusion)"
     },
     {
-      "id": "pg-skello-replacement",
-      "type": "postgresql",
-      "label": "skello_production",
-      "description": "Records the replacement offer on the shift"
-    },
-    {
-      "id": "dynamo-events-replacement",
-      "type": "dynamodb",
-      "label": "svcEvents-{env}",
-      "description": "Audit event store for shift.replacement-offered"
-    },
-    {
-      "id": "sqs-replacement",
+      "id": "sqs-metrics",
       "type": "sqs",
-      "label": "skello-sqs-events",
-      "description": "Async event queue for shift replacement lifecycle"
-    },
-    {
-      "id": "lambda-notify-replacement",
-      "type": "lambda",
-      "label": "shift-notify-dispatch",
-      "description": "Dispatches replacement offer notification to the candidate"
+      "label": "shiftsEmployeeReplacementsMetrics",
+      "description": "Replacement metrics report — consumed by handleSuggestionsMetrics Lambda (120s timeout) which POSTs to data platform ingestion API"
     }
   ],
   "infraEdges": [
     {
       "from": "svc-automatic-scheduling",
-      "to": "lambda-replacement-rank",
-      "label": "invoke ranking"
-    },
-    {
-      "from": "svc-employees",
-      "to": "pg-employees-replacement",
-      "label": "read contracts"
+      "to": "mongo-svc-search",
+      "label": "read shift, postes, candidate shifts",
+      "crud": ["read"]
     },
     {
       "from": "skello-app",
-      "to": "pg-skello-replacement",
-      "label": "record offer"
+      "to": "pg-skello-read",
+      "label": "read shop, users, contracts, shift_replacements",
+      "crud": ["read"]
     },
     {
-      "from": "skello-app",
-      "to": "sqs-replacement",
-      "label": "enqueue"
-    },
-    {
-      "from": "svc-events",
-      "to": "dynamo-events-replacement",
-      "label": "write"
-    },
-    {
-      "from": "svc-communications-v2",
-      "to": "lambda-notify-replacement",
-      "label": "invoke"
+      "from": "svc-automatic-scheduling",
+      "to": "sqs-metrics",
+      "label": "send replacement metrics report",
+      "crud": ["create"]
     }
   ]
 })

@@ -10,7 +10,7 @@
  */
 
 import { connect, disconnect } from '../src/db/connection'
-import { ServiceModel, ConnectionModel, FlowModel } from '../src/db/models'
+import { ServiceModel, ConnectionModel, FlowModel, TeamModel, DomainModel } from '../src/db/models'
 import { connectivityMap } from '../src/data'
 
 async function seed() {
@@ -48,6 +48,32 @@ async function seed() {
   )
   await Promise.all(flowOps)
   console.log(`✅ Seeded ${connectivityMap.flows.length} flows`)
+
+  // ── Teams ──────────────────────────────────────────────────────────────────
+  if (connectivityMap.teams?.length) {
+    const teamOps = connectivityMap.teams.map(team =>
+      TeamModel.findOneAndUpdate(
+        { id: team.id },
+        team,
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
+      )
+    )
+    await Promise.all(teamOps)
+    console.log(`✅ Seeded ${connectivityMap.teams.length} teams`)
+  }
+
+  // ── Domains ────────────────────────────────────────────────────────────────
+  if (connectivityMap.domains?.length) {
+    const domainOps = connectivityMap.domains.map(domain =>
+      DomainModel.findOneAndUpdate(
+        { id: domain.id },
+        domain,
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
+      )
+    )
+    await Promise.all(domainOps)
+    console.log(`✅ Seeded ${connectivityMap.domains.length} domains`)
+  }
 
   await disconnect()
 }

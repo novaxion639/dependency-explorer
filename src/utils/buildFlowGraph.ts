@@ -6,14 +6,14 @@ import type { DatabaseNodeData } from '../components/nodes/DatabaseNode'
 import { DB_COLORS } from '../components/nodes/DatabaseNode'
 
 const SVC_W = 200
-const SVC_H = 60
-const INFRA_W = 160
-const INFRA_H = 64
+const SVC_H = 140           // estimate with always-visible description
+const INFRA_W = 180
+const INFRA_H = 130          // estimate with description + CRUD badges
+const INFRA_GAP_X = 16      // horizontal gap between side-by-side infra nodes
+const INFRA_BELOW_GAP = 50  // vertical gap from service bottom to infra row
 
-const COL_GAP = 320         // horizontal gap between rank columns
-const ROW_GAP = 50          // vertical gap between service rows within a column
-const INFRA_BELOW_GAP = 36  // gap from bottom of service to first infra node
-const INFRA_GAP_Y = 10      // gap between stacked infra nodes
+const COL_GAP = 380          // horizontal gap between rank columns
+const ROW_GAP = 120          // vertical gap between service rows within a column
 
 // ── DAG rank computation (longest-path) ──────────────────────────────────────
 function computeRanks(steps: ServiceFlowStep[]): Map<string, number> {
@@ -53,13 +53,19 @@ function computeRanks(steps: ServiceFlowStep[]): Map<string, number> {
   return rank
 }
 
+/** Width of the side-by-side infra row for a given service */
+function infraRowWidth(count: number): number {
+  if (count === 0) return 0
+  return count * INFRA_W + (count - 1) * INFRA_GAP_X
+}
+
 /**
  * Builds a ReactFlow node/edge graph for a single ServiceFlow.
  *
  * Layout strategy:
  *   - Services are assigned to rank columns via longest-path through the step DAG.
  *   - Multiple services in the same rank are stacked vertically.
- *   - Infra nodes are stacked below the service they connect from.
+ *   - Infra nodes are placed side-by-side horizontally below their parent service.
  *   - All columns are vertically centred around a common midpoint.
  */
 export function buildFlowGraph(
@@ -96,14 +102,15 @@ export function buildFlowGraph(
   for (const ie of infraEdges) {
     if (!visitOrder.includes(ie.from)) continue  // infra→infra edges handled later
     if (!infraByService.has(ie.from)) infraByService.set(ie.from, [])
-    infraByService.get(ie.from)!.push(ie.to)
+    const list = infraByService.get(ie.from)!
+    if (!list.includes(ie.to)) list.push(ie.to)
   }
 
-  // Height a service occupies in its column (service box + infra stack below it)
+  // Height a service slot occupies (service box + infra row below it)
   const slotHeight = (svcName: string): number => {
-    const ids = infraByService.get(svcName) ?? []
-    if (ids.length === 0) return SVC_H
-    return SVC_H + INFRA_BELOW_GAP + ids.length * INFRA_H + (ids.length - 1) * INFRA_GAP_Y
+    const count = (infraByService.get(svcName) ?? []).length
+    if (count === 0) return SVC_H
+    return SVC_H + INFRA_BELOW_GAP + INFRA_H
   }
 
   // Total height of a column (sum of slot heights + row gaps between them)
@@ -143,27 +150,44 @@ export function buildFlowGraph(
     }
   }
 
-  // ── 5. Position infra nodes below their parent service ────────────────────
+  // ── 5. Collect CRUD ops per infra node from edges ──────────────────────────
+  const crudByInfraId = new Map<string, string[]>()
+  for (const ie of infraEdges) {
+    if (!ie.crud?.length) continue
+    const existing = crudByInfraId.get(ie.to) ?? []
+    for (const op of ie.crud) {
+      if (!existing.includes(op)) existing.push(op)
+    }
+    crudByInfraId.set(ie.to, existing)
+  }
+
+  // ── 6. Position infra nodes side-by-side below their parent service ───────
   const placedInfraIds = new Set<string>()
 
   for (const [svcName, ids] of infraByService) {
     const svcPos = svcPositions.get(svcName)
     if (!svcPos) continue
 
-    const baseX = svcPos.x + (SVC_W - INFRA_W) / 2
+    const count = ids.length
+    const totalRowW = infraRowWidth(count)
+    // Centre the infra row under the service node
+    const svcCenterX = svcPos.x + SVC_W / 2
+    const startX = svcCenterX - totalRowW / 2
     const baseY = svcPos.y + SVC_H + INFRA_BELOW_GAP
 
     ids.forEach((infraId, j) => {
       const infra = infraNodes.find(n => n.id === infraId)
       if (!infra) return
+      const x = startX + j * (INFRA_W + INFRA_GAP_X)
       nodes.push({
         id: infra.id,
         type: 'databaseNode',
-        position: { x: baseX, y: baseY + j * (INFRA_H + INFRA_GAP_Y) },
+        position: { x, y: baseY },
         data: {
           dbType: infra.type,
           name: infra.label,
           description: infra.description ?? '',
+          crud: crudByInfraId.get(infra.id),
         } satisfies DatabaseNodeData,
       })
       placedInfraIds.add(infra.id)
@@ -177,16 +201,17 @@ export function buildFlowGraph(
     nodes.push({
       id: infra.id,
       type: 'databaseNode',
-      position: { x: baseX, y: j * (INFRA_H + INFRA_GAP_Y) },
+      position: { x: baseX + j * (INFRA_W + INFRA_GAP_X), y: 0 },
       data: {
         dbType: infra.type,
         name: infra.label,
         description: infra.description ?? '',
+        crud: crudByInfraId.get(infra.id),
       } satisfies DatabaseNodeData,
     })
   })
 
-  // ── 6. Step edges (service → service) ────────────────────────────────────
+  // ── 7. Step edges (service → service) ────────────────────────────────────
   // Deduplicate parallel edges between the same pair with aggregated labels
   const pairLabels = new Map<string, string[]>()
   flow.steps.forEach(step => {
@@ -219,16 +244,21 @@ export function buildFlowGraph(
     })
   })
 
-  // ── 7. Infra edges ────────────────────────────────────────────────────────
+  // ── 8. Infra edges ────────────────────────────────────────────────────────
   for (const ie of infraEdges) {
     const meta = infraNodes.find(n => n.id === ie.to)
     const color = meta ? (DB_COLORS[meta.type]?.color ?? '#2e3250') : '#2e3250'
+
+    // Build label with CRUD badge suffix
+    const crudSuffix = ie.crud?.length ? ` [${ie.crud.map(c => c[0]!.toUpperCase()).join('')}]` : ''
+    const label = (ie.label ?? '') + crudSuffix
+
     edges.push({
       id: `infra-${ie.from}-${ie.to}`,
       source: ie.from,
       target: ie.to,
       type: 'floatingDbEdge',
-      label: ie.label,
+      label,
       style: { stroke: color + '88', strokeWidth: 1.5, strokeDasharray: '5 3' },
       markerEnd: { type: MarkerType.ArrowClosed, color: color + '88', width: 10, height: 10 },
       labelStyle: { fill: color + 'aa', fontSize: 9 },
@@ -241,4 +271,3 @@ export function buildFlowGraph(
 
   return { nodes, edges }
 }
-

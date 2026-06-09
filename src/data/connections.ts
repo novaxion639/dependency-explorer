@@ -1,8 +1,27 @@
 import { ServiceConnectionSchema } from './schemas'
-import type { ServiceConnection } from './schemas'
+import type { ServiceConnection, CommunicationType, Protocol, AuthType } from './schemas'
 import { z } from 'zod'
 
-const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse([
+/**
+ * Infer communication details from the sdkPackage string.
+ * Explicit values on the connection object take precedence.
+ */
+function inferCommunicationDefaults(pkg: string): {
+  communicationType: CommunicationType
+  protocol: Protocol
+  authType: AuthType
+} {
+  if (pkg.includes('(SQS)') && !pkg.includes('HTTParty')) {
+    return { communicationType: 'async', protocol: 'sqs', authType: 'iam-role' }
+  }
+  if (pkg.includes('(HTTParty)')) {
+    return { communicationType: 'sync', protocol: 'rest', authType: 'internal' }
+  }
+  // Default: typed HTTP SDK clients
+  return { communicationType: 'sync', protocol: 'rest', authType: 'jwt' }
+}
+
+const raw: ServiceConnection[] = z.array(ServiceConnectionSchema).parse([
   {
     "from": "svc-events",
     "to": "svc-communications-v2",
@@ -193,14 +212,14 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "from": "svc-automatic-scheduling",
     "to": "svc-search",
     "sdkPackage": "@skelloapp/svc-search-sdk",
-    "description": "Queries employee and shop data for constraint-based scheduling",
+    "description": "Reads shifts and postes directly from svc-search's MongoDB over VPC for eligibility computation and replacement candidate ranking (no HTTP — ShiftRepository + PosteRepository direct DB access)",
     "usedEndpoints": []
   },
   {
     "from": "svc-bff-planning",
     "to": "svc-search",
     "sdkPackage": "@skelloapp/svc-search-sdk",
-    "description": "Searches employees and shops for the planning page",
+    "description": "Reads shifts and postes directly from svc-search's MongoDB over VPC (no HTTP — ShiftRepository + PosteRepository direct DB access)",
     "usedEndpoints": []
   },
   {
@@ -277,16 +296,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "usedEndpoints": [
       "api-get-activity-prediction-settings",
       "api-upsert-activity-prediction-settings"
-    ]
-  },
-  {
-    "from": "svc-bff-planning",
-    "to": "svc-automatic-scheduling",
-    "sdkPackage": "@skelloapp/svc-automatic-scheduling-sdk",
-    "description": "Proxies auto-schedule requests from the planning page to the scheduling engine",
-    "usedEndpoints": [
-      "api-get-shift-replacements",
-      "api-trigger-auto-scheduling"
     ]
   },
   {
@@ -784,49 +793,18 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     ]
   },
   {
-    "from": "skello-app-front",
-    "to": "svc-bff-planning",
-    "sdkPackage": "@skelloapp/svc-bff-planning-sdk",
-    "description": "Loads the planning page via the planning BFF",
-    "usedEndpoints": [
-      "api-get-planning"
-    ]
+    "from": "svc-bff-planning",
+    "to": "skello-app",
+    "sdkPackage": "@skelloapp/skello-app-sdk",
+    "description": "Fetches shop, employees, conventions, alerts and unavailabilities for scheduling context via SkelloAppClient; writes shift assignments back (currently in dry-run mode)",
+    "usedEndpoints": []
   },
   {
-    "from": "svc-bff-planning",
-    "to": "svc-shifts",
-    "sdkPackage": "@skelloapp/svc-shifts-sdk",
-    "description": "Fetches shift details and metrics for the planning view",
-    "usedEndpoints": [
-      "api-get-shift-details"
-    ]
-  },
-  {
-    "from": "svc-bff-planning",
-    "to": "svc-employees",
-    "sdkPackage": "@skelloapp/svc-employees-sdk",
-    "description": "Fetches team roster and contracts for the planning view",
-    "usedEndpoints": [
-      "api-get-employees"
-    ]
-  },
-  {
-    "from": "svc-bff-planning",
-    "to": "svc-labour-laws",
-    "sdkPackage": "@skelloapp/svc-labour-laws-sdk",
-    "description": "Fetches labour law rules and constraints for planning validation",
-    "usedEndpoints": [
-      "api-get-labour-laws"
-    ]
-  },
-  {
-    "from": "svc-bff-planning",
-    "to": "svc-workload-plan",
-    "sdkPackage": "@skelloapp/svc-workload-plan-sdk",
-    "description": "Fetches workload forecasts and rules for the planning view",
-    "usedEndpoints": [
-      "api-get-workload-plans-v2"
-    ]
+    "from": "svc-automatic-scheduling",
+    "to": "skello-app",
+    "sdkPackage": "@skelloapp/skello-app-sdk",
+    "description": "Fetches planning data (shop, users, competencies) in the SFN dataFetcher step; writes optimised shift assignments back in the SFN assignShifts step via SkelloAppClient",
+    "usedEndpoints": []
   },
   {
     "from": "skello-app",
@@ -847,5 +825,16 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     ]
   }
 ])
+
+// Enrich connections with inferred communication details (explicit values win)
+const connections: ServiceConnection[] = raw.map(conn => {
+  const defaults = inferCommunicationDefaults(conn.sdkPackage)
+  return {
+    ...conn,
+    communicationType: conn.communicationType ?? defaults.communicationType,
+    protocol: conn.protocol ?? defaults.protocol,
+    authType: conn.authType ?? defaults.authType,
+  }
+})
 
 export default connections

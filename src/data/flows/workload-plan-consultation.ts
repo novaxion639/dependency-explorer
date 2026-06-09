@@ -4,22 +4,17 @@ import type { ServiceFlow } from '../schemas'
 const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "workload-plan-consultation",
   "name": "Workload Plan Consultation",
-  "description": "A planner opens the workload forecasting view. The planning BFF fetches the current workload plan and rules from svc-workload-plan to display staffing forecasts alongside the planning grid.",
+  "description": "A planner opens the workload forecasting view. The frontend fetches the current workload plan and staffing rules directly from svc-workload-plan to display forecasts alongside the planning grid. (Previously routed through svc-bff-planning, which has been decommissioned.)",
   "steps": [
     {
       "from": "skello-app-front",
-      "to": "svc-bff-planning",
-      "action": "GET /planning — load planning context including workload forecast"
+      "to": "svc-workload-plan",
+      "action": "GET /workload-plans — fetch active workload plan for the shop and week"
     },
     {
-      "from": "svc-bff-planning",
+      "from": "skello-app-front",
       "to": "svc-workload-plan",
-      "action": "GET /workload-plans — fetch active workload plan"
-    },
-    {
-      "from": "svc-bff-planning",
-      "to": "svc-workload-plan",
-      "action": "GET /v2/workload-rules — fetch staffing rules"
+      "action": "GET /v2/workload-rules — fetch staffing rules and thresholds"
     }
   ],
   "infraNodes": [
@@ -40,7 +35,8 @@ const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-workload-plan",
       "to": "dynamo-workload",
-      "label": "read"
+      "label": "read",
+      "crud": ["read"]
     },
     {
       "from": "svc-workload-plan",

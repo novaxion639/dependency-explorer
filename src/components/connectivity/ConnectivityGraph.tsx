@@ -44,9 +44,10 @@ interface Props {
   selectedService: string | null
   onSelectService: (name: string) => void
   onOpenFlows: (serviceName: string) => void
+  blastRadius?: Map<string, number> | null
 }
 
-function FlowInner({ map, selectedService, onOpenFlows }: Props) {
+function FlowInner({ map, selectedService, onOpenFlows, blastRadius }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -55,11 +56,25 @@ function FlowInner({ map, selectedService, onOpenFlows }: Props) {
 
   useEffect(() => {
     const { nodes: n, edges: e } = buildConnectivityGraph(map, selectedService)
+
+    // Apply blast radius highlighting
+    if (blastRadius && blastRadius.size > 0) {
+      for (const node of n) {
+        if (node.type !== 'serviceNode') continue
+        const distance = blastRadius.get(node.id)
+        if (distance != null) {
+          const opacity = Math.max(0.3, 1 - distance * 0.25)
+          ;(node.data as Record<string, unknown>).blastDistance = distance
+          node.style = { ...node.style, opacity, filter: `drop-shadow(0 0 ${6 - distance}px #ef4444)` }
+        }
+      }
+    }
+
     setNodes(n)
     setEdges(e)
     setPopup(null)
     setTimeout(() => fitView({ padding: 0.15, duration: 400 }), 50)
-  }, [map, selectedService, setNodes, setEdges, fitView])
+  }, [map, selectedService, blastRadius, setNodes, setEdges, fitView])
 
   const onEdgeClick: EdgeMouseHandler = useCallback(
     (evt, edge) => {
@@ -123,6 +138,25 @@ function FlowInner({ map, selectedService, onOpenFlows }: Props) {
             maskColor="#0f111799"
           />
         </ReactFlow>
+
+        {/* Connection legend */}
+        {selectedService && (
+          <div style={{
+            position: 'absolute', bottom: 12, left: 12, zIndex: 10,
+            background: '#1a1d27', border: '1px solid #2e3250', borderRadius: 6,
+            padding: '6px 10px', fontSize: 9, color: '#64748b',
+            display: 'flex', flexDirection: 'column', gap: 4,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="24" height="2"><line x1="0" y1="1" x2="24" y2="1" stroke="#4f6ef7" strokeWidth="2" /></svg>
+              <span>Sync (REST)</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <svg width="24" height="2"><line x1="0" y1="1" x2="24" y2="1" stroke="#e0761b" strokeWidth="2" strokeDasharray="4 2" /></svg>
+              <span>Async (SQS/SNS)</span>
+            </div>
+          </div>
+        )}
 
         {/* Empty state */}
         {!selectedService && (

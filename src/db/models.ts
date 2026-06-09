@@ -12,6 +12,9 @@ const serviceSchema = new Schema({
   description: { type: String, required: true },
   endpoints:   { type: Schema.Types.Mixed, required: true },
   databases:   { type: Schema.Types.Mixed },
+  teamId:      { type: String },
+  repoUrl:     { type: String },
+  tags:        { type: [String] },
 })
 
 export const ServiceModel = model('Service', serviceSchema)
@@ -19,11 +22,14 @@ export const ServiceModel = model('Service', serviceSchema)
 // ── Connections ───────────────────────────────────────────────────────────────
 
 const connectionSchema = new Schema({
-  from:          { type: String, required: true, index: true },
-  to:            { type: String, required: true, index: true },
-  sdkPackage:    { type: String, required: true },
-  description:   { type: String, required: true },
-  usedEndpoints: { type: [String], required: true },
+  from:              { type: String, required: true, index: true },
+  to:                { type: String, required: true, index: true },
+  sdkPackage:        { type: String, required: true },
+  description:       { type: String, required: true },
+  usedEndpoints:     { type: [String], required: true },
+  communicationType: { type: String },
+  protocol:          { type: String },
+  authType:          { type: String },
 })
 connectionSchema.index({ from: 1, to: 1 }, { unique: true })
 
@@ -41,3 +47,29 @@ const flowSchema = new Schema({
 })
 
 export const FlowModel = model('Flow', flowSchema)
+
+// ── Teams ────────────────────────────────────────────────────────────────────
+
+const teamSchema = new Schema({
+  id:           { type: String, required: true, unique: true, index: true },
+  name:         { type: String, required: true },
+  slackChannel: { type: String },
+  onCallUrl:    { type: String },
+})
+
+export const TeamModel = model('Team', teamSchema)
+
+// ── Domains ──────────────────────────────────────────────────────────────────
+
+const domainSchema = new Schema({
+  id:              { type: String, required: true, unique: true, index: true },
+  name:            { type: String, required: true },
+  description:     { type: String, required: true },
+  color:           { type: String, required: true },
+  serviceNames:    { type: [String], required: true },
+  dataEntities:    { type: [String] },
+  publishedEvents: { type: [String] },
+  consumedEvents:  { type: [String] },
+})
+
+export const DomainModel = model('Domain', domainSchema)

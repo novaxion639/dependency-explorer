@@ -59,64 +59,89 @@ function FlowInner({ flow, map, onBack, onClose }: Props) {
         borderBottom: '1px solid #2e3250',
         background: '#242736',
         display: 'flex',
-        alignItems: 'center',
-        gap: 12,
+        flexDirection: 'column',
+        gap: 8,
         flexShrink: 0,
       }}>
-        <button
-          onClick={onBack}
-          style={{
-            background: 'none', border: '1px solid #2e3250', color: '#94a3b8',
-            borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 5,
-          }}
-        >
-          ← Back
-        </button>
+        {/* Top row: back + title + close */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={onBack}
+            style={{
+              background: 'none', border: '1px solid #2e3250', color: '#94a3b8',
+              borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+            }}
+          >
+            ← Back
+          </button>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', flex: 1 }}>
             {flow.name}
           </div>
-          <div style={{ fontSize: 11, color: '#64748b', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {flow.description}
-          </div>
+
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: 'none', color: '#64748b',
+              cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 0,
+              flexShrink: 0,
+            }}
+          >
+            ×
+          </button>
         </div>
 
-        {/* Infra legend */}
-        {(flow.infraNodes ?? []).length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, flexShrink: 0 }}>
-            {(flow.infraNodes ?? []).map(infra => {
-              const meta = DB_COLORS[infra.type] ?? { color: '#64748b', icon: '💾', label: infra.type }
-              return (
-                <span
-                  key={infra.id}
-                  title={infra.description}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 3,
-                    fontSize: 10, padding: '2px 6px', borderRadius: 4,
-                    background: meta.color + '16', border: `1px solid ${meta.color}33`,
-                    color: meta.color,
-                  }}
-                >
-                  <span>{meta.icon}</span>
-                  <span style={{ fontWeight: 600 }}>{meta.label}</span>
-                </span>
-              )
-            })}
+        {/* Description — full text, no truncation */}
+        {flow.description && (
+          <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.5 }}>
+            {flow.description}
           </div>
         )}
 
-        <button
-          onClick={onClose}
-          style={{
-            background: 'none', border: 'none', color: '#64748b',
-            cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 0,
-            flexShrink: 0,
-          }}
-        >
-          ×
-        </button>
+        {/* Infra legend — deduplicated by label + type */}
+        {(flow.infraNodes ?? []).length > 0 && (() => {
+          const seen = new Map<string, { infra: typeof flow.infraNodes[0]; cruds: Set<string> }>()
+          for (const infra of flow.infraNodes ?? []) {
+            const key = `${infra.type}:${infra.label}`
+            const existing = seen.get(key)
+            if (existing) {
+              for (const e of flow.infraEdges ?? []) {
+                if (e.to === infra.id && e.crud?.length) e.crud.forEach(c => existing.cruds.add(c))
+              }
+            } else {
+              const cruds = new Set<string>()
+              for (const e of flow.infraEdges ?? []) {
+                if (e.to === infra.id && e.crud?.length) e.crud.forEach(c => cruds.add(c))
+              }
+              seen.set(key, { infra, cruds })
+            }
+          }
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {[...seen.values()].map(({ infra, cruds }) => {
+                const meta = DB_COLORS[infra.type as DatabaseType] ?? { color: '#64748b', icon: '💾', label: infra.type }
+                const crudLabel = cruds.size ? [...cruds].map(c => c[0]!.toUpperCase()).join('') : ''
+                return (
+                  <span
+                    key={infra.id}
+                    title={infra.description}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 3,
+                      fontSize: 10, padding: '2px 6px', borderRadius: 4,
+                      background: meta.color + '16', border: `1px solid ${meta.color}33`,
+                      color: meta.color,
+                    }}
+                  >
+                    <span>{meta.icon}</span>
+                    <span style={{ fontWeight: 600 }}>{meta.label}</span>
+                    {crudLabel && <span style={{ fontWeight: 700, fontSize: 9, opacity: 0.8 }}>[{crudLabel}]</span>}
+                  </span>
+                )
+              })}
+            </div>
+          )
+        })()}
       </div>
 
       {/* Flow graph */}
