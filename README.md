@@ -59,7 +59,7 @@ pnpm check           # everything CI runs
 |---|---|---|
 | 0 | Reboot: static SPA, workspace structure, integrity gates, CI | ✅ done |
 | 1 | Automation-first: SDK + Rails + CODEOWNERS extractors, provenance metadata, two-layer merge, classified drift report ([ADR-0007](docs/adr/0007-discovery-semantics.md)) | ✅ done (nightly drift PRs pending org token — Infra discussion) |
-| 1.5 | More extractors: serverless configs (endpoints/infra), Rails routes dump, frontend HTTP calls, AWS read-only verification | next |
+| 1.5 | More extractors: serverless configs (deploy-state + static, endpoint verification), Rails routes (monolith inbound surface), frontend env/usage, async queue cross-reference | ✅ done (AWS read-only verification remains — needs credentials story) |
 | 2 | Org-audience features: permalinks, global search, ownership pages, export | |
 | 3 | "Suggest edit" → pre-filled PR via GitHub App, permissions from GitHub teams | |
 | 4 | Live operational overlays (deploys, alarms, queue depth, on-call) via a read-only API | |

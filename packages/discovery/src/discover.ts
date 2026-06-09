@@ -7,17 +7,16 @@
  *   pnpm discover:json            # same, as JSON
  *   pnpm discover:apply           # also write packages/data/src/generated/discovered.json
  *
- * What it does:
- *   - Forward pass (code → map): SDK deps of TS repos + Rails monolith client
- *     classes become evidence. Existing connections get verified; new ones are
- *     reported as candidates for human adoption — never auto-added.
- *   - Reverse pass (map → code): every connection in the dataset is checked
- *     for evidence; the report distinguishes "stale" from "unverifiable".
- *   - Ownership: CODEOWNERS team slugs → teamId via teams.githubTeams mapping.
+ * Evidence sources (Phase 1 + 1.5):
+ *   - package.json SDK dependencies (TypeScript repos)
+ *   - Rails monolith client classes (app/services/microservices)
+ *   - serverless config: deploy state (.serverless/) or static literal scan
+ *   - frontend env service URLs + usage sites (names only, never values)
+ *   - queue-name literals cross-referenced sender → consumer (async/SQS)
+ *   - CODEOWNERS team slugs (ownership via curated mapping only)
  *
- * SDK presence is evidence of a dependency, not proof of runtime calls (SDKs
- * are sometimes imported for types only) — which is why verified facts carry
- * provenance instead of silently becoming truth.
+ * SDK presence is evidence of a dependency, not proof of runtime calls —
+ * verified facts carry provenance instead of silently becoming truth.
  */
 
 import * as fs from 'node:fs'
@@ -28,6 +27,10 @@ import type { DiscoveredOverlay } from '@dependency-explorer/schema'
 import { IGNORED_SDKS, sdkToServiceName } from './mapping'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
 import { extractRailsMonolith } from './extractors/rails'
+import { extractServerless, type ServerlessFacts } from './extractors/serverless'
+import { extractRailsRoutes } from './extractors/rails-routes'
+import { extractFrontend } from './extractors/frontend'
+import { findQueueSenders } from './extractors/queue-senders'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_BASE = path.resolve(__dirname, '../../../../')
@@ -47,25 +50,40 @@ for (const team of connectivityMap.teams ?? []) {
 
 // ── Result shapes ─────────────────────────────────────────────────────────────
 
-interface Verified { from: string; to: string; evidence: string }
 interface Candidate { from: string; to: string; evidence: string; transport: string }
 interface UnknownTarget { from: string; evidence: string; normalizedTarget: string }
 interface Stale { from: string; to: string; sdkPackage: string }
 interface Unverifiable { from: string; to: string; reason: string }
+interface EndpointCheck {
+  service: string
+  source: ServerlessFacts['source']
+  verified: number
+  total: number
+  missingInCode: string[]
+  extraInCode: number
+}
 
 interface Report {
   scannedRepos: string[]
-  verified: Verified[]
+  /** connection key → accumulated evidence strings */
+  connectionEvidence: Record<string, string[]>
   candidates: Candidate[]
   unknownTargets: UnknownTarget[]
   stale: Stale[]
   unverifiable: Unverifiable[]
-  ignoredSdks: Record<string, string[]> // pkg → repos using it
-  reposWithoutServiceDefinition: string[]
+  endpointChecks: EndpointCheck[]
+  endpointStamps: Record<string, { lastVerified: string; evidence: string }>
+  asyncSenders: Array<{ from: string; to: string; queues: string[]; files: string[] }>
+  frontendServices: Array<{ service: string; inMap: boolean; evidence: string }>
+  monolithSurface: { totalRoutes: number; resourceDeclarations: number; topSegments: Array<[string, number]> } | null
+  ignoredSdks: Record<string, string[]>
+  reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
   unmappedGithubTeams: string[]
   serviceFacts: DiscoveredOverlay['services']
 }
+
+const TODAY = new Date().toISOString().slice(0, 10)
 
 function findRepos(): string[] {
   try {
@@ -86,17 +104,44 @@ function pickTeamId(githubTeams: Record<string, number>): string | undefined {
   return mapped.length ? slugToTeamId.get(mapped[0]![0]) : undefined
 }
 
+/**
+ * "GET /v1/dynamoScan/{id}/" and "GET /v1/dynamo-scan/:id" normalize
+ * identically: params collapse to {}, segments are lowercased with -/_
+ * stripped (camelCase vs kebab-case). Method and segment count stay strict —
+ * list-vs-get-one or POST-vs-PUT differences are real drift, never matched.
+ */
+function normalizeEndpoint(method: string, rawPath: string): string {
+  let p = rawPath
+  if (!p.startsWith('/')) p = `/${p}`
+  p = p.replace(/\{[^}]+\}/g, '{}').replace(/:[A-Za-z0-9_]+/g, '{}')
+  const segments = p.split('/').map(seg => seg === '{}' ? seg : seg.toLowerCase().replace(/[-_]/g, ''))
+  p = segments.join('/').replace(/\/+/g, '/').replace(/\/$/, '') || '/'
+  return `${method.toUpperCase()} ${p}`
+}
+
+/** Same, with a single leading version segment (/v1, /v2…) stripped — the
+ *  dataset often omits it while serverless configs include it. */
+function normalizeEndpointVersionless(method: string, rawPath: string): string {
+  const stripped = rawPath.replace(/^\/?v\d+(\/|$)/, '/')
+  return normalizeEndpoint(method, stripped)
+}
+
 // ── Scan ──────────────────────────────────────────────────────────────────────
 
 function run(): Report {
   const repos = findRepos()
   const report: Report = {
     scannedRepos: repos,
-    verified: [],
+    connectionEvidence: {},
     candidates: [],
     unknownTargets: [],
     stale: [],
     unverifiable: [],
+    endpointChecks: [],
+    endpointStamps: {},
+    asyncSenders: [],
+    frontendServices: [],
+    monolithSurface: null,
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -104,31 +149,50 @@ function run(): Report {
     serviceFacts: {},
   }
 
-  const verifiedKeys = new Set<string>()
   const allSlugs = new Set<string>()
-  const tsFactsByRepo = new Map<string, TsRepoFacts>()
+  const candidatesByKey = new Map<string, Candidate>()
 
-  // Forward pass — TypeScript repos
-  for (const repo of repos) {
-    const facts = extractTsRepo(REPO_BASE, repo)
-    const githubTeams = facts?.githubTeams ?? extractRepoOwnership(REPO_BASE, repo)
-    Object.keys(githubTeams).forEach(s => allSlugs.add(s))
-
-    if (!serviceNames.has(repo)) {
-      report.reposWithoutServiceDefinition.push(repo)
+  const addEvidence = (from: string, to: string, evidence: string, transport: string) => {
+    const key = `${from}→${to}`
+    if (connectionKeys.has(key)) {
+      ;(report.connectionEvidence[key] ??= []).push(evidence)
     } else {
-      report.serviceFacts[repo] = {
-        repoUrl: facts?.repoUrl ?? `https://github.com/skelloapp/${repo}`,
-        teamId: pickTeamId(githubTeams),
-        githubTeams: Object.keys(githubTeams).sort(),
+      const existing = candidatesByKey.get(key)
+      if (existing) {
+        existing.evidence += `; ${evidence}`
+      } else {
+        candidatesByKey.set(key, { from, to, evidence, transport })
       }
     }
+  }
 
-    if (!facts) continue
-    tsFactsByRepo.set(repo, facts)
-    if (!serviceNames.has(repo)) continue // SDK deps of unmapped repos are reported via their section
+  // ── Per-repo facts: package.json, CODEOWNERS, serverless ──────────────────
+  const serverlessByRepo = new Map<string, ServerlessFacts>()
 
-    for (const pkg of facts.sdkPackages) {
+  for (const repo of repos) {
+    const tsFacts: TsRepoFacts | null = extractTsRepo(REPO_BASE, repo)
+    const githubTeams = tsFacts?.githubTeams ?? extractRepoOwnership(REPO_BASE, repo)
+    Object.keys(githubTeams).forEach(s => allSlugs.add(s))
+
+    const sls = extractServerless(REPO_BASE, repo)
+    if (sls) serverlessByRepo.set(repo, sls)
+
+    if (!serviceNames.has(repo)) {
+      report.reposWithoutServiceDefinition.push({
+        repo,
+        httpEndpoints: sls?.endpoints.length ?? 0,
+        queues: sls?.queueNames.length ?? 0,
+      })
+      continue
+    }
+
+    report.serviceFacts[repo] = {
+      repoUrl: tsFacts?.repoUrl ?? `https://github.com/skelloapp/${repo}`,
+      teamId: pickTeamId(githubTeams),
+      githubTeams: Object.keys(githubTeams).sort(),
+    }
+
+    for (const pkg of tsFacts?.sdkPackages ?? []) {
       if (pkg in IGNORED_SDKS) {
         ;(report.ignoredSdks[pkg] ??= []).push(repo)
         continue
@@ -139,17 +203,11 @@ function run(): Report {
         continue
       }
       if (target === repo) continue
-      const key = `${repo}→${target}`
-      if (connectionKeys.has(key)) {
-        report.verified.push({ from: repo, to: target, evidence: `package.json: ${pkg}` })
-        verifiedKeys.add(key)
-      } else {
-        report.candidates.push({ from: repo, to: target, evidence: pkg, transport: 'rest (SDK client)' })
-      }
+      addEvidence(repo, target, `package.json: ${pkg}`, 'rest (SDK client)')
     }
   }
 
-  // Forward pass — Rails monolith outbound clients
+  // ── Rails monolith outbound clients ────────────────────────────────────────
   const rails = extractRailsMonolith(REPO_BASE)
   if (rails) {
     report.railsUnmapped = rails.unmapped
@@ -158,40 +216,114 @@ function run(): Report {
         report.unknownTargets.push({ from: 'skello-app', evidence: edge.evidence.join(', '), normalizedTarget: edge.to })
         continue
       }
-      const key = `skello-app→${edge.to}`
-      if (connectionKeys.has(key)) {
-        report.verified.push({ from: 'skello-app', to: edge.to, evidence: edge.evidence.join(', ') })
-        verifiedKeys.add(key)
+      addEvidence('skello-app', edge.to, edge.evidence.join(', '), edge.transport)
+    }
+  }
+
+  // ── Frontend service usage ─────────────────────────────────────────────────
+  const front = extractFrontend(REPO_BASE)
+  if (front) {
+    for (const [service, ev] of Object.entries(front.services)) {
+      const summary = ev.envVars.length
+        ? `env ${ev.envVars.join(', ')} used in ${ev.usageCount} files`
+        : `service URL referenced in ${ev.usageFiles.join(', ')}`
+      const inMap = serviceNames.has(service)
+      report.frontendServices.push({ service, inMap, evidence: summary })
+      if (inMap) {
+        if (ev.usageCount > 0 || ev.envVars.length === 0) {
+          addEvidence('skello-app-front', service, `frontend: ${summary}`, 'rest (HTTP)')
+        }
       } else {
-        report.candidates.push({ from: 'skello-app', to: edge.to, evidence: edge.evidence.join(', '), transport: edge.transport })
+        report.unknownTargets.push({ from: 'skello-app-front', evidence: summary, normalizedTarget: service })
       }
     }
   }
 
-  // Reverse pass — every dataset connection needs evidence or an explanation
+  // ── Async queue cross-reference ────────────────────────────────────────────
+  const queueOwners = new Map<string, string>()
+  for (const [repo, sls] of serverlessByRepo) {
+    if (!serviceNames.has(repo)) continue
+    for (const q of sls.queueNames) {
+      if (!queueOwners.has(q)) queueOwners.set(q, repo)
+    }
+  }
+  // skello-app-front excluded: its env mirrors backend config — a browser app
+  // does not send to SQS, matches there would fabricate edges.
+  const senderRepos = repos.filter(r => r !== 'skello-app-front' && serviceNames.has(r))
+  const senders = findQueueSenders(REPO_BASE, senderRepos, queueOwners)
+  for (const s of senders) {
+    report.asyncSenders.push(s)
+    addEvidence(s.from, s.to, `queue literal ${s.queues.join(', ')} in ${s.files.join(', ')}`, 'sqs (queue literal)')
+  }
+
+  // ── Endpoint verification for dataset services ─────────────────────────────
+  for (const svc of connectivityMap.services) {
+    const sls = serverlessByRepo.get(svc.name)
+    if (!sls || svc.endpoints.length === 0) continue
+    const codeEndpoints = new Map(sls.endpoints.map(e => [normalizeEndpoint(e.method, e.path), e]))
+    const codeEndpointsVersionless = new Map(sls.endpoints.map(e => [normalizeEndpointVersionless(e.method, e.path), e]))
+    const matchedCode = new Set<unknown>()
+    const missing: string[] = []
+    let verified = 0
+    for (const ep of svc.endpoints) {
+      const exact = codeEndpoints.get(normalizeEndpoint(ep.method, ep.path))
+      const tolerant = exact ?? codeEndpointsVersionless.get(normalizeEndpointVersionless(ep.method, ep.path))
+      if (tolerant && !matchedCode.has(tolerant)) {
+        verified++
+        matchedCode.add(tolerant)
+        report.endpointStamps[`${svc.name}#${ep.id}`] = {
+          lastVerified: TODAY,
+          evidence: `serverless ${sls.source}: ${tolerant.method} ${tolerant.path}${exact ? '' : ' (version-prefix tolerant match)'}`,
+        }
+      } else {
+        missing.push(ep.id)
+      }
+    }
+    report.endpointChecks.push({
+      service: svc.name,
+      source: sls.source,
+      verified,
+      total: svc.endpoints.length,
+      missingInCode: missing,
+      extraInCode: sls.endpoints.length - matchedCode.size,
+    })
+  }
+
+  // ── Monolith inbound surface (informational) ───────────────────────────────
+  const routes = extractRailsRoutes(REPO_BASE)
+  if (routes) {
+    report.monolithSurface = {
+      totalRoutes: routes.routes.length,
+      resourceDeclarations: routes.resourceDeclarations,
+      topSegments: Object.entries(routes.byTopSegment).sort((a, b) => b[1] - a[1]).slice(0, 12),
+    }
+  }
+
+  // ── Reverse pass: every dataset connection needs evidence or an explanation ─
   for (const conn of connectivityMap.connections) {
     const key = `${conn.from}→${conn.to}`
-    if (verifiedKeys.has(key)) continue
+    if (report.connectionEvidence[key]?.length) continue
 
     if (!fs.existsSync(path.join(REPO_BASE, conn.from))) {
       report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'repo not checked out locally' })
       continue
     }
     if (conn.from === 'skello-app') {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'no mapped Rails client found (heuristic scan — check RAILS_CLIENT_TARGETS)' })
+      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'no mapped Rails client or queue literal found (heuristic scan)' })
       continue
     }
     if (conn.from === 'skello-app-front') {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'frontend HTTP calls not extracted in Phase 1' })
+      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'no env URL or usage evidence found (frontend heuristic)' })
       continue
     }
     if (!conn.sdkPackage.startsWith('@skelloapp/')) {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: `non-npm declaration (${conn.sdkPackage})` })
+      report.unverifiable.push({ from: conn.from, to: conn.to, reason: `non-npm declaration (${conn.sdkPackage}), no queue evidence` })
       continue
     }
     report.stale.push({ from: conn.from, to: conn.to, sdkPackage: conn.sdkPackage })
   }
 
+  report.candidates = [...candidatesByKey.values()]
   report.unmappedGithubTeams = [...allSlugs].filter(s => !slugToTeamId.has(s)).sort()
   return report
 }
@@ -199,19 +331,22 @@ function run(): Report {
 // ── Apply ─────────────────────────────────────────────────────────────────────
 
 function writeOverlay(report: Report) {
-  const today = new Date().toISOString().slice(0, 10)
   const overlay: DiscoveredOverlay = {
     generatedAt: new Date().toISOString(),
     scannedRepos: report.scannedRepos,
     services: report.serviceFacts,
     connections: Object.fromEntries(
-      report.verified.map(v => [`${v.from}→${v.to}`, { lastVerified: today, evidence: v.evidence }]),
+      Object.entries(report.connectionEvidence).map(([key, evidences]) => [
+        key,
+        { lastVerified: TODAY, evidence: evidences.join('; ') },
+      ]),
     ),
+    endpoints: report.endpointStamps,
   }
   fs.mkdirSync(path.dirname(OVERLAY_PATH), { recursive: true })
   fs.writeFileSync(OVERLAY_PATH, JSON.stringify(overlay, null, 2) + '\n')
   console.log(`\nOverlay written: ${path.relative(process.cwd(), OVERLAY_PATH)}`)
-  console.log(`  ${Object.keys(overlay.services).length} services enriched, ${Object.keys(overlay.connections).length} connections verified`)
+  console.log(`  ${Object.keys(overlay.services).length} services enriched, ${Object.keys(overlay.connections).length} connections verified, ${Object.keys(overlay.endpoints ?? {}).length} endpoints verified`)
 }
 
 // ── Report ────────────────────────────────────────────────────────────────────
@@ -225,23 +360,46 @@ function printMarkdown(r: Report) {
   console.log('# Discovery Report')
   console.log(`\nScanned ${r.scannedRepos.length} repos in ${REPO_BASE}`)
 
+  const verified = Object.entries(r.connectionEvidence)
   section('✅ Verified connections — in map, evidence found',
-    r.verified.map(v => `- ${v.from} → ${v.to} _(${v.evidence})_`))
+    verified.map(([key, ev]) => `- ${key.replace('→', ' → ')} _(${ev.join('; ')})_`))
 
   section('🆕 Candidates — evidence in code, missing from map (adopt via PR)',
-    r.candidates.map(c => `- **${c.from} → ${c.to}** via \`${c.evidence}\` (${c.transport})`))
+    r.candidates.map(c => `- **${c.from} → ${c.to}** (${c.transport}) — ${c.evidence}`))
 
   section('⚠️ Possibly stale — in map, no evidence in checked-out repo',
-    r.stale.map(s => `- ${s.from} → ${s.to} (\`${s.sdkPackage}\` not in package.json)`))
+    r.stale.map(s => `- ${s.from} → ${s.to} (\`${s.sdkPackage}\` not in package.json, no queue literal)`))
 
-  section('⏭ Unverifiable — in map, cannot be checked by Phase 1 extractors',
+  section('⏭ Unverifiable — in map, cannot be checked by current extractors',
     r.unverifiable.map(u => `- ${u.from} → ${u.to} — ${u.reason}`))
 
-  section('❓ Unknown targets — SDK evidence pointing outside the map',
+  section('🔌 Endpoint verification (dataset vs serverless config)',
+    r.endpointChecks.map(c => {
+      const miss = c.missingInCode.length
+        ? ` — missing in code: ${c.missingInCode.slice(0, 4).join(', ')}${c.missingInCode.length > 4 ? '…' : ''}`
+        : ''
+      const extra = c.extraInCode ? ` — +${c.extraInCode} in code not in map` : ''
+      return `- ${c.service}: **${c.verified}/${c.total}** verified (${c.source})${miss}${extra}`
+    }))
+
+  section('📨 Async sender evidence (queue literals)',
+    r.asyncSenders.map(s => `- ${s.from} → ${s.to} via \`${s.queues.join('`, `')}\` (${s.files.join(', ')})`))
+
+  section('🖥 Frontend service usage',
+    r.frontendServices.map(f => `- svc host \`${f.service}\` ${f.inMap ? '(in map)' : '**(not in map)**'} — ${f.evidence}`))
+
+  if (r.monolithSurface) {
+    console.log(`\n## 📥 Monolith inbound surface (informational)\n`)
+    console.log(`${r.monolithSurface.totalRoutes} explicit routes + ${r.monolithSurface.resourceDeclarations} resource declarations. Top segments:`)
+    console.log(r.monolithSurface.topSegments.map(([seg, n]) => `- /${seg} (${n})`).join('\n'))
+  }
+
+  section('❓ Unknown targets — evidence pointing outside the map',
     r.unknownTargets.map(u => `- ${u.from} → \`${u.evidence}\` (resolves to "${u.normalizedTarget}")`))
 
   section('📦 Repos without a service definition (add to the map?)',
-    r.reposWithoutServiceDefinition.map(n => `- ${n}`))
+    r.reposWithoutServiceDefinition.map(x =>
+      `- ${x.repo}${x.httpEndpoints ? ` — ${x.httpEndpoints} HTTP endpoints` : ''}${x.queues ? `, ${x.queues} queues` : ''}`))
 
   section('🗺 Rails clients needing a mapping decision',
     r.railsUnmapped.map(f => `- ${f}`))
@@ -253,10 +411,12 @@ function printMarkdown(r: Report) {
     Object.entries(r.ignoredSdks).map(([pkg, repos]) =>
       `- \`${pkg}\` — ${IGNORED_SDKS[pkg]} (${repos.length} repos)`))
 
+  const epVerified = Object.keys(r.endpointStamps).length
+  const epTotal = r.endpointChecks.reduce((n, c) => n + c.total, 0)
   console.log(`\n## Summary\n`)
-  console.log(`| verified | candidates | stale | unverifiable | unknown targets |`)
-  console.log(`|---|---|---|---|---|`)
-  console.log(`| ${r.verified.length} | ${r.candidates.length} | ${r.stale.length} | ${r.unverifiable.length} | ${r.unknownTargets.length} |`)
+  console.log(`| connections verified | endpoint stamps | candidates | stale | unverifiable | unknown targets |`)
+  console.log(`|---|---|---|---|---|---|`)
+  console.log(`| ${verified.length} | ${epVerified}/${epTotal} | ${r.candidates.length} | ${r.stale.length} | ${r.unverifiable.length} | ${r.unknownTargets.length} |`)
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────

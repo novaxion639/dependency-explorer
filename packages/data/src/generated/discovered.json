@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T20:03:04.312Z",
+  "generatedAt": "2026-06-09T20:44:41.104Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
@@ -400,6 +400,292 @@
     "skello-app→svc-shops": {
       "lastVerified": "2026-06-09",
       "evidence": "app/services/microservices/shops_service.rb"
+    },
+    "skello-app-front→svc-labour-laws": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env LLL_SERVICE_URL, VUE_APP_SVC_LABOUR_LAWS_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-documents-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env SVC_DOCUMENTS_V2_URL, VUE_APP_SVC_DOCUMENTS_V2_API_URL used in 5 files"
+    },
+    "skello-app-front→svc-employees": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env SVC_EMPLOYEES_URL, VUE_APP_SVC_EMPLOYEES_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-intelligence": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env SVC_INTELLIGENCE_URL, VUE_APP_SVC_INTELLIGENCE_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-punch": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env SVC_PUNCH_URL, VUE_APP_SVC_PUNCH_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-users": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env SVC_USERS_BASE_URL, VUE_APP_SVC_USERS_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-workload-plan": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env SVC_WORKLOAD_PLAN_API_URL, VUE_APP_SVC_WORKLOAD_PLAN_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-automatic-scheduling": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_AUTOMATIC_SCHEDULING_API_URL used in 4 files"
+    },
+    "skello-app-front→svc-kpis-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_KPIS_V2_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-bff": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_BFF_API_URL used in 4 files"
+    },
+    "skello-app-front→svc-billing-automation": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_BILLING_AUTOMATION_API_URL used in 4 files"
+    },
+    "skello-app-front→svc-events": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_EVENTS_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-hris": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_HRIS_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-pos": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_POS_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-requests": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_REQUESTS_API_URL used in 5 files"
+    },
+    "skello-app-front→svc-shops": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_SHOPS_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-enrollment": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_ENROLLMENT_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-reports": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_REPORTS_API_URL used in 1 files"
+    },
+    "skello-app-front→svc-skello-assistant": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_SKELLO_ASSISTANT_API_URL used in 5 files"
+    },
+    "skello-app-front→svc-trackers": {
+      "lastVerified": "2026-06-09",
+      "evidence": "frontend: env VUE_APP_SVC_TRACKERS_API_URL used in 1 files"
+    }
+  },
+  "endpoints": {
+    "svc-events#api-event-create": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /events"
+    },
+    "svc-events#get-events-api": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /events"
+    },
+    "svc-employees#api-upsert-absence-config": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /v1/absence-configs (version-prefix tolerant match)"
+    },
+    "svc-employees#api-upsert-annualization-config": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /v1/annualization-configs (version-prefix tolerant match)"
+    },
+    "svc-employees#api-get-employees": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /v1/employees (version-prefix tolerant match)"
+    },
+    "svc-employees#api-create-employee": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /v1/employees (version-prefix tolerant match)"
+    },
+    "svc-documents-v2#api-bulk-send-signature-reminders": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /signatures/reminders"
+    },
+    "svc-documents-v2#api-bulk-send-reminders-from-filters": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /signatures/reminders/from-filters"
+    },
+    "svc-documents-v2#cancel-signature-request-api": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /signatures/cancel"
+    },
+    "svc-documents-v2#api-fetch-many-signatures": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /signatures/fetch"
+    },
+    "svc-documents-v2#api-fetch-employee-signatures-by-document-ids": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /signatures/fetch-by-employee-documents"
+    },
+    "svc-documents-v2#api-get-signature-document-url": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /signatures/{shopId}/{documentId}/url"
+    },
+    "svc-documents-v2#api-is-signable-document": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /documents/signable"
+    },
+    "svc-documents-v2#api-send-week-signature-documents-email": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /signatures/week-documents-email"
+    },
+    "svc-documents-v2#api-bulk-process-yousign-webhooks": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /yousign/webhooks/bulk"
+    },
+    "svc-punch#api-create-clock-in-out": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: POST /clocks-in-out"
+    },
+    "svc-punch#api-update-clock-in-out": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: PATCH /clocks-in-out/{id}"
+    },
+    "svc-punch#api-delete-clock-in-out": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: DELETE /clocks-in-out/{id}"
+    },
+    "svc-punch#api-get-punch-settings": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: GET /settings"
+    },
+    "svc-punch#api-upsert-punch-settings": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: POST /settings"
+    },
+    "svc-shops#api-get-organisations-config": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: GET /v1/organisations/{id}/config (version-prefix tolerant match)"
+    },
+    "svc-shops#api-create-mission": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: POST /v1/missions (version-prefix tolerant match)"
+    },
+    "svc-shops#api-update-mission": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: PATCH /v1/missions/{id} (version-prefix tolerant match)"
+    },
+    "svc-requests#api-get-leave-requests": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /leave-requests"
+    },
+    "svc-requests#api-create-leave-request": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /leave-requests"
+    },
+    "svc-requests#api-update-leave-request": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: PATCH /leave-requests/{id}"
+    },
+    "svc-requests#api-delete-leave-request": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: DELETE /leave-requests/{id}"
+    },
+    "svc-billing-automation#api-create-organisation": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /organisations"
+    },
+    "svc-billing-automation#api-update-organisation": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: PATCH /organisations/{id}"
+    },
+    "svc-billing-automation#api-update-shop": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: PATCH /shops/{id}"
+    },
+    "svc-intelligence#api-validate-llm-response": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /validateLLMResponse"
+    },
+    "svc-intelligence#api-create-validation-response": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /validationResponses"
+    },
+    "svc-kpis-v2#api-create-kpis": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: POST /kpis"
+    },
+    "svc-bff#api-orchestrate-documents": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /v1/documents"
+    },
+    "svc-bff-planning#api-compute-auto-scheduling": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: GET /auto_scheduling/compute"
+    },
+    "svc-automatic-scheduling#api-get-shift-replacements": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless deploy-state: GET /shifts/{shiftId}/employee_replacements"
+    },
+    "svc-shifts#api-get-employee-shift-metrics": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /shift-metrics/employee"
+    },
+    "svc-shifts#api-get-employees-for-shifts": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /employees-for-shifts"
+    },
+    "svc-shifts#api-get-shop-and-orga-shift-metrics": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /shift-metrics/shop-and-orga"
+    },
+    "svc-users#api-sso-callback": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /sso/{provider}/callback"
+    },
+    "svc-labour-laws#api-get-labour-laws": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /labour_laws"
+    },
+    "svc-pos#api-get-chift-providers": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /chift/providers"
+    },
+    "svc-pos#api-get-integrations": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /integrations"
+    },
+    "svc-pos#api-create-integration": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /integrations"
+    },
+    "svc-pos#api-get-providers": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /providers"
+    },
+    "svc-pos#api-create-provider": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /providers"
+    },
+    "svc-workload-plan#api-get-workload-plans-v1": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /workload-plans"
+    },
+    "svc-workload-plan#api-create-workload-plan-v1": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /workload-plans"
+    },
+    "svc-workload-plan#api-get-workload-plans-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: GET /v2/workload-plans"
+    },
+    "svc-workload-plan#api-create-workload-plan-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /v2/workload-plans"
+    },
+    "svc-workload-plan#api-create-workload-rule-v2": {
+      "lastVerified": "2026-06-09",
+      "evidence": "serverless static-scan: POST /v2/workload-rules"
     }
   }
 }

@@ -69,11 +69,17 @@ const overlay = DiscoveredOverlaySchema.parse(discoveredJson)
 const verifiedOn = overlay.generatedAt.slice(0, 10)
 
 function enrichServices(services: unknown[]): unknown[] {
+  const endpointStamps = overlay.endpoints ?? {}
   return (services as Array<Record<string, unknown>>).map(svc => {
     const facts = overlay.services[svc.name as string]
-    if (!facts) return svc
+    const endpoints = (svc.endpoints as Array<Record<string, unknown>>).map(ep => {
+      const stamp = endpointStamps[`${svc.name}#${ep.id}`]
+      return stamp ? { ...ep, provenance: { source: 'discovered', ...stamp } } : ep
+    })
+    if (!facts) return { ...svc, endpoints }
     return {
       ...svc,
+      endpoints,
       repoUrl: facts.repoUrl ?? svc.repoUrl,
       teamId: facts.teamId ?? svc.teamId,
       provenance: {

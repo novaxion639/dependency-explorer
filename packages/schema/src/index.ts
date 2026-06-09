@@ -68,6 +68,7 @@ export const ServiceEndpointSchema = z.object({
   params: z.array(EndpointParamSchema),
   response: z.record(z.string(), z.string()),
   awsCalls: z.array(AwsCallSchema).optional(),
+  provenance: ProvenanceSchema.optional(),
 })
 
 // ── Service ───────────────────────────────────────────────────────────────────
@@ -181,6 +182,11 @@ export const DiscoveredOverlaySchema = z.object({
     lastVerified: z.string(),
     evidence: z.string(),
   })),
+  // "service#endpointId" → verification stamp (endpoint found in serverless config)
+  endpoints: z.record(z.string(), z.object({
+    lastVerified: z.string(),
+    evidence: z.string(),
+  })).optional(),
 })
 
 // ── Top-level map ─────────────────────────────────────────────────────────────

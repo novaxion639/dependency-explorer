@@ -148,4 +148,13 @@ describe('discovered overlay', () => {
       }
     }
   })
+
+  it('only stamps endpoints that exist in the manual layer', () => {
+    const endpointKeys = new Set(
+      services.flatMap(s => s.endpoints.map(e => `${s.name}#${e.id}`)),
+    )
+    for (const key of Object.keys(overlay.endpoints ?? {})) {
+      expect(endpointKeys.has(key), `overlay stamps unknown endpoint ${key}`).toBe(true)
+    }
+  })
 })
