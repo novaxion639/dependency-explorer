@@ -19,9 +19,9 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
   ],
   "infraNodes": [
     {
-      "id": "dynamo-workload-create",
-      "type": "dynamodb",
-      "label": "svcWorkloadPlan-{env}",
+      "id": "mongo-workload-create",
+      "type": "mongodb",
+      "label": "svc-workload-plan (MongoDB)",
       "description": "Persists the new workload plan and its forecast data"
     },
     {
@@ -40,7 +40,7 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
   "infraEdges": [
     {
       "from": "svc-workload-plan",
-      "to": "dynamo-workload-create",
+      "to": "mongo-workload-create",
       "label": "write plan",
       "crud": ["create"]
     },

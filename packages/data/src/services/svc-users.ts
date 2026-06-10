@@ -32,7 +32,7 @@ const svc_users: ConnectivityService = ConnectivityServiceSchema.parse({
         },
         {
           "type": "postgresql",
-          "name": "svc_users"
+          "name": "skelloapp RDS read-replica (db_url_svc_users-ro)"
         }
       ]
     },
@@ -54,7 +54,7 @@ const svc_users: ConnectivityService = ConnectivityServiceSchema.parse({
         },
         {
           "type": "postgresql",
-          "name": "svc_users"
+          "name": "skelloapp RDS read-replica (db_url_svc_users-ro)"
         }
       ]
     },
@@ -84,7 +84,7 @@ const svc_users: ConnectivityService = ConnectivityServiceSchema.parse({
         },
         {
           "type": "postgresql",
-          "name": "svc_users"
+          "name": "skelloapp RDS read-replica (db_url_svc_users-ro)"
         }
       ]
     },
@@ -201,8 +201,8 @@ const svc_users: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "type": "postgresql",
-      "name": "svc_users",
-      "description": "User accounts and capability grants (relational)"
+      "name": "skelloapp RDS read-replica (db_url_svc_users-ro)",
+      "description": "NOT an owned store — read-only access to the monolith's RDS replica with a dedicated svc_users credential (SSM /skl/{env}/skelloapp/rds/db_url_svc_users-ro; SkelloAppUserEntity, licenses, prospects). The 'postgresql svc_users' box on the 2026-04 board is this replica. Corrected 2026-06-10."
     }
   ]
 })

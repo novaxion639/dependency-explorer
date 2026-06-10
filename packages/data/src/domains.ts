@@ -97,6 +97,7 @@ const domains: Domain[] = z.array(DomainSchema).parse([
       'svc-modularisation',
       'svc-bff',
       'svc-shops',
+      'svc-websockets',
       'svc-websockets-v2',
     ],
     dataEntities: ['User', 'Shop', 'FeatureFlag'],

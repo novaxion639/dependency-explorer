@@ -49,9 +49,9 @@ describe('connections', () => {
     }
   })
 
-  it('have unique from→to pairs', () => {
-    const pairs = connections.map(c => `${c.from}→${c.to}`)
-    expect(new Set(pairs).size).toBe(pairs.length)
+  it('have unique from→to:protocol triples (multi-channel pairs are real — e.g. skello-app talks REST and shop-merge SNS to the same service)', () => {
+    const triples = connections.map(c => `${c.from}→${c.to}:${c.protocol}`)
+    expect(new Set(triples).size).toBe(triples.length)
   })
 
   it('only use endpoints that exist on the target service', () => {

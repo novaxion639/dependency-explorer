@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { normalizeEndpoint, normalizeEndpointVersionless } from './endpoints'
+import { findPackageDirs } from './extractors/typescript'
 import type { SdkRegistry } from './extractors/sdk-registry'
 
 /**
@@ -82,7 +83,7 @@ export function verifySdkUsage(
   const repoContents = (repo: string) => {
     if (!contentCache.has(repo)) {
       const root = path.join(repoBase, repo)
-      const files = walkSources(path.join(root, 'src'))
+      const files = findPackageDirs(root).flatMap(d => walkSources(path.join(d, 'src')))
       const loaded: Array<{ rel: string; content: string }> = []
       for (const f of files) {
         try {

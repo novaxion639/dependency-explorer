@@ -144,7 +144,7 @@ export function buildConnectivityGraph(
     const isAsync = conn.communicationType === 'async'
     const strokeColor = isAsync ? '#e0761b' : '#4f6ef7'
     edges.push({
-      id: `${conn.from}→${conn.to}`,
+      id: `${conn.from}→${conn.to}:${conn.protocol}`,
       source: conn.from,
       target: conn.to,
       type: 'connectivityEdge',
@@ -159,7 +159,7 @@ export function buildConnectivityGraph(
     const isAsync = conn.communicationType === 'async'
     const strokeColor = isAsync ? '#e0761b' : '#818cf8'
     edges.push({
-      id: `${conn.from}→${conn.to}`,
+      id: `${conn.from}→${conn.to}:${conn.protocol}`,
       source: conn.from,
       target: conn.to,
       type: 'connectivityEdge',

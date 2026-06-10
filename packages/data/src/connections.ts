@@ -186,9 +186,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "to": "svc-search",
     "sdkPackage": "@skelloapp/svc-search-sdk",
     "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Indexes time tracker entries for project search",
+    "protocol": "mongodb",
+    "authType": "internal",
+    "description": "Reads raw shift and poste replica collections from svc-search's shared MongoDB over VPC for labour-law counter computation (RawShiftRepository, RawPosteRepository; SSM svcSearch/MONGO_DB_*). The SDK is the collection DTO contract — there is no HTTP call. (Corrected 2026-06-10: previous 'indexes tracker entries via REST' was invented.)",
     "usedEndpoints": []
   },
   {
@@ -196,9 +196,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "to": "svc-search",
     "sdkPackage": "@skelloapp/svc-search-sdk",
     "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Indexes shop locations for global search",
+    "protocol": "mongodb",
+    "authType": "internal",
+    "description": "Reads raw shop and shift replica collections from svc-search's shared MongoDB over VPC (RawShopRepository, ShiftRepository — MissionWage/MissionHours processors; SSM svcSearch/MONGO_DB_*). The SDK is the collection DTO contract — there is no HTTP call. (Corrected 2026-06-10: previous 'indexes shop locations via REST' was invented.)",
     "usedEndpoints": []
   },
   {
@@ -206,9 +206,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "to": "svc-search",
     "sdkPackage": "@skelloapp/svc-search-sdk",
     "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Indexes KPI snapshots for analytics search",
+    "protocol": "mongodb",
+    "authType": "internal",
+    "description": "Reads raw shop replica collections from svc-search's shared MongoDB over VPC for KPI computation (RawShopRepository; env SVC_SEARCH_MONGO_DB_URI from SSM svcSearch/MONGO_DB_URI). The SDK is the collection DTO contract — there is no HTTP call. (Corrected 2026-06-10: previous 'indexes KPI snapshots via REST' was invented; confirms the 2026 SvcKpis board.)",
     "usedEndpoints": []
   },
   {
@@ -216,9 +216,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "to": "svc-search",
     "sdkPackage": "@skelloapp/svc-search-sdk",
     "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Reads shifts and postes directly from svc-search's MongoDB over VPC for eligibility computation and replacement candidate ranking (no HTTP — ShiftRepository + PosteRepository direct DB access)",
+    "protocol": "mongodb",
+    "authType": "internal",
+    "description": "Reads shifts and postes directly from svc-search's MongoDB over VPC for eligibility computation and replacement candidate ranking (no HTTP — ShiftRepository + PosteRepository direct DB access; SSM svcSearch/MONGO_DB_NAME)",
     "usedEndpoints": []
   },
   {
@@ -226,8 +226,8 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "to": "svc-search",
     "sdkPackage": "@skelloapp/svc-search-sdk",
     "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
+    "protocol": "mongodb",
+    "authType": "internal",
     "description": "Reads shifts and postes directly from svc-search's MongoDB over VPC (no HTTP — ShiftRepository + PosteRepository direct DB access)",
     "usedEndpoints": []
   },
@@ -977,9 +977,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "to": "svc-search",
     "sdkPackage": "@skelloapp/svc-search-sdk",
     "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Consumes svc-search API (SDK client; endpoints used not yet mapped)",
+    "protocol": "mongodb",
+    "authType": "internal",
+    "description": "Reads raw contract replica collections from svc-search's shared MongoDB over VPC (ActiveContractManager; SSM svcSearch/MONGO_DB_*). The SDK is the collection DTO contract — there is no HTTP call. (Corrected 2026-06-10.)",
     "usedEndpoints": []
   },
   {
@@ -1028,10 +1028,10 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "from": "svc-search",
     "to": "skello-app",
     "sdkPackage": "@skelloapp/skello-app-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Search replication reads monolith data (SDK client; endpoints used not yet mapped)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Replicates monolith tables (shops, shifts, contracts, employees…) into its raw Mongo collections via DMS CDC from the monolith RDS — there is no API call. The skello-app-sdk import is a shared constant only (BodySizeMapping in BaseEmployeeExtraInfoEntity). (Corrected 2026-06-10: previous 'reads monolith data via SDK REST' was wrong.)",
     "usedEndpoints": []
   },
   {
@@ -1052,16 +1052,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Workload plan reads monolith planning data (SDK client; endpoints used not yet mapped)",
-    "usedEndpoints": []
-  },
-  {
-    "from": "svc-workload-plan",
-    "to": "svc-search",
-    "sdkPackage": "@skelloapp/svc-search-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Consumes svc-search API (SDK client; endpoints used not yet mapped)",
     "usedEndpoints": []
   },
   {
@@ -1150,6 +1140,169 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "usedEndpoints": [
       "api-documents-status"
     ]
+  },
+  {
+    "from": "svc-skello-assistant",
+    "to": "svc-billing-automation",
+    "sdkPackage": "@skelloapp/svc-billing-automation-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "Freemium AI-agent credits: checks and decrements the organisation's credit balance before/after each chat (BillingAutomationClient — getCreditBalanceWithApiKey/useCredit, featureKey 'ai_agent'; env SVC_BILLING_AUTOMATION_API_URL). (Restored 2026-06-10: previously retired for lack of evidence — the dep lives in the nested serverless/package.json the scanner did not read; the 2026 Freemium board contested the retirement and was right.)",
+    "usedEndpoints": [
+      "api-get-credit-balance",
+      "api-use-credit-balance"
+    ]
+  },
+  {
+    "from": "svc-skello-assistant",
+    "to": "svc-documents-v2",
+    "sdkPackage": "@skelloapp/svc-documents-v2-client",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Assistant document tools read employee documents through the docs-v2 client (tools/Repository/Http/DocumentRepository — ContractAgentManager consumes document content and mime types)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-skello-assistant",
+    "to": "svc-documents-esignature",
+    "sdkPackage": "@skelloapp/svc-esignature-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Assistant contract tools poll e-signature status (tools/Repository/Http/DocumentEsignaturesRepository, DocumentsStatusDto). A LIVE caller on the decommission-watch service — any retirement plan must account for it.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-skello-assistant",
+    "to": "svc-search",
+    "sdkPackage": "@skelloapp/svc-search-sdk",
+    "communicationType": "sync",
+    "protocol": "mongodb",
+    "authType": "internal",
+    "description": "Agent employee tools read the employees replica collection from svc-search's shared MongoDB over VPC (tools/Repository/Mongo/Agents/EmployeeRepository; dedicated connection via MONGO_DB_SVC_SEARCH_URI). The SDK is the collection DTO contract — there is no HTTP call.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-skello-assistant",
+    "to": "svc-shifts",
+    "sdkPackage": "@skelloapp/svc-shifts-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "MCP shift/absence/worked-hours tools call svc-shifts (mcp-server/clients/SvcShiftsClient — SVC_SHIFTS_URI + SVC_SHIFTS_API_KEY; GetEmployeesForShifts, ShiftDetails)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-skello-assistant",
+    "to": "svc-intelligence",
+    "sdkPackage": "MongooseInstance (MONGO_DB_URI → svc-intelligence Mongo)",
+    "communicationType": "sync",
+    "protocol": "mongodb",
+    "authType": "internal",
+    "description": "Stores chat conversations and LangGraph checkpoints in svc-intelligence's MongoDB ('FOR continuity we keep using svc int mongo db' — MongooseInstance.ts; collections: conversations, checkpoints, checkpoint_writes with TTL indexes). Shared-store coupling, not an API call.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-app-front",
+    "to": "svc-websockets-v2",
+    "sdkPackage": "@skelloapp/svc-websockets-v2-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Front subscribes to real-time topics through the websockets-v2 SDK (value import in the front workspaces); the push channel itself is the v2 WebSocket API",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-workload-plan",
+    "to": "svc-search",
+    "sdkPackage": "@skelloapp/svc-search-sdk",
+    "communicationType": "sync",
+    "protocol": "mongodb",
+    "authType": "internal",
+    "description": "Reads raw shop replica collections from svc-search's shared MongoDB over VPC (Repository/MongoDB/RawShopRepository; SSM svcSearch/MONGO_DB_NAME). The SDK is the collection DTO contract — there is no HTTP call.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-app",
+    "to": "svc-punch",
+    "sdkPackage": "ShopMergeService → SNS_MERGE_SHOP_ARN (SNS)",
+    "communicationType": "async",
+    "protocol": "sns",
+    "authType": "internal",
+    "description": "Shop-merge fan-out: ShopMergeService (triggered by Shops::MergeShopsJob, Sidekiq) publishes to the MergeShop SNS topic; svc-punch's mergeShop SQS queue is subscribed (serverless.ts pulls skelloApp/SNS_MERGE_SHOP_ARN from SSM)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-app",
+    "to": "svc-kpis-v2",
+    "sdkPackage": "ShopMergeService → SNS_MERGE_SHOP_ARN (SNS)",
+    "communicationType": "async",
+    "protocol": "sns",
+    "authType": "internal",
+    "description": "Shop-merge fan-out: ShopMergeService publishes to the MergeShop SNS topic; svc-kpis-v2's SqsMergeShop queue is subscribed (SnsMergeShopSubscription in serverless resources)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-app",
+    "to": "svc-workload-plan",
+    "sdkPackage": "ShopMergeService → SNS_MERGE_SHOP_ARN (SNS)",
+    "communicationType": "async",
+    "protocol": "sns",
+    "authType": "internal",
+    "description": "Shop-merge fan-out: ShopMergeService publishes to the MergeShop SNS topic; svc-workload-plan's MergeShopSqs queue is subscribed",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-app",
+    "to": "svc-requests",
+    "sdkPackage": "ShopMergeService → SNS_MERGE_SHOP_ARN (SNS)",
+    "communicationType": "async",
+    "protocol": "sns",
+    "authType": "internal",
+    "description": "Shop-merge fan-out: ShopMergeService publishes to the MergeShop SNS topic; svc-requests' sqsMergeShop queue is subscribed. (The 2026 boards drew svc-documents-v2 as a fifth consumer — no MergeShop queue or handler exists in its code.)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-users",
+    "to": "skello-app",
+    "sdkPackage": "AuthorizerSkelloAppRepository (SKELLO_APP_API_URL)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "Strangler write-back/read-back: the Lambda authorizer validates against the monolith API (SSM skelloApp/SKELLO_APP_API_URL + SKELLO_APP_USERS_API_KEY). svc-users ALSO reads the monolith RDS read-only replica directly (SSM /skl/{env}/skelloapp/rds/db_url_svc_users-ro — SkelloAppUserEntity, licenses, prospects): the 'postgresql svc_users' store drawn on the 2026-04 board is the monolith's replica, not an owned database.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-requests",
+    "to": "skello-app",
+    "sdkPackage": "SkelloAppManager (SKELLO_APP_API_URL)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "Strangler write-back: approved leave requests create absence shifts in the monolith (CreateShiftsJobHandler → SkelloAppManager; SSM skelloApp/SKELLO_APP_API_URL + SKELLO_APP_REQUESTS_API_KEY — the POST /private/shifts edge the 2026-03 SvcRequests board drew)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-intelligence",
+    "to": "svc-websockets",
+    "sdkPackage": "WebsocketSqsRepository → websocket-genericMessage-{stage} (SQS)",
+    "communicationType": "async",
+    "protocol": "sqs",
+    "authType": "iam-role",
+    "description": "Pushes document-extraction progress to clients through the LEGACY websockets service's genericMessage queue (WEBSOCKET_GENERIC_SQS_URL) — not yet migrated to websockets-v2 (whose only ingestion queue is websocket-topicMessage)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-billing-automation",
+    "to": "svc-websockets",
+    "sdkPackage": "SfnPushWebsocketJobHandler → websocket-pingTypeAndUuid-{stage} (SQS)",
+    "communicationType": "async",
+    "protocol": "sqs",
+    "authType": "iam-role",
+    "description": "Step-function billing flows ping clients through the LEGACY websockets service's pingTypeAndUuid queue (WEBSOCKET_SQS_URL in stepFunctions env) — not yet migrated to websockets-v2",
+    "usedEndpoints": []
   }
 ])
 

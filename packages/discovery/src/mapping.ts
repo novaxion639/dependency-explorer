@@ -14,6 +14,13 @@ export const IGNORED_SDKS: Record<string, string> = {
   '@skelloapp/data-platform-svc-ingestion-sdk': 'data-platform ingestion — external to this map',
 }
 
+// SDKs that are pure data contracts over a SHARED DATABASE — importing them
+// means direct collection access (Mongo over VPC), never an HTTP call.
+// Verified 2026-06-10: svc-search-sdk exports only Raw*Dto/Entity attributes
+// (no HTTP client, no connection code); consumers connect with their own
+// Mongo client using SSM svcSearch/MONGO_DB_* parameters.
+export const MONGO_CONTRACT_SDKS = new Set(['@skelloapp/svc-search-sdk'])
+
 // SDKs whose target does not follow the `@skelloapp/svc-<name>-sdk` convention.
 export const SDK_SERVICE_OVERRIDES: Record<string, string> = {
   '@skelloapp/skello-app-sdk': 'skello-app',

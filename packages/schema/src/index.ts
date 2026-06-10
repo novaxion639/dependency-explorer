@@ -28,7 +28,9 @@ export const ServiceTypeSchema = z.enum([
 
 export const CommunicationTypeSchema = z.enum(['sync', 'async'])
 
-export const ProtocolSchema = z.enum(['rest', 'sqs', 'sns', 'kinesis', 'cdc', 'webhook', 'grpc'])
+// 'mongodb'/'postgresql' = direct shared-database access (no API between the services);
+// the SDK, when present, is only the data contract over the shared collections/tables.
+export const ProtocolSchema = z.enum(['rest', 'sqs', 'sns', 'kinesis', 'cdc', 'webhook', 'grpc', 'mongodb', 'postgresql'])
 
 export const AuthTypeSchema = z.enum(['jwt', 'api-key', 'internal', 'iam-role', 'none'])
 

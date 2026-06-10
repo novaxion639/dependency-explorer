@@ -19,10 +19,6 @@ const svc_workload_plan: ConnectivityService = ConnectivityServiceSchema.parse({
       },
       "awsCalls": [
         {
-          "type": "dynamodb",
-          "name": "svcWorkloadPlan-{env}"
-        },
-        {
           "type": "mongodb",
           "name": "svc-workload-plan"
         }
@@ -49,10 +45,6 @@ const svc_workload_plan: ConnectivityService = ConnectivityServiceSchema.parse({
       },
       "awsCalls": [
         {
-          "type": "dynamodb",
-          "name": "svcWorkloadPlan-{env}"
-        },
-        {
           "type": "mongodb",
           "name": "svc-workload-plan"
         }
@@ -70,10 +62,6 @@ const svc_workload_plan: ConnectivityService = ConnectivityServiceSchema.parse({
         "404": "Not found"
       },
       "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcWorkloadPlan-{env}"
-        },
         {
           "type": "mongodb",
           "name": "svc-workload-plan"
@@ -101,10 +89,6 @@ const svc_workload_plan: ConnectivityService = ConnectivityServiceSchema.parse({
       },
       "awsCalls": [
         {
-          "type": "dynamodb",
-          "name": "svcWorkloadPlan-{env}"
-        },
-        {
           "type": "mongodb",
           "name": "svc-workload-plan"
         }
@@ -130,10 +114,6 @@ const svc_workload_plan: ConnectivityService = ConnectivityServiceSchema.parse({
         "400": "Validation error"
       },
       "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcWorkloadPlan-{env}"
-        },
         {
           "type": "mongodb",
           "name": "svc-workload-plan"
@@ -211,14 +191,9 @@ const svc_workload_plan: ConnectivityService = ConnectivityServiceSchema.parse({
   ],
   "databases": [
     {
-      "type": "dynamodb",
-      "name": "svcWorkloadPlan-{env}",
-      "description": "Workload plans and staffing forecast records"
-    },
-    {
       "type": "mongodb",
       "name": "svc-workload-plan",
-      "description": "Historical workload data for forecast models"
+      "description": "Primary store — workload plans and rules (WorkloadPlanRepository/WorkloadRuleRepository on the service's own MongoDB, SSM {serviceName}/MONGO_DB_URI). The DynamoDB→MongoDB migration the 2026 board described is complete in code: the DynamoDB repository class remains in the tree but is no longer bound in the container (corrected 2026-06-10)."
     },
     {
       "type": "sqs",

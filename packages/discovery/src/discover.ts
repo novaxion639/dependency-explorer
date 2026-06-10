@@ -24,7 +24,7 @@ import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap } from '@dependency-explorer/data'
 import type { DiscoveredOverlay } from '@dependency-explorer/schema'
-import { IGNORED_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES } from './mapping'
+import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
 import { extractRailsMonolith } from './extractors/rails'
@@ -216,7 +216,7 @@ function run(): Report {
       // an unused (declared-only) dependency is never grounds to PROPOSE a
       // new connection — it only shows up in the weak-evidence section
       if (!existing && usage === 'declared-only') continue
-      addEvidence(repo, target, `package.json: ${pkg} (${usage} import)`, `rest (SDK client, ${usage} import)`)
+      addEvidence(repo, target, `package.json: ${pkg} (${usage} import)`, MONGO_CONTRACT_SDKS.has(pkg) ? `mongodb (shared collections, ${usage} import of the DTO contract)` : `rest (SDK client, ${usage} import)`)
     }
   }
 

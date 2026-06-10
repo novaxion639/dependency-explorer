@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-10T16:34:27.536Z",
+  "generatedAt": "2026-06-10T21:12:27.909Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
@@ -279,6 +279,94 @@
     }
   },
   "connections": {
+    "skello-app-front→skello-app": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+    },
+    "skello-app-front→svc-automatic-scheduling": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-automatic-scheduling-sdk (value import); frontend: env VUE_APP_SVC_AUTOMATIC_SCHEDULING_API_URL used in 6 files"
+    },
+    "skello-app-front→svc-bff": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-bff-sdk (value import); frontend: env VUE_APP_SVC_BFF_API_URL used in 7 files"
+    },
+    "skello-app-front→svc-billing-automation": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-billing-automation-sdk (value import); frontend: env VUE_APP_SVC_BILLING_AUTOMATION_API_URL used in 7 files"
+    },
+    "skello-app-front→svc-documents-v2": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import); frontend: env SVC_DOCUMENTS_V2_URL, VUE_APP_SVC_DOCUMENTS_V2_API_URL used in 7 files"
+    },
+    "skello-app-front→svc-employees": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-employees-client (value import); frontend: env SVC_EMPLOYEES_URL, VUE_APP_SVC_EMPLOYEES_API_URL used in 4 files"
+    },
+    "skello-app-front→svc-enrollment": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-enrollment-sdk (value import); frontend: env VUE_APP_SVC_ENROLLMENT_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-events": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-events-sdk (value import); frontend: env VUE_APP_SVC_EVENTS_API_URL used in 3 files"
+    },
+    "skello-app-front→svc-hris": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-hris-sdk (value import); frontend: env VUE_APP_SVC_HRIS_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-intelligence": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-intelligence-sdk (value import); frontend: env SVC_INTELLIGENCE_URL, VUE_APP_SVC_INTELLIGENCE_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-kpis-v2": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-kpis-v2-sdk (value import); frontend: env VUE_APP_SVC_KPIS_V2_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-labour-laws": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-labour-laws-sdk (value import); frontend: env LLL_SERVICE_URL, VUE_APP_SVC_LABOUR_LAWS_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-pos": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-pos-sdk (value import); frontend: env VUE_APP_SVC_POS_API_URL used in 4 files"
+    },
+    "skello-app-front→svc-punch": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-punch-sdk (value import); frontend: env SVC_PUNCH_URL, VUE_APP_SVC_PUNCH_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-reports": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-reports-sdk (value import); frontend: env VUE_APP_SVC_REPORTS_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-requests": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-requests-sdk (value import); frontend: env VUE_APP_SVC_REQUESTS_API_URL used in 7 files"
+    },
+    "skello-app-front→svc-shops": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-shops-sdk (value import); frontend: env VUE_APP_SVC_SHOPS_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-skello-assistant": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-skello-assistant-sdk (value import); frontend: env VUE_APP_SVC_SKELLO_ASSISTANT_API_URL used in 7 files"
+    },
+    "skello-app-front→svc-trackers": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-trackers-sdk (value import); frontend: env VUE_APP_SVC_TRACKERS_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-users": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-users-sdk (value import); frontend: env SVC_USERS_BASE_URL, VUE_APP_SVC_USERS_API_URL used in 5 files"
+    },
+    "skello-app-front→svc-websockets-v2": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-websockets-v2-sdk (value import)"
+    },
+    "skello-app-front→svc-workload-plan": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/workload-plan-sdk (value import); frontend: env SVC_WORKLOAD_PLAN_API_URL, VUE_APP_SVC_WORKLOAD_PLAN_API_URL used in 3 files"
+    },
     "superadmin→svc-billing-automation": {
       "lastVerified": "2026-06-10",
       "evidence": "package.json: @skelloapp/svc-billing-automation-sdk (value import)"
@@ -479,6 +567,26 @@
       "lastVerified": "2026-06-10",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
     },
+    "svc-skello-assistant→svc-billing-automation": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-billing-automation-sdk (value import)"
+    },
+    "svc-skello-assistant→svc-documents-v2": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import)"
+    },
+    "svc-skello-assistant→svc-documents-esignature": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-esignature-sdk (value import)"
+    },
+    "svc-skello-assistant→svc-search": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
+    },
+    "svc-skello-assistant→svc-shifts": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-shifts-sdk (value import)"
+    },
     "svc-trackers→skello-app": {
       "lastVerified": "2026-06-10",
       "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
@@ -567,89 +675,9 @@
       "lastVerified": "2026-06-10",
       "evidence": "app/services/microservices/user_service.rb"
     },
-    "skello-app-front→svc-labour-laws": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env LLL_SERVICE_URL, VUE_APP_SVC_LABOUR_LAWS_API_URL used in 2 files"
-    },
-    "skello-app-front→svc-documents-v2": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env SVC_DOCUMENTS_V2_URL, VUE_APP_SVC_DOCUMENTS_V2_API_URL used in 7 files"
-    },
-    "skello-app-front→svc-employees": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env SVC_EMPLOYEES_URL, VUE_APP_SVC_EMPLOYEES_API_URL used in 4 files"
-    },
-    "skello-app-front→svc-intelligence": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env SVC_INTELLIGENCE_URL, VUE_APP_SVC_INTELLIGENCE_API_URL used in 2 files"
-    },
-    "skello-app-front→svc-punch": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env SVC_PUNCH_URL, VUE_APP_SVC_PUNCH_API_URL used in 2 files"
-    },
-    "skello-app-front→svc-users": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env SVC_USERS_BASE_URL, VUE_APP_SVC_USERS_API_URL used in 5 files"
-    },
-    "skello-app-front→svc-workload-plan": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env SVC_WORKLOAD_PLAN_API_URL, VUE_APP_SVC_WORKLOAD_PLAN_API_URL used in 3 files"
-    },
-    "skello-app-front→svc-automatic-scheduling": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_AUTOMATIC_SCHEDULING_API_URL used in 6 files"
-    },
-    "skello-app-front→svc-kpis-v2": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_KPIS_V2_API_URL used in 2 files"
-    },
-    "skello-app-front→svc-bff": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_BFF_API_URL used in 7 files"
-    },
-    "skello-app-front→svc-billing-automation": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_BILLING_AUTOMATION_API_URL used in 7 files"
-    },
-    "skello-app-front→svc-events": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_EVENTS_API_URL used in 3 files"
-    },
-    "skello-app-front→svc-hris": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_HRIS_API_URL used in 2 files"
-    },
-    "skello-app-front→svc-pos": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_POS_API_URL used in 4 files"
-    },
-    "skello-app-front→svc-requests": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_REQUESTS_API_URL used in 7 files"
-    },
     "skello-app-front→svc-documents-esignature": {
       "lastVerified": "2026-06-10",
       "evidence": "frontend: env VUE_APP_SVC_ESIGNATURE_API_URL used in 4 files"
-    },
-    "skello-app-front→svc-shops": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_SHOPS_API_URL used in 2 files"
-    },
-    "skello-app-front→svc-enrollment": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_ENROLLMENT_API_URL used in 2 files"
-    },
-    "skello-app-front→svc-reports": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_REPORTS_API_URL used in 2 files"
-    },
-    "skello-app-front→svc-skello-assistant": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_SKELLO_ASSISTANT_API_URL used in 7 files"
-    },
-    "skello-app-front→svc-trackers": {
-      "lastVerified": "2026-06-10",
-      "evidence": "frontend: env VUE_APP_SVC_TRACKERS_API_URL used in 2 files"
     }
   },
   "endpoints": {

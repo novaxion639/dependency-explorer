@@ -33,6 +33,7 @@ import svc_documents_esignature from './services/svc-documents-esignature'
 import svc_workload_plan from './services/svc-workload-plan'
 import svc_feature_flags from './services/svc-feature-flags'
 import svc_payroll from './services/svc-payroll'
+import svc_websockets from './services/svc-websockets'
 import svc_websockets_v2 from './services/svc-websockets-v2'
 import superadmin from './services/superadmin'
 import skello_app from './services/skello-app'
@@ -131,6 +132,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   svc_workload_plan,
   svc_feature_flags,
   svc_payroll,
+  svc_websockets,
   svc_websockets_v2,
   superadmin,
   skello_app,

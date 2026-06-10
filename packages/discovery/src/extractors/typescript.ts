@@ -79,6 +79,31 @@ export function classifyImports(content: string, pkg: string): 'value' | 'type-o
   return sawTypeOnly ? 'type-only' : 'none'
 }
 
+/**
+ * Directories holding a package.json, repo root included. Some repos are
+ * multi-package without a root manifest (e.g. svc-skello-assistant keeps its
+ * deployable under serverless/) — scanning only the root misses their SDK deps.
+ */
+export function findPackageDirs(repoPath: string, maxDepth = 3): string[] {
+  const out: string[] = []
+  const walk = (dir: string, depth: number) => {
+    let entries: fs.Dirent[]
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true })
+    } catch {
+      return
+    }
+    if (entries.some(e => e.isFile() && e.name === 'package.json')) out.push(dir)
+    if (depth >= maxDepth) return
+    for (const e of entries) {
+      if (!e.isDirectory() || e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) continue
+      walk(path.join(dir, e.name), depth + 1)
+    }
+  }
+  walk(repoPath, 0)
+  return out
+}
+
 function walkSourceFiles(dir: string, out: string[] = []): string[] {
   let entries: fs.Dirent[]
   try {
@@ -95,10 +120,10 @@ function walkSourceFiles(dir: string, out: string[] = []): string[] {
   return out
 }
 
-function classifySdkUsage(repoPath: string, sdkPackages: string[]): Record<string, SdkUsage> {
+function classifySdkUsage(pkgDirs: string[], sdkPackages: string[]): Record<string, SdkUsage> {
   const usage: Record<string, SdkUsage> = Object.fromEntries(sdkPackages.map(p => [p, 'declared-only' as SdkUsage]))
   if (!sdkPackages.length) return usage
-  const files = walkSourceFiles(path.join(repoPath, 'src'))
+  const files = pkgDirs.flatMap(dir => walkSourceFiles(path.join(dir, 'src')))
   const pending = new Set(sdkPackages)
   for (const file of files) {
     if (!pending.size) break
@@ -121,25 +146,33 @@ function classifySdkUsage(repoPath: string, sdkPackages: string[]): Record<strin
   return usage
 }
 
-/** Extract facts from a TypeScript/Node repo. Returns null when there is no package.json. */
+/** Extract facts from a TypeScript/Node repo. Returns null when no package.json exists anywhere. */
 export function extractTsRepo(repoBase: string, repo: string): TsRepoFacts | null {
   const repoPath = path.join(repoBase, repo)
-  const pkg = readJson(path.join(repoPath, 'package.json'))
-  if (!pkg) return null
+  const pkgDirs = findPackageDirs(repoPath)
+  if (!pkgDirs.length) return null
 
-  const deps = {
-    ...(pkg.dependencies as Record<string, string> | undefined ?? {}),
-    ...(pkg.devDependencies as Record<string, string> | undefined ?? {}),
+  const sdkSet = new Set<string>()
+  let repoUrlRaw: unknown
+  for (const dir of pkgDirs) {
+    const pkg = readJson(path.join(dir, 'package.json'))
+    if (!pkg) continue
+    if (pkg.repository && (dir === repoPath || repoUrlRaw === undefined)) repoUrlRaw = pkg.repository
+    const deps = {
+      ...(pkg.dependencies as Record<string, string> | undefined ?? {}),
+      ...(pkg.devDependencies as Record<string, string> | undefined ?? {}),
+    }
+    for (const d of Object.keys(deps)) {
+      if (d.startsWith('@skelloapp/') && (d.includes('-sdk') || d.includes('-client'))) sdkSet.add(d)
+    }
   }
-  const sdkPackages = Object.keys(deps)
-    .filter(d => d.startsWith('@skelloapp/') && (d.includes('-sdk') || d.includes('-client')))
-    .sort()
+  const sdkPackages = [...sdkSet].sort()
 
   return {
     repo,
-    repoUrl: normalizeRepoUrl(pkg.repository, repo),
+    repoUrl: normalizeRepoUrl(repoUrlRaw, repo),
     sdkPackages,
-    sdkUsage: classifySdkUsage(repoPath, sdkPackages),
+    sdkUsage: classifySdkUsage(pkgDirs, sdkPackages),
     codeowners: extractCodeowners(repoPath),
   }
 }
