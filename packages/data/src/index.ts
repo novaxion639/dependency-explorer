@@ -32,6 +32,8 @@ import svc_skello_assistant from './services/svc-skello-assistant'
 import svc_documents_esignature from './services/svc-documents-esignature'
 import svc_workload_plan from './services/svc-workload-plan'
 import svc_feature_flags from './services/svc-feature-flags'
+import svc_payroll from './services/svc-payroll'
+import svc_websockets_v2 from './services/svc-websockets-v2'
 import superadmin from './services/superadmin'
 import skello_app from './services/skello-app'
 import skello_app_front from './services/skello-app-front'
@@ -128,6 +130,8 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   svc_documents_esignature,
   svc_workload_plan,
   svc_feature_flags,
+  svc_payroll,
+  svc_websockets_v2,
   superadmin,
   skello_app,
   skello_app_front,

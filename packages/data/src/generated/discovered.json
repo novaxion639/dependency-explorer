@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-10T15:28:35.819Z",
+  "generatedAt": "2026-06-10T16:10:07.016Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
@@ -166,6 +166,14 @@
         "@skelloapp/team-dev"
       ]
     },
+    "svc-payroll": {
+      "repoUrl": "https://github.com/skelloapp/svc-payroll",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
     "svc-pos": {
       "repoUrl": "https://github.com/skelloapp/svc-pos",
       "githubTeams": [
@@ -250,6 +258,16 @@
         "@skelloapp/team-dev"
       ]
     },
+    "svc-websockets-v2": {
+      "repoUrl": "https://github.com/skelloapp/svc-websockets-v2",
+      "teamId": "team-salsa",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev",
+        "@skelloapp/team-salsa"
+      ]
+    },
     "svc-workload-plan": {
       "repoUrl": "https://github.com/skelloapp/svc-workload-plan",
       "githubTeams": [
@@ -304,6 +322,10 @@
     "svc-automatic-scheduling→svc-search": {
       "lastVerified": "2026-06-10",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
+    },
+    "svc-automatic-scheduling→svc-websockets-v2": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-websockets-v2-sdk (value import)"
     },
     "svc-automatic-scheduling→svc-workload-plan": {
       "lastVerified": "2026-06-10",
@@ -428,6 +450,14 @@
     "svc-kpis-v2→svc-search": {
       "lastVerified": "2026-06-10",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
+    },
+    "svc-payroll→svc-communications-v2": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
+    },
+    "svc-payroll→svc-hris": {
+      "lastVerified": "2026-06-10",
+      "evidence": "package.json: @skelloapp/svc-hris-sdk (value import)"
     },
     "svc-requests→svc-communications-v2": {
       "lastVerified": "2026-06-10",
@@ -1970,6 +2000,34 @@
     "svc-feature-flags#api-features-list": {
       "lastVerified": "2026-06-10",
       "evidence": "serverless static-scan: GET /features"
+    },
+    "svc-payroll#api-companies-list": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: GET /v1/providers/{providerKey}/companies"
+    },
+    "svc-payroll#api-company-mapping-upsert": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: POST /v1/providers/{providerKey}/company-mapping"
+    },
+    "svc-payroll#api-company-mapping-get": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: GET /v1/providers/{providerKey}/company-mapping"
+    },
+    "svc-payroll#api-sync-trigger": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: POST /v1/sync/trigger"
+    },
+    "svc-payroll#api-sync-status": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: GET /v1/sync/status"
+    },
+    "svc-payroll#api-evps-list": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: GET /v1/evps"
+    },
+    "svc-payroll#api-evps-list-mapped": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: GET /v1/evps/mapped"
     }
   }
 }

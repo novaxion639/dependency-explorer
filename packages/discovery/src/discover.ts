@@ -47,6 +47,7 @@ const APPLY_MODE = process.argv.includes('--apply')
 
 const serviceNames = new Set(connectivityMap.services.map(s => s.name))
 const connectionKeys = new Set(connectivityMap.connections.map(c => `${c.from}→${c.to}`))
+const connectionsByKey = new Map(connectivityMap.connections.map(c => [`${c.from}→${c.to}`, c]))
 const slugToTeamId = new Map<string, string>()
 for (const team of connectivityMap.teams ?? []) {
   for (const slug of team.githubTeams ?? []) slugToTeamId.set(slug, team.id)
@@ -202,11 +203,19 @@ function run(): Report {
       }
       if (target === repo) continue
       const usage = tsFacts?.sdkUsage[pkg] ?? 'declared-only'
+      // type-only import + an SQS connection is the documented DTO-contract
+      // pattern (ADR-0007 / svc-requests→svc-events) — not weak evidence.
+      const existing = connectionsByKey.get(`${repo}→${target}`)
       if (usage !== 'value') {
-        report.weakSdkEvidence.push({ from: repo, to: target, pkg, usage })
-      } else if (connectionKeys.has(`${repo}→${target}`)) {
+        if (!(usage === 'type-only' && existing?.protocol === 'sqs')) {
+          report.weakSdkEvidence.push({ from: repo, to: target, pkg, usage })
+        }
+      } else if (existing) {
         sdkValueEdges.push({ from: repo, to: target, pkg })
       }
+      // an unused (declared-only) dependency is never grounds to PROPOSE a
+      // new connection — it only shows up in the weak-evidence section
+      if (!existing && usage === 'declared-only') continue
       addEvidence(repo, target, `package.json: ${pkg} (${usage} import)`, `rest (SDK client, ${usage} import)`)
     }
   }
@@ -302,7 +311,6 @@ function run(): Report {
       packages: registry.packages.size,
       methods: [...registry.packages.values()].reduce((n, m) => n + m.length, 0),
     }
-    const connByKey = new Map(connectivityMap.connections.map(c => [`${c.from}→${c.to}`, c]))
     const endpointIdsByService = new Map(connectivityMap.services.map(s => [
       s.name,
       {
@@ -312,7 +320,7 @@ function run(): Report {
     ]))
     report.sdkUsage = verifySdkUsage(
       REPO_BASE,
-      sdkValueEdges.map(e => ({ ...e, usedEndpoints: connByKey.get(`${e.from}→${e.to}`)?.usedEndpoints ?? [] })),
+      sdkValueEdges.map(e => ({ ...e, usedEndpoints: connectionsByKey.get(`${e.from}→${e.to}`)?.usedEndpoints ?? [] })),
       registry,
       endpointIdsByService,
     )

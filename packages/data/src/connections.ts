@@ -1108,6 +1108,36 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
       "api-invite-user",
       "api-confirm-user"
     ]
+  },
+  {
+    "from": "svc-automatic-scheduling",
+    "to": "svc-websockets-v2",
+    "sdkPackage": "@skelloapp/svc-websockets-v2-sdk",
+    "communicationType": "async",
+    "protocol": "sqs",
+    "authType": "iam-role",
+    "description": "Pushes live progress notifications for auto-scheduling jobs — every SFN pipeline step enqueues SDK TopicMessageModel payloads to the websocket-topicMessage queue (WebsocketSqsRepository), fanned out to the frontend over WebSocket",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-payroll",
+    "to": "svc-hris",
+    "sdkPackage": "@skelloapp/svc-hris-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Reads HRIS integration data for payroll provider/company mapping (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-payroll",
+    "to": "svc-communications-v2",
+    "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+    "communicationType": "async",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Sends payroll sync notifications through the comms HTTP-fronted SQS ingestion",
+    "usedEndpoints": []
   }
 ])
 
