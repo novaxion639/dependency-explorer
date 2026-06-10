@@ -17,9 +17,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Publishes event notifications to employees via email/push",
     "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route",
-      "bulk-create-high-priority-notification-route"
+      "bulk-create-low-priority-email-route"
     ]
   },
   {
@@ -45,9 +43,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Notifies employees when a document is ready to sign",
     "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route",
-      "bulk-create-high-priority-notification-route"
+      "bulk-create-low-priority-email-route"
     ]
   },
   {
@@ -59,7 +55,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Sends HRIS sync completion and mismatch alerts",
     "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
       "bulk-create-low-priority-email-route"
     ]
   },
@@ -86,7 +81,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "description": "Notifies employees of request approval/rejection",
     "usedEndpoints": [
       "bulk-create-high-priority-email-route",
-      "bulk-create-low-priority-email-route",
       "bulk-create-high-priority-notification-route"
     ]
   },
@@ -99,7 +93,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Sends onboarding invitation emails to new employees",
     "usedEndpoints": [
-      "bulk-create-high-priority-email-route",
       "bulk-create-low-priority-email-route"
     ]
   },
@@ -278,13 +271,11 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "from": "svc-requests",
     "to": "svc-events",
     "sdkPackage": "@skelloapp/svc-events-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Publishes request.approved and request.rejected events for downstream consumers",
-    "usedEndpoints": [
-      "api-event-create"
-    ]
+    "communicationType": "async",
+    "protocol": "sqs",
+    "authType": "iam-role",
+    "description": "Sends activity-log batches to svc-events via SQS (ActivityLogCreateSqs — events-sdk DTOs as the message contract)",
+    "usedEndpoints": []
   },
   {
     "from": "svc-hris",
@@ -314,16 +305,18 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Includes KPI summary in the composite BFF dashboard response",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "update-manual-kpis-bulk"
+    ]
   },
   {
     "from": "svc-documents-v2",
     "to": "svc-intelligence",
     "sdkPackage": "@skelloapp/svc-intelligence-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Delegates document content extraction and analysis to svc-intelligence",
+    "communicationType": "async",
+    "protocol": "sqs",
+    "authType": "iam-role",
+    "description": "Sends documents for AI data extraction via SQS (DocumentExtractDataSqsRepository — intelligence-sdk DTOs as the message contract); extraction results consumed back through analyze listener jobs",
     "usedEndpoints": []
   },
   {
@@ -369,10 +362,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "communicationType": "sync",
     "protocol": "rest",
     "authType": "jwt",
-    "description": "Initiates e-signature requests after AI document preparation",
+    "description": "Polls e-signature document status (SDK getDocumentsStatus) during document AI workflows",
     "usedEndpoints": [
-      "api-attendance-sheet-signature-reminder",
-      "api-document-signable"
+      "api-documents-status"
     ]
   },
   {
@@ -383,7 +375,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Manage subscription quotes, contracts and billing lifecycle for organisations",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "api-get-shops-quota"
+    ]
   },
   {
     "from": "superadmin",
@@ -394,8 +388,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Send high and low priority notifications to users",
     "usedEndpoints": [
-      "bulk-create-high-priority-notification-route",
-      "bulk-create-low-priority-notification-route"
+      "api-send-test-email"
     ]
   },
   {
@@ -444,7 +437,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Access punch clock data for admin oversight and auditing",
     "usedEndpoints": [
-      "api-create-clock-in-out"
+      "api-clocks-in-out-by-user-id",
+      "api-setting-read-by-shop-id-2",
+      "api-setting-partial-update-2"
     ]
   },
   {
@@ -456,8 +451,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Administer payroll-export configuration — PAM configs and automated report scheduling (PAMRework, AutomatedReportModal)",
     "usedEndpoints": [
-      "api-get-pam-configs",
-      "api-create-pam-config"
+      "api-delete-schedule-in-pam-config"
     ]
   },
   {
@@ -920,7 +914,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Fetches workload plans during scheduling context preparation (dataFetcher step)",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "api-get-workload-plans-v2"
+    ]
   },
   {
     "from": "svc-bff",
@@ -950,7 +946,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "BFF reads shift data (SDK client; endpoints used not yet mapped)",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "api-get-shift-details"
+    ]
   },
   {
     "from": "svc-bff",
@@ -970,7 +968,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Reads user accounts for billing operations (SDK client; endpoints used not yet mapped)",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "api-check-user-exists"
+    ]
   },
   {
     "from": "svc-employees",
@@ -990,7 +990,9 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Consumes svc-users API (SDK client; endpoints used not yet mapped)",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "api-invite-user"
+    ]
   },
   {
     "from": "svc-enrollment",

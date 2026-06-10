@@ -3,6 +3,41 @@ import { parseServerlessState, parseServerlessStatic } from './serverless'
 import { parseRoutesContent } from './rails-routes'
 import { parseEnvServiceUrls } from './frontend'
 import { classifyImports } from './typescript'
+import { parseSdkSource } from './sdk-registry'
+
+describe('parseSdkSource', () => {
+  it('maps methods to inline-path HTTP calls (comms style)', () => {
+    const src = `
+class EmailRepository {
+  createHighPriority(dtos) {
+    return this.client.clientWithoutRetry.post('/email/high-priority', dtos);
+  }
+  getEmailDisplay(emailId) {
+    return this.client.clientWithRetry.get(\`/email-display/\${emailId}\`);
+  }
+}`
+    expect(parseSdkSource(src)).toEqual([
+      { name: 'createHighPriority', httpMethod: 'POST', path: '/email/high-priority' },
+      { name: 'getEmailDisplay', httpMethod: 'GET', path: '/email-display/{param}' },
+    ])
+  })
+
+  it('maps methods using a url variable and generic type args (events style)', () => {
+    const src = `
+export class ActivityLogRepository extends BaseRepository {
+  public async findAll(organisationId: string, params: P): Promise<R> {
+    const url = \`\${organisationId}/activity-logs\`;
+    const response = (
+      await this.svcEventClient.client.post<CollectionWrapper<ActivityLogType>>(url, bodyParams, {})
+    ).data;
+    return response;
+  }
+}`
+    expect(parseSdkSource(src)).toEqual([
+      { name: 'findAll', httpMethod: 'POST', path: '{param}/activity-logs' },
+    ])
+  })
+})
 
 describe('classifyImports', () => {
   it('detects value imports', () => {

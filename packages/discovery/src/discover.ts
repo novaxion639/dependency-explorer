@@ -33,6 +33,8 @@ import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
 import { checkFlows, type FlowCheckResult } from './flow-check'
+import { extractSdkRegistry } from './extractors/sdk-registry'
+import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_BASE = path.resolve(__dirname, '../../../../')
@@ -80,6 +82,9 @@ interface Report {
   monolithSurface: { totalRoutes: number; resourceDeclarations: number; topSegments: Array<[string, number]> } | null
   /** SDK dependencies whose imports are type-only or absent — weak evidence, likely not runtime calls */
   weakSdkEvidence: Array<{ from: string; to: string; pkg: string; usage: string }>
+  /** call-site verification of SDK connections against the skello-libs-ts registry */
+  sdkUsage: SdkUsageFinding[]
+  sdkRegistryStats: { packages: number; methods: number } | null
   flowCheck: FlowCheckResult
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
@@ -127,6 +132,8 @@ function run(): Report {
     frontendServices: [],
     monolithSurface: null,
     weakSdkEvidence: [],
+    sdkUsage: [],
+    sdkRegistryStats: null,
     flowCheck: checkFlows(connectivityMap),
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
@@ -154,6 +161,7 @@ function run(): Report {
 
   // ── Per-repo facts: package.json, CODEOWNERS, serverless ──────────────────
   const serverlessByRepo = new Map<string, ServerlessFacts>()
+  const sdkValueEdges: Array<{ from: string; to: string; pkg: string }> = []
 
   for (const repo of repos) {
     const tsFacts: TsRepoFacts | null = extractTsRepo(REPO_BASE, repo)
@@ -192,6 +200,8 @@ function run(): Report {
       const usage = tsFacts?.sdkUsage[pkg] ?? 'declared-only'
       if (usage !== 'value') {
         report.weakSdkEvidence.push({ from: repo, to: target, pkg, usage })
+      } else if (connectionKeys.has(`${repo}→${target}`)) {
+        sdkValueEdges.push({ from: repo, to: target, pkg })
       }
       addEvidence(repo, target, `package.json: ${pkg} (${usage} import)`, `rest (SDK client, ${usage} import)`)
     }
@@ -279,6 +289,29 @@ function run(): Report {
       missingInCode: missing,
       extraInCode: meaningfulCode.length - matchedCode.size,
     })
+  }
+
+  // ── SDK call-site verification against the skello-libs-ts registry ────────
+  const registry = extractSdkRegistry(REPO_BASE)
+  if (registry) {
+    report.sdkRegistryStats = {
+      packages: registry.packages.size,
+      methods: [...registry.packages.values()].reduce((n, m) => n + m.length, 0),
+    }
+    const connByKey = new Map(connectivityMap.connections.map(c => [`${c.from}→${c.to}`, c]))
+    const endpointIdsByService = new Map(connectivityMap.services.map(s => [
+      s.name,
+      {
+        exact: new Map(s.endpoints.map(e => [normalizeEndpoint(e.method, e.path), e.id])),
+        versionless: new Map(s.endpoints.map(e => [normalizeEndpointVersionless(e.method, e.path), e.id])),
+      },
+    ]))
+    report.sdkUsage = verifySdkUsage(
+      REPO_BASE,
+      sdkValueEdges.map(e => ({ ...e, usedEndpoints: connByKey.get(`${e.from}→${e.to}`)?.usedEndpoints ?? [] })),
+      registry,
+      endpointIdsByService,
+    )
   }
 
   // ── Monolith inbound surface (informational) ───────────────────────────────
@@ -388,6 +421,25 @@ function printMarkdown(r: Report) {
 
   section('🩻 Weak SDK evidence — type-only or unused imports (likely NOT runtime calls)',
     r.weakSdkEvidence.map(w => `- ${w.from} → ${w.to} via \`${w.pkg}\` (**${w.usage}**)`))
+
+  if (r.sdkRegistryStats) {
+    console.log(`\n## 🧩 SDK call-site verification (registry: ${r.sdkRegistryStats.packages} packages, ${r.sdkRegistryStats.methods} methods)\n`)
+    const interesting = r.sdkUsage.filter(f => f.suggestedAdditions.length || f.unproven.length)
+    console.log(`${r.sdkUsage.length} SDK connections with call-site evidence; ${interesting.length} with usedEndpoints drift:`)
+    for (const f of interesting) {
+      console.log(`- **${f.from} → ${f.to}**`)
+      for (const c of f.calledMethods.filter(c => c.endpointId && f.suggestedAdditions.includes(c.endpointId))) {
+        console.log(`  + suggest \`${c.endpointId}\` — .${c.method}() → ${c.httpMethod} ${c.path} (${c.files.join(', ')})`)
+      }
+      for (const a of f.ambiguousCalls) {
+        console.log(`  ~ ambiguous .${a.method}() — one of [${a.candidateIds.join(', ')}] (${a.files.join(', ')})`)
+      }
+      for (const id of f.unproven) console.log(`  ? unproven \`${id}\` (no call site, not even ambiguous)`)
+      for (const c of f.calledMethods.filter(c => !c.endpointId)) {
+        console.log(`  ! unmatched call .${c.method}() → ${c.httpMethod} ${c.path} (no endpoint on ${f.to})`)
+      }
+    }
+  }
 
   console.log(`\n## 🧭 Flow verification (${r.flowCheck.findings.length} findings)\n`)
   console.log(`${r.flowCheck.stepsChecked} service steps checked (${r.flowCheck.responseSteps} response arrows), ${r.flowCheck.pathsChecked} action paths checked.`)

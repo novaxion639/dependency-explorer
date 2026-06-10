@@ -91,7 +91,7 @@ const svc_documents_esignature: ConnectivityService = ConnectivityServiceSchema.
     {
       "id": "api-documents-status",
       "path": "/documents-status",
-      "method": "GET",
+      "method": "POST",
       "description": "Get documents signature status",
       "useCase": "Used by calling services to get documents signature status",
       "params": [],
