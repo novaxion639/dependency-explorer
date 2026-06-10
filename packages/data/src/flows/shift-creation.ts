@@ -8,8 +8,8 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
   "steps": [
     {
       "from": "skello-app-front",
-      "to": "svc-bff-planning",
-      "action": "GET /planning — load planning context (employees, shops)"
+      "to": "skello-app",
+      "action": "GET /v3/plannings — load planning context (employees, shops)"
     },
     {
       "from": "skello-app-front",

@@ -4,17 +4,12 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "absence-creation",
   "name": "Absence Creation",
-  "description": "A manager creates an absence (paid leave, sick day, etc.) for an employee. The monolith validates the absence against labour law rules, persists it as a shift record, pushes updated metrics to svc-shifts, and emits an event so the employee is notified.",
+  "description": "A manager creates an absence (paid leave, sick day, etc.) for an employee. The monolith evaluates absence eligibility and entitlements in-process (labour-law rules previously synced from svc-labour-laws — no per-operation HTTP call), persists it as a shift record, pushes updated metrics to svc-shifts, and emits an event so the employee is notified.",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "skello-app",
       "action": "POST /v3/api/plannings — create absence shift with absence_type and duration"
-    },
-    {
-      "from": "skello-app",
-      "to": "svc-labour-laws",
-      "action": "POST /validate — check absence eligibility and remaining entitlement against labour law rules"
     },
     {
       "from": "skello-app",
@@ -38,12 +33,6 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
       "type": "postgresql",
       "label": "skello_production",
       "description": "Stores absence as a shift record with absence_type flag"
-    },
-    {
-      "id": "dynamo-labour-laws-absence",
-      "type": "dynamodb",
-      "label": "svcLabourLaws-{env}",
-      "description": "Labour law entitlements and absence eligibility rules"
     },
     {
       "id": "mongo-shifts-absence",
@@ -76,12 +65,6 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
       "to": "pg-absence",
       "label": "write absence",
       "crud": ["create"]
-    },
-    {
-      "from": "svc-labour-laws",
-      "to": "dynamo-labour-laws-absence",
-      "label": "read entitlements",
-      "crud": ["read"]
     },
     {
       "from": "svc-shifts",

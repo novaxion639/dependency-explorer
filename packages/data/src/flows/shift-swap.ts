@@ -4,17 +4,12 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const shift_swap: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-swap",
   "name": "Shift Swap Between Employees",
-  "description": "A manager swaps shifts between two employees. The monolith reassigns both shifts, validates each employee's new schedule against labour law rules, and emits an event so both employees are notified of the change.",
+  "description": "A manager swaps shifts between two employees. The monolith reassigns both shifts, evaluates each employee's new schedule against labour-law rules in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call), and emits an event so both employees are notified of the change.",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "skello-app",
       "action": "PATCH /v3/api/plannings — swap shifts between two employees (isSwappingUserShifts flag)"
-    },
-    {
-      "from": "skello-app",
-      "to": "svc-labour-laws",
-      "action": "POST /validate — validate both employees' new schedules against labour law constraints"
     },
     {
       "from": "skello-app",
@@ -33,12 +28,6 @@ const shift_swap: ServiceFlow = ServiceFlowSchema.parse({
       "type": "postgresql",
       "label": "skello_production",
       "description": "Updates user_id on both shift records atomically"
-    },
-    {
-      "id": "dynamo-labour-laws-swap",
-      "type": "dynamodb",
-      "label": "svcLabourLaws-{env}",
-      "description": "Labour law rules — validate both employees' resulting schedules"
     },
     {
       "id": "sqs-shift-swap",
@@ -65,12 +54,6 @@ const shift_swap: ServiceFlow = ServiceFlowSchema.parse({
       "to": "pg-shift-swap",
       "label": "atomic swap",
       "crud": ["update"]
-    },
-    {
-      "from": "svc-labour-laws",
-      "to": "dynamo-labour-laws-swap",
-      "label": "read rules",
-      "crud": ["read"]
     },
     {
       "from": "skello-app",

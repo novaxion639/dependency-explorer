@@ -4,7 +4,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-deletion",
   "name": "Shift Deletion",
-  "description": "A planner deletes a shift on the planning page. The monolith validates the deletion against labour laws, removes the shift, recalculates metrics in svc-shifts, and emits an async event so the employee gets notified.",
+  "description": "A planner deletes a shift on the planning page. The monolith evaluates labour-law compliance in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call), removes the shift, recalculates metrics in svc-shifts, and emits an async event so the employee gets notified.",
   "steps": [
     {
       "from": "skello-app-front",
@@ -13,13 +13,8 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
     },
     {
       "from": "skello-app",
-      "to": "svc-labour-laws",
-      "action": "POST /validate — check deletion is labour-law compliant"
-    },
-    {
-      "from": "skello-app",
       "to": "svc-shifts",
-      "action": "DELETE /shift-metrics/employee/:id — recalculate shift metrics"
+      "action": "POST /shift-metrics/employee — recalculate shift metrics"
     },
     {
       "from": "skello-app",
@@ -38,12 +33,6 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
       "type": "postgresql",
       "label": "skello_production",
       "description": "Removes the shift row from the monolith"
-    },
-    {
-      "id": "dynamo-labour-laws-del",
-      "type": "dynamodb",
-      "label": "svcLabourLaws-{env}",
-      "description": "Labour law rule sets checked before deletion"
     },
     {
       "id": "mongo-shifts-del",
@@ -76,12 +65,6 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
       "to": "pg-skello-shifts-del",
       "label": "delete shift",
       "crud": ["delete"]
-    },
-    {
-      "from": "svc-labour-laws",
-      "to": "dynamo-labour-laws-del",
-      "label": "read rules",
-      "crud": ["read"]
     },
     {
       "from": "svc-shifts",

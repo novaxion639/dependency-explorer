@@ -19,7 +19,7 @@ const document_generation_esignature: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "svc-documents-esignature",
-      "action": "POST /esignature — start signature flow"
+      "action": "Start signature flow — Microservices::EsignatureService (generic HTTParty client; exact endpoint not yet verified)"
     },
     {
       "from": "skello-app-front",

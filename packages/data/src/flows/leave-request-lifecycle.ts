@@ -14,7 +14,7 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "svc-requests",
-      "action": "POST /requests — persist leave request"
+      "action": "POST /leave-requests — persist leave request"
     },
     {
       "from": "skello-app",
@@ -29,7 +29,7 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "svc-requests",
-      "action": "GET /requests — refresh request list"
+      "action": "GET /leave-requests — refresh request list"
     }
   ],
   "infraNodes": [

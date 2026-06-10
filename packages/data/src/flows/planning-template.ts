@@ -4,7 +4,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const planning_template: ServiceFlow = ServiceFlowSchema.parse({
   "id": "planning-template",
   "name": "Planning Template — Save & Apply",
-  "description": "A manager saves the current week's planning as a reusable template, or applies an existing template to populate a new week. Applying a template triggers labour law validation and metric updates identical to a batch shift creation.",
+  "description": "A manager saves the current week's planning as a reusable template, or applies an existing template to populate a new week. Applying a template evaluates labour-law compliance in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call) and updates metrics identically to a batch shift creation.",
   "steps": [
     {
       "from": "skello-app-front",
@@ -15,11 +15,6 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
       "from": "skello-app-front",
       "to": "skello-app",
       "action": "POST /v3/api/plannings/from_template — apply selected template to target week"
-    },
-    {
-      "from": "skello-app",
-      "to": "svc-labour-laws",
-      "action": "POST /validate-batch — validate all template shifts against current labour law rules"
     },
     {
       "from": "skello-app",
@@ -49,12 +44,6 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
       "type": "postgresql",
       "label": "skello_production",
       "description": "Bulk-inserts shifts generated from the applied template"
-    },
-    {
-      "id": "dynamo-labour-laws-template",
-      "type": "dynamodb",
-      "label": "svcLabourLaws-{env}",
-      "description": "Labour law rule sets — validate each generated shift"
     },
     {
       "id": "mongo-shifts-template",
@@ -93,12 +82,6 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
       "to": "pg-template-shifts",
       "label": "bulk insert shifts",
       "crud": ["create"]
-    },
-    {
-      "from": "svc-labour-laws",
-      "to": "dynamo-labour-laws-template",
-      "label": "read rules",
-      "crud": ["read"]
     },
     {
       "from": "svc-shifts",

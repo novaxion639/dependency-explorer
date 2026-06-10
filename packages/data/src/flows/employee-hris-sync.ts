@@ -4,17 +4,12 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
   "id": "employee-hris-sync",
   "name": "Employee HRIS Sync",
-  "description": "A manager updates an employee profile. The change is synced to the HRIS, an event is emitted, and the frontend refreshes the profile.",
+  "description": "A manager updates an employee profile. svc-employees persists the change and emits an event; svc-hris pulls updated employee data on its sync runs and mirrors it to the connected HRIS integration. (Direction corrected 2026-06-10: the previously documented svc-employees→svc-hris push had no evidence in code — svc-hris is the puller, holding value imports of the employees client.)",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "svc-employees",
-      "action": "PUT /employees/:id — update employee profile"
-    },
-    {
-      "from": "svc-employees",
-      "to": "svc-hris",
-      "action": "POST /sync — push employee to HRIS"
+      "action": "PUT /v1/employees/{id} — update employee profile"
     },
     {
       "from": "svc-employees",
@@ -22,9 +17,14 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
       "action": "POST /events — emit employee.updated event"
     },
     {
+      "from": "svc-hris",
+      "to": "svc-employees",
+      "action": "GET /v1/employees — HRIS sync pulls updated employee data (UpsertEmployeeFromHrisDto)"
+    },
+    {
       "from": "skello-app-front",
       "to": "svc-employees",
-      "action": "GET /employees/:id — fetch updated profile"
+      "action": "GET /v1/employees — refresh updated profile data"
     }
   ],
   "infraNodes": [

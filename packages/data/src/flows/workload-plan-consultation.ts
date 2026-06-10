@@ -14,7 +14,7 @@ const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "svc-workload-plan",
-      "action": "GET /v2/workload-rules — fetch staffing rules and thresholds"
+      "action": "GET /v2/workload-rules/{shopId} — fetch staffing rules and thresholds"
     }
   ],
   "infraNodes": [

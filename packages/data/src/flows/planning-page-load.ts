@@ -4,7 +4,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
   "id": "planning-page-load",
   "name": "Planning Page Load",
-  "description": "A manager opens the planning page. The frontend calls the Rails monolith for the planning context (shifts, employees, labour laws), and fetches workload plan data and employee search from dedicated microservices. svc-bff-planning has been decommissioned from sandbox and is no longer in this flow.",
+  "description": "A manager opens the planning page. The frontend calls the Rails monolith for the planning context (shifts, employees, labour laws) and fetches workload plan data from svc-workload-plan. svc-bff-planning has been decommissioned and is no longer in this flow; a previously documented frontend→svc-search call was removed (no evidence: svc-search exposes no HTTP API and the frontend has no search service URL).",
   "steps": [
     {
       "from": "skello-app-front",
@@ -15,11 +15,6 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
       "from": "skello-app-front",
       "to": "svc-workload-plan",
       "action": "GET /v2/workload-plans — fetch workload forecast for the week"
-    },
-    {
-      "from": "skello-app-front",
-      "to": "svc-search",
-      "action": "GET /employees/search — search available staff for open slots"
     },
     {
       "from": "skello-app",
@@ -45,12 +40,6 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
       "type": "dynamodb",
       "label": "svcWorkloadPlan-{env}",
       "description": "Workload plan forecasts and staffing rules"
-    },
-    {
-      "id": "es-search-planning",
-      "type": "elasticsearch",
-      "label": "svc-search",
-      "description": "Employee availability and shift search index"
     }
   ],
   "infraEdges": [
@@ -70,12 +59,6 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
       "from": "svc-workload-plan",
       "to": "dynamo-workload-planning",
       "label": "read forecast",
-      "crud": ["read"]
-    },
-    {
-      "from": "svc-search",
-      "to": "es-search-planning",
-      "label": "query index",
       "crud": ["read"]
     }
   ]

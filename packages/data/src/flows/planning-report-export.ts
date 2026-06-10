@@ -4,73 +4,45 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const planning_report_export: ServiceFlow = ServiceFlowSchema.parse({
   "id": "planning-report-export",
   "name": "Planning Report Export",
-  "description": "A manager triggers a planning report export. svc-reports creates an async job, pulls planning data from the monolith and shift details from svc-shifts, generates the report file via a Lambda, uploads it to S3, and returns a pre-signed download URL when the frontend polls for completion.",
+  "description": "A manager exports a planning/payroll report. The report is generated inside the monolith via an async Sidekiq job reading planning data from PostgreSQL; svc-reports provides the payroll-export configuration (PAM configs, payroll software definitions) that shapes the export. (Corrected 2026-06-10: the previously documented architecture — svc-reports job queue with POST /reports, polling, S3 pre-signed URLs and svc-shifts pulls — had no basis in code. svc-reports' real API is payroll-export configuration, read by the monolith's Microservices::ReportService; the svc-reports→svc-shifts connection was retired.)",
   "steps": [
     {
       "from": "skello-app-front",
-      "to": "svc-reports",
-      "action": "POST /reports — trigger planning report export for the selected period"
-    },
-    {
-      "from": "svc-reports",
       "to": "skello-app",
-      "action": "GET /v3/planning/export — fetch planning data (shifts, employees, hours) for the period"
+      "action": "Trigger planning export (Rails) — report generated monolith-side via async Sidekiq job"
     },
     {
-      "from": "svc-reports",
-      "to": "svc-shifts",
-      "action": "POST /shift-details — fetch detailed shift metrics for the report"
-    },
-    {
-      "from": "skello-app-front",
+      "from": "skello-app",
       "to": "svc-reports",
-      "action": "GET /reports/{jobId} — poll for report job completion"
+      "action": "GET /v1/pam-configs/{id} — read payroll export configuration (Microservices::ReportService)"
     },
     {
-      "from": "svc-reports",
+      "from": "skello-app",
       "to": "skello-app-front",
-      "action": "200 {signedUrl} — return pre-signed S3 URL for report download"
+      "action": "Download — generated report file delivered once the Sidekiq job completes"
     }
   ],
   "infraNodes": [
     {
-      "id": "dynamo-reports-jobs",
-      "type": "dynamodb",
-      "label": "svcReports-{env}",
-      "description": "Report job state — tracks pending, processing, complete and failed exports"
-    },
-    {
       "id": "pg-skello-report-export",
       "type": "postgresql",
       "label": "skello_production",
-      "description": "Planning data source — shifts, employees and schedules pulled for the export"
+      "description": "Planning data source — shifts, employees and schedules read for the export"
     },
     {
-      "id": "mongo-shifts-export",
-      "type": "mongodb",
-      "label": "svc-shifts",
-      "description": "Detailed shift metrics included in the report"
+      "id": "redis-sidekiq-export",
+      "type": "redis",
+      "label": "skello-redis",
+      "description": "Sidekiq broker for the async export generation job"
     },
     {
-      "id": "s3-reports",
-      "type": "s3",
-      "label": "skello-reports-{env}",
-      "description": "Report file storage — completed files uploaded here and accessed via pre-signed URLs"
-    },
-    {
-      "id": "lambda-report-gen",
-      "type": "lambda",
-      "label": "report-generator",
-      "description": "Async Lambda that generates the report file and uploads it to S3"
+      "id": "dynamo-reports-configs",
+      "type": "dynamodb",
+      "label": "svcReports-{env}",
+      "description": "Payroll-export configuration store (PAM configs, payroll software definitions)"
     }
   ],
   "infraEdges": [
-    {
-      "from": "svc-reports",
-      "to": "dynamo-reports-jobs",
-      "label": "create job",
-      "crud": ["create"]
-    },
     {
       "from": "skello-app",
       "to": "pg-skello-report-export",
@@ -78,31 +50,15 @@ const planning_report_export: ServiceFlow = ServiceFlowSchema.parse({
       "crud": ["read"]
     },
     {
-      "from": "svc-shifts",
-      "to": "mongo-shifts-export",
-      "label": "read shifts",
+      "from": "skello-app",
+      "to": "redis-sidekiq-export",
+      "label": "enqueue export job"
+    },
+    {
+      "from": "svc-reports",
+      "to": "dynamo-reports-configs",
+      "label": "read configs",
       "crud": ["read"]
-    },
-    {
-      "from": "svc-reports",
-      "to": "lambda-report-gen",
-      "label": "invoke async"
-    },
-    {
-      "from": "lambda-report-gen",
-      "to": "s3-reports",
-      "label": "upload report"
-    },
-    {
-      "from": "svc-reports",
-      "to": "dynamo-reports-jobs",
-      "label": "update status",
-      "crud": ["update"]
-    },
-    {
-      "from": "svc-reports",
-      "to": "s3-reports",
-      "label": "generate signed URL"
     }
   ]
 })

@@ -4,7 +4,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "workload-plan-creation",
   "name": "Workload Plan Creation",
-  "description": "A planner creates a new workload forecast. The frontend posts directly to svc-workload-plan, which pulls revenue data from svc-pos to calibrate the staffing forecast before persisting the plan.",
+  "description": "A planner creates a new workload forecast. The frontend posts directly to svc-workload-plan, which pulls revenue KPIs from svc-kpis-v2 to calibrate the staffing forecast before persisting the plan. (Corrected 2026-06-10: a previously documented svc-pos revenue call had no evidence in code — workload rules reference the revenue KPI served by svc-kpis-v2, a verified SDK connection.)",
   "steps": [
     {
       "from": "skello-app-front",
@@ -13,8 +13,8 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
     },
     {
       "from": "svc-workload-plan",
-      "to": "svc-pos",
-      "action": "GET /revenue — fetch POS revenue data to calibrate forecast"
+      "to": "svc-kpis-v2",
+      "action": "POST /kpis — fetch revenue KPIs to calibrate the forecast"
     }
   ],
   "infraNodes": [
@@ -31,10 +31,10 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
       "description": "DLQ for failed workload plan processing jobs"
     },
     {
-      "id": "dynamo-pos-create",
-      "type": "dynamodb",
-      "label": "svcPos-{env}",
-      "description": "POS revenue data used to calibrate staffing forecast"
+      "id": "pg-kpis-workload",
+      "type": "postgresql",
+      "label": "kpis-db",
+      "description": "Revenue KPI source data used to calibrate the staffing forecast"
     }
   ],
   "infraEdges": [
@@ -50,9 +50,9 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
       "label": "DLQ"
     },
     {
-      "from": "svc-pos",
-      "to": "dynamo-pos-create",
-      "label": "read revenue",
+      "from": "svc-kpis-v2",
+      "to": "pg-kpis-workload",
+      "label": "read revenue KPIs",
       "crud": ["read"]
     }
   ]

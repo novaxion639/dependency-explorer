@@ -32,6 +32,7 @@ import { extractServerless, type ServerlessFacts } from './extractors/serverless
 import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
+import { checkFlows, type FlowCheckResult } from './flow-check'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_BASE = path.resolve(__dirname, '../../../../')
@@ -79,6 +80,7 @@ interface Report {
   monolithSurface: { totalRoutes: number; resourceDeclarations: number; topSegments: Array<[string, number]> } | null
   /** SDK dependencies whose imports are type-only or absent — weak evidence, likely not runtime calls */
   weakSdkEvidence: Array<{ from: string; to: string; pkg: string; usage: string }>
+  flowCheck: FlowCheckResult
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
@@ -125,6 +127,7 @@ function run(): Report {
     frontendServices: [],
     monolithSurface: null,
     weakSdkEvidence: [],
+    flowCheck: checkFlows(connectivityMap),
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -385,6 +388,14 @@ function printMarkdown(r: Report) {
 
   section('🩻 Weak SDK evidence — type-only or unused imports (likely NOT runtime calls)',
     r.weakSdkEvidence.map(w => `- ${w.from} → ${w.to} via \`${w.pkg}\` (**${w.usage}**)`))
+
+  console.log(`\n## 🧭 Flow verification (${r.flowCheck.findings.length} findings)\n`)
+  console.log(`${r.flowCheck.stepsChecked} service steps checked (${r.flowCheck.responseSteps} response arrows), ${r.flowCheck.pathsChecked} action paths checked.`)
+  if (r.flowCheck.findings.length) {
+    console.log(r.flowCheck.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
+  } else {
+    console.log('_all flows consistent with connections and endpoints_')
+  }
 
   section('❓ Unknown targets — evidence pointing outside the map',
     r.unknownTargets.map(u => `- ${u.from} → \`${u.evidence}\` (resolves to "${u.normalizedTarget}")`))

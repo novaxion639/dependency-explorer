@@ -4,17 +4,12 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const week_copy: ServiceFlow = ServiceFlowSchema.parse({
   "id": "week-copy",
   "name": "Week Copy",
-  "description": "A manager copies all shifts from one week to another. The monolith creates shifts in bulk, validates each against labour laws, updates shop and org planning metrics, then emits an event so affected employees are notified. Failed shift creations land in a DLQ for manual review.",
+  "description": "A manager copies all shifts from one week to another. The monolith creates shifts in bulk, evaluates labour-law compliance in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call), updates shop and org planning metrics, then emits an event so affected employees are notified. Failed shift creations land in a DLQ for manual review.",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "skello-app",
       "action": "POST /v3/shifts/week-copy — submit bulk copy request with source and target week range"
-    },
-    {
-      "from": "skello-app",
-      "to": "svc-labour-laws",
-      "action": "POST /validate-batch — validate each copied shift against labour laws"
     },
     {
       "from": "skello-app",
@@ -38,12 +33,6 @@ const week_copy: ServiceFlow = ServiceFlowSchema.parse({
       "type": "postgresql",
       "label": "skello_production",
       "description": "Bulk-inserts copied shifts in the monolith"
-    },
-    {
-      "id": "dynamo-labour-laws-copy",
-      "type": "dynamodb",
-      "label": "svcLabourLaws-{env}",
-      "description": "Labour law rule sets — read to validate each copied shift"
     },
     {
       "id": "mongo-shifts-copy",
@@ -82,12 +71,6 @@ const week_copy: ServiceFlow = ServiceFlowSchema.parse({
       "to": "pg-skello-week-copy",
       "label": "bulk insert",
       "crud": ["create"]
-    },
-    {
-      "from": "svc-labour-laws",
-      "to": "dynamo-labour-laws-copy",
-      "label": "read rules",
-      "crud": ["read"]
     },
     {
       "from": "svc-shifts",

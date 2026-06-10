@@ -4,12 +4,12 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "auto-planning-generation",
   "name": "AI Auto-Planning Generation",
-  "description": "Triggered by the frontend via POST /auto_scheduling/compute, which returns a websocketId for live progress tracking. svc-automatic-scheduling creates a job in MongoDB (STARTED) and starts an AWS Step Functions pipeline. Each Lambda step updates the job status in MongoDB and sends a progress notification to websocket-genericMessage SQS (except the Python solver, which has no TS notification access — the aggregate step pre-sends OPTIMIZING on its behalf). Context (shifts, postes, users, shop) passes through the SFN state payload, not S3.",
+  "description": "Triggered by the frontend via POST /automatic_assignment/compute, which returns a websocketId for live progress tracking. svc-automatic-scheduling creates a job in MongoDB (STARTED) and starts an AWS Step Functions pipeline. Each Lambda step updates the job status in MongoDB and sends a progress notification to websocket-genericMessage SQS (except the Python solver, which has no TS notification access — the aggregate step pre-sends OPTIMIZING on its behalf). Context (shifts, postes, users, shop) passes through the SFN state payload, not S3.",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "svc-automatic-scheduling",
-      "action": "Trigger auto-scheduling — POST /api/auto_scheduling/compute → { websocketId }"
+      "action": "Trigger auto-scheduling — POST /automatic_assignment/compute → { websocketId }"
     },
     {
       "from": "svc-automatic-scheduling",
