@@ -24,29 +24,18 @@ const bff_dashboard_load: ServiceFlow = ServiceFlowSchema.parse({
   ],
   "infraNodes": [
     {
-      "id": "pg-kpis",
-      "type": "postgresql",
-      "label": "kpis-db",
-      "description": "KPI time-series data"
-    },
-    {
-      "id": "kinesis-kpis",
-      "type": "kinesis",
-      "label": "kpis-stream",
-      "description": "Real-time KPI event stream"
+      "id": "mongo-kpis",
+      "type": "mongodb",
+      "label": "SvcKpisV2 (VPC MongoDB)",
+      "description": "KPI collections — kpisManual, settingActivityPrediction, settingsDisplayMetrics. (Corrected 2026-06-10 per the svcKpisV2 architecture board: the previously documented PostgreSQL kpis-db and consumed Kinesis stream do not exist — realtime fan-out is EventBridge, produced by the service.)"
     }
   ],
   "infraEdges": [
     {
       "from": "svc-kpis-v2",
-      "to": "pg-kpis",
+      "to": "mongo-kpis",
       "label": "read",
       "crud": ["read"]
-    },
-    {
-      "from": "svc-kpis-v2",
-      "to": "kinesis-kpis",
-      "label": "consume"
     }
   ]
 })

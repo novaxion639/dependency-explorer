@@ -29,16 +29,16 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
   ],
   "infraNodes": [
     {
-      "id": "cdc-employees",
-      "type": "cdc",
-      "label": "employees-cdc",
-      "description": "Change Data Capture on employees table"
+      "id": "dynamo-employees",
+      "type": "dynamodb",
+      "label": "SvcEmployees ({env})",
+      "description": "The service's only owned store — employee configs and sync state. (Corrected 2026-06-10 per the SvcEmployees architecture board: the previously documented service-owned PostgreSQL employees-db does not exist; employee master data lives in the monolith, fronted by private endpoints.)"
     },
     {
-      "id": "pg-employees",
-      "type": "postgresql",
-      "label": "employees-db",
-      "description": "Core employee store"
+      "id": "kinesis-skelloapp-bus",
+      "type": "kinesis",
+      "label": "SkelloAppBus",
+      "description": "Monolith CDC stream (public.users, shops, user_extended_info, contract) — consumed by svc-employees (KinesisFortifyEventUpdateJob); the CDC source is the monolith RDS, not a service-owned table"
     },
     {
       "id": "dynamo-events-hris",
@@ -47,28 +47,29 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
       "description": "HRIS audit events"
     },
     {
-      "id": "mongo-hris",
-      "type": "mongodb",
-      "label": "hris-mirror",
-      "description": "Denormalised HRIS read model"
+      "id": "dynamo-hris",
+      "type": "dynamodb",
+      "label": "svcHris-{env}",
+      "description": "HRIS integration credentials and sync state (corrected 2026-06-10: aligned with the service definition — the previously documented mongodb hris-mirror has no evidence)"
     }
   ],
   "infraEdges": [
     {
       "from": "svc-employees",
-      "to": "pg-employees",
+      "to": "dynamo-employees",
       "label": "write",
       "crud": ["create"]
     },
     {
-      "from": "pg-employees",
-      "to": "cdc-employees",
-      "label": "change event"
+      "from": "svc-employees",
+      "to": "kinesis-skelloapp-bus",
+      "label": "consume monolith CDC",
+      "crud": ["read"]
     },
     {
       "from": "svc-hris",
-      "to": "mongo-hris",
-      "label": "sync",
+      "to": "dynamo-hris",
+      "label": "sync state",
       "crud": ["update"]
     },
     {

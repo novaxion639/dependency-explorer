@@ -31,10 +31,10 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
       "description": "DLQ for failed workload plan processing jobs"
     },
     {
-      "id": "pg-kpis-workload",
-      "type": "postgresql",
-      "label": "kpis-db",
-      "description": "Revenue KPI source data used to calibrate the staffing forecast"
+      "id": "mongo-kpis-workload",
+      "type": "mongodb",
+      "label": "SvcKpisV2 (VPC MongoDB)",
+      "description": "Revenue KPI collections used to calibrate the staffing forecast (corrected 2026-06-10 per the svcKpisV2 architecture board — no PostgreSQL kpis-db exists)"
     }
   ],
   "infraEdges": [
@@ -51,7 +51,7 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
     },
     {
       "from": "svc-kpis-v2",
-      "to": "pg-kpis-workload",
+      "to": "mongo-kpis-workload",
       "label": "read revenue KPIs",
       "crud": ["read"]
     }

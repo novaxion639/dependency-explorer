@@ -4,7 +4,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "auto-planning-generation",
   "name": "AI Auto-Planning Generation",
-  "description": "Triggered by the frontend via POST /automatic_assignment/compute, which returns a websocketId for live progress tracking. svc-automatic-scheduling creates a job in MongoDB (STARTED) and starts an AWS Step Functions pipeline. Each Lambda step updates the job status in MongoDB and sends a progress notification to websocket-genericMessage SQS (except the Python solver, which has no TS notification access — the aggregate step pre-sends OPTIMIZING on its behalf). Context (shifts, postes, users, shop) passes through the SFN state payload, not S3.",
+  "description": "Triggered by the frontend via POST /automatic_assignment/compute, which returns a websocketId for live progress tracking. svc-automatic-scheduling creates a job in MongoDB (STARTED) and starts an AWS Step Functions pipeline. Each Lambda step updates the job status in MongoDB and sends a progress notification to websocket-topicMessage SQS (except the Python solver, which has no TS notification access — the aggregate step pre-sends OPTIMIZING on its behalf). Context (shifts, postes, users, shop) passes through the SFN state payload, not S3.",
   "steps": [
     {
       "from": "skello-app-front",
@@ -89,7 +89,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "sqs-ws-dataFetcher",
       "type": "sqs",
-      "label": "websocket-genericMessage",
+      "label": "websocket-topicMessage",
       "description": "Send DATA_FETCHING notification to frontend WebSocket channel"
     },
     {
@@ -101,7 +101,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "sqs-ws-eligibility",
       "type": "sqs",
-      "label": "websocket-genericMessage",
+      "label": "websocket-topicMessage",
       "description": "Send ELIGIBILITY_COMPLIANCE_CHECK (once per batch invocation)"
     },
     {
@@ -113,7 +113,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "sqs-ws-aggregate",
       "type": "sqs",
-      "label": "websocket-genericMessage",
+      "label": "websocket-topicMessage",
       "description": "Send ELIGIBILITY_AGGREGATION + OPTIMIZING (pre-sent for Python solver)"
     },
     {
@@ -125,7 +125,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "sqs-ws-assignShifts",
       "type": "sqs",
-      "label": "websocket-genericMessage",
+      "label": "websocket-topicMessage",
       "description": "Send ASSIGNING notification to frontend WebSocket channel"
     },
     {
@@ -137,7 +137,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "sqs-ws-finishJob",
       "type": "sqs",
-      "label": "websocket-genericMessage",
+      "label": "websocket-topicMessage",
       "description": "Send FINISHED notification to frontend WebSocket channel"
     },
     {
