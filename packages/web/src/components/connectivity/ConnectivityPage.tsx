@@ -109,6 +109,18 @@ export function ConnectivityPage() {
                   repo ↗
                 </a>
               )}
+              {selected.provenance?.source === 'discovered' && (
+                <span
+                  title={selected.provenance.evidence}
+                  style={{
+                    fontSize: 10, fontWeight: 600, marginLeft: 8,
+                    padding: '1px 6px', borderRadius: 3,
+                    background: '#10b98122', color: '#10b981',
+                  }}
+                >
+                  ✓ scanned {selected.provenance.lastVerified}
+                </span>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 12, marginLeft: 'auto', flexWrap: 'wrap', alignItems: 'center' }}>
               <Pill label="calls" count={outCount} color="#4f6ef7" />

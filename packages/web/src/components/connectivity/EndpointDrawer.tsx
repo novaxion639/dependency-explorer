@@ -27,6 +27,7 @@ export function EndpointDrawer({ serviceName, endpoints, onClose }: Props) {
   const [open, setOpen] = useState<string | null>(endpoints[0]?.id ?? null)
 
   const toggle = (id: string) => setOpen(prev => (prev === id ? null : id))
+  const verifiedCount = endpoints.filter(ep => ep.provenance?.source === 'discovered').length
 
   return (
     <div style={{
@@ -40,7 +41,12 @@ export function EndpointDrawer({ serviceName, endpoints, onClose }: Props) {
       }}>
         <div>
           <div style={{ fontWeight: 700, fontSize: 13, color: '#e2e8f0' }}>{serviceName}</div>
-          <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{endpoints.length} endpoint{endpoints.length !== 1 ? 's' : ''}</div>
+          <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>
+            {endpoints.length} endpoint{endpoints.length !== 1 ? 's' : ''}
+            {verifiedCount > 0 && (
+              <span style={{ color: '#10b981' }}> · ✓ {verifiedCount} code-verified</span>
+            )}
+          </div>
         </div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 20, lineHeight: 1 }}>×</button>
       </div>
@@ -70,6 +76,14 @@ export function EndpointDrawer({ serviceName, endpoints, onClose }: Props) {
                   {ep.method}
                 </span>
                 <code style={{ fontSize: 12, color: '#94a3b8', flex: 1 }}>{ep.path}</code>
+                {ep.provenance?.source === 'discovered' && (
+                  <span
+                    title={`Code-verified ${ep.provenance.lastVerified ?? ''} — ${ep.provenance.evidence ?? ''}`}
+                    style={{ color: '#10b981', fontSize: 11, flexShrink: 0 }}
+                  >
+                    ✓
+                  </span>
+                )}
                 <span style={{ color: '#3e4363', fontSize: 14, flexShrink: 0 }}>
                   {isOpen ? '▾' : '▸'}
                 </span>
@@ -78,6 +92,17 @@ export function EndpointDrawer({ serviceName, endpoints, onClose }: Props) {
               {/* Accordion body */}
               {isOpen && (
                 <div style={{ padding: '0 16px 14px 16px' }}>
+                  {/* Provenance */}
+                  <div style={{
+                    fontSize: 10, marginBottom: 10, padding: '4px 8px', borderRadius: 4,
+                    background: ep.provenance?.source === 'discovered' ? '#10b98115' : '#64748b15',
+                    color: ep.provenance?.source === 'discovered' ? '#10b981' : '#64748b',
+                  }}>
+                    {ep.provenance?.source === 'discovered'
+                      ? `✓ Code-verified ${ep.provenance.lastVerified ?? ''} — ${ep.provenance.evidence ?? ''}`
+                      : 'Manual — not yet matched to code by discovery'}
+                  </div>
+
                   {/* AWS calls */}
                   {ep.awsCalls && ep.awsCalls.length > 0 && (
                     <div style={{ marginBottom: 10 }}>
@@ -110,7 +135,13 @@ export function EndpointDrawer({ serviceName, endpoints, onClose }: Props) {
                   {/* Use case */}
                   <div style={{ marginBottom: 10 }}>
                     <Label>Use case</Label>
-                    <p style={{ fontSize: 12, color: '#94a3b8', margin: 0, fontStyle: 'italic' }}>{ep.useCase}</p>
+                    {ep.useCase ? (
+                      <p style={{ fontSize: 12, color: '#94a3b8', margin: 0, fontStyle: 'italic' }}>{ep.useCase}</p>
+                    ) : (
+                      <p style={{ fontSize: 11, color: '#f59e0b99', margin: 0, fontStyle: 'italic' }}>
+                        ✎ To document — endpoint generated from code; business context not yet written
+                      </p>
+                    )}
                   </div>
 
                   {/* Params */}
