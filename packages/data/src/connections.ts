@@ -19,16 +19,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "usedEndpoints": []
   },
   {
-    "from": "svc-skello-assistant",
-    "to": "svc-communications-v2",
-    "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Sends confirmation messages and summaries to users",
-    "usedEndpoints": []
-  },
-  {
     "from": "svc-billing-automation",
     "to": "svc-communications-v2",
     "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
@@ -109,19 +99,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Retrieves documents to attach to emails (e.g. payslips, contracts)",
-    "usedEndpoints": [
-      "api-bulk-send-signature-reminders",
-      "api-bulk-send-reminders-from-filters"
-    ]
-  },
-  {
-    "from": "svc-skello-assistant",
-    "to": "svc-documents-v2",
-    "sdkPackage": "@skelloapp/svc-documents-v2-client",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Fetches documents for AI analysis and answer grounding",
     "usedEndpoints": [
       "api-bulk-send-signature-reminders",
       "api-bulk-send-reminders-from-filters"
@@ -249,16 +226,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     ]
   },
   {
-    "from": "svc-skello-assistant",
-    "to": "svc-billing-automation",
-    "sdkPackage": "@skelloapp/svc-billing-automation-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Answers billing and subscription questions from the assistant",
-    "usedEndpoints": []
-  },
-  {
     "from": "svc-communications-v2",
     "to": "svc-events",
     "sdkPackage": "@skelloapp/svc-events-sdk",
@@ -378,19 +345,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Initiates e-signature requests after AI document preparation",
-    "usedEndpoints": [
-      "api-attendance-sheet-signature-reminder",
-      "api-document-signable"
-    ]
-  },
-  {
-    "from": "svc-skello-assistant",
-    "to": "svc-documents-esignature",
-    "sdkPackage": "@skelloapp/svc-esignature-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Handles user requests to sign documents via the AI assistant",
     "usedEndpoints": [
       "api-attendance-sheet-signature-reminder",
       "api-document-signable"
@@ -896,18 +850,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     ]
   },
   {
-    "from": "svc-employees",
-    "to": "svc-hris",
-    "sdkPackage": "@skelloapp/svc-hris-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Sync employee records to connected HRIS integrations after create/update",
-    "usedEndpoints": [
-      "api-connect-hris-integration"
-    ]
-  },
-  {
     "from": "svc-bff-planning",
     "to": "skello-app",
     "sdkPackage": "@skelloapp/skello-app-sdk",
@@ -940,15 +882,198 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     ]
   },
   {
-    "from": "svc-reports",
+    "from": "svc-automatic-scheduling",
+    "to": "svc-workload-plan",
+    "sdkPackage": "@skelloapp/workload-plan-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Fetches workload plans during scheduling context preparation (dataFetcher step)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-bff",
+    "to": "skello-app",
+    "sdkPackage": "@skelloapp/skello-app-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "BFF aggregates core monolith data (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-bff",
+    "to": "svc-employees",
+    "sdkPackage": "@skelloapp/svc-employees-client",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "BFF reads employee data (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-bff",
     "to": "svc-shifts",
     "sdkPackage": "@skelloapp/svc-shifts-sdk",
     "communicationType": "sync",
     "protocol": "rest",
     "authType": "jwt",
-    "description": "Fetches detailed shift data for report generation",
+    "description": "BFF reads shift data (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-bff",
+    "to": "svc-shops",
+    "sdkPackage": "@skelloapp/svc-shops-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "BFF reads shop data (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-billing-automation",
+    "to": "svc-users",
+    "sdkPackage": "@skelloapp/svc-users-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Reads user accounts for billing operations (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-employees",
+    "to": "svc-search",
+    "sdkPackage": "@skelloapp/svc-search-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Consumes svc-search API (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-employees",
+    "to": "svc-users",
+    "sdkPackage": "@skelloapp/svc-users-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Consumes svc-users API (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-enrollment",
+    "to": "svc-employees",
+    "sdkPackage": "@skelloapp/svc-employees-client",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Enrollment provisions employee records (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-enrollment",
+    "to": "svc-labour-laws",
+    "sdkPackage": "@skelloapp/svc-labour-laws-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Enrollment configures labour-law settings (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-hris",
+    "to": "skello-app",
+    "sdkPackage": "@skelloapp/skello-app-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "HRIS sync reads/writes monolith data (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-search",
+    "to": "skello-app",
+    "sdkPackage": "@skelloapp/skello-app-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Search replication reads monolith data (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-trackers",
+    "to": "skello-app",
+    "sdkPackage": "@skelloapp/skello-app-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Trackers read monolith data (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-workload-plan",
+    "to": "skello-app",
+    "sdkPackage": "@skelloapp/skello-app-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Workload plan reads monolith planning data (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-workload-plan",
+    "to": "svc-search",
+    "sdkPackage": "@skelloapp/svc-search-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Consumes svc-search API (SDK client; endpoints used not yet mapped)",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-app",
+    "to": "svc-punch",
+    "sdkPackage": "Microservices::Punch::* (HTTParty)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "internal",
+    "description": "Monolith punch/badging operations — clock in-out CRUD, punch settings, histories and badging checks",
     "usedEndpoints": [
-      "api-get-shift-details"
+      "api-create-clock-in-out",
+      "api-clocks-in-out-read-by-id",
+      "api-clocks-in-out-by-shop-id",
+      "api-clocks-in-out-by-user-id",
+      "api-get-punch-settings",
+      "api-upsert-punch-settings"
+    ]
+  },
+  {
+    "from": "skello-app",
+    "to": "svc-trackers",
+    "sdkPackage": "Microservices::TrackersService (HTTParty)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "internal",
+    "description": "Tracker lifecycle from the monolith — shop tracker settings, employee tracker activation/deactivation, bulk tracker fetch",
+    "usedEndpoints": [
+      "api-list-shop-settings",
+      "api-deactivate-tracker",
+      "api-initialize-employee-tracker",
+      "api-get-bulk-employee-trackers"
+    ]
+  },
+  {
+    "from": "skello-app",
+    "to": "svc-users",
+    "sdkPackage": "Microservices::UserService (HTTParty)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "internal",
+    "description": "User invitation and confirmation propagation from the monolith",
+    "usedEndpoints": [
+      "api-invite-user",
+      "api-confirm-user"
     ]
   }
 ])

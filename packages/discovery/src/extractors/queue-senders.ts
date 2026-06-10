@@ -43,11 +43,13 @@ export function findQueueSenders(
   repos: string[],
   queueOwners: Map<string, string>, // queue name → owning/consuming service
 ): QueueSenderEvidence[] {
-  // Generic lowercase names ("full-load") false-positive across repos; real
-  // Skello queue names are camelCase or digit-suffixed (svcEmployeesUpdate,
-  // mergeShopSqs) — require at least one uppercase letter or digit.
+  // Only service-prefixed queue names (svcPunchMergeShop…) are safe to
+  // cross-reference. Generic names collide: "mergeShopSqs" matched a CONSUMER
+  // handler in another service (both subscribe to the same shop-merge fan-out)
+  // and briefly fabricated a sender edge. "full-load" matched unrelated
+  // constants. Anything unprefixed stays out of cross-repo matching.
   const searchable = [...queueOwners.entries()]
-    .filter(([name]) => name.length >= MIN_QUEUE_NAME_LENGTH && /[A-Z0-9]/.test(name))
+    .filter(([name]) => name.length >= MIN_QUEUE_NAME_LENGTH && /^svc[A-Z]/.test(name))
 
   if (!searchable.length) return []
 

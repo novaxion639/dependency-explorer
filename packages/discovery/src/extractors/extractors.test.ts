@@ -2,6 +2,28 @@ import { describe, it, expect } from 'vitest'
 import { parseServerlessState, parseServerlessStatic } from './serverless'
 import { parseRoutesContent } from './rails-routes'
 import { parseEnvServiceUrls } from './frontend'
+import { classifyImports } from './typescript'
+
+describe('classifyImports', () => {
+  it('detects value imports', () => {
+    expect(classifyImports(`import { SearchClient } from '@skelloapp/svc-search-sdk'`, '@skelloapp/svc-search-sdk')).toBe('value')
+    expect(classifyImports(`const sdk = require('@skelloapp/svc-search-sdk')`, '@skelloapp/svc-search-sdk')).toBe('value')
+    expect(classifyImports(`import x from '@skelloapp/svc-search-sdk/dist/client'`, '@skelloapp/svc-search-sdk')).toBe('value')
+  })
+
+  it('detects type-only imports', () => {
+    expect(classifyImports(`import type { Shift } from '@skelloapp/svc-search-sdk'`, '@skelloapp/svc-search-sdk')).toBe('type-only')
+  })
+
+  it('value import wins over type-only in the same file', () => {
+    const src = `import type { A } from '@skelloapp/x-sdk'\nimport { client } from '@skelloapp/x-sdk'`
+    expect(classifyImports(src, '@skelloapp/x-sdk')).toBe('value')
+  })
+
+  it('returns none when the package is never imported', () => {
+    expect(classifyImports(`import { z } from 'zod'`, '@skelloapp/x-sdk')).toBe('none')
+  })
+})
 
 describe('parseServerlessState', () => {
   it('reads resolved httpApi events and sqs event sources', () => {

@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url'
 import type { ConnectivityService, ServiceConnection, ServiceEndpoint } from '@dependency-explorer/schema'
 import { extractServerless, type DiscoveredEndpoint } from './extractors/serverless'
 import { normalizeEndpoint, normalizeEndpointVersionless, kebab, isBoilerplateEndpoint } from './endpoints'
+import { serializeConnectionsFile } from './connections-io'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_BASE = path.resolve(__dirname, '../../../../')
@@ -58,31 +59,6 @@ export default ${varName}
 `
 }
 
-function serializeConnectionsFile(connections: ServiceConnection[]): string {
-  const ordered = connections.map(c => ({
-    from: c.from,
-    to: c.to,
-    sdkPackage: c.sdkPackage,
-    communicationType: c.communicationType,
-    protocol: c.protocol,
-    authType: c.authType,
-    description: c.description,
-    usedEndpoints: c.usedEndpoints,
-  }))
-  return `import { ServiceConnectionSchema } from '@dependency-explorer/schema'
-import type { ServiceConnection } from '@dependency-explorer/schema'
-import { z } from 'zod'
-
-/**
- * Service-to-service connections.
- * communicationType / protocol / authType are explicit on every entry —
- * never inferred from sdkPackage naming (ADR-0004).
- */
-const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(${JSON.stringify(ordered, null, 2)})
-
-export default connections
-`
-}
 
 // ── Scaffolding ───────────────────────────────────────────────────────────────
 

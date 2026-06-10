@@ -77,6 +77,8 @@ interface Report {
   asyncSenders: Array<{ from: string; to: string; queues: string[]; files: string[] }>
   frontendServices: Array<{ service: string; inMap: boolean; evidence: string }>
   monolithSurface: { totalRoutes: number; resourceDeclarations: number; topSegments: Array<[string, number]> } | null
+  /** SDK dependencies whose imports are type-only or absent — weak evidence, likely not runtime calls */
+  weakSdkEvidence: Array<{ from: string; to: string; pkg: string; usage: string }>
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
@@ -122,6 +124,7 @@ function run(): Report {
     asyncSenders: [],
     frontendServices: [],
     monolithSurface: null,
+    weakSdkEvidence: [],
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -183,7 +186,11 @@ function run(): Report {
         continue
       }
       if (target === repo) continue
-      addEvidence(repo, target, `package.json: ${pkg}`, 'rest (SDK client)')
+      const usage = tsFacts?.sdkUsage[pkg] ?? 'declared-only'
+      if (usage !== 'value') {
+        report.weakSdkEvidence.push({ from: repo, to: target, pkg, usage })
+      }
+      addEvidence(repo, target, `package.json: ${pkg} (${usage} import)`, `rest (SDK client, ${usage} import)`)
     }
   }
 
@@ -375,6 +382,9 @@ function printMarkdown(r: Report) {
     console.log(`${r.monolithSurface.totalRoutes} explicit routes + ${r.monolithSurface.resourceDeclarations} resource declarations. Top segments:`)
     console.log(r.monolithSurface.topSegments.map(([seg, n]) => `- /${seg} (${n})`).join('\n'))
   }
+
+  section('🩻 Weak SDK evidence — type-only or unused imports (likely NOT runtime calls)',
+    r.weakSdkEvidence.map(w => `- ${w.from} → ${w.to} via \`${w.pkg}\` (**${w.usage}**)`))
 
   section('❓ Unknown targets — evidence pointing outside the map',
     r.unknownTargets.map(u => `- ${u.from} → \`${u.evidence}\` (resolves to "${u.normalizedTarget}")`))
