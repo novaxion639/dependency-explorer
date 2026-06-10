@@ -426,7 +426,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "communicationType": "sync",
     "protocol": "rest",
     "authType": "jwt",
-    "description": "Generate and access operational and compliance reports",
+    "description": "Administer payroll-export configuration — PAM configs and automated report scheduling (PAMRework, AutomatedReportModal)",
     "usedEndpoints": [
       "api-get-pam-configs",
       "api-create-pam-config"
