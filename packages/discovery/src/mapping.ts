@@ -30,6 +30,17 @@ export function sdkToServiceName(sdkPkg: string): string | null {
   return name.startsWith('svc-') ? name : `svc-${name}`
 }
 
+// GitHub teams that never own services: Terraform-generated PR-approval
+// squads and functional/org-wide teams. Excluded from the "unmapped product
+// team" report — only food-named product teams (teams.ts) own services.
+export function isStructuralGithubTeam(slug: string): boolean {
+  if (/^@skelloapp\/squad-/.test(slug)) return true
+  return ['team-dev', 'team-infra', 'team-qa', 'team-tech', 'team-pm', 'team-tpm',
+    'team-marketing', 'team-revops', 'team-stratops', 'team-support',
+    'team-data', 'team-data-analytics']
+    .some(t => slug === `@skelloapp/${t}`)
+}
+
 // Rails monolith outbound clients: app/services/microservices/*.rb → target.
 // null = recognised client file whose target is ambiguous — reported, not guessed.
 export const RAILS_CLIENT_TARGETS: Record<string, string | null> = {

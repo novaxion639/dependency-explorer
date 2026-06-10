@@ -24,7 +24,7 @@ import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap } from '@dependency-explorer/data'
 import type { DiscoveredOverlay } from '@dependency-explorer/schema'
-import { IGNORED_SDKS, sdkToServiceName } from './mapping'
+import { IGNORED_SDKS, sdkToServiceName, isStructuralGithubTeam } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
 import { extractRailsMonolith } from './extractors/rails'
@@ -107,11 +107,15 @@ function findRepos(): string[] {
   }
 }
 
-function pickTeamId(githubTeams: Record<string, number>): string | undefined {
-  const mapped = Object.entries(githubTeams)
-    .filter(([slug]) => slugToTeamId.has(slug))
-    .sort((a, b) => b[1] - a[1])
-  return mapped.length ? slugToTeamId.get(mapped[0]![0]) : undefined
+/**
+ * Ownership comes ONLY from the CODEOWNERS wildcard line: it must name exactly
+ * one mapped product team (generic owners like team-dev are simply unmapped).
+ * Path-rule frequency is NOT ownership — squad-infra owns /aws/ everywhere,
+ * which once assigned every service to a single squad before this was caught.
+ */
+function pickTeamId(wildcardOwners: string[]): string | undefined {
+  const mapped = [...new Set(wildcardOwners.filter(slug => slugToTeamId.has(slug)))]
+  return mapped.length === 1 ? slugToTeamId.get(mapped[0]!) : undefined
 }
 
 
@@ -165,8 +169,8 @@ function run(): Report {
 
   for (const repo of repos) {
     const tsFacts: TsRepoFacts | null = extractTsRepo(REPO_BASE, repo)
-    const githubTeams = tsFacts?.githubTeams ?? extractRepoOwnership(REPO_BASE, repo)
-    Object.keys(githubTeams).forEach(s => allSlugs.add(s))
+    const codeowners = tsFacts?.codeowners ?? extractRepoOwnership(REPO_BASE, repo)
+    Object.keys(codeowners.counts).forEach(s => allSlugs.add(s))
 
     const sls = extractServerless(REPO_BASE, repo)
     if (sls) serverlessByRepo.set(repo, sls)
@@ -182,8 +186,8 @@ function run(): Report {
 
     report.serviceFacts[repo] = {
       repoUrl: tsFacts?.repoUrl ?? `https://github.com/skelloapp/${repo}`,
-      teamId: pickTeamId(githubTeams),
-      githubTeams: Object.keys(githubTeams).sort(),
+      teamId: pickTeamId(codeowners.wildcardOwners),
+      githubTeams: Object.keys(codeowners.counts).sort(),
     }
 
     for (const pkg of tsFacts?.sdkPackages ?? []) {
@@ -349,7 +353,9 @@ function run(): Report {
   }
 
   report.candidates = [...candidatesByKey.values()]
-  report.unmappedGithubTeams = [...allSlugs].filter(s => !slugToTeamId.has(s)).sort()
+  report.unmappedGithubTeams = [...allSlugs]
+    .filter(s => !slugToTeamId.has(s) && !isStructuralGithubTeam(s))
+    .sort()
   return report
 }
 
@@ -459,7 +465,7 @@ function printMarkdown(r: Report) {
   section('🗺 Rails clients needing a mapping decision',
     r.railsUnmapped.map(f => `- ${f}`))
 
-  section('👥 GitHub teams not mapped to any squad (extend teams.githubTeams)',
+  section('👥 Product-team slugs not mapped in teams.ts (structural squads excluded)',
     r.unmappedGithubTeams.map(t => `- ${t}`))
 
   section('📚 Ignored shared libraries',

@@ -9,6 +9,13 @@ import * as path from 'node:path'
  */
 export type SdkUsage = 'value' | 'type-only' | 'declared-only'
 
+export interface CodeownersFacts {
+  /** all team slugs seen anywhere in CODEOWNERS, with occurrence counts */
+  counts: Record<string, number>
+  /** slugs on the wildcard (`*`) line — the only real repo-ownership signal */
+  wildcardOwners: string[]
+}
+
 export interface TsRepoFacts {
   repo: string
   repoUrl: string
@@ -16,8 +23,7 @@ export interface TsRepoFacts {
   sdkPackages: string[]
   /** Import-level usage classification per SDK package */
   sdkUsage: Record<string, SdkUsage>
-  /** GitHub team slugs found in .github/CODEOWNERS (e.g. "@skelloapp/squad-planning"), with occurrence counts */
-  githubTeams: Record<string, number>
+  codeowners: CodeownersFacts
 }
 
 function readJson(filePath: string): Record<string, unknown> | null {
@@ -46,17 +52,18 @@ function normalizeRepoUrl(raw: unknown, repo: string): string {
   return url.replace(/^git\+/, '').replace(/\.git$/, '')
 }
 
-function extractCodeowners(repoPath: string): Record<string, number> {
+function extractCodeowners(repoPath: string): CodeownersFacts {
   const content = readText(path.join(repoPath, '.github', 'CODEOWNERS'))
-  if (!content) return {}
-  const counts: Record<string, number> = {}
+  const facts: CodeownersFacts = { counts: {}, wildcardOwners: [] }
+  if (!content) return facts
   for (const line of content.split('\n')) {
     const trimmed = line.trim()
     if (!trimmed || trimmed.startsWith('#')) continue
-    const matches = trimmed.match(/@skelloapp\/[\w-]+/g)
-    for (const m of matches ?? []) counts[m] = (counts[m] ?? 0) + 1
+    const matches = trimmed.match(/@skelloapp\/[\w-]+/g) ?? []
+    for (const m of matches) facts.counts[m] = (facts.counts[m] ?? 0) + 1
+    if (/^\*\s/.test(trimmed)) facts.wildcardOwners.push(...matches)
   }
-  return counts
+  return facts
 }
 
 /** Classify how `pkg` is imported in a source string. Exported for tests. */
@@ -133,11 +140,11 @@ export function extractTsRepo(repoBase: string, repo: string): TsRepoFacts | nul
     repoUrl: normalizeRepoUrl(pkg.repository, repo),
     sdkPackages,
     sdkUsage: classifySdkUsage(repoPath, sdkPackages),
-    githubTeams: extractCodeowners(repoPath),
+    codeowners: extractCodeowners(repoPath),
   }
 }
 
 /** CODEOWNERS extraction for repos without package.json (e.g. the Rails monolith). */
-export function extractRepoOwnership(repoBase: string, repo: string): Record<string, number> {
+export function extractRepoOwnership(repoBase: string, repo: string): CodeownersFacts {
   return extractCodeowners(path.join(repoBase, repo))
 }
