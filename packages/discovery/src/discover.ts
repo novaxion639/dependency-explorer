@@ -24,7 +24,7 @@ import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap } from '@dependency-explorer/data'
 import type { DiscoveredOverlay } from '@dependency-explorer/schema'
-import { IGNORED_SDKS, sdkToServiceName, isStructuralGithubTeam } from './mapping'
+import { IGNORED_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
 import { extractRailsMonolith } from './extractors/rails'
@@ -236,18 +236,25 @@ function run(): Report {
   // ── Frontend service usage ─────────────────────────────────────────────────
   const front = extractFrontend(REPO_BASE)
   if (front) {
-    for (const [service, ev] of Object.entries(front.services)) {
+    for (const [host, ev] of Object.entries(front.services)) {
       const summary = ev.envVars.length
         ? `env ${ev.envVars.join(', ')} used in ${ev.usageCount} files`
         : `service URL referenced in ${ev.usageFiles.join(', ')}`
-      const inMap = serviceNames.has(service)
-      report.frontendServices.push({ service, inMap, evidence: summary })
+      // hostnames don't always match service names (svc-esignature →
+      // svc-documents-esignature); null alias = known legacy host, skip quietly
+      const aliased = host in FRONTEND_HOST_ALIASES ? FRONTEND_HOST_ALIASES[host] : host
+      if (aliased === null) {
+        report.frontendServices.push({ service: `${host} (legacy v1 host)`, inMap: false, evidence: summary })
+        continue
+      }
+      const inMap = serviceNames.has(aliased)
+      report.frontendServices.push({ service: aliased === host ? host : `${host} → ${aliased}`, inMap, evidence: summary })
       if (inMap) {
         if (ev.usageCount > 0 || ev.envVars.length === 0) {
-          addEvidence('skello-app-front', service, `frontend: ${summary}`, 'rest (HTTP)')
+          addEvidence('skello-app-front', aliased, `frontend: ${summary}`, 'rest (HTTP)')
         }
       } else {
-        report.unknownTargets.push({ from: 'skello-app-front', evidence: summary, normalizedTarget: service })
+        report.unknownTargets.push({ from: 'skello-app-front', evidence: summary, normalizedTarget: aliased })
       }
     }
   }

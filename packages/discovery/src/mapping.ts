@@ -30,6 +30,14 @@ export function sdkToServiceName(sdkPkg: string): string | null {
   return name.startsWith('svc-') ? name : `svc-${name}`
 }
 
+// Frontend service hostnames that don't match a service name 1:1.
+// null = known legacy host (v1 service), deliberately not in the map.
+export const FRONTEND_HOST_ALIASES: Record<string, string | null> = {
+  'svc-esignature': 'svc-documents-esignature', // host/SDK drift — repo is svc-documents-esignature
+  'svc-documents': null, // documents v1 — legacy
+  'svc-kpis': null, // kpis v1 — legacy
+}
+
 // GitHub teams that never own services: Terraform-generated PR-approval
 // squads and functional/org-wide teams. Excluded from the "unmapped product
 // team" report — only food-named product teams (teams.ts) own services.

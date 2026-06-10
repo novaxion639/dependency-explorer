@@ -4,7 +4,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const document_generation_esignature: ServiceFlow = ServiceFlowSchema.parse({
   "id": "document-generation-esignature",
   "name": "Document Generation & E-Signature",
-  "description": "A manager requests a document. The monolith generates a PDF via svc-documents-v2, starts an e-signature flow, then the frontend polls for the result.",
+  "description": "A manager requests a document. The monolith generates a PDF via svc-documents-v2, starts an e-signature flow, then the frontend polls for the result. ⚠ Note (2026-06-10): this flow describes the legacy svc-documents-esignature path, which is on decommission watch — signature orchestration increasingly lives in skello-app's esignatures jobs (direct Yousign integration) and svc-documents-v2's /signatures/* surface; verify against current code before relying on the middle step.",
   "steps": [
     {
       "from": "skello-app-front",

@@ -1138,6 +1138,18 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "Sends payroll sync notifications through the comms HTTP-fronted SQS ingestion",
     "usedEndpoints": []
+  },
+  {
+    "from": "skello-app-front",
+    "to": "svc-documents-esignature",
+    "sdkPackage": "svcEsignatureApiUrl (axios)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Employee documents e-signature follow-up — status polling from the employees store modules and FollowUpDocsEsignatureSidePanel",
+    "usedEndpoints": [
+      "api-documents-status"
+    ]
   }
 ])
 

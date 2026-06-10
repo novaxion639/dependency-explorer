@@ -82,6 +82,27 @@ export function extractFrontend(repoBase: string, repo = 'skello-app-front'): Fr
     .filter(d => fs.existsSync(d))
     .flatMap(d => walkSourceFiles(d))
 
+  // Env vars are typically wrapped once (`export const svcXApiUrl =
+  // getUrl('VUE_APP_SVC_X_API_URL')`) and features import the derived export —
+  // collect those identifiers so usage scanning sees real call sites.
+  const derivedByService = new Map<string, Set<string>>()
+  for (const file of sourceFiles) {
+    let content: string
+    try {
+      content = fs.readFileSync(file, 'utf-8')
+    } catch {
+      continue
+    }
+    for (const [service, evidence] of Object.entries(services)) {
+      for (const v of evidence.envVars) {
+        for (const m of content.matchAll(new RegExp(`const\\s+(\\w+)\\s*=\\s*\\w+\\(['"]${v}['"]\\)`, 'g'))) {
+          if (!derivedByService.has(service)) derivedByService.set(service, new Set())
+          derivedByService.get(service)!.add(m[1]!)
+        }
+      }
+    }
+  }
+
   for (const file of sourceFiles) {
     let content: string
     try {
@@ -93,7 +114,10 @@ export function extractFrontend(repoBase: string, repo = 'skello-app-front'): Fr
     const rel = path.relative(repoPath, file)
 
     for (const [service, evidence] of Object.entries(services)) {
-      const hit = evidence.envVars.some(v => content.includes(v)) || content.includes(`//${service}.`)
+      const derived = derivedByService.get(service)
+      const hit = evidence.envVars.some(v => content.includes(v))
+        || content.includes(`//${service}.`)
+        || (derived ? [...derived].some(d => content.includes(d)) : false)
       if (hit) {
         evidence.usageCount++
         if (evidence.usageFiles.length < SAMPLE_CAP) evidence.usageFiles.push(rel)
