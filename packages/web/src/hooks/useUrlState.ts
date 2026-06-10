@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from 'react'
  *   ?edge=from~to~protocol       connection popup (protocol disambiguates
  *                                multi-channel pairs, e.g. rest vs sns)
  *   ?drawer=svc-users            endpoint drawer for a service
+ *   ?ep=api-sign-up              endpoint highlighted inside the drawer
  */
 export interface UrlState {
   s: string | null
@@ -24,6 +25,7 @@ export interface UrlState {
   flow: string | null
   edge: string | null
   drawer: string | null
+  ep: string | null
 }
 
 export const EDGE_SEP = '~'
@@ -43,6 +45,7 @@ export function parseUrl(search: string): UrlState {
     flow: p.get('flow'),
     edge: p.get('edge'),
     drawer: p.get('drawer'),
+    ep: p.get('ep'),
   }
 }
 
@@ -56,6 +59,7 @@ function serialize(state: UrlState): string {
   if (state.flow) p.set('flow', state.flow)
   if (state.edge) p.set('edge', state.edge)
   if (state.drawer) p.set('drawer', state.drawer)
+  if (state.drawer && state.ep) p.set('ep', state.ep)
   const qs = p.toString()
   return qs ? `${window.location.pathname}?${qs}` : window.location.pathname
 }

@@ -1,8 +1,10 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { connectivityMap } from '@dependency-explorer/data'
 import { computeBlastRadius } from '../../utils/blastRadius'
+import { buildSearchIndex } from '../../utils/searchIndex'
 import { useUrlState, edgeKey, EDGE_SEP } from '../../hooks/useUrlState'
 import type { UrlState } from '../../hooks/useUrlState'
+import { SearchModal } from '../SearchModal'
 import { ServiceSidebar } from './ServiceSidebar'
 import { ConnectivityGraph } from './ConnectivityGraph'
 import { DomainGraph } from './DomainGraph'
@@ -11,6 +13,7 @@ import { FlowListModal } from './FlowListModal'
 import { FlowGraphModal } from './FlowGraphModal'
 
 const map = connectivityMap
+const searchIndex = buildSearchIndex(map)
 
 // Strip URL params that don't resolve against the dataset, so a stale shared
 // link (renamed service, retired flow) degrades gracefully instead of
@@ -29,6 +32,10 @@ function validateUrlState(st: UrlState): UrlState {
       next.edge = null
     }
   }
+  if (next.ep) {
+    const drawerSvc = next.drawer ? map.services.find(s => s.name === next.drawer) : null
+    if (!drawerSvc?.endpoints.some(e => e.id === next.ep)) next.ep = null
+  }
   if (!next.s) next.blast = false
   return next
 }
@@ -36,15 +43,28 @@ function validateUrlState(st: UrlState): UrlState {
 export function ConnectivityPage() {
   const [url, patch] = useUrlState(validateUrlState)
   const [sidebarSearch, setSidebarSearch] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const selectedService = url.s
   const viewMode = url.view
   const showBlastRadius = url.blast
 
   const selectService = useCallback(
-    (name: string) => patch({ s: name, view: 'services', edge: null, drawer: null }, { push: true }),
+    (name: string) => patch({ s: name, view: 'services', edge: null, drawer: null, ep: null }, { push: true }),
     [patch],
   )
+
+  // ⌘K / Ctrl+K opens the global search from anywhere
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setSearchOpen(open => !open)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const blastRadius = useMemo(() => {
     if (!selectedService || !showBlastRadius) return null
@@ -106,6 +126,24 @@ export function ConnectivityPage() {
               {mode === 'services' ? 'Service View' : 'Domain View'}
             </button>
           ))}
+          <button
+            onClick={() => setSearchOpen(true)}
+            title="Global search (⌘K / Ctrl+K)"
+            style={{
+              marginLeft: 'auto', padding: '4px 12px', borderRadius: 5,
+              fontSize: 11, fontWeight: 600, border: '1px solid #2e3250',
+              cursor: 'pointer', background: 'transparent', color: '#64748b',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}
+          >
+            <span>Search</span>
+            <kbd style={{
+              fontSize: 9, padding: '1px 5px', borderRadius: 3,
+              background: '#2e3250', color: '#94a3b8', border: 'none', fontFamily: 'inherit',
+            }}>
+              ⌘K
+            </kbd>
+          </button>
           <CopyPermalinkButton />
         </div>
 
@@ -189,7 +227,8 @@ export function ConnectivityPage() {
             edgeConnection={edgeConnection}
             onEdgeSelect={conn => patch({ edge: conn ? edgeKey(conn.from, conn.to, conn.protocol) : null })}
             drawerService={drawerService}
-            onDrawerSelect={name => patch({ drawer: name })}
+            onDrawerSelect={name => patch({ drawer: name, ep: null })}
+            highlightEndpointId={url.ep}
           />
         ) : (
           <DomainGraph
@@ -229,6 +268,18 @@ export function ConnectivityPage() {
           onClose={() => patch({ flow: null, flows: null })}
         />
       )}
+
+      {/* Global search (⌘K) */}
+      {searchOpen && (
+        <SearchModal
+          index={searchIndex}
+          onNavigate={p => {
+            patch(p, { push: true })
+            setSearchOpen(false)
+          }}
+          onClose={() => setSearchOpen(false)}
+        />
+      )}
     </div>
   )
 }
@@ -245,7 +296,7 @@ function CopyPermalinkButton() {
       }}
       title="Copy a shareable link to the current view"
       style={{
-        marginLeft: 'auto', padding: '4px 12px', borderRadius: 5,
+        padding: '4px 12px', borderRadius: 5,
         fontSize: 11, fontWeight: 600, border: '1px solid #2e3250',
         cursor: 'pointer', background: copied ? '#10b98122' : 'transparent',
         color: copied ? '#10b981' : '#64748b',

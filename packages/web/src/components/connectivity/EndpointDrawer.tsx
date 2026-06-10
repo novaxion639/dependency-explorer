@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ServiceEndpoint, HttpMethod } from '@dependency-explorer/data'
 import { DB_COLORS } from '../nodes/DatabaseNode'
 
@@ -20,11 +20,22 @@ const PARAM_IN_COLOR: Record<string, string> = {
 interface Props {
   serviceName: string
   endpoints: ServiceEndpoint[]
+  /** Endpoint to open and scroll to (set by search results / ?ep= permalinks) */
+  highlightId?: string | null
   onClose: () => void
 }
 
-export function EndpointDrawer({ serviceName, endpoints, onClose }: Props) {
-  const [open, setOpen] = useState<string | null>(endpoints[0]?.id ?? null)
+export function EndpointDrawer({ serviceName, endpoints, highlightId, onClose }: Props) {
+  const [open, setOpen] = useState<string | null>(highlightId ?? endpoints[0]?.id ?? null)
+
+  useEffect(() => {
+    if (!highlightId) return
+    setOpen(highlightId)
+    // Wait for the accordion body to render before scrolling
+    requestAnimationFrame(() => {
+      document.getElementById(`ep-row-${highlightId}`)?.scrollIntoView({ block: 'center' })
+    })
+  }, [highlightId])
 
   const toggle = (id: string) => setOpen(prev => (prev === id ? null : id))
   const verifiedCount = endpoints.filter(ep => ep.provenance?.source === 'discovered').length
@@ -58,7 +69,14 @@ export function EndpointDrawer({ serviceName, endpoints, onClose }: Props) {
           const color = METHOD_COLOR[ep.method]
 
           return (
-            <div key={ep.id} style={{ borderBottom: '1px solid #1e2235' }}>
+            <div
+              key={ep.id}
+              id={`ep-row-${ep.id}`}
+              style={{
+                borderBottom: '1px solid #1e2235',
+                ...(highlightId === ep.id ? { background: '#6366f10d', boxShadow: 'inset 2px 0 0 #6366f1' } : {}),
+              }}
+            >
               {/* Accordion header */}
               <button
                 onClick={() => toggle(ep.id)}

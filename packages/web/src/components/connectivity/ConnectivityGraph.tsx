@@ -41,9 +41,11 @@ interface Props {
   /** Service whose endpoint drawer is open — owned by the page so it can live in the permalink */
   drawerService: ConnectivityService | null
   onDrawerSelect: (serviceName: string | null) => void
+  /** Endpoint to open + scroll to inside the drawer (?ep= permalink param) */
+  highlightEndpointId?: string | null
 }
 
-function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnection, onEdgeSelect, drawerService, onDrawerSelect }: Props) {
+function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnection, onEdgeSelect, drawerService, onDrawerSelect, highlightEndpointId }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -169,6 +171,7 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
         <EndpointDrawer
           serviceName={drawerService.name}
           endpoints={drawerService.endpoints}
+          highlightId={highlightEndpointId ?? null}
           onClose={() => onDrawerSelect(null)}
         />
       )}
