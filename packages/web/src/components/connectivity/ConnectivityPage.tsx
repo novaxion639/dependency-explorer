@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { connectivityMap } from '@dependency-explorer/data'
-import type { ServiceFlow } from '@dependency-explorer/data'
 import { computeBlastRadius } from '../../utils/blastRadius'
+import { useUrlState, edgeKey, EDGE_SEP } from '../../hooks/useUrlState'
+import type { UrlState } from '../../hooks/useUrlState'
 import { ServiceSidebar } from './ServiceSidebar'
 import { ConnectivityGraph } from './ConnectivityGraph'
 import { DomainGraph } from './DomainGraph'
@@ -9,20 +10,41 @@ import { FlowsPanel } from './FlowsPanel'
 import { FlowListModal } from './FlowListModal'
 import { FlowGraphModal } from './FlowGraphModal'
 
-type ViewMode = 'services' | 'domains'
-
 const map = connectivityMap
 
-export function ConnectivityPage() {
-  const [selectedService, setSelectedService] = useState<string | null>(null)
-  const [sidebarSearch, setSidebarSearch] = useState('')
-  const [viewMode, setViewMode] = useState<ViewMode>('services')
-  const [domainFilter, setDomainFilter] = useState<string | null>(null)
-  const [showBlastRadius, setShowBlastRadius] = useState(false)
+// Strip URL params that don't resolve against the dataset, so a stale shared
+// link (renamed service, retired flow) degrades gracefully instead of
+// rendering a broken view.
+function validateUrlState(st: UrlState): UrlState {
+  const serviceNames = new Set(map.services.map(s => s.name))
+  const next = { ...st }
+  if (next.s && !serviceNames.has(next.s)) next.s = null
+  if (next.domain && !(map.domains ?? []).some(d => d.id === next.domain)) next.domain = null
+  if (next.flows && !serviceNames.has(next.flows)) next.flows = null
+  if (next.flow && !(map.flows ?? []).some(f => f.id === next.flow)) next.flow = null
+  if (next.drawer && !serviceNames.has(next.drawer)) next.drawer = null
+  if (next.edge) {
+    const [from, to, protocol] = next.edge.split(EDGE_SEP)
+    if (!map.connections.some(c => c.from === from && c.to === to && c.protocol === protocol)) {
+      next.edge = null
+    }
+  }
+  if (!next.s) next.blast = false
+  return next
+}
 
-  // Flow modal state: null = closed, string = list open for service, ServiceFlow = graph open
-  const [flowModalService, setFlowModalService] = useState<string | null>(null)
-  const [selectedFlow, setSelectedFlow] = useState<ServiceFlow | null>(null)
+export function ConnectivityPage() {
+  const [url, patch] = useUrlState(validateUrlState)
+  const [sidebarSearch, setSidebarSearch] = useState('')
+
+  const selectedService = url.s
+  const viewMode = url.view
+  const showBlastRadius = url.blast
+
+  const selectService = useCallback(
+    (name: string) => patch({ s: name, view: 'services', edge: null, drawer: null }, { push: true }),
+    [patch],
+  )
 
   const blastRadius = useMemo(() => {
     if (!selectedService || !showBlastRadius) return null
@@ -32,6 +54,16 @@ export function ConnectivityPage() {
   const selected = selectedService
     ? map.services.find(s => s.name === selectedService)
     : null
+
+  const selectedFlow = url.flow ? (map.flows ?? []).find(f => f.id === url.flow) ?? null : null
+
+  const edgeConnection = useMemo(() => {
+    if (!url.edge) return null
+    const [from, to, protocol] = url.edge.split(EDGE_SEP)
+    return map.connections.find(c => c.from === from && c.to === to && c.protocol === protocol) ?? null
+  }, [url.edge])
+
+  const drawerService = url.drawer ? map.services.find(s => s.name === url.drawer) ?? null : null
 
   const teamById = new Map((map.teams ?? []).map(t => [t.id, t]))
   const selectedTeam = selected?.teamId ? teamById.get(selected.teamId) : undefined
@@ -47,11 +79,11 @@ export function ConnectivityPage() {
         teams={map.teams}
         domains={map.domains}
         selected={selectedService}
-        onSelect={name => { setSelectedService(name); setViewMode('services') }}
+        onSelect={selectService}
         search={sidebarSearch}
         onSearch={setSidebarSearch}
-        domainFilter={domainFilter}
-        onDomainFilter={setDomainFilter}
+        domainFilter={url.domain}
+        onDomainFilter={d => patch({ domain: d })}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -63,7 +95,7 @@ export function ConnectivityPage() {
           {(['services', 'domains'] as const).map(mode => (
             <button
               key={mode}
-              onClick={() => setViewMode(mode)}
+              onClick={() => patch({ view: mode })}
               style={{
                 padding: '4px 12px', borderRadius: 5, fontSize: 11, fontWeight: 600,
                 border: 'none', cursor: 'pointer',
@@ -74,6 +106,7 @@ export function ConnectivityPage() {
               {mode === 'services' ? 'Service View' : 'Domain View'}
             </button>
           ))}
+          <CopyPermalinkButton />
         </div>
 
         {/* Info bar when a service is selected */}
@@ -127,7 +160,7 @@ export function ConnectivityPage() {
               <Pill label="called by" count={inCount} color="#818cf8" />
               <Pill label="endpoints" count={selected.endpoints.length} color="#6366f1" />
               <button
-                onClick={() => setShowBlastRadius(v => !v)}
+                onClick={() => patch({ blast: !showBlastRadius })}
                 style={{
                   padding: '3px 8px', borderRadius: 5, fontSize: 10, fontWeight: 600,
                   border: 'none', cursor: 'pointer',
@@ -150,20 +183,18 @@ export function ConnectivityPage() {
           <ConnectivityGraph
             map={map}
             selectedService={selectedService}
-            onSelectService={setSelectedService}
-            onOpenFlows={name => {
-              setFlowModalService(name)
-              setSelectedFlow(null)
-            }}
+            onSelectService={selectService}
+            onOpenFlows={name => patch({ flows: name, flow: null }, { push: true })}
             blastRadius={blastRadius?.affected ?? null}
+            edgeConnection={edgeConnection}
+            onEdgeSelect={conn => patch({ edge: conn ? edgeKey(conn.from, conn.to, conn.protocol) : null })}
+            drawerService={drawerService}
+            onDrawerSelect={name => patch({ drawer: name })}
           />
         ) : (
           <DomainGraph
             map={map}
-            onSelectDomain={domainId => {
-              setDomainFilter(domainId)
-              setViewMode('services')
-            }}
+            onSelectDomain={domainId => patch({ domain: domainId, view: 'services' })}
           />
         )}
 
@@ -172,20 +203,20 @@ export function ConnectivityPage() {
             flows={map.flows ?? []}
             selectedService={selectedService}
             map={map}
-            onSelectService={setSelectedService}
-            onOpenFlow={flow => setSelectedFlow(flow)}
+            onSelectService={selectService}
+            onOpenFlow={flow => patch({ flow: flow.id }, { push: true })}
           />
         )}
       </div>
 
       {/* Flow list modal */}
-      {flowModalService && !selectedFlow && (
+      {url.flows && !selectedFlow && (
         <FlowListModal
-          serviceName={flowModalService}
+          serviceName={url.flows}
           flows={map.flows ?? []}
           map={map}
-          onSelectFlow={flow => setSelectedFlow(flow)}
-          onClose={() => setFlowModalService(null)}
+          onSelectFlow={flow => patch({ flow: flow.id }, { push: true })}
+          onClose={() => patch({ flows: null })}
         />
       )}
 
@@ -194,14 +225,34 @@ export function ConnectivityPage() {
         <FlowGraphModal
           flow={selectedFlow}
           map={map}
-          onBack={() => setSelectedFlow(null)}
-          onClose={() => {
-            setSelectedFlow(null)
-            setFlowModalService(null)
-          }}
+          onBack={() => patch({ flow: null })}
+          onClose={() => patch({ flow: null, flows: null })}
         />
       )}
     </div>
+  )
+}
+
+function CopyPermalinkButton() {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          setCopied(true)
+          setTimeout(() => setCopied(false), 1500)
+        })
+      }}
+      title="Copy a shareable link to the current view"
+      style={{
+        marginLeft: 'auto', padding: '4px 12px', borderRadius: 5,
+        fontSize: 11, fontWeight: 600, border: '1px solid #2e3250',
+        cursor: 'pointer', background: copied ? '#10b98122' : 'transparent',
+        color: copied ? '#10b981' : '#64748b',
+      }}
+    >
+      {copied ? '✓ Copied' : '⧉ Permalink'}
+    </button>
   )
 }
 

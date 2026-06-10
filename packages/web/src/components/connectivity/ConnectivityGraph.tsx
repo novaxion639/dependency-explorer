@@ -24,20 +24,10 @@ import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
 import { EdgePopup } from './EdgePopup'
 import { EndpointDrawer } from './EndpointDrawer'
-import type { ConnectivityMap, ServiceConnection, ServiceEndpoint } from '@dependency-explorer/data'
+import type { ConnectivityMap, ConnectivityService, ServiceConnection } from '@dependency-explorer/data'
 
 const nodeTypes = { serviceNode: ServiceNode, databaseNode: DatabaseNode }
 const edgeTypes = { connectivityEdge: ConnectivityEdge, floatingDbEdge: FloatingDbEdge }
-
-interface PopupState {
-  connection: ServiceConnection
-  position: { x: number; y: number }
-}
-
-interface DrawerState {
-  serviceName: string
-  endpoints: ServiceEndpoint[]
-}
 
 interface Props {
   map: ConnectivityMap
@@ -45,14 +35,21 @@ interface Props {
   onSelectService: (name: string) => void
   onOpenFlows: (serviceName: string) => void
   blastRadius?: Map<string, number> | null
+  /** Connection whose detail popup is open — owned by the page so it can live in the permalink */
+  edgeConnection: ServiceConnection | null
+  onEdgeSelect: (conn: ServiceConnection | null) => void
+  /** Service whose endpoint drawer is open — owned by the page so it can live in the permalink */
+  drawerService: ConnectivityService | null
+  onDrawerSelect: (serviceName: string | null) => void
 }
 
-function FlowInner({ map, selectedService, onOpenFlows, blastRadius }: Props) {
+function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnection, onEdgeSelect, drawerService, onDrawerSelect }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
-  const [popup, setPopup] = useState<PopupState | null>(null)
-  const [drawer, setDrawer] = useState<DrawerState | null>(null)
+  // Screen position of the last edge click; a popup restored from a permalink
+  // has no click origin and renders at a fixed spot instead.
+  const [clickPos, setClickPos] = useState<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     const { nodes: n, edges: e } = buildConnectivityGraph(map, selectedService)
@@ -72,7 +69,6 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius }: Props) {
 
     setNodes(n)
     setEdges(e)
-    setPopup(null)
     setTimeout(() => fitView({ padding: 0.15, duration: 400 }), 50)
   }, [map, selectedService, blastRadius, setNodes, setEdges, fitView])
 
@@ -81,12 +77,10 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius }: Props) {
       evt.stopPropagation()
       const conn = (edge.data as { connection: ServiceConnection } | undefined)?.connection
       if (!conn) return
-      setPopup({
-        connection: conn,
-        position: { x: evt.clientX + 10, y: evt.clientY + 10 },
-      })
+      setClickPos({ x: evt.clientX + 10, y: evt.clientY + 10 })
+      onEdgeSelect(conn)
     },
-    [],
+    [onEdgeSelect],
   )
 
   const onNodeClick: NodeMouseHandler = useCallback(
@@ -98,7 +92,7 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius }: Props) {
     [onOpenFlows],
   )
 
-  const onPaneClick = useCallback(() => setPopup(null), [])
+  const onPaneClick = useCallback(() => onEdgeSelect(null), [onEdgeSelect])
 
   return (
     <div style={{ flex: 1, position: 'relative', display: 'flex', overflow: 'hidden' }}>
@@ -171,24 +165,24 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius }: Props) {
       </div>
 
       {/* Endpoint drawer */}
-      {drawer && (
+      {drawerService && (
         <EndpointDrawer
-          serviceName={drawer.serviceName}
-          endpoints={drawer.endpoints}
-          onClose={() => setDrawer(null)}
+          serviceName={drawerService.name}
+          endpoints={drawerService.endpoints}
+          onClose={() => onDrawerSelect(null)}
         />
       )}
 
       {/* Edge popup */}
-      {popup && (
+      {edgeConnection && (
         <EdgePopup
-          connection={popup.connection}
+          connection={edgeConnection}
           map={map}
-          position={popup.position}
-          onClose={() => setPopup(null)}
-          onSeeMore={(endpoints, name) => {
-            setDrawer({ serviceName: name, endpoints })
-            setPopup(null)
+          position={clickPos ?? { x: Math.max(20, window.innerWidth / 2 - 160), y: 100 }}
+          onClose={() => onEdgeSelect(null)}
+          onSeeMore={(_endpoints, name) => {
+            onDrawerSelect(name)
+            onEdgeSelect(null)
           }}
         />
       )}
