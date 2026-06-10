@@ -152,3 +152,67 @@
 2. **MergeShop SNS fan-out** — punch + kpis-v2 + docs-v2 consume; publisher unidentified.
 3. **AWS DATA Firehose→S3 RawData export** — drawn on every service board (reports, comms, esignature, employees, kpis, enrollment, billing, docs-v2, punch); a per-service convention, candidate for schema-level representation rather than per-flow nodes.
 4. **Cover-only stubs**: svcHris, SvcShifts, SvcBff, SvcBffPlanning — with wrong GITHUB links on three; governance list for the architects.
+
+## GLOBAL — [[Architecture] Skello](https://www.figma.com/board/zOrx26nmHB4KHFpZkRm5eT) (2026-02)
+
+- Inventory: 62 systems (37 internal + 25 external), 39 connectors. **29 of our 32 services drawn** (each embedding its per-service board); inter-service edges deliberately delegated to those boards (only billing↔modularisation drawn globally, ✅ matches).
+- ✅ **SvcDocumentsEsignature marked "(deprecated)" on the board** — corroborates our decommission watch (and contradicts its own service board's "Active" chip).
+- 🆕 Unmapped internal systems: **SvcBitlyV2** (Lambda+DynamoDB URL shortener), **Metabase** (ECS+Aurora BI), **SmartPlanner (deprecated)** (EC2 legacy auto-planner), **SvcKpis v1 (deprecated)** (Lambda+RDS), **SkelloSelfServe** + **SkelloOnboarding** (S3+Vue fronts — matching enrollment's unmapped callers), **SkelloMobile** + **SkelloPunchClock** (React Native apps).
+- 🆕 Unmapped infra: front-ends ↔ **API Gateway "Websocket"** (no front→websockets edge in map); external **ALB → monolith "tcp:80"**; **DMS CDC "BusNotifications" ↔ Kinesis** on the monolith (the skelloAppBus backbone, drawn globally); **Services → Kinesis → S3 raw-data (Account DATA) → Looker**.
+- 🆕 External integrations with explicit connectors (none in map): POS→REVO/Agora/L'Addition/**Chift**; comms↔**Brevo/smsmode/Expo**; esignature→**Yousign**; intelligence→**OpenAI** (+Bedrock icon); hris→**Kombo**; employees→**Fortify↔Silae**, **Urssaf API**, **Cegedim**; **monolith→Stripe**(!); billing↔**Salesforce** (+Chargebee↔Salesforce); Salary-Advance partners (SPAYR, ROSALY)→Looker; **Webflow** marketing entry; partner groups (POS/PAY/Analytics/HRIS clients) ↔ monolith.
+- ⚠ Not drawn: svc-trackers, svc-automatic-scheduling (SmartPlanner-deprecated likely its predecessor slot), svc-payroll.
+- ❓ BFF→"Account PROD" connector unspecific; Urssaf/Cegedim sections contain silae.fr link-preview leftovers; board "©2023" template with 2026-02 content.
+
+## SvcIntelligence — [Global architecture](https://www.figma.com/board/eDPQ5NdaL21dntzI1kfL3n) (2025-11)
+
+- ✅ Analysis pipeline matches /analyse: RequestAnalysis → analyseDocumentSQS → AnalyseDocumentStepFunction (GetDocument→GetPrompt+ExtractDocumentText→AnalyseDocument→write DynamoDB); ✅ →docs-v2 GetDocument edge; ✅ DynamoDB+S3+DLQs; ✅ front ingress.
+- 🆕 **Both Bedrock (Claude3) AND OpenAI (GPT-4)** in the LLM section; 🆕 **Textract** table extraction with SFN task-token + completion **SNS** → release; 🆕 **websocket push** (DynamoDB stream → NotifyClient → Websocket) — candidate svc-intelligence→svc-websockets-v2 edge (corroborated by the v1 websocket board's GenericMessage producer); 🆕 GET /ai/{shopId}/entities endpoint; 🆕 Firehose→S3 RawData export.
+- ⚠ Board ingress is HTTP POST /ai/{docId}/analysis/{type} — predates the docs-v2 SQS hand-off we verified in code; ⚠ board shows NO MongoDB (map claims one; kpis + global boards drew Mongo under intelligence — conflicting, code check needed); ⚠ validation surface absent (postdates board).
+- 📌 CONFIRMED again: intelligence→docs-v2 usedEndpoints are signature-reminder copy-paste artifacts.
+
+## SvcUsers — [[Architecture] SvcUsers (no-edit)](https://www.figma.com/board/ioDtRODjqmMuKaIzNgh0gW) (2026-04, "Overview" page)
+
+- ✅ DynamoDB; ✅ SSO config/callback endpoints; ✅ login-capability; ✅ →comms reset-password HIGH email via SQS; ✅ sdk entry ("old skello-auth-client" naming confirmed!).
+- 🆕 **POST /sign-up is real** (SignUp Lambda → DynamoDB via ALB) — SDK had it, scaffold dropped it as unmatched → **restored in this branch** (manual provenance, board+SDK dual evidence).
+- 🆕 **Dual entry: API GW svc-users.skello.io + ALB auth.skello.io** (login/refresh/reset/sign-up via ALB) — unmapped route family (POST /v3/login, refresh_token, temporary-password, reset-password, mobile SSO redirect); 🆕 **svc-users→skello-app missing edge** (3 authorizer Lambdas call monolith; ComparePayloadJob GET /private/svc_users/payloads drift audit; reads skelloapp-readReplica; consumes skelloAppBus + FullLoadBus — sticky lists replicated pk prefixes); 🆕 Google Workspace as the OIDC IdP; 🆕 data-lake export.
+- ⚠ Map's `postgresql svc_users` store suspect — board shows only the monolith's readReplica (mis-attribution; endpoints' pg awsCalls too); ⚠ **svc-punch→svc-users async exists on board** (SNS svcPunchMobilePermissions → SQS → UpdateEmployeePunchMobilePermission) while our svc-users→svc-punch sync edge is unverified by it — possible direction error to re-check in code.
+- ❓ "monthly"/"Overview With SSO"/"Full load" pages unfetched (page node-ids needed).
+
+## SvcWorkloadPlan — [with mongo](https://www.figma.com/board/cEwC3Z9GHvwDvQ2SYuVwI6) (2026-02)
+
+- ⚠ **Board is Mongo-ONLY** ("with mongo" = post-migration; zero DynamoDB) — our flows persist plans to DynamoDB svcWorkloadPlan-{env}: likely stale, verify serverless/db client then repoint flow stores.
+- ✅ 6/9 routes drawn; ✅ Route53/ACM/API GW; ✅ **MergeShop SNS→SQS→Job→Mongo: 4th confirmed consumer** (validates the mergeShopSqs from its serverless config).
+- ⚠ No callers drawn; SDK box named svc-workload-plan-sdk vs our workload-plan-sdk (rename smell, cf. enrollment); ❓ no revenue/kpis input drawn (our code-evidenced kpis edge stands); 📌 exception: no Firehose RawData export drawn.
+
+## SvcRequests — [Architecture Phase 2](https://www.figma.com/board/B1sY9VGM1XUVgoYL0zYKtK) (2026-03)
+
+- ✅ All 6 endpoints drawn; ✅ RDS PostgreSQL SvcRequests; ✅ both comms lanes per event (Notification+Mail ×Created/Accepted/Transferred) — consistent with our HIGH email+notification correction; ✅ monolith-origin notifications stay in skello-app (Kinesis filters origin != skelloApp) — reconciles with our lifecycle flow.
+- 🆕 **PATCH /leave-request/transfer/{id}** + Transferred lifecycle state (unmapped endpoint+state); 🆕 **svc-requests→skello-app missing edges ×2**: CreateShifts write-back (Kinesis filter approved non-monolith → POST /private/shifts + retries) and GetPreSelectedManager sync managers fetch; 🆕 comms fan-out is **CDC-driven** (RDS→DMS task→Kinesis SvcRequests→SQS lanes), not API-enqueue; 🆕 inbound DMS replication of monolith leave_requests/**shops/users/postes** (local replicas); 🆕 **MergeShops 5th consumer**; 🆕 nightly purge cron (bug: `* 3 * * *` = every minute of 3am); 🆕 data-lake export.
+- ⚠ Our svc-requests→svc-events ActivityLogCreateSqs edge not drawn (code evidence stands — flag to board owners); ⚠ our svc-requests-sns awsCalls don't match (the only SNS is the CDC-dispatch topic); ❓ comms-v2→svc-requests reverse read edge unverified by board; ❓ SvcUsers box near the authorizer (semantics undrawn); 📌 Rejected/Cancelled notification lanes absent; 📌 "To delete after release" full-load section = strangler-pattern phase boundary.
+
+## SvcSkelloAssistant — [Freemium](https://www.figma.com/board/tcpnXQNDkfle7r7wt7cls2) (2026-01)
+
+- ✅ Surviving front→assistant /chat edge confirmed; ✅ 3 of 4 retirements supported (zero comms/docs-v2/esignature traces).
+- ⚠ **Retirement CONTESTED: assistant→svc-billing-automation** — the freemium design hinges on GET /credits-balance + POST /use (atomic credit decrement), and billing's map model carries both endpoints **orphaned** (no connection references them). All-Lambda architecture → invocation plausibly via env-configured API GW URL, invisible to import/queue/URL diligence. **Re-verify against assistant's serverless env/terraform before standing by the retirement.**
+- 🆕 **Bedrock** LLM; 🆕 internal chatSQS async hop; 🆕 WebSocket stream response to the front (no assistant↔websockets edge anywhere); 🆕 adjacent billing→skello-app GET /features (feature state + admin count) — second sighting (billing board's JobSfn* too).
+- ❓ Board silent on assistant storage (map's MongoDB checkpoint claim untested); 📌 design artifact (2026-01) — prompt to re-audit, not proof of shipped code.
+
+## SvcPos — [[Architecture] SvcPos (no-edit)](https://www.figma.com/board/O5yJE3YE1oNdyHDDIzczVa) (2025-12)
+
+- ✅ 10/17 endpoints drawn (integration/provider CRUD + run); ✅ DynamoDB SvcPos; ✅ sdk entry.
+- ⚠ **CHIFT absent** — board still shows direct cron pulls (05:00 Mon–Fri) from **ADDITION/REVO/AGORA** provider APIs → Transaction SQS → DynamoDB; our 6 chift routes postdate it (board stale on integration shape; global board already draws Chift).
+- 🆕 Egress unmapped ×3: Firehose→S3 RawData; **AggregationEvent SQS → SkelloApp** (aggregated POS revenue toward the monolith); outbound provider pulls. 🆕 Inbound skelloAppBus Kinesis → SyncSkelloAppShops.
+- ❓ kpis→pos edge stays **CONTESTED** (kpis not drawn as caller; api-get-chift-providers not even on board; consistent with kpis-via-svc-search-collections); ⚠ both inbound edges' usedEndpoints (api-get-chift-providers only) look wrong; 📌 mislabeled `SvcPunchToFirehoseHandler` Lambda wired to AggregationEvent (copy-paste or shared queue — ask team).
+
+## svc-websockets-v2 — [[Architecture] Websocket (no-edit)](https://www.figma.com/board/e3TYpYB99jopQhYsSV62SJ) (2024-03)
+
+- 📌 **v1 board; our map models v2** — three type-specific queues (PingShopIdAndDate/PingTypeAndUuid/GenericMessage) vs v2's single topicMessage+DLQ; no topics, no auth, no replay drawn; DynamoDB "websocket" (likely connections-only).
+- 🆕 v1 producers drawn that corroborate other boards' claims: **SkelloApp**, **SvcBillingAutomation** (JobSfnPushWebsocket ✓), **SvcIntelligence** (GenericMessage ✓). Whether they migrated to v2's topicMessage = the code check that would mint front/billing/intelligence→websockets edges.
+- 📌 Board should be marked superseded / a v2 board drawn (governance list).
+
+## Cross-board patterns (sweep #3 additions)
+
+5. **Strangler-pattern monolith coupling is bidirectional and CDC-heavy**: services keep local replicas of monolith tables (requests: leave_requests+shops+users+postes via DMS; users: 8 pk prefixes via skelloAppBus+readReplica; search: whole-DB DMS; kpis: weekly_options) AND write back through private monolith endpoints (requests CreateShifts, employees facade PATCH, users payload drift-audit, billing provisioning, auto-scheduling assignShifts). The map's sync-REST-only lens under-represents both directions.
+6. **MergeShop fan-out consumers now: punch, kpis-v2, docs-v2, workload-plan, requests** (5). Publisher still unidentified — top code-verification priority.
+7. **SDK rename smell**: boards label SDKs SvcOnboardingSdk / svc-workload-plan-sdk / "svc-users-sdk (old skello-auth-client)" — registry ground truth lives in skello-libs-ts.
+8. **Orphaned endpoints as integration evidence**: billing's credit-balance pair orphaned in our map ↔ assistant freemium board uses exactly them. Orphan endpoints deserve a standing drift check.

@@ -177,6 +177,20 @@ const svc_users: ConnectivityService = ConnectivityServiceSchema.parse({
       "useCase": "",
       "params": [],
       "response": {}
+    },
+    {
+      "id": "api-sign-up",
+      "path": "/sign-up",
+      "method": "POST",
+      "description": "Account sign-up — served via the ALB entry (auth.skello.io), not the API Gateway, which is why the serverless scan misses it. Evidence: SDK signUp() method + the 2026-04 SvcUsers architecture board (SignUp Lambda → DynamoDB).",
+      "useCase": "",
+      "params": [],
+      "response": {},
+      "provenance": {
+        "source": "manual",
+        "lastVerified": "2026-06-10",
+        "evidence": "svc-users-sdk signUp() + https://www.figma.com/board/ioDtRODjqmMuKaIzNgh0gW"
+      }
     }
   ],
   "databases": [
