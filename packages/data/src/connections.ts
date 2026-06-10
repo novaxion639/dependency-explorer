@@ -12,71 +12,96 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "from": "svc-events",
     "to": "svc-communications-v2",
     "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
-    "communicationType": "sync",
+    "communicationType": "async",
     "protocol": "rest",
     "authType": "jwt",
     "description": "Publishes event notifications to employees via email/push",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "bulk-create-high-priority-email-route",
+      "bulk-create-low-priority-email-route",
+      "bulk-create-high-priority-notification-route"
+    ]
   },
   {
     "from": "svc-billing-automation",
     "to": "svc-communications-v2",
     "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
-    "communicationType": "sync",
+    "communicationType": "async",
     "protocol": "rest",
     "authType": "jwt",
     "description": "Sends invoices, payment failures and subscription notifications",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "bulk-create-high-priority-email-route",
+      "bulk-create-low-priority-email-route",
+      "bulk-create-high-priority-sms-route"
+    ]
   },
   {
     "from": "svc-documents-v2",
     "to": "svc-communications-v2",
     "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
-    "communicationType": "sync",
+    "communicationType": "async",
     "protocol": "rest",
     "authType": "jwt",
     "description": "Notifies employees when a document is ready to sign",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "bulk-create-high-priority-email-route",
+      "bulk-create-low-priority-email-route",
+      "bulk-create-high-priority-notification-route"
+    ]
   },
   {
     "from": "svc-hris",
     "to": "svc-communications-v2",
     "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
-    "communicationType": "sync",
+    "communicationType": "async",
     "protocol": "rest",
     "authType": "jwt",
     "description": "Sends HRIS sync completion and mismatch alerts",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "bulk-create-high-priority-email-route",
+      "bulk-create-low-priority-email-route"
+    ]
   },
   {
     "from": "svc-users",
     "to": "svc-communications-v2",
     "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
-    "communicationType": "sync",
+    "communicationType": "async",
     "protocol": "rest",
     "authType": "jwt",
     "description": "Sends welcome emails and password reset emails on user creation",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "bulk-create-high-priority-email-route",
+      "bulk-create-low-priority-email-route"
+    ]
   },
   {
     "from": "svc-requests",
     "to": "svc-communications-v2",
     "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
-    "communicationType": "sync",
+    "communicationType": "async",
     "protocol": "rest",
     "authType": "jwt",
     "description": "Notifies employees of request approval/rejection",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "bulk-create-high-priority-email-route",
+      "bulk-create-low-priority-email-route",
+      "bulk-create-high-priority-notification-route"
+    ]
   },
   {
     "from": "svc-employees",
     "to": "svc-communications-v2",
     "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
-    "communicationType": "sync",
+    "communicationType": "async",
     "protocol": "rest",
     "authType": "jwt",
     "description": "Sends onboarding invitation emails to new employees",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "bulk-create-high-priority-email-route",
+      "bulk-create-low-priority-email-route"
+    ]
   },
   {
     "from": "svc-intelligence",
@@ -364,11 +389,14 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "from": "superadmin",
     "to": "svc-communications-v2",
     "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
-    "communicationType": "sync",
+    "communicationType": "async",
     "protocol": "rest",
     "authType": "jwt",
     "description": "Send high and low priority notifications to users",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "bulk-create-high-priority-notification-route",
+      "bulk-create-low-priority-notification-route"
+    ]
   },
   {
     "from": "superadmin",
@@ -469,10 +497,13 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "to": "svc-communications-v2",
     "sdkPackage": "Microservices::Communications (SQS)",
     "communicationType": "async",
-    "protocol": "sqs",
+    "protocol": "rest",
     "authType": "iam-role",
     "description": "Send high/low-priority email notifications to users via SQS queues",
-    "usedEndpoints": []
+    "usedEndpoints": [
+      "bulk-create-high-priority-notification-route",
+      "bulk-create-low-priority-notification-route"
+    ]
   },
   {
     "from": "skello-app",

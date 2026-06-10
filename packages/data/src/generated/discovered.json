@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-10T14:47:05.826Z",
+  "generatedAt": "2026-06-10T15:01:42.520Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
@@ -665,6 +665,34 @@
     "svc-communications-v2#api-send-test-email": {
       "lastVerified": "2026-06-10",
       "evidence": "serverless static-scan: POST /emails/test"
+    },
+    "svc-communications-v2#bulk-create-high-priority-email-route": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: POST /email/high-priority"
+    },
+    "svc-communications-v2#bulk-create-high-priority-notification-route": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: POST /notifications/high-priority"
+    },
+    "svc-communications-v2#bulk-create-high-priority-sms-route": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: POST /sms/high-priority"
+    },
+    "svc-communications-v2#bulk-create-low-priority-email-route": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: POST /email/low-priority"
+    },
+    "svc-communications-v2#bulk-create-low-priority-notification-route": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: POST /notifications/low-priority"
+    },
+    "svc-communications-v2#bulk-create-low-priority-sms-route": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: POST /sms/low-priority"
+    },
+    "svc-communications-v2#callback-sms-mode-route": {
+      "lastVerified": "2026-06-10",
+      "evidence": "serverless static-scan: POST \\${self:custom.parameters.smsModeCallbackPath}"
     },
     "svc-employees#api-upsert-absence-config": {
       "lastVerified": "2026-06-10",

@@ -4,7 +4,7 @@ import type { ConnectivityService } from '@dependency-explorer/schema'
 const svc_communications_v2: ConnectivityService = ConnectivityServiceSchema.parse({
   "name": "svc-communications-v2",
   "type": "typescript-microservice",
-  "description": "Centralised multi-channel messaging — email, SMS, push notifications and in-app messages",
+  "description": "Centralised multi-channel messaging — email, SMS, push notifications and in-app messages. Ingestion is HTTP-fronted async: the bulk-create routes are API Gateway SQS-SendMessage direct integrations (Skello Lambda authorizer, no Lambda in the ingress path) — senders POST synchronously, messages are queued and processed/delivered asynchronously by consumer Lambdas. The remaining endpoints (device tokens, blacklists, email display, test email) are regular sync Lambda routes.",
   "endpoints": [
     {
       "id": "api-create-device-token",
@@ -124,6 +124,77 @@ const svc_communications_v2: ConnectivityService = ConnectivityServiceSchema.par
       "description": "Send a test email",
       "useCase": "",
       "params": [],
+      "response": {}
+    },
+    {
+      "id": "bulk-create-high-priority-email-route",
+      "path": "/email/high-priority",
+      "method": "POST",
+      "description": "POST /email/high-priority",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "bulk-create-high-priority-notification-route",
+      "path": "/notifications/high-priority",
+      "method": "POST",
+      "description": "POST /notifications/high-priority",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "bulk-create-high-priority-sms-route",
+      "path": "/sms/high-priority",
+      "method": "POST",
+      "description": "POST /sms/high-priority",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "bulk-create-low-priority-email-route",
+      "path": "/email/low-priority",
+      "method": "POST",
+      "description": "POST /email/low-priority",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "bulk-create-low-priority-notification-route",
+      "path": "/notifications/low-priority",
+      "method": "POST",
+      "description": "POST /notifications/low-priority",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "bulk-create-low-priority-sms-route",
+      "path": "/sms/low-priority",
+      "method": "POST",
+      "description": "POST /sms/low-priority",
+      "useCase": "",
+      "params": [],
+      "response": {}
+    },
+    {
+      "id": "callback-sms-mode-route",
+      "path": "\\${self:custom.parameters.smsModeCallbackPath}",
+      "method": "POST",
+      "description": "POST \\${self:custom.parameters.smsModeCallbackPath}",
+      "useCase": "",
+      "params": [
+        {
+          "name": "self:custom.parameters.smsModeCallbackPath",
+          "in": "path",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
       "response": {}
     }
   ],

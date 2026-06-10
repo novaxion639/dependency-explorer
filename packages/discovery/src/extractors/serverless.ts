@@ -44,6 +44,14 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
       const name = res.Properties?.QueueName
       queueNames.add(typeof name === 'string' ? name : logical)
     }
+    // API Gateway routes defined as raw CloudFormation (e.g. SQS-SendMessage
+    // direct integrations) are real public API surface with no Lambda event.
+    if (res?.Type === 'AWS::ApiGatewayV2::Route' && typeof res.Properties?.RouteKey === 'string') {
+      const [method, p] = res.Properties.RouteKey.split(/\s+/)
+      if (method && p && HTTP_METHODS.has(method.toUpperCase())) {
+        endpoints.push({ method: method.toUpperCase(), path: p, functionName: logical })
+      }
+    }
   }
 
   for (const [fnKey, fn] of Object.entries<any>(state?.service?.functions ?? {})) {
@@ -106,7 +114,9 @@ function findFunctionIdentity(lines: string[], eventLineIdx: number): { function
         continue
       }
       const fn = line.match(/^\s*([A-Za-z][A-Za-z0-9_]*):\s*\{\s*$/)
-      if (fn && !['events', 'httpApi', 'http', 'tags', 'environment', 'vpc', 'authorizer'].includes(fn[1]!)) {
+      const structural = ['events', 'httpApi', 'http', 'tags', 'environment', 'vpc', 'authorizer',
+        'Properties', 'RequestParameters', 'Target', 'Resources', 'Integration']
+      if (fn && !structural.includes(fn[1]!)) {
         return { functionName: fn[1]!, description }
       }
     }
@@ -146,6 +156,14 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
       if (method && epPath && HTTP_METHODS.has(method)) {
         endpoints.push({ method, path: epPath, ...findFunctionIdentity(lines, i) })
       }
+      continue
+    }
+
+    // API Gateway V2 route resources: RouteKey: 'POST /email/high-priority'
+    // (e.g. SQS-SendMessage direct integrations — no Lambda event exists)
+    const route = line.match(/\bRouteKey:\s*['"`]([A-Z]+)\s+([^'"`]+)['"`]/)
+    if (route && HTTP_METHODS.has(route[1]!)) {
+      endpoints.push({ method: route[1]!, path: route[2]!, ...findFunctionIdentity(lines, i) })
       continue
     }
 

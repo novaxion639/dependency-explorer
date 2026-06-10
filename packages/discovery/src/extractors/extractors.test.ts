@@ -80,6 +80,26 @@ describe('parseServerlessStatic', () => {
     ])
   })
 
+  it('mines API Gateway V2 route resources (e.g. SQS-SendMessage integrations)', () => {
+    const src = `
+  BulkCreateHighPriorityEmailRoute: {
+    Type: 'AWS::ApiGatewayV2::Route',
+    Properties: {
+      ApiId: {Ref: 'HttpApi'},
+      RouteKey: 'POST /email/high-priority',
+      AuthorizationType: 'CUSTOM',
+    },
+  },`
+    const facts = parseServerlessStatic(src)
+    expect(facts.endpoints).toEqual([
+      expect.objectContaining({
+        method: 'POST',
+        path: '/email/high-priority',
+        functionName: 'BulkCreateHighPriorityEmailRoute',
+      }),
+    ])
+  })
+
   it('mines shorthand events and queue names with templates stripped', () => {
     const src = `
       httpApi: 'GET /health',
