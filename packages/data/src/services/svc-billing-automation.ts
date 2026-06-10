@@ -4,7 +4,7 @@ import type { ConnectivityService } from '@dependency-explorer/schema'
 const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.parse({
   "name": "svc-billing-automation",
   "type": "typescript-microservice",
-  "description": "Subscription billing and invoice automation via Stripe",
+  "description": "Subscription billing and invoice automation via Chargebee, deeply integrated with Salesforce (quote validation, provisioning callbacks, inbound SF webhooks). (Corrected 2026-06-10: previous description said Stripe — the architecture board and the service's own chargebee_* endpoints say Chargebee; no Stripe anywhere.)",
   "endpoints": [
     {
       "id": "api-create-organisation",

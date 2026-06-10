@@ -4,7 +4,7 @@ import type { ConnectivityService } from '@dependency-explorer/schema'
 const svc_trackers: ConnectivityService = ConnectivityServiceSchema.parse({
   "name": "svc-trackers",
   "type": "typescript-microservice",
-  "description": "Time tracker — project and task-based time logging across the workforce",
+  "description": "Labour-law hour and leave counters (compteurs) — per-employee tracker workflows for paid leave, RTT, worked hours and bank holidays, with shop/employee tracker settings and manual adjustments. (Corrected 2026-06-10 per the svc-trackers board, project 'SvcCounter': previous 'project/task time logging' description was invented; counters are computed by per-tracker Kinesis→SNS-fanned workflow Lambdas.)",
   "endpoints": [
     {
       "id": "api-initialize-tracker",

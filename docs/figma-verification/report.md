@@ -86,3 +86,69 @@
 - 🆕 svc-kpis-v2 → websockets ("ToWS" via EventBridge) edge unmapped; 🆕 board-only display-metrics endpoints (marked "next step" — in flux per working stickies); 🆕 the SDK also fronts legacy **svc-kpis v1** (unmapped service); 🆕 MergeShop SNS→SQS→Job path (the shop-merge fan-out we hypothesized during queue cross-ref!).
 - ❓ POST /kpis drawn as "PUT /{kpis}" async via API GW→SQS UpsertKpis; reference-week + kpis-manual/_bulk endpoints not drawn.
 - 📌 Working stickies: "renommer", "shifts / all kpis ?", "predictive shifts", Notion link "Predictive-turnover-engine" — treat nearby details as in-flux.
+
+## SvcSearch — [SvcSearch Architecture](https://www.figma.com/board/6ASm6jhm9JiX38mPHW82WD) (2025-11)
+
+- ✅ **No HTTP API — confirmed** (no API GW, only ingestion Lambdas); ✅ MongoDB (**Atlas**) as the terminal store of every flow — this IS the "Collection SvcSearch" other boards' readers query over VPC.
+- ✅/⚠ Monolith ingestion = **DMS Full-Load/CDC** ("RDS PostgreSQL skelloapp" → DMS → IngressRDS → Mongo) — confirms svc-search→skello-app directionally, but our edge says "SDK client / rest": it's database-level replication, no HTTP. **Edge transport needs correction.**
+- 🆕 Second ingestion path: other services' **DynamoDB tables ("Service 1..3, …") → IngressDynamoDB** (streams) — explains svcpos-transaction/forecast collections; unmapped.
+- ⚠ **Our 5 producer REST edges (trackers/shops/kpis-v2/employees/workload-plan → svc-search "indexes …") contradicted**: there is no API to push to; ingestion is pull-based. Hypothesis: `@skelloapp/svc-search-sdk` is the shared VPC-Mongo *client library* (explaining the value imports) — verify in skello-libs-ts, then flip these edges to Mongo-read/replication semantics.
+- ⚠ Map's s3 + index-dlq stores not drawn; ❓ IngressDynamoDB→Mongo edge undrawn (unfinished); ❓ "skelloapp-bus" label under the DMS icon ambiguous.
+
+## SvcShifts — [SvcShifts](https://www.figma.com/board/kKyzTsDJk2swAf1sBsVJot) (2025-11)
+
+- ⚠ **Cover-only stub** (title card, zero shapes/connectors) — nothing verifiable.
+- ⚠ **GITHUB link points to `skelloapp/svc-kpis`** — copy-paste error or svc-shifts lives in the svc-kpis codebase; confirm (map models them as separate services).
+- 📌 Internal map finding: skello-app→svc-shifts `usedEndpoints` lists only shop-and-orga metrics while six flows call `POST /shift-metrics/employee` — add `api-get-employee-shift-metrics` to the edge.
+
+## svc-trackers — [svc-trackers](https://www.figma.com/board/m2wR4jn9FewgBBf50DrBKD) (2026-02)
+
+- ✅ MongoDB store confirmed; ✅ apiGetTrackers ↔ our get/bulk-fetch endpoints.
+- ⚠ **Service identity corrected**: the board (in project "SvcCounter") shows per-counter workflow Lambdas (bankHoliday, pto, hours, rtt…) — this is the **labour-law hour/leave counters service**, not "project and task-based time logging"; no geofencing anywhere. → Map description fixed in this branch.
+- 🆕 Event-driven core unmapped: **Kinesis → router → SNS fan-out → per-counter workflows → Mongo** (+ shopCreated consumer); zero async edges in map.
+- ❓ apiGetRawTrackers "meant to be used by the agent" — unidentified consumer; ❓ trackers→svc-search and trackers→skello-app SDK edges unverified by board (Kinesis may be the real ingestion).
+- 📌 8 of our 10 endpoints not drawn (map is ahead of the 2026-02 sketch).
+
+## SvcEnrollment — [employee onboarding](https://www.figma.com/board/1K20VER0W2QLgASTBoqygn) (2026-04)
+
+- ✅ enrollment→svc-labour-laws confirmed (EmployeeOnboardingConfigGetDefault → SvcLabourLaws — default onboarding config lookup); ✅ front→enrollment via SDK; ✅ DynamoDB SvcEnrollment.
+- ⚠ enrollment→svc-employees not on this page (code evidence stands); ⚠ SDK drawn as **SvcOnboardingSdk** vs our svc-enrollment-sdk (rename?).
+- 🆕 **Two unmapped Vue callers: skello-onboarding and skello-selfServe** (both via the same SDK); 🆕 ToData Firehose→S3 RawData export; 🆕 GetDefault + Onboarding Delete endpoints not in map.
+- ❓ Unwired SkelloApp/SvcDocuments/SvcCommunications embeds (planned integrations? probe code first).
+
+## SvcBillingAutomation — [[Architecture] SvcBillingAutomation (no-edit)](https://www.figma.com/board/PzKSK1Qs6j6bC2fxJ9wch3) (2026-04)
+
+- ✅ ~36 routes match our scaffolded endpoints; ✅ DynamoDB; ✅ skello-app caller; ✅ →svc-modularisation (JobSfnGetFeatures); ✅ assistant retirement consistent (zero mentions).
+- ⚠ **Provider is Chargebee, not Stripe** — dedicated Chargebee section (checkout, portal, sources, billing dates), zero Stripe; our own endpoints are all chargebee_*. → Service description fixed in this branch.
+- 🆕 **Salesforce: major unmapped integration** — ~20 connectors incl. inbound SF→API callbacks (ApiNotify* webhook-style endpoints), JobSfnValidationSalesforce; 🆕 reverse **billing→skello-app** provisioning edges (JobSfnCreateUser/UpsertOrganisation/UpsertShops, "If subscription activation requested"); 🆕 **billing→websockets** (JobSfnPushWebsocket); 🆕 Zapier (request-upsell) + INSEE SIRENE (company registrations); 🆕 3 Step Functions (Provisioning, Contract Change, Shop Sync ×100-shop batches), 6 named SQS queues, Firehose replication, KMS.
+- ❓ S3/SNS map stores not drawn; →comms only hinted (SFN SendEmail step); →svc-users not drawn (JobSfnCreateUser targets the monolith instead); v2026/* route family absent (board predates it).
+
+## SvcDocumentsV2 — [[Architecture] SvcDocuments V2](https://www.figma.com/board/s5TnLvlr4usoNFRklwl8HI) (2025-10)
+
+- ✅ **Signature absorption CONFIRMED**: own /signatures lambdas + full Yousign webhook chain + SFN SignatureRequest (create→signers→document→activate) — signature lifecycle owned here; Yousign drawn directly on THIS board.
+- ✅ Core document CRUD routes match; ✅ DynamoDB+S3 (+KMS) match; ✅ skello-app inbound drawn — but via **SQS SendDocument → ReceiveDocuments**, an async ingestion the map models as sync-only.
+- 🆕 Kinesis **skelloAppBus → SkelloAppSyncEmployee** + SNS **MergeShop→SQS** consumption (the shop-merge fan-out again); 🆕 Firehose→S3 RawData export; 🆕 8 named DLQs vs our 1 generic; 🆕 thumbnail/index/file-listener lambdas.
+- ⚠ Board ("Done" v2.0) covers ~13/39 endpoints — templates/folders/avatars surfaces postdate it; signature route shapes diverged (per-id reminder vs our bulk /signatures/reminders; DELETE /{id} vs POST /cancel) — the map (deploy-config-derived) is current.
+- ⚠ The extract-data SQS path to svc-intelligence is absent (postdates board); inbound callers (intelligence/comms/bff/front/esignature) not drawn.
+- ❓ CONFIRMED map smell: usedEndpoints on most docs-v2 edges list signature-reminder ids while descriptions say print/generate/fetch — merge-era copy-paste, do not trust as route evidence (enrichment backlog).
+
+## SvcBff + SvcBffPlanning — [SvcBff](https://www.figma.com/board/J4CNNc8QTHIDaoGKfjpgYq) · [SvcBffPlanning](https://www.figma.com/board/EXC4HBaYoO9y4tbfPApwHO) (2025-11)
+
+- ⚠ **Both boards are cover-only stubs** (one frame each; verified via screenshots + page enumeration). Our map remains the only record of the BFF fan-out.
+- ⚠ GITHUB links wrong on both: SvcBff → `skelloapp/svc-kpis`, SvcBffPlanning → `skelloapp/svc-workload-plan` (masking that the real bff-planning repo was deleted).
+- ⚠ SvcBffPlanning chip says "Active" — contradicts the decommissioned reality; ❓ its node ids start at 33:500 (prior content possibly wiped).
+- 📌 Governance: fix links, flip status, draw or delete the stubs.
+
+## SvcPunch — [[Architecture] SvcPunch (no-edit)](https://www.figma.com/board/F6rmHpIRdXcH5dhBPGMRab) (2025-06)
+
+- ✅ 20/31 routes drawn and matching; ✅ single-DynamoDB design confirmed; ✅ svc-punch-sdk entry + Route53/ACM.
+- 🆕 **MergeShop SNS → MergeShopSqs → MergeShopJob → DynamoDB on the board** — confirms our queue-cross-ref finding; publisher still unidentified (orphan topic — presumably monolith/shops on shop merge). Same fan-out now seen on punch, kpis-v2, docs-v2 boards.
+- 🆕 **skelloAppBus Kinesis → SyncSkelloApp(Users/Memberships/Shop) → DynamoDB** — how /users routes are served; no async skello-app→punch edge in map; 🆕 stream consumers (location purge) + Firehose→S3 RawData export + 4 named DLQs; 🆕 lateness-SMS Step Function (marked POC — cron → Search → AutorizeSms → SendSms → UpdateShifts; implies undeclared outbound deps if shipped).
+- ⚠ 11 map endpoints not drawn (public punch-device routes, settings aliases); ⚠ no service callers drawn; ❓ svc-users edge's usedEndpoints (api-create-clock-in-out) looks wrong for "token provisioning".
+
+## Cross-board patterns (sweep #2)
+
+1. **skelloAppBus (monolith CDC Kinesis) is an unmapped async backbone** — consumed by svc-employees (Fortify job), svc-punch (users/memberships/shop sync), svc-documents-v2 (SkelloAppSyncEmployee), svc-kpis-v2 (weekly-options full load via DMS→Kinesis), svc-search (via DMS), svc-automatic-scheduling (position events). Modeling decision needed: per-consumer async edges from skello-app, or a first-class bus entity.
+2. **MergeShop SNS fan-out** — punch + kpis-v2 + docs-v2 consume; publisher unidentified.
+3. **AWS DATA Firehose→S3 RawData export** — drawn on every service board (reports, comms, esignature, employees, kpis, enrollment, billing, docs-v2, punch); a per-service convention, candidate for schema-level representation rather than per-flow nodes.
+4. **Cover-only stubs**: svcHris, SvcShifts, SvcBff, SvcBffPlanning — with wrong GITHUB links on three; governance list for the architects.
