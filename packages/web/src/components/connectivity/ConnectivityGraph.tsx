@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -24,6 +24,7 @@ import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
 import { EdgePopup } from './EdgePopup'
 import { EndpointDrawer } from './EndpointDrawer'
+import { ExportPngButton } from '../ExportPngButton'
 import type { ConnectivityMap, ConnectivityService, ServiceConnection } from '@dependency-explorer/data'
 
 const nodeTypes = { serviceNode: ServiceNode, databaseNode: DatabaseNode }
@@ -52,6 +53,7 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
   // Screen position of the last edge click; a popup restored from a permalink
   // has no click origin and renders at a fixed spot instead.
   const [clickPos, setClickPos] = useState<{ x: number; y: number } | null>(null)
+  const graphRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const { nodes: n, edges: e } = buildConnectivityGraph(map, selectedService)
@@ -98,7 +100,11 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
 
   return (
     <div style={{ flex: 1, position: 'relative', display: 'flex', overflow: 'hidden' }}>
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div ref={graphRef} style={{ flex: 1, position: 'relative' }}>
+        <ExportPngButton
+          target={graphRef}
+          filename={() => `dependency-map_${selectedService ?? 'all'}`}
+        />
         <ReactFlow
           nodes={nodes}
           edges={edges}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -16,6 +16,7 @@ import '@xyflow/react/dist/style.css'
 
 import { buildDomainGraph } from '../../utils/buildDomainGraph'
 import { DomainNode } from '../nodes/DomainNode'
+import { ExportPngButton } from '../ExportPngButton'
 import type { ConnectivityMap } from '@dependency-explorer/data'
 
 const nodeTypes = { domainNode: DomainNode }
@@ -29,6 +30,7 @@ function DomainFlowInner({ map, onSelectDomain }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
+  const graphRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const { nodes: n, edges: e } = buildDomainGraph(map)
@@ -46,7 +48,8 @@ function DomainFlowInner({ map, onSelectDomain }: Props) {
   )
 
   return (
-    <div style={{ flex: 1, position: 'relative' }}>
+    <div ref={graphRef} style={{ flex: 1, position: 'relative' }}>
+      <ExportPngButton target={graphRef} filename={() => 'dependency-map_domains'} />
       <ReactFlow
         nodes={nodes}
         edges={edges}

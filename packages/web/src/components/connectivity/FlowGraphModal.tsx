@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -20,6 +20,7 @@ import { DatabaseNode, DB_COLORS } from '../nodes/DatabaseNode'
 import type { DatabaseType } from '@dependency-explorer/data'
 import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
+import { ExportPngButton } from '../ExportPngButton'
 
 const nodeTypes = { serviceNode: ServiceNode, databaseNode: DatabaseNode }
 const edgeTypes = { connectivityEdge: ConnectivityEdge, floatingDbEdge: FloatingDbEdge }
@@ -35,6 +36,7 @@ function FlowInner({ flow, map, onBack, onClose }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<ReturnType<typeof buildFlowGraph>['edges'][number]>([])
+  const graphRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const { nodes: n, edges: e } = buildFlowGraph(flow, map)
@@ -145,7 +147,8 @@ function FlowInner({ flow, map, onBack, onClose }: Props) {
       </div>
 
       {/* Flow graph */}
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div ref={graphRef} style={{ flex: 1, position: 'relative' }}>
+        <ExportPngButton target={graphRef} filename={() => `flow_${flow.id}`} />
         <ReactFlow
           nodes={nodes}
           edges={edges}

@@ -12,6 +12,7 @@ The canonical, continuously verified map of Skello's distributed architecture �
 - **Blast radius** — BFS over the dependency graph showing which services are affected if a service fails.
 - **Permalinks** — every view state (selected service, connection popup, endpoint drawer, flow, domain filter, blast radius) is encoded in the URL: copy the link, share it in Slack or a PR, and the recipient lands on the exact same view.
 - **Global search (⌘K)** — one palette over every service, endpoint, connection, flow, domain, database and queue (~600 entries). Picking a result navigates to a permalink-backed view — an endpoint hit opens the drawer scrolled to that endpoint.
+- **PNG export** — every graph (service view, domain view, flow DAGs) exports the full laid-out graph as a 2× PNG for RFCs, arch reviews and incident docs.
 
 ## Quickstart
 
@@ -62,7 +63,7 @@ pnpm check           # everything CI runs
 | 0 | Reboot: static SPA, workspace structure, integrity gates, CI | ✅ done |
 | 1 | Automation-first: SDK + Rails + CODEOWNERS extractors, provenance metadata, two-layer merge, classified drift report ([ADR-0007](docs/adr/0007-discovery-semantics.md)) | ✅ done (nightly drift PRs pending org token — Infra discussion) |
 | 1.5 | More extractors: serverless configs (deploy-state + static, endpoint verification), Rails routes (monolith inbound surface), frontend env/usage, async queue cross-reference | ✅ done (AWS read-only verification remains — needs credentials story) |
-| 2 | Org-audience features: permalinks, global search, ownership pages, export | 🚧 in progress — permalinks ✅, ⌘K search ✅ |
+| 2 | Org-audience features: permalinks, global search, ownership pages, export | 🚧 — permalinks ✅, ⌘K search ✅, PNG export ✅; ownership pages blocked on teamId coverage (CODEOWNERS wildcard adoption) |
 | 3 | "Suggest edit" → pre-filled PR via GitHub App, permissions from GitHub teams | |
 | 4 | Live operational overlays (deploys, alarms, queue depth, on-call) via a read-only API | |
 
