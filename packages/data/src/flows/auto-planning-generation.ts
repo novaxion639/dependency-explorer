@@ -67,6 +67,127 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "action": "Planning updated — Vue2 app displays optimised roster"
     }
   ],
+    "codeUnits": [
+      {
+        "id": "cu-as-controller",
+        "service": "skello-app",
+        "kind": "controller",
+        "label": "V3::Api::AutomaticScheduling::ShiftsController",
+        "path": "app/controllers/v3/api/automatic_scheduling/shifts_controller.rb",
+        "description": "Private write-back surface called by the SFN: #update applies optimised assignments to existing shifts, #create bulk-creates generated shifts"
+      },
+      {
+        "id": "cu-as-assignment",
+        "service": "skello-app",
+        "kind": "service",
+        "label": "V3::Shifts::AutomaticAssignmentService",
+        "path": "app/services/v3/shifts/automatic_assignment_service.rb",
+        "description": "Applies the optimiser result: persists assignments, recomputes alerts and counters (V2 variant), refreshes the first-shift cache store, enqueues weekly-option staleness"
+      },
+      {
+        "id": "cu-as-save",
+        "service": "skello-app",
+        "kind": "service",
+        "label": "V3::Shifts::AutomaticAssignmentSaveService",
+        "path": "app/services/v3/shifts/automatic_assignment_save_service.rb",
+        "description": "Persists the optimised user→shift assignments"
+      },
+      {
+        "id": "cu-as-alert",
+        "service": "skello-app",
+        "kind": "service",
+        "label": "V3::Shifts::AutomaticAssignmentAlertService",
+        "path": "app/services/v3/shifts/automatic_assignment_alert_service.rb",
+        "description": "Recomputes assignment alerts for the touched shifts"
+      },
+      {
+        "id": "cu-as-bulk-create",
+        "service": "skello-app",
+        "kind": "service",
+        "label": "V3::Shifts::AutomaticSchedulingBulkCreateService",
+        "path": "app/services/v3/shifts/automatic_scheduling_bulk_create_service.rb",
+        "description": "Bulk Shift.new/insert for generated shifts (Automatic Shift Creation mode)"
+      },
+      {
+        "id": "cu-as-tracker-v2",
+        "service": "skello-app",
+        "kind": "manager",
+        "label": "V3::CombinedTrackerUpdateServiceV2",
+        "path": "app/services/v3/combined_tracker_update_service_v2.rb",
+        "description": "V2 counter recompute used by the auto-assignment path (PlanningHoursDatas, RCR, paid leaves)"
+      },
+      {
+        "id": "cu-as-cb-job",
+        "service": "skello-app",
+        "kind": "job",
+        "label": "ShiftCallbackJob",
+        "path": "app/jobs/shift_callback_job.rb",
+        "description": "Weekly-option staleness — enqueued directly by AutomaticAssignmentService per affected user/week"
+      }
+    ],
+    "codeEdges": [
+      {
+        "from": "svc-automatic-scheduling",
+        "to": "cu-as-controller",
+        "label": "SFN assignShifts write-back (private, API key)",
+        "mode": "sync"
+      },
+      {
+        "from": "cu-as-controller",
+        "to": "cu-as-assignment",
+        "label": "#update — apply optimised assignments",
+        "mode": "sync"
+      },
+      {
+        "from": "cu-as-controller",
+        "to": "cu-as-bulk-create",
+        "label": "#create — bulk create generated shifts",
+        "mode": "sync",
+        "condition": "Automatic Shift Creation mode"
+      },
+      {
+        "from": "cu-as-assignment",
+        "to": "cu-as-save",
+        "label": "persist assignments",
+        "mode": "sync"
+      },
+      {
+        "from": "cu-as-assignment",
+        "to": "cu-as-alert",
+        "label": "recompute alerts",
+        "mode": "sync"
+      },
+      {
+        "from": "cu-as-assignment",
+        "to": "cu-as-tracker-v2",
+        "label": "recompute counters (V2)",
+        "mode": "sync"
+      },
+      {
+        "from": "cu-as-assignment",
+        "to": "cu-as-cb-job",
+        "label": "weekly-option staleness",
+        "mode": "async-job"
+      },
+      {
+        "from": "cu-as-save",
+        "to": "pg-skello-write",
+        "label": "assign users to shifts",
+        "mode": "sync",
+        "crud": [
+          "update"
+        ]
+      },
+      {
+        "from": "cu-as-bulk-create",
+        "to": "pg-skello-write",
+        "label": "bulk shift rows",
+        "mode": "sync",
+        "crud": [
+          "create"
+        ]
+      }
+    ],
   "infraNodes": [
     {
       "id": "mongo-jobs-trigger",

@@ -4,17 +4,12 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "absence-creation",
   "name": "Absence Creation",
-  "description": "A manager creates an absence (paid leave, sick day, etc.) for an employee. The monolith evaluates absence eligibility and entitlements in-process (labour-law rules previously synced from svc-labour-laws — no per-operation HTTP call), persists it as a shift record, pushes updated metrics to svc-shifts, and emits an event so the employee is notified.",
+  "description": "A manager creates an absence (paid leave, sick day, etc.) for an employee. The monolith evaluates absence eligibility and entitlements in-process (labour-law rules previously synced from svc-labour-laws — no per-operation HTTP call), persists it as a shift record, pushes updated metrics to svc-shifts, and emits an event so the employee is notified. (Corrected 2026-06-12: the previously documented svc-shifts metrics call had no code path — no svc-shifts client exists anywhere in the monolith.)",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "skello-app",
       "action": "POST /v3/api/plannings — create absence shift with absence_type and duration"
-    },
-    {
-      "from": "skello-app",
-      "to": "svc-shifts",
-      "action": "POST /shift-metrics/employee — update employee shift metrics to include absence"
     },
     {
       "from": "skello-app",
@@ -33,12 +28,6 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
       "type": "postgresql",
       "label": "skello_production",
       "description": "Stores absence as a shift record with absence_type flag"
-    },
-    {
-      "id": "mongo-shifts-absence",
-      "type": "mongodb",
-      "label": "svc-shifts",
-      "description": "Employee shift metrics updated to reflect the absence"
     },
     {
       "id": "sqs-absence",
@@ -65,12 +54,6 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
       "to": "pg-absence",
       "label": "write absence",
       "crud": ["create"]
-    },
-    {
-      "from": "svc-shifts",
-      "to": "mongo-shifts-absence",
-      "label": "write metrics",
-      "crud": ["update"]
     },
     {
       "from": "skello-app",

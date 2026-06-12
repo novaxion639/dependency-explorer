@@ -4,7 +4,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const planning_template: ServiceFlow = ServiceFlowSchema.parse({
   "id": "planning-template",
   "name": "Planning Template — Save & Apply",
-  "description": "A manager saves the current week's planning as a reusable template, or applies an existing template to populate a new week. Applying a template evaluates labour-law compliance in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call) and updates metrics identically to a batch shift creation.",
+  "description": "A manager saves the current week's planning as a reusable template, or applies an existing template to populate a new week. Applying a template evaluates labour-law compliance in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call) and updates metrics identically to a batch shift creation. (Corrected 2026-06-12: the previously documented svc-shifts metrics call had no code path — no svc-shifts client exists anywhere in the monolith.)",
   "steps": [
     {
       "from": "skello-app-front",
@@ -15,11 +15,6 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
       "from": "skello-app-front",
       "to": "skello-app",
       "action": "POST /v3/api/plannings/from_template — apply selected template to target week"
-    },
-    {
-      "from": "skello-app",
-      "to": "svc-shifts",
-      "action": "POST /shift-metrics/shop-and-orga — update shop and org metrics with newly created shifts"
     },
     {
       "from": "skello-app",
@@ -44,12 +39,6 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
       "type": "postgresql",
       "label": "skello_production",
       "description": "Bulk-inserts shifts generated from the applied template"
-    },
-    {
-      "id": "mongo-shifts-template",
-      "type": "mongodb",
-      "label": "svc-shifts",
-      "description": "Shop and org metrics updated after template application"
     },
     {
       "id": "sqs-template",
@@ -81,12 +70,6 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
       "from": "skello-app",
       "to": "pg-template-shifts",
       "label": "bulk insert shifts",
-      "crud": ["create"]
-    },
-    {
-      "from": "svc-shifts",
-      "to": "mongo-shifts-template",
-      "label": "write metrics",
       "crud": ["create"]
     },
     {

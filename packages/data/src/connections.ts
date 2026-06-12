@@ -895,18 +895,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "usedEndpoints": []
   },
   {
-    "from": "skello-app",
-    "to": "svc-shifts",
-    "sdkPackage": "@skelloapp/svc-shifts-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Updates shift metrics after creation, update or bulk operations",
-    "usedEndpoints": [
-      "api-get-shop-and-orga-shift-metrics"
-    ]
-  },
-  {
     "from": "svc-automatic-scheduling",
     "to": "svc-workload-plan",
     "sdkPackage": "@skelloapp/workload-plan-sdk",

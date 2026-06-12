@@ -4,17 +4,12 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const shift_bulk_erase: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-bulk-erase",
   "name": "Bulk Erase Shifts",
-  "description": "A manager erases all shifts for a day, week or month in one action. The monolith bulk-deletes the records, updates shop and org planning metrics in svc-shifts, and emits an event for audit purposes.",
+  "description": "A manager erases all shifts for a day, week or month in one action. The monolith bulk-deletes the records, updates shop and org planning metrics in svc-shifts, and emits an event for audit purposes. (Corrected 2026-06-12: the previously documented svc-shifts metrics call had no code path — no svc-shifts client exists anywhere in the monolith.)",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "skello-app",
       "action": "DELETE /v3/api/plannings/bulk_delete — erase all shifts for the selected period and shop"
-    },
-    {
-      "from": "skello-app",
-      "to": "svc-shifts",
-      "action": "POST /shift-metrics/shop-and-orga — recompute shop and org metrics after bulk deletion"
     },
     {
       "from": "skello-app",
@@ -28,12 +23,6 @@ const shift_bulk_erase: ServiceFlow = ServiceFlowSchema.parse({
       "type": "postgresql",
       "label": "skello_production",
       "description": "Bulk-deletes shift records for the selected period"
-    },
-    {
-      "id": "mongo-shifts-erase",
-      "type": "mongodb",
-      "label": "svc-shifts",
-      "description": "Shop and org planning metrics recomputed after deletion"
     },
     {
       "id": "dynamo-events-erase",
@@ -54,12 +43,6 @@ const shift_bulk_erase: ServiceFlow = ServiceFlowSchema.parse({
       "to": "pg-bulk-erase",
       "label": "bulk delete",
       "crud": ["delete"]
-    },
-    {
-      "from": "svc-shifts",
-      "to": "mongo-shifts-erase",
-      "label": "write metrics",
-      "crud": ["update"]
     },
     {
       "from": "skello-app",
