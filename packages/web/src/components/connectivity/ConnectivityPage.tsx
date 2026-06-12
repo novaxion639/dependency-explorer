@@ -25,6 +25,7 @@ function validateUrlState(st: UrlState): UrlState {
   if (next.domain && !(map.domains ?? []).some(d => d.id === next.domain)) next.domain = null
   if (next.flows && !serviceNames.has(next.flows)) next.flows = null
   if (next.flow && !(map.flows ?? []).some(f => f.id === next.flow)) next.flow = null
+  if (!next.flow) next.detail = null
   if (next.drawer && !serviceNames.has(next.drawer)) next.drawer = null
   if (next.edge) {
     const [from, to, protocol] = next.edge.split(EDGE_SEP)
@@ -264,8 +265,10 @@ export function ConnectivityPage() {
         <FlowGraphModal
           flow={selectedFlow}
           map={map}
-          onBack={() => patch({ flow: null })}
-          onClose={() => patch({ flow: null, flows: null })}
+          detail={url.detail === 'code'}
+          onDetailChange={d => patch({ detail: d ? 'code' : null })}
+          onBack={() => patch({ flow: null, detail: null })}
+          onClose={() => patch({ flow: null, flows: null, detail: null })}
         />
       )}
 

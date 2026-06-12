@@ -15,35 +15,43 @@ import '@xyflow/react/dist/style.css'
 
 import type { ServiceFlow, ConnectivityMap, FlowInfraNode } from '@dependency-explorer/data'
 import { buildFlowGraph } from '../../utils/buildFlowGraph'
+import { buildFlowCodeGraph } from '../../utils/buildFlowCodeGraph'
 import { ServiceNode } from '../nodes/ServiceNode'
 import { DatabaseNode, DB_COLORS } from '../nodes/DatabaseNode'
+import { CodeUnitNode, CodeGroupNode } from '../nodes/CodeUnitNode'
 import type { DatabaseType } from '@dependency-explorer/data'
 import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
 import { ExportPngButton } from '../ExportPngButton'
 
-const nodeTypes = { serviceNode: ServiceNode, databaseNode: DatabaseNode }
+const nodeTypes = { serviceNode: ServiceNode, databaseNode: DatabaseNode, codeUnitNode: CodeUnitNode, codeGroupNode: CodeGroupNode }
 const edgeTypes = { connectivityEdge: ConnectivityEdge, floatingDbEdge: FloatingDbEdge }
 
 interface Props {
   flow: ServiceFlow
   map: ConnectivityMap
+  /** Code-detail view (?detail=code) — only offered when the flow has a code layer */
+  detail: boolean
+  onDetailChange: (detail: boolean) => void
   onBack: () => void
   onClose: () => void
 }
 
-function FlowInner({ flow, map, onBack, onClose }: Props) {
+function FlowInner({ flow, map, detail, onDetailChange, onBack, onClose }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<ReturnType<typeof buildFlowGraph>['edges'][number]>([])
   const graphRef = useRef<HTMLDivElement>(null)
 
+  const hasCodeLayer = (flow.codeUnits?.length ?? 0) > 0
+  const showCode = detail && hasCodeLayer
+
   useEffect(() => {
-    const { nodes: n, edges: e } = buildFlowGraph(flow, map)
+    const { nodes: n, edges: e } = showCode ? buildFlowCodeGraph(flow, map) : buildFlowGraph(flow, map)
     setNodes(n)
     setEdges(e)
     setTimeout(() => fitView({ padding: 0.18, duration: 400 }), 60)
-  }, [flow, map, setNodes, setEdges, fitView])
+  }, [flow, map, showCode, setNodes, setEdges, fitView])
 
   const onKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') onClose()
@@ -148,7 +156,29 @@ function FlowInner({ flow, map, onBack, onClose }: Props) {
 
       {/* Flow graph */}
       <div ref={graphRef} style={{ flex: 1, position: 'relative' }}>
-        <ExportPngButton target={graphRef} filename={() => `flow_${flow.id}`} />
+        <ExportPngButton target={graphRef} filename={() => `flow_${flow.id}${showCode ? '_code' : ''}`} />
+        {hasCodeLayer && (
+          <div style={{
+            position: 'absolute', top: 12, left: 12, zIndex: 10,
+            display: 'flex', gap: 2, background: '#1a1d27',
+            border: '1px solid #2e3250', borderRadius: 6, padding: 2,
+          }}>
+            {([['Services', false], ['Code detail', true]] as const).map(([label, value]) => (
+              <button
+                key={label}
+                onClick={() => onDetailChange(value)}
+                style={{
+                  padding: '3px 10px', borderRadius: 4, fontSize: 10, fontWeight: 600,
+                  border: 'none', cursor: 'pointer',
+                  background: showCode === value ? '#6366f1' : 'transparent',
+                  color: showCode === value ? '#fff' : '#64748b',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -206,19 +236,29 @@ function StepLegend({ flow }: { flow: ServiceFlow }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {flow.steps.map((step, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-            <span style={{
-              fontSize: 9, fontWeight: 700, color: '#6366f1',
-              background: '#6366f122', border: '1px solid #6366f133',
-              borderRadius: 3, padding: '0px 4px', flexShrink: 0,
-            }}>
-              {i + 1}
-            </span>
-            <span style={{ fontSize: 10, color: '#64748b' }}>
-              <span style={{ color: '#818cf8' }}>{step.from}</span>
-              {' → '}
-              <span style={{ color: '#4f6ef7' }}>{step.to}</span>
-            </span>
+          <div key={i}>
+            {step.phase && step.phase !== flow.steps[i - 1]?.phase && (
+              <div style={{
+                fontSize: 8, fontWeight: 700, color: '#e0761b', textTransform: 'uppercase',
+                letterSpacing: '0.05em', margin: '5px 0 3px',
+              }}>
+                ▸ {step.phase}
+              </div>
+            )}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{
+                fontSize: 9, fontWeight: 700, color: '#6366f1',
+                background: '#6366f122', border: '1px solid #6366f133',
+                borderRadius: 3, padding: '0px 4px', flexShrink: 0,
+              }}>
+                {i + 1}
+              </span>
+              <span style={{ fontSize: 10, color: '#64748b' }}>
+                <span style={{ color: '#818cf8' }}>{step.from}</span>
+                {' → '}
+                <span style={{ color: '#4f6ef7' }}>{step.to}</span>
+              </span>
+            </div>
           </div>
         ))}
       </div>

@@ -41,6 +41,8 @@ export function DatabaseNode({ data }: any) {
       <Handle type="target" position={Position.Bottom} id="bottom" style={{ opacity: 0 }} />
       <Handle type="target" position={Position.Left}   id="left"   style={{ opacity: 0 }} />
       <Handle type="target" position={Position.Right}  id="right"  style={{ opacity: 0 }} />
+      {/* Source handle lets infra ORIGINATE edges — e.g. DMS CDC replication out of a table */}
+      <Handle type="source" position={Position.Right}  id="src-right" style={{ opacity: 0 }} />
       <div style={{
         width: 180,
         padding: '6px 10px',

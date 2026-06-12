@@ -9,7 +9,8 @@
     "discover:apply": "tsx src/discover.ts --apply",
     "discover:scaffold": "tsx src/scaffold.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "discover:trace": "tsx src/trace.ts"
   },
   "dependencies": {
     "@dependency-explorer/data": "workspace:*",

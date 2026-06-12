@@ -15,6 +15,8 @@
  * resolve to their base service (authoring guide §2.1).
  */
 
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import { normalizeEndpoint, normalizeEndpointVersionless } from './endpoints'
 
@@ -32,6 +34,118 @@ export interface FlowCheckResult {
 }
 
 const PATH_FRAGMENT_RE = /\b(GET|POST|PUT|PATCH|DELETE)\s+(\/[^\s,—()]+)/g
+
+// ── Code-layer verification (flows with codeUnits/codeEdges) ─────────────────
+// The code layer is human-authored but cannot silently drift:
+//  1. every codeUnit.path must exist in the checked-out repo (repo dir = service name)
+//  2. every unit→unit codeEdge's callee constant must be referenced from the
+//     caller's file (longest Constant-like token of the callee label)
+//  3. every codeEdge endpoint must resolve to a unit, a service, or an infra node
+
+export interface CodeLayerFinding {
+  flow: string
+  kind: 'missing-code-path' | 'unreferenced-callee' | 'unknown-code-edge-endpoint' | 'unknown-unit-service'
+  detail: string
+}
+
+export interface CodeLayerCheckResult {
+  findings: CodeLayerFinding[]
+  flowsWithCodeLayer: number
+  pathsVerified: number
+  edgesVerified: number
+  /** services whose repo is not checked out — their paths/edges are skipped, not failed */
+  skippedRepos: string[]
+}
+
+/** Longest Constant-like token of a label — "V3::Shifts::CreateService", or "Shift" from "Shift callbacks (…)". */
+function calleeToken(label: string): string | null {
+  const base = label.replace(/#\w+.*$/, '') // strip "#create" action suffixes
+  const tokens = base.match(/[A-Z][A-Za-z0-9_]*(?:::[A-Z][A-Za-z0-9_]*)*/g) ?? []
+  if (!tokens.length) return null
+  return tokens.reduce((a, b) => (b.length > a.length ? b : a))
+}
+
+export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): CodeLayerCheckResult {
+  const serviceNames = new Set(map.services.map(s => s.name))
+  const result: CodeLayerCheckResult = {
+    findings: [], flowsWithCodeLayer: 0, pathsVerified: 0, edgesVerified: 0, skippedRepos: [],
+  }
+  const skipped = new Set<string>()
+  const fileCache = new Map<string, string | null>()
+  const readUnitFile = (service: string, relPath: string): string | null => {
+    const key = `${service}:${relPath}`
+    if (!fileCache.has(key)) {
+      try {
+        fileCache.set(key, fs.readFileSync(path.join(repoBase, service, relPath), 'utf-8'))
+      } catch {
+        fileCache.set(key, null)
+      }
+    }
+    return fileCache.get(key)!
+  }
+
+  for (const flow of map.flows) {
+    const units = flow.codeUnits ?? []
+    if (!units.length) continue
+    result.flowsWithCodeLayer++
+    const unitById = new Map(units.map(u => [u.id, u]))
+    const infraIds = new Set((flow.infraNodes ?? []).map(n => n.id))
+
+    for (const unit of units) {
+      if (!serviceNames.has(unit.service)) {
+        result.findings.push({
+          flow: flow.id, kind: 'unknown-unit-service',
+          detail: `codeUnit ${unit.id} declares service "${unit.service}" which is not in the map`,
+        })
+        continue
+      }
+      if (!unit.path) continue
+      if (!fs.existsSync(path.join(repoBase, unit.service))) {
+        skipped.add(unit.service)
+        continue
+      }
+      if (fs.existsSync(path.join(repoBase, unit.service, unit.path))) {
+        result.pathsVerified++
+      } else {
+        result.findings.push({
+          flow: flow.id, kind: 'missing-code-path',
+          detail: `codeUnit ${unit.id} (${unit.label}): ${unit.service}/${unit.path} does not exist`,
+        })
+      }
+    }
+
+    for (const edge of flow.codeEdges ?? []) {
+      for (const end of [edge.from, edge.to]) {
+        if (!unitById.has(end) && !serviceNames.has(end) && !infraIds.has(end)) {
+          result.findings.push({
+            flow: flow.id, kind: 'unknown-code-edge-endpoint',
+            detail: `codeEdge "${edge.from} → ${edge.to}": "${end}" is neither a code unit, a service, nor an infra node`,
+          })
+        }
+      }
+
+      const fromUnit = unitById.get(edge.from)
+      const toUnit = unitById.get(edge.to)
+      if (!fromUnit?.path || !toUnit) continue
+      if (skipped.has(fromUnit.service) || !serviceNames.has(fromUnit.service)) continue
+      const token = calleeToken(toUnit.label)
+      if (!token) continue
+      const content = readUnitFile(fromUnit.service, fromUnit.path)
+      if (content === null) continue // missing path already reported above
+      if (content.includes(token)) {
+        result.edgesVerified++
+      } else {
+        result.findings.push({
+          flow: flow.id, kind: 'unreferenced-callee',
+          detail: `codeEdge "${edge.from} → ${edge.to}": "${token}" not referenced in ${fromUnit.service}/${fromUnit.path}`,
+        })
+      }
+    }
+  }
+
+  result.skippedRepos = [...skipped].sort()
+  return result
+}
 
 function stepBase(name: string, serviceNames: Set<string>): string | null {
   if (serviceNames.has(name)) return name

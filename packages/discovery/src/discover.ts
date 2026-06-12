@@ -32,7 +32,7 @@ import { extractServerless, type ServerlessFacts } from './extractors/serverless
 import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
-import { checkFlows, type FlowCheckResult } from './flow-check'
+import { checkFlows, checkFlowCodeLayers, type FlowCheckResult, type CodeLayerCheckResult } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 
@@ -87,6 +87,7 @@ interface Report {
   sdkUsage: SdkUsageFinding[]
   sdkRegistryStats: { packages: number; methods: number } | null
   flowCheck: FlowCheckResult
+  codeLayerCheck: CodeLayerCheckResult
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
@@ -140,6 +141,7 @@ function run(): Report {
     sdkUsage: [],
     sdkRegistryStats: null,
     flowCheck: checkFlows(connectivityMap),
+    codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE),
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -468,6 +470,20 @@ function printMarkdown(r: Report) {
     console.log(r.flowCheck.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
   } else {
     console.log('_all flows consistent with connections and endpoints_')
+  }
+
+  const cl = r.codeLayerCheck
+  console.log(`\n## 🫀 Flow code layers (${cl.findings.length} findings)\n`)
+  if (cl.flowsWithCodeLayer === 0) {
+    console.log('_no flow declares a code layer yet_')
+  } else {
+    console.log(`${cl.flowsWithCodeLayer} flow(s) with a code layer — ${cl.pathsVerified} unit paths verified on disk, ${cl.edgesVerified} call edges verified by reference.`
+      + (cl.skippedRepos.length ? ` Skipped (repo not checked out): ${cl.skippedRepos.join(', ')}.` : ''))
+    if (cl.findings.length) {
+      console.log(cl.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
+    } else {
+      console.log('_every code unit path exists and every call edge is referenced from its caller_')
+    }
   }
 
   section('❓ Unknown targets — evidence pointing outside the map',

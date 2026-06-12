@@ -23,6 +23,8 @@ export interface UrlState {
   blast: boolean
   flows: string | null
   flow: string | null
+  /** 'code' = code-detail view of the open flow graph */
+  detail: 'code' | null
   edge: string | null
   drawer: string | null
   ep: string | null
@@ -43,6 +45,7 @@ export function parseUrl(search: string): UrlState {
     blast: p.get('blast') === '1',
     flows: p.get('flows'),
     flow: p.get('flow'),
+    detail: p.get('detail') === 'code' ? 'code' : null,
     edge: p.get('edge'),
     drawer: p.get('drawer'),
     ep: p.get('ep'),
@@ -57,6 +60,7 @@ function serialize(state: UrlState): string {
   if (state.blast) p.set('blast', '1')
   if (state.flows) p.set('flows', state.flows)
   if (state.flow) p.set('flow', state.flow)
+  if (state.flow && state.detail) p.set('detail', state.detail)
   if (state.edge) p.set('edge', state.edge)
   if (state.drawer) p.set('drawer', state.drawer)
   if (state.drawer && state.ep) p.set('ep', state.ep)

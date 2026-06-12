@@ -12,7 +12,8 @@
     "discover": "pnpm --filter @dependency-explorer/discovery discover",
     "discover:apply": "pnpm --filter @dependency-explorer/discovery discover:apply",
     "discover:scaffold": "pnpm --filter @dependency-explorer/discovery discover:scaffold",
-    "check": "pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "discover:trace": "pnpm --filter @dependency-explorer/discovery discover:trace"
   },
   "devDependencies": {
     "typescript": "~5.7.2"

@@ -114,6 +114,45 @@ export const ServiceFlowStepSchema = z.object({
   from: z.string(),
   to: z.string(),
   action: z.string(),
+  // Page-load flows: groups steps into ordered lanes ("initial paint", "lazy", "polling")
+  phase: z.string().optional(),
+})
+
+// ── Flow code layer ──────────────────────────────────────────────────────────
+// Optional intra-service detail: the controllers, service objects, managers,
+// jobs and model-callback groups a flow traverses INSIDE a service (typically
+// the monolith). Humans author it from code reading; the flow checker verifies
+// every `path` exists and every edge's callee is referenced from its caller's
+// file, so this layer cannot silently drift (same doctrine as connections).
+
+export const FlowCodeUnitKindSchema = z.enum([
+  'controller', 'service', 'manager', 'job', 'model-callback',
+])
+
+export const FlowCodeUnitSchema = z.object({
+  id: z.string(),
+  /** Service this unit lives in (must match a flow participant, e.g. "skello-app") */
+  service: z.string(),
+  kind: FlowCodeUnitKindSchema,
+  /** Display name, usually the Ruby/TS constant — "V3::Shifts::CreateService" */
+  label: z.string(),
+  /** Repo-relative file path — verified to exist by the flow checker */
+  path: z.string().optional(),
+  description: z.string().optional(),
+})
+
+export const FlowCodeEdgeSchema = z.object({
+  /** Code-unit id, service name, or infra-node id */
+  from: z.string(),
+  to: z.string(),
+  label: z.string().optional(),
+  /** sync call, Sidekiq/queue job, or fire-and-forget event */
+  mode: z.enum(['sync', 'async-job', 'async-event']).optional(),
+  /** Guard under which the edge fires — "absence shifts only", "FF: FEATUREDEV_…" */
+  condition: z.string().optional(),
+  /** True when the call happens inside the surrounding DB transaction */
+  inTransaction: z.boolean().optional(),
+  crud: z.array(CrudOperationSchema).optional(),
 })
 
 export const FlowInfraNodeSchema = z.object({
@@ -137,6 +176,8 @@ export const ServiceFlowSchema = z.object({
   steps: z.array(ServiceFlowStepSchema),
   infraNodes: z.array(FlowInfraNodeSchema).optional(),
   infraEdges: z.array(FlowInfraEdgeSchema).optional(),
+  codeUnits: z.array(FlowCodeUnitSchema).optional(),
+  codeEdges: z.array(FlowCodeEdgeSchema).optional(),
 })
 
 // ── Team ─────────────────────────────────────────────────────────────────────
@@ -221,6 +262,8 @@ export type ServiceConnection = z.infer<typeof ServiceConnectionSchema>
 export type ServiceFlowStep = z.infer<typeof ServiceFlowStepSchema>
 export type FlowInfraNode = z.infer<typeof FlowInfraNodeSchema>
 export type FlowInfraEdge = z.infer<typeof FlowInfraEdgeSchema>
+export type FlowCodeUnit = z.infer<typeof FlowCodeUnitSchema>
+export type FlowCodeEdge = z.infer<typeof FlowCodeEdgeSchema>
 export type ServiceFlow = z.infer<typeof ServiceFlowSchema>
 export type Team = z.infer<typeof TeamSchema>
 export type Domain = z.infer<typeof DomainSchema>
