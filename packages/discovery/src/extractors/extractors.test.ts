@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseServerlessState, parseServerlessStatic } from './serverless'
+import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
 import { parseRoutesContent } from './rails-routes'
 import { parseEnvServiceUrls } from './frontend'
 import { classifyImports } from './typescript'
@@ -87,6 +87,70 @@ describe('parseServerlessState', () => {
     expect(facts.queueNames).toContain('svcThingsIngest')
     expect(facts.queueNames).toContain('svcThingsUpdate')
   })
+
+  it('reads stream, s3, schedule events and owned resources', () => {
+    const state = {
+      service: {
+        functions: {
+          BusConsumer: { events: [{ stream: { arn: 'arn:aws:kinesis:eu-west-1:123:stream/skelloapp-bus-sdbx', batchSize: 25 } }] },
+          TableConsumer: { events: [{ stream: { arn: 'arn:aws:dynamodb:eu-west-1:123:table/svcThing-sdbx/stream/2024', type: 'dynamodb' } }] },
+          Dropzone: { events: [{ s3: { bucket: 'svc-thing-data-sdbx', event: 's3:ObjectCreated:*' } }] },
+          Nightly: { events: [{ schedule: { name: 'thing-nightly', description: 'Nightly job', rate: ['cron(0 2 * * ? *)'] } }] },
+          Shorthand: { events: [{ schedule: 'rate(5 minutes)' }] },
+        },
+        resources: {
+          Resources: {
+            ThingTable: { Type: 'AWS::DynamoDB::Table', Properties: { TableName: 'svcThing-sdbx' } },
+            ThingBucket: { Type: 'AWS::S3::Bucket' },
+          },
+        },
+      },
+    }
+    const facts = parseServerlessState(state)
+    expect(facts.streamConsumers).toContainEqual(
+      expect.objectContaining({ stream: 'skelloapp-bus-sdbx', kind: 'kinesis', functionName: 'BusConsumer' }),
+    )
+    expect(facts.streamConsumers).toContainEqual(
+      expect.objectContaining({ stream: 'svcThing-sdbx', kind: 'dynamodb', functionName: 'TableConsumer' }),
+    )
+    expect(facts.s3Triggers).toEqual([{ bucket: 'svc-thing-data-sdbx', functionName: 'Dropzone' }])
+    expect(facts.schedules).toContainEqual(
+      expect.objectContaining({ name: 'thing-nightly', expressions: ['cron(0 2 * * ? *)'], description: 'Nightly job' }),
+    )
+    expect(facts.schedules).toContainEqual(
+      expect.objectContaining({ expressions: ['rate(5 minutes)'], functionName: 'Shorthand' }),
+    )
+    expect(facts.ownedResources).toContainEqual({ cfType: 'AWS::DynamoDB::Table', name: 'svcThing-sdbx' })
+    expect(facts.ownedResources).toContainEqual({ cfType: 'AWS::S3::Bucket', name: 'ThingBucket' })
+  })
+})
+
+describe('classifyStreamRef', () => {
+  it('classifies raw ARNs by service segment and strips templates from names', () => {
+    expect(classifyStreamRef('arn:aws:kinesis:${awsRegion}:${config.awsAccountId}:stream/skelloapp-bus-${awsEnv}'))
+      .toEqual({ stream: 'skelloapp-bus', kind: 'kinesis', raw: expect.any(String) })
+    expect(classifyStreamRef('arn:aws:dynamodb:eu-west-1:123:table/svcThing-prod/stream/2024').kind).toBe('dynamodb')
+  })
+
+  it('classifies parameter references by the parameter NAME', () => {
+    expect(classifyStreamRef('${self:custom.parameters.streamDynamodbSvcCommunicationsV2}'))
+      .toEqual(expect.objectContaining({ stream: 'streamDynamodbSvcCommunicationsV2', kind: 'dynamodb' }))
+    expect(classifyStreamRef('${ssm:/prod/svc-kpis-v2/SKELLO_APP_KINESIS_FULL_LOAD_AND_CDC_ARN}'))
+      .toEqual(expect.objectContaining({ stream: 'SKELLO_APP_KINESIS_FULL_LOAD_AND_CDC_ARN', kind: 'kinesis' }))
+    expect(classifyStreamRef('${self:custom.parameters.streamSvcDocumentsEsignature}').kind).toBe('unknown')
+  })
+
+  it('lets an explicit event type win over name heuristics', () => {
+    expect(classifyStreamRef('${self:custom.parameters.someStream}', 'dynamodb').kind).toBe('dynamodb')
+  })
+})
+
+describe('stripTemplate', () => {
+  it('removes template parts and collapses separators', () => {
+    expect(stripTemplate('skelloapp-bus-${awsEnv}')).toBe('skelloapp-bus')
+    expect(stripTemplate('skello-app.temporary-assets.${awsRegion}.${id}.${awsEnv}')).toBe('skello-app.temporary-assets')
+    expect(stripTemplate('${serviceName}-${stage}')).toBe('')
+  })
 })
 
 describe('parseServerlessStatic', () => {
@@ -143,6 +207,114 @@ describe('parseServerlessStatic', () => {
     const facts = parseServerlessStatic(src)
     expect(facts.endpoints).toEqual([expect.objectContaining({ method: 'GET', path: '/health' })])
     expect(facts.queueNames).toEqual(['svcEmployeesUpdate'])
+  })
+
+  it('mines stream event sources without picking up nested destination arns', () => {
+    const src = `
+    TriggerJob: {
+      events: [
+        {
+          stream: {
+            arn: '\${self:custom.parameters.streamDynamodbSvcCommunicationsV2}',
+            batchSize: 25,
+            destinations: {
+              onFailure: {
+                arn: 'arn:aws:sqs:eu-west-1:123:wrong-pick',
+              },
+            },
+          },
+        },
+      ],
+    },
+    BusConsumer: {
+      events: [
+        {
+          stream: {
+            arn: \`arn:aws:kinesis:\${awsRegion}:\${config.awsAccountId}:stream/skelloapp-bus-\${awsEnv}\`,
+            startingPosition: 'LATEST',
+          },
+        },
+      ],
+    },`
+    const facts = parseServerlessStatic(src)
+    expect(facts.streamConsumers).toEqual([
+      expect.objectContaining({ stream: 'streamDynamodbSvcCommunicationsV2', kind: 'dynamodb', functionName: 'TriggerJob' }),
+      expect.objectContaining({ stream: 'skelloapp-bus', kind: 'kinesis', functionName: 'BusConsumer' }),
+    ])
+  })
+
+  it('mines s3 triggers with the bucket template stripped', () => {
+    const src = `
+    HandleEvpReady: {
+      events: [
+        {
+          s3: {
+            bucket: \`svc-payroll-evp-data-\${stage}\`,
+            event: 's3:ObjectCreated:*',
+            rules: [{suffix: '.evp.json'}],
+          },
+        },
+      ],
+    },`
+    expect(parseServerlessStatic(src).s3Triggers).toEqual([
+      { bucket: 'svc-payroll-evp-data', functionName: 'HandleEvpReady' },
+    ])
+  })
+
+  it('mines schedule shorthand and conditional block form; ignores type declarations', () => {
+    const src = `
+    SstRefresh: {
+      events: [{schedule: 'cron(0 8 1 * ? *)'}],
+    },
+    GenerateSyncErrorReports: {
+      events: [
+        {
+          schedule: {
+            name: \`\${serviceName}-generate-sync-error-reports-\${stage}\`,
+            description: 'Trigger Sync Errors generate at 12pm Paris time',
+            enabled: true,
+            rate: [
+              awsEnv !== 'prod'
+                ? 'cron(0 9-18 ? * 2-6 *)'
+                : 'cron(0 12 * * ? *)',
+            ],
+          },
+        },
+      ],
+    },
+    type MapSchedule = {
+      schedule: {
+        name: string;
+        description: string;
+        rate: string;
+      };
+    };`
+    const facts = parseServerlessStatic(src)
+    expect(facts.schedules).toEqual([
+      expect.objectContaining({ expressions: ['cron(0 8 1 * ? *)'], functionName: 'SstRefresh' }),
+      expect.objectContaining({
+        name: 'generate-sync-error-reports',
+        expressions: ['cron(0 9-18 ? * 2-6 *)', 'cron(0 12 * * ? *)'],
+        description: 'Trigger Sync Errors generate at 12pm Paris time',
+      }),
+    ])
+  })
+
+  it('mines owned CloudFormation resources of mapped types', () => {
+    const src = `
+    SvcPayrollEvpDataBucket: {
+      Type: 'AWS::S3::Bucket',
+      Properties: {
+        BucketName: \`svc-payroll-evp-data-\${stage}\`,
+      },
+    },
+    SomeQueue: {
+      Type: 'AWS::SQS::Queue',
+      Properties: {QueueName: 'ignoredHere'},
+    },`
+    expect(parseServerlessStatic(src).ownedResources).toEqual([
+      { cfType: 'AWS::S3::Bucket', name: 'svc-payroll-evp-data' },
+    ])
   })
 })
 

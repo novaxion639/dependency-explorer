@@ -97,6 +97,10 @@ function enrichServices(services: unknown[]): unknown[] {
       endpoints,
       repoUrl: facts.repoUrl ?? svc.repoUrl,
       teamId: facts.teamId ?? svc.teamId,
+      recurringTasks: facts.recurringTasks?.map(t => ({
+        ...t,
+        provenance: { source: 'discovered', lastVerified: verifiedOn, evidence: 'serverless schedule event' },
+      })) ?? svc.recurringTasks,
       provenance: {
         source: 'discovered',
         lastVerified: verifiedOn,

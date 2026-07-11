@@ -81,12 +81,23 @@ export const ServiceDatabaseSchema = z.object({
   description: z.string(),
 })
 
+// Scheduled invocation (EventBridge schedule events in serverless config) —
+// recurring work a service performs with no caller on the map.
+export const RecurringTaskSchema = z.object({
+  name: z.string(),
+  /** rate(…)/cron(…) expression(s); conditional configs join branches with " | " */
+  schedule: z.string(),
+  description: z.string().optional(),
+  provenance: ProvenanceSchema.optional(),
+})
+
 export const ConnectivityServiceSchema = z.object({
   name: z.string(),
   type: ServiceTypeSchema,
   description: z.string(),
   endpoints: z.array(ServiceEndpointSchema),
   databases: z.array(ServiceDatabaseSchema).optional(),
+  recurringTasks: z.array(RecurringTaskSchema).optional(),
   teamId: z.string().optional(),
   repoUrl: z.string().optional(),
   tags: z.array(z.string()).optional(),
@@ -219,6 +230,11 @@ export const DiscoveredOverlaySchema = z.object({
     repoUrl: z.string().optional(),
     teamId: z.string().optional(),
     githubTeams: z.array(z.string()).optional(),
+    recurringTasks: z.array(z.object({
+      name: z.string(),
+      schedule: z.string(),
+      description: z.string().optional(),
+    })).optional(),
   })),
   // "from→to" → verification stamp
   connections: z.record(z.string(), z.object({
@@ -257,6 +273,7 @@ export type EndpointParam = z.infer<typeof EndpointParamSchema>
 export type AwsCall = z.infer<typeof AwsCallSchema>
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>
 export type ServiceDatabase = z.infer<typeof ServiceDatabaseSchema>
+export type RecurringTask = z.infer<typeof RecurringTaskSchema>
 export type ConnectivityService = z.infer<typeof ConnectivityServiceSchema>
 export type ServiceConnection = z.infer<typeof ServiceConnectionSchema>
 export type ServiceFlowStep = z.infer<typeof ServiceFlowStepSchema>

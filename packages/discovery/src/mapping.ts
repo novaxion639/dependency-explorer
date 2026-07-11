@@ -82,6 +82,55 @@ export const RAILS_CLIENT_TARGETS: Record<string, string | null> = {
   'generate_documents_service.rb': null,
 }
 
+// ── Stream source resolution ─────────────────────────────────────────────────
+// A stream event source means the consumer reads ANOTHER system's data — the
+// edge points at whoever produces the stream. Identities are kinesis stream
+// names (template parts stripped) or serverless/SSM parameter names.
+//
+//   'skello-app' — the DMS CDC backbone: skelloapp-bus and every *fullload*
+//                  stream replicate the monolith's PostgreSQL outward.
+//   'self'      — the service's own DynamoDB table stream / own kinesis
+//                  stream (internal wiring, not a service-to-service edge).
+//   another service — parameter names spelling out a foreign service
+//                  (posDynamoDBStream, streamSvcDocumentsEsignature).
+//   null        — unresolvable: surfaced in the report, never guessed.
+
+const normalizeStreamToken = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+export function streamSourceService(
+  stream: string,
+  consumerRepo: string,
+  serviceNames: Iterable<string>,
+): string | 'self' | null {
+  if (/skelloapp-bus/i.test(stream) || /full.?load/i.test(stream) || /SKELLO_APP.*CDC/i.test(stream)) {
+    return 'skello-app'
+  }
+  // arn:…:stream/${serviceName}-${stage} — the service's own kinesis stream
+  if (/\$\{serviceName\}/.test(stream)) return 'self'
+
+  const norm = normalizeStreamToken(stream)
+  const consumerToken = normalizeStreamToken(consumerRepo.replace(/^svc-/, ''))
+  if (norm.includes(consumerToken)) return 'self'
+
+  // Foreign-service parameter names — longest service token wins (kpis-v2 over kpis)
+  let best: string | null = null
+  let bestLen = 0
+  for (const name of serviceNames) {
+    if (name === consumerRepo) continue
+    const token = normalizeStreamToken(name.replace(/^svc-/, ''))
+    if (token.length >= 3 && norm.includes(token) && token.length > bestLen) {
+      best = name
+      bestLen = token.length
+    }
+  }
+  if (best) return best
+
+  // Engine-only DynamoDB names (streamDynamodb, dynamoDBStream…) are the
+  // service's own table stream — verified across docs-v2/hris/enrollment/pos.
+  if (/^(stream)?dynamodb(stream)?$/.test(norm)) return 'self'
+  return null
+}
+
 // Subdirectories of microservices/ acting as clients of a single service.
 export const RAILS_CLIENT_DIR_TARGETS: Record<string, string | null> = {
   'communications_v2': 'svc-communications-v2',

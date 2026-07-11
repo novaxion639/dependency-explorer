@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { ServiceEndpoint, HttpMethod } from '@dependency-explorer/data'
+import type { ServiceEndpoint, HttpMethod, RecurringTask } from '@dependency-explorer/data'
 import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const METHOD_COLOR: Record<HttpMethod, string> = {
@@ -20,12 +20,13 @@ const PARAM_IN_COLOR: Record<string, string> = {
 interface Props {
   serviceName: string
   endpoints: ServiceEndpoint[]
+  recurringTasks?: RecurringTask[]
   /** Endpoint to open and scroll to (set by search results / ?ep= permalinks) */
   highlightId?: string | null
   onClose: () => void
 }
 
-export function EndpointDrawer({ serviceName, endpoints, highlightId, onClose }: Props) {
+export function EndpointDrawer({ serviceName, endpoints, recurringTasks, highlightId, onClose }: Props) {
   const [open, setOpen] = useState<string | null>(highlightId ?? endpoints[0]?.id ?? null)
 
   useEffect(() => {
@@ -61,6 +62,34 @@ export function EndpointDrawer({ serviceName, endpoints, highlightId, onClose }:
         </div>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 20, lineHeight: 1 }}>×</button>
       </div>
+
+      {/* Recurring tasks (EventBridge schedules discovered in serverless config) */}
+      {recurringTasks && recurringTasks.length > 0 && (
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid #2e3250', background: '#1e2130' }}>
+          <Label>⏰ Recurring tasks</Label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {recurringTasks.map(task => (
+              <div key={task.name}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 12, color: '#e2e8f0', fontWeight: 600 }}>{task.name}</span>
+                  <code style={{ fontSize: 10, color: '#f59e0b' }}>{task.schedule}</code>
+                  {task.provenance?.source === 'discovered' && (
+                    <span
+                      title={`Code-verified ${task.provenance.lastVerified ?? ''} — ${task.provenance.evidence ?? ''}`}
+                      style={{ color: '#10b981', fontSize: 11 }}
+                    >
+                      ✓
+                    </span>
+                  )}
+                </div>
+                {task.description && (
+                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{task.description}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Accordion list */}
       <div style={{ overflowY: 'auto', flex: 1 }}>

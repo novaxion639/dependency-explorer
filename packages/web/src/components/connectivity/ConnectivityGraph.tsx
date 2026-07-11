@@ -177,6 +177,7 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
         <EndpointDrawer
           serviceName={drawerService.name}
           endpoints={drawerService.endpoints}
+          recurringTasks={drawerService.recurringTasks}
           highlightId={highlightEndpointId ?? null}
           onClose={() => onDrawerSelect(null)}
         />

@@ -24,7 +24,7 @@ import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap } from '@dependency-explorer/data'
 import type { DiscoveredOverlay } from '@dependency-explorer/schema'
-import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES } from './mapping'
+import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
 import { extractRailsMonolith } from './extractors/rails'
@@ -68,6 +68,15 @@ interface EndpointCheck {
   extraInCode: number
 }
 
+interface AwsBinding {
+  service: string
+  /** aggregated stream event sources: source service resolved via curated mapping */
+  streams: Array<{ stream: string; kind: string; source: string | null; listeners: number; cdcChannelInMap: boolean; pairInMap: boolean }>
+  s3Triggers: Array<{ bucket: string; functionName?: string }>
+  schedules: Array<{ name: string; schedule: string; description?: string }>
+  ownedResources: Array<{ cfType: string; name: string }>
+}
+
 interface Report {
   scannedRepos: string[]
   /** connection key → accumulated evidence strings */
@@ -79,6 +88,7 @@ interface Report {
   endpointChecks: EndpointCheck[]
   endpointStamps: Record<string, { lastVerified: string; evidence: string }>
   asyncSenders: Array<{ from: string; to: string; queues: string[]; files: string[] }>
+  awsBindings: AwsBinding[]
   frontendServices: Array<{ service: string; inMap: boolean; evidence: string }>
   monolithSurface: { totalRoutes: number; resourceDeclarations: number; topSegments: Array<[string, number]> } | null
   /** SDK dependencies whose imports are type-only or absent — weak evidence, likely not runtime calls */
@@ -135,6 +145,7 @@ function run(): Report {
     endpointChecks: [],
     endpointStamps: {},
     asyncSenders: [],
+    awsBindings: [],
     frontendServices: [],
     monolithSurface: null,
     weakSdkEvidence: [],
@@ -187,10 +198,56 @@ function run(): Report {
       continue
     }
 
+    // ── AWS event bindings: streams, S3 triggers, schedules, owned resources ─
+    const recurringTasks: Array<{ name: string; schedule: string; description?: string }> = []
+    if (sls) {
+      const seenTask = new Set<string>()
+      for (const sched of sls.schedules) {
+        const name = sched.name ?? sched.functionName ?? 'scheduled task'
+        const schedule = sched.expressions.join(' | ')
+        if (seenTask.has(`${name}|${schedule}`)) continue
+        seenTask.add(`${name}|${schedule}`)
+        recurringTasks.push({ name, schedule, ...(sched.description ? { description: sched.description } : {}) })
+      }
+    }
+
     report.serviceFacts[repo] = {
       repoUrl: tsFacts?.repoUrl ?? `https://github.com/skelloapp/${repo}`,
       teamId: pickTeamId(codeowners.wildcardOwners),
       githubTeams: Object.keys(codeowners.counts).sort(),
+      ...(recurringTasks.length ? { recurringTasks } : {}),
+    }
+
+    if (sls && (sls.streamConsumers.length || sls.s3Triggers.length || sls.schedules.length || sls.ownedResources.length)) {
+      const byStream = new Map<string, { stream: string; kind: string; listeners: number }>()
+      for (const sc of sls.streamConsumers) {
+        const agg = byStream.get(`${sc.stream}:${sc.kind}`)
+        if (agg) agg.listeners++
+        else byStream.set(`${sc.stream}:${sc.kind}`, { stream: sc.stream, kind: sc.kind, listeners: 1 })
+      }
+      const streams = [...byStream.values()].map(s => {
+        const source = streamSourceService(s.stream, repo, serviceNames)
+        const foreign = source && source !== 'self' ? source : null
+        const cdcChannelInMap = foreign != null && connectivityMap.connections.some(c =>
+          c.from === repo && c.to === foreign && (c.protocol === 'cdc' || c.protocol === 'kinesis'))
+        const pairInMap = foreign != null && connectionKeys.has(`${repo}→${foreign}`)
+        if (foreign && (cdcChannelInMap || !pairInMap)) {
+          // stamp the existing cdc/kinesis channel, or propose a new candidate;
+          // a pair mapped under a DIFFERENT protocol only is flagged in the
+          // report instead — never silently stamped onto the wrong channel.
+          addEvidence(repo, foreign,
+            `serverless ${sls.source}: ${s.kind} stream event on ${s.stream} (${s.listeners} listener${s.listeners > 1 ? 's' : ''})`,
+            'cdc (stream consumer)')
+        }
+        return { stream: s.stream, kind: s.kind, source, listeners: s.listeners, cdcChannelInMap, pairInMap }
+      })
+      report.awsBindings.push({
+        service: repo,
+        streams,
+        s3Triggers: sls.s3Triggers,
+        schedules: recurringTasks,
+        ownedResources: sls.ownedResources,
+      })
     }
 
     for (const pkg of tsFacts?.sdkPackages ?? []) {
@@ -432,6 +489,34 @@ function printMarkdown(r: Report) {
 
   section('📨 Async sender evidence (queue literals)',
     r.asyncSenders.map(s => `- ${s.from} → ${s.to} via \`${s.queues.join('`, `')}\` (${s.files.join(', ')})`))
+
+  console.log(`\n## 🌀 AWS event bindings (serverless config: streams, S3, schedules, owned resources)\n`)
+  if (!r.awsBindings.length) {
+    console.log('_none_')
+  } else {
+    for (const b of r.awsBindings) {
+      console.log(`- **${b.service}**`)
+      for (const s of b.streams) {
+        const src = s.source === 'self'
+          ? 'own stream (internal wiring)'
+          : s.source === null
+            ? '**source unmapped — needs a mapping decision**'
+            : `source: ${s.source}${s.cdcChannelInMap ? ' ✅'
+              : s.pairInMap ? ' — **pair mapped under another protocol only, cdc channel missing**'
+                : ' — proposed in 🆕 candidates'}`
+        console.log(`  - ${s.kind} stream \`${s.stream}\`${s.listeners > 1 ? ` ×${s.listeners}` : ''} — ${src}`)
+      }
+      for (const t of b.s3Triggers) {
+        console.log(`  - s3 trigger on \`${t.bucket}\`${t.functionName ? ` (${t.functionName})` : ''}`)
+      }
+      for (const sc of b.schedules) {
+        console.log(`  - ⏰ ${sc.name} \`${sc.schedule}\`${sc.description ? ` — ${sc.description}` : ''}`)
+      }
+      for (const o of b.ownedResources) {
+        console.log(`  - owns ${o.cfType.replace('AWS::', '')} \`${o.name}\``)
+      }
+    }
+  }
 
   section('🖥 Frontend service usage',
     r.frontendServices.map(f => `- svc host \`${f.service}\` ${f.inMap ? '(in map)' : '**(not in map)**'} — ${f.evidence}`))

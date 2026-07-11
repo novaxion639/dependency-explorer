@@ -3,7 +3,7 @@ import type { ServiceNodeData } from '../../utils/buildConnectivityGraph'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ServiceNode({ data }: any) {
-  const { name, description, type, isSelected, isCaller, isCallee, teamName } = data as ServiceNodeData
+  const { name, description, type, isSelected, isCaller, isCallee, teamName, recurringTasks } = data as ServiceNodeData
 
   const isVue = type === 'vue-frontend'
   const isRails = type === 'rails-monolith'
@@ -44,6 +44,14 @@ export function ServiceNode({ data }: any) {
           <span style={{ fontWeight: 700, fontSize: 12, color: '#e2e8f0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {name}
           </span>
+          {recurringTasks && recurringTasks.length > 0 && (
+            <span
+              title={recurringTasks.map(t => `${t.name} — ${t.schedule}`).join('\n')}
+              style={{ fontSize: 10, flexShrink: 0, cursor: 'help' }}
+            >
+              ⏰
+            </span>
+          )}
           {label && (
             <span style={{ fontSize: 9, fontWeight: 700, padding: '1px 4px', borderRadius: 3, background: labelColor + '22', color: labelColor, whiteSpace: 'nowrap', flexShrink: 0 }}>
               {label}

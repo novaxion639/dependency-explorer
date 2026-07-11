@@ -10,12 +10,97 @@ export interface DiscoveredEndpoint {
   description?: string
 }
 
+export interface StreamConsumerFact {
+  /** normalized stream identity: kinesis stream name (template parts stripped) or the serverless/SSM parameter name */
+  stream: string
+  kind: 'kinesis' | 'dynamodb' | 'unknown'
+  /** the arn/reference exactly as written in config */
+  raw: string
+  functionName?: string
+}
+
+export interface S3TriggerFact {
+  /** bucket name with template parts stripped */
+  bucket: string
+  functionName?: string
+}
+
+export interface ScheduleFact {
+  /** rate(...)/cron(...) literals; conditional configs carry every branch */
+  expressions: string[]
+  name?: string
+  description?: string
+  functionName?: string
+}
+
+export interface OwnedResourceFact {
+  cfType: string
+  name: string
+}
+
 export interface ServerlessFacts {
   /** deploy-state = resolved config from a real deploy; static-scan = literals mined from serverless TS sources */
   source: 'deploy-state' | 'static-scan'
   endpoints: DiscoveredEndpoint[]
   /** SQS queue names this service owns (resources) or consumes (event sources) */
   queueNames: string[]
+  /** Kinesis / DynamoDB-stream event sources (inbound: this service listens) */
+  streamConsumers: StreamConsumerFact[]
+  /** S3 bucket-notification event sources (inbound: this service listens) */
+  s3Triggers: S3TriggerFact[]
+  /** EventBridge schedule events (recurring tasks) */
+  schedules: ScheduleFact[]
+  /** CloudFormation resources this service provisions (DynamoDB/S3/Kinesis/Events::Rule) */
+  ownedResources: OwnedResourceFact[]
+}
+
+// ── Stream / template identity helpers ────────────────────────────────────────
+
+const OWNED_RESOURCE_TYPES = new Set([
+  'AWS::DynamoDB::Table', 'AWS::S3::Bucket', 'AWS::Kinesis::Stream', 'AWS::Events::Rule',
+])
+
+/** Strip ${...} template parts and collapse leftover separators. */
+export function stripTemplate(value: string): string {
+  return value
+    .replace(/\$\{[^}]*\}/g, '')
+    .replace(/[-_.]{2,}/g, '-')
+    .replace(/^[-_.]+|[-_.]+$/g, '')
+}
+
+/**
+ * Classify a stream event-source reference. Raw ARNs classify by service
+ * segment (`:kinesis:` / `:dynamodb:`); `${self:custom.parameters.X}` and
+ * `${ssm:/.../X}` references classify by the parameter NAME, which Skello
+ * configs consistently spell with the engine in it (streamDynamodb…,
+ * …KINESIS_FULL_LOAD_AND_CDC_ARN). explicitType (event's `type:`) wins.
+ */
+export function classifyStreamRef(raw: string, explicitType?: string): Omit<StreamConsumerFact, 'functionName'> {
+  let kind: StreamConsumerFact['kind'] = 'unknown'
+  let stream = raw
+
+  if (raw.includes(':kinesis:')) {
+    kind = 'kinesis'
+    const name = raw.split('stream/').pop() ?? raw
+    stream = stripTemplate(name) || name
+  } else if (raw.includes(':dynamodb:')) {
+    kind = 'dynamodb'
+    const name = raw.split('table/').pop()?.split('/stream')[0] ?? raw
+    stream = stripTemplate(name) || name
+  } else {
+    const ref = raw.match(/\$\{(?:self:|ssm:)?([^}]+)\}/)
+    if (ref) {
+      const segments = ref[1]!.split(/[./:]/).filter(Boolean)
+      const param = segments[segments.length - 1] ?? raw
+      stream = param
+      if (/dynamo/i.test(param)) kind = 'dynamodb'
+      else if (/kinesis/i.test(param)) kind = 'kinesis'
+    }
+  }
+
+  if (explicitType === 'dynamodb') kind = 'dynamodb'
+  else if (explicitType === 'kinesis') kind = 'kinesis'
+  return { stream, kind, raw }
 }
 
 // ── Deploy-state parsing (.serverless/serverless-state.json) ─────────────────
@@ -37,12 +122,21 @@ function queueNameFromArn(arn: unknown, resources: Record<string, any>): string 
 export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'> {
   const endpoints: DiscoveredEndpoint[] = []
   const queueNames = new Set<string>()
+  const streamConsumers: StreamConsumerFact[] = []
+  const s3Triggers: S3TriggerFact[] = []
+  const schedules: ScheduleFact[] = []
+  const ownedResources: OwnedResourceFact[] = []
   const resources: Record<string, any> = state?.service?.resources?.Resources ?? {}
 
   for (const [logical, res] of Object.entries<any>(resources)) {
     if (res?.Type === 'AWS::SQS::Queue') {
       const name = res.Properties?.QueueName
       queueNames.add(typeof name === 'string' ? name : logical)
+    }
+    if (OWNED_RESOURCE_TYPES.has(res?.Type)) {
+      const p = res.Properties ?? {}
+      const name = p.TableName ?? p.BucketName ?? p.StreamName ?? p.Name
+      ownedResources.push({ cfType: res.Type, name: typeof name === 'string' ? stripTemplate(name) || name : logical })
     }
     // API Gateway routes defined as raw CloudFormation (e.g. SQS-SendMessage
     // direct integrations) are real public API surface with no Lambda event.
@@ -83,11 +177,45 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
       if (sqsArn) {
         const name = queueNameFromArn(sqsArn, resources)
         if (name) queueNames.add(name)
+        continue
+      }
+      const streamArn = typeof event?.stream === 'string' ? event.stream : event?.stream?.arn
+      if (event?.stream) {
+        const raw = typeof streamArn === 'string'
+          ? streamArn
+          : typeof streamArn?.['Fn::ImportValue'] === 'string' ? streamArn['Fn::ImportValue'] : '(non-literal arn)'
+        streamConsumers.push({ ...classifyStreamRef(raw, event.stream?.type), functionName: fnKey })
+        continue
+      }
+      const bucket = typeof event?.s3 === 'string' ? event.s3 : event?.s3?.bucket
+      if (typeof bucket === 'string') {
+        s3Triggers.push({ bucket: stripTemplate(bucket) || bucket, functionName: fnKey })
+        continue
+      }
+      if (event?.schedule) {
+        const sched = event.schedule
+        const rates = typeof sched === 'string' ? [sched] : [sched?.rate ?? []].flat()
+        const expressions = rates.filter((r: unknown): r is string => typeof r === 'string')
+        if (expressions.length) {
+          schedules.push({
+            expressions,
+            name: typeof sched?.name === 'string' ? sched.name : undefined,
+            description: typeof sched?.description === 'string' ? sched.description : undefined,
+            functionName: fnKey,
+          })
+        }
       }
     }
   }
 
-  return { endpoints, queueNames: [...queueNames].sort() }
+  return {
+    endpoints,
+    queueNames: [...queueNames].sort(),
+    streamConsumers,
+    s3Triggers,
+    schedules,
+    ownedResources,
+  }
 }
 
 // ── Static scanning of serverless TS sources ─────────────────────────────────
@@ -128,10 +256,108 @@ function findFunctionIdentity(lines: string[], eventLineIdx: number): { function
 export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 'source'> {
   const endpoints: DiscoveredEndpoint[] = []
   const queueNames = new Set<string>()
+  const streamConsumers: StreamConsumerFact[] = []
+  const s3Triggers: S3TriggerFact[] = []
+  const schedules: ScheduleFact[] = []
+  const ownedResources: OwnedResourceFact[] = []
   const lines = content.split('\n')
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!
+
+    // Stream event source — shorthand: stream: 'arn:aws:kinesis:…'
+    const streamShort = line.match(/\bstream:\s*['"`]([^'"`]+)['"`]/)
+    if (streamShort) {
+      streamConsumers.push({ ...classifyStreamRef(streamShort[1]!), functionName: findFunctionIdentity(lines, i).functionName })
+      continue
+    }
+
+    // Stream event source — block form: arn/type literals before nested objects
+    if (/\bstream:\s*\{\s*$/.test(line)) {
+      const indent = line.match(/^\s*/)![0].length
+      let arn: string | null = null
+      let explicitType: string | undefined
+      for (let j = i + 1; j < Math.min(i + 14, lines.length); j++) {
+        const inner = lines[j]!
+        if (/^\s*destinations:/.test(inner)) break
+        const innerIndent = inner.match(/^\s*/)![0].length
+        if (/^\s*\}/.test(inner) && innerIndent <= indent) break
+        const a = inner.match(/\barn:\s*['"`]([^'"`]+)['"`]/)
+        if (a && !arn) arn = a[1]!
+        const t = inner.match(/\btype:\s*['"`](\w+)['"`]/)
+        if (t) explicitType = t[1]!
+      }
+      streamConsumers.push({
+        ...classifyStreamRef(arn ?? '(non-literal arn)', explicitType),
+        functionName: findFunctionIdentity(lines, i).functionName,
+      })
+      continue
+    }
+
+    // S3 bucket-notification event — shorthand or block with a bucket literal
+    const s3Short = line.match(/^\s*s3:\s*['"`]([^'"`]+)['"`]/)
+    if (s3Short) {
+      s3Triggers.push({ bucket: stripTemplate(s3Short[1]!) || s3Short[1]!, functionName: findFunctionIdentity(lines, i).functionName })
+      continue
+    }
+    if (/^\s*s3:\s*\{\s*$/.test(line)) {
+      for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+        const b = lines[j]!.match(/\bbucket:\s*['"`]([^'"`]+)['"`]/)
+        if (b) {
+          s3Triggers.push({ bucket: stripTemplate(b[1]!) || b[1]!, functionName: findFunctionIdentity(lines, i).functionName })
+          break
+        }
+        if (/^\s*\}/.test(lines[j]!)) break
+      }
+      continue
+    }
+
+    // Schedule event — shorthand: schedule: 'cron(…)' / schedule: ['rate(…)'] / template crons
+    const schedShort = line.match(/\bschedule:\s*\[?\s*['"`]((?:rate|cron)\([^)]*\))['"`]/)
+    if (schedShort) {
+      schedules.push({ expressions: [schedShort[1]!], functionName: findFunctionIdentity(lines, i).functionName })
+      continue
+    }
+
+    // Schedule event — block form: collect name/description + every rate/cron
+    // literal in the block (conditional configs carry one literal per branch).
+    // Blocks with zero literal expressions are ignored — that shape is almost
+    // always a TS type declaration, not an event.
+    if (/\bschedule:\s*\{\s*$/.test(line)) {
+      const indent = line.match(/^\s*/)![0].length
+      let name: string | undefined
+      let description: string | undefined
+      const expressions: string[] = []
+      for (let j = i + 1; j < Math.min(i + 22, lines.length); j++) {
+        const inner = lines[j]!
+        const innerIndent = inner.match(/^\s*/)![0].length
+        if (/^\s*\}/.test(inner) && innerIndent <= indent) break
+        const n = inner.match(/\bname:\s*['"`]([^'"`]+)['"`]/)
+        if (n && !name) name = stripTemplate(n[1]!) || n[1]!
+        const d = inner.match(/\bdescription:\s*['"`]([^'"`]+)['"`]/)
+        if (d && !description) description = d[1]!
+        for (const expr of inner.match(/(?:rate|cron)\([^)]*\)/g) ?? []) expressions.push(expr)
+      }
+      if (expressions.length) {
+        schedules.push({ expressions, name, description, functionName: findFunctionIdentity(lines, i).functionName })
+      }
+      continue
+    }
+
+    // Owned CloudFormation resources: Type: 'AWS::DynamoDB::Table' etc.
+    const cfType = line.match(/\bType:\s*['"`](AWS::[A-Za-z0-9:]+)['"`]/)
+    if (cfType && OWNED_RESOURCE_TYPES.has(cfType[1]!)) {
+      let name: string | undefined
+      for (let j = i + 1; j < Math.min(i + 14, lines.length); j++) {
+        const n = lines[j]!.match(/\b(?:TableName|BucketName|StreamName|Name):\s*['"`]([^'"`]+)['"`]/)
+        if (n) {
+          name = stripTemplate(n[1]!) || n[1]!
+          break
+        }
+      }
+      ownedResources.push({ cfType: cfType[1]!, name: name ?? findFunctionIdentity(lines, i).functionName ?? '(unnamed)' })
+      continue
+    }
 
     // Shorthand: httpApi: 'GET /path'
     const shorthand = line.match(/\bhttpApi:\s*['"`]([A-Z]+)\s+([^'"`]+)['"`]/)
@@ -175,7 +401,7 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     }
   }
 
-  return { endpoints, queueNames: [...queueNames].sort() }
+  return { endpoints, queueNames: [...queueNames].sort(), streamConsumers, s3Triggers, schedules, ownedResources }
 }
 
 function walkTsFiles(dir: string, out: string[] = []): string[] {
@@ -218,17 +444,26 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
   sources.push(...walkTsFiles(path.join(repoPath, 'serverless')))
   if (!sources.length) return null
 
-  const endpoints: DiscoveredEndpoint[] = []
+  const merged: Omit<ServerlessFacts, 'source'> = {
+    endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [], ownedResources: [],
+  }
   const queueNames = new Set<string>()
   for (const file of sources) {
     try {
       const parsed = parseServerlessStatic(fs.readFileSync(file, 'utf-8'))
-      endpoints.push(...parsed.endpoints)
+      merged.endpoints.push(...parsed.endpoints)
       parsed.queueNames.forEach(q => queueNames.add(q))
+      merged.streamConsumers.push(...parsed.streamConsumers)
+      merged.s3Triggers.push(...parsed.s3Triggers)
+      merged.schedules.push(...parsed.schedules)
+      merged.ownedResources.push(...parsed.ownedResources)
     } catch {
       // unreadable file — skip
     }
   }
-  if (!endpoints.length && !queueNames.size) return null
-  return { source: 'static-scan', endpoints, queueNames: [...queueNames].sort() }
+  merged.queueNames = [...queueNames].sort()
+  if (!merged.endpoints.length && !merged.queueNames.length
+    && !merged.streamConsumers.length && !merged.s3Triggers.length
+    && !merged.schedules.length && !merged.ownedResources.length) return null
+  return { source: 'static-scan', ...merged }
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T15:20:45.583Z",
+  "generatedAt": "2026-07-11T17:53:45.594Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
@@ -101,6 +101,12 @@
         "@skelloapp/squad-infra",
         "@skelloapp/squad-perf",
         "@skelloapp/team-dev"
+      ],
+      "recurringTasks": [
+        {
+          "name": "eventBridge",
+          "schedule": "cron(${schedule.minute} ${schedule.hour} ${schedule.day} ${schedule.month} ? ${schedule.year})"
+        }
       ]
     },
     "svc-employees": {
@@ -109,6 +115,12 @@
         "@skelloapp/squad-infra",
         "@skelloapp/squad-perf",
         "@skelloapp/team-dev"
+      ],
+      "recurringTasks": [
+        {
+          "name": "SstRefresh",
+          "schedule": "cron(0 8 1 * ? *)"
+        }
       ]
     },
     "svc-enrollment": {
@@ -141,6 +153,13 @@
         "@skelloapp/squad-infra",
         "@skelloapp/squad-perf",
         "@skelloapp/team-dev"
+      ],
+      "recurringTasks": [
+        {
+          "name": "generate-sync-error-reports",
+          "schedule": "cron(0 9-18 ? * 2-6 *) | cron(0 12 * * ? *)",
+          "description": "Trigger Sync Errors generate at 12pm Paris time"
+        }
       ]
     },
     "svc-intelligence": {
@@ -257,6 +276,12 @@
         "@skelloapp/squad-infra",
         "@skelloapp/squad-perf",
         "@skelloapp/team-dev"
+      ],
+      "recurringTasks": [
+        {
+          "name": "CarryOverCalculationCronJob",
+          "schedule": "cron(0 0 1 * ? *)"
+        }
       ]
     },
     "svc-users": {
@@ -426,7 +451,7 @@
     },
     "svc-automatic-scheduling→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+      "evidence": "serverless deploy-state: kinesis stream event on skelloapp-bus-sdbx (1 listener); package.json: @skelloapp/skello-app-sdk (value import)"
     },
     "svc-automatic-scheduling→svc-search": {
       "lastVerified": "2026-07-11",
@@ -488,6 +513,14 @@
       "lastVerified": "2026-07-11",
       "evidence": "package.json: @skelloapp/svc-requests-sdk (value import)"
     },
+    "svc-documents-v2→skello-app": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on svcDocumentsV2-fullload (1 listener); serverless static-scan: unknown stream event on streamSkelloAppBus (1 listener)"
+    },
+    "svc-documents-v2→svc-documents-esignature": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: unknown stream event on streamSvcDocumentsEsignature (1 listener)"
+    },
     "svc-documents-v2→svc-communications-v2": {
       "lastVerified": "2026-07-11",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
@@ -495,6 +528,10 @@
     "svc-documents-v2→svc-intelligence": {
       "lastVerified": "2026-07-11",
       "evidence": "package.json: @skelloapp/svc-intelligence-sdk (type-only import)"
+    },
+    "svc-employees→skello-app": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
     },
     "svc-employees→svc-communications-v2": {
       "lastVerified": "2026-07-11",
@@ -548,6 +585,14 @@
       "lastVerified": "2026-07-11",
       "evidence": "package.json: @skelloapp/svc-esignature-sdk (value import)"
     },
+    "svc-kpis→skello-app": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
+    },
+    "svc-kpis-v2→skello-app": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless deploy-state: kinesis stream event on skelloapp-bus-sdbx (1 listener)"
+    },
     "svc-kpis-v2→svc-employees": {
       "lastVerified": "2026-07-11",
       "evidence": "package.json: @skelloapp/svc-employees-client (value import)"
@@ -568,6 +613,22 @@
       "lastVerified": "2026-07-11",
       "evidence": "package.json: @skelloapp/svc-hris-sdk (value import)"
     },
+    "svc-pos→skello-app": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
+    },
+    "svc-punch→skello-app": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless deploy-state: kinesis stream event on skelloapp-bus-sdbx (1 listener); serverless deploy-state: kinesis stream event on skelloapp-svcpunch-fullload-sdbx (1 listener)"
+    },
+    "svc-reports→skello-app": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-svcreports-fullload (1 listener)"
+    },
+    "svc-requests→skello-app": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: kinesis stream event on svcRequests-fullload (1 listener); serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
+    },
     "svc-requests→svc-communications-v2": {
       "lastVerified": "2026-07-11",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
@@ -578,7 +639,11 @@
     },
     "svc-search→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on skelloapp-svcsearch-fullload (1 listener); package.json: @skelloapp/skello-app-sdk (value import)"
+    },
+    "svc-search→svc-pos": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: dynamodb stream event on posDynamoDBStream (2 listeners)"
     },
     "svc-shops→svc-employees": {
       "lastVerified": "2026-07-11",
@@ -610,11 +675,15 @@
     },
     "svc-trackers→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); package.json: @skelloapp/skello-app-sdk (value import)"
     },
     "svc-trackers→svc-search": {
       "lastVerified": "2026-07-11",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
+    },
+    "svc-users→skello-app": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on skelloapp-bus-fullload-svcusers (1 listener)"
     },
     "svc-users→svc-communications-v2": {
       "lastVerified": "2026-07-11",
@@ -626,7 +695,7 @@
     },
     "svc-workload-plan→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (2 listeners); package.json: @skelloapp/skello-app-sdk (value import)"
     },
     "svc-workload-plan→svc-kpis-v2": {
       "lastVerified": "2026-07-11",

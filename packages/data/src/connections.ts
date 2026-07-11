@@ -1357,6 +1357,146 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "jwt",
     "description": "LEGACY v1 usage still live: planning KPIs store reads/writes user KPI display settings (svc_kpis_client getUserKpiSettings/patchUserKpiSettings) alongside the v2 metrics client; base-app SvcKpis client (KpisForDateModel, svcKpisApiUrl). Migration required before v1 decommission.",
     "usedEndpoints": []
+  },
+  {
+    "from": "svc-automatic-scheduling",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus Kinesis stream) to keep its local replica of planning data current. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-documents-v2",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream events → skelloapp-bus + svcDocumentsV2-fullload (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus) plus a dedicated svcDocumentsV2-fullload Kinesis stream for initial table loads. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-documents-v2",
+    "to": "svc-documents-esignature",
+    "sdkPackage": "serverless stream event → svcDocumentsEsignature DYNAMO_DB_STREAM_ARN_V2 (DynamoDB stream)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "syncEsignatureToSignatureCdcJob consumes svc-documents-esignature's DynamoDB table stream (SSM svcDocumentsEsignature/DYNAMO_DB_STREAM_ARN_V2) to mirror e-signature state onto Signature records — no API call between the two documents services. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-employees",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus Kinesis stream) to keep employee data replicas current — the inbound replication side of the strangler pattern whose DPAE write-back (REST) shares this pair. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-kpis",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "LEGACY v1 KPI service consumes the monolith's DMS CDC backbone (skelloapp-bus; KinesisReplayService replays records into its Postgres). Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-kpis-v2",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream events → skelloapp-bus + SKELLO_APP_KINESIS_FULL_LOAD_AND_CDC_ARN (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus, deploy-state verified) plus the SSM-configured full-load+CDC stream to feed KPI computation from replicated monolith tables. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-pos",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus Kinesis stream) to relate POS transactions/forecasts to replicated shop data. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-punch",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream events → skelloapp-bus + skelloapp-svcpunch-fullload (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus) plus a dedicated svcpunch full-load Kinesis stream (deploy-state verified) — the replication that lets the badging system of record work against current shop/employee data. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-reports",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream event → skelloapp-svcreports-fullload (Kinesis, DMS)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes a dedicated skelloapp-svcreports-fullload Kinesis stream (DMS replication of monolith tables); also listens on the monolith's temporary-assets S3 bucket for automated PAM report dispatch (SendAutomatedPAMReportToSFTPJob). Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-requests",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream events → skelloapp-bus + svcRequests-fullload (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus) plus a dedicated svcRequests-fullload Kinesis stream — the inbound replication side of the strangler pattern whose absence-shift write-back (REST) shares this pair. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-search",
+    "to": "svc-pos",
+    "sdkPackage": "serverless stream event → posDynamoDBStream (DynamoDB stream)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "ComputePosTransactionsJob/ComputePosForecastsJob consume svc-pos's DynamoDB table stream ('Change data capture for svcPos Transactions/Forecasts table') to index POS data into the search Mongo hub — no API call. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-trackers",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus Kinesis stream) — the async replication channel alongside its REST SDK reads on the same pair. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-users",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream events → skelloapp-bus + skelloapp-bus-fullload-svcusers (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus) plus a dedicated full-load stream — the inbound replication side of the strangler pattern whose authorizer write-back (REST) and RDS read-replica access share this pair. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-workload-plan",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus Kinesis stream, two listeners) to keep workload-plan context current. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
   }
 ])
 

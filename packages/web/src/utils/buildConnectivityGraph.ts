@@ -1,6 +1,6 @@
 import { MarkerType } from '@xyflow/react'
 import type { Node, Edge } from '@xyflow/react'
-import type { ConnectivityMap } from '@dependency-explorer/data'
+import type { ConnectivityMap, RecurringTask } from '@dependency-explorer/data'
 import type { DatabaseNodeData } from '../components/nodes/DatabaseNode'
 
 const NODE_W = 200
@@ -16,6 +16,7 @@ export interface ServiceNodeData {
   isCaller: boolean
   isCallee: boolean
   teamName?: string
+  recurringTasks?: RecurringTask[]
   [key: string]: unknown
 }
 
@@ -84,6 +85,7 @@ export function buildConnectivityGraph(
       isCaller: false,
       isCallee: false,
       teamName: selectedSvc?.teamId ? teamById.get(selectedSvc.teamId)?.name : undefined,
+      recurringTasks: selectedSvc?.recurringTasks,
     } satisfies ServiceNodeData,
   })
 
@@ -103,6 +105,7 @@ export function buildConnectivityGraph(
         isCaller: true,
         isCallee: false,
         teamName: svc?.teamId ? teamById.get(svc.teamId)?.name : undefined,
+        recurringTasks: svc?.recurringTasks,
       } satisfies ServiceNodeData,
     })
   })
@@ -123,6 +126,7 @@ export function buildConnectivityGraph(
         isCaller: false,
         isCallee: true,
         teamName: svc?.teamId ? teamById.get(svc.teamId)?.name : undefined,
+        recurringTasks: svc?.recurringTasks,
       } satisfies ServiceNodeData,
     })
   })

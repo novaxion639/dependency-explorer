@@ -6,10 +6,10 @@ The canonical, continuously verified map of Skello's distributed architecture �
 
 ## What it shows
 
-- **Service view** — for any of the 33 services: its callers, callees and databases, with sync (REST) vs async (SQS/SNS/Kinesis) edge styling — including shared-database couplings (`mongodb`/`postgresql`) and CDC replication edges — the exact endpoints each connection uses, and a CRUD-annotated endpoint drawer.
+- **Service view** — for any of the 35 services: its callers, callees and databases, with sync (REST) vs async (SQS/SNS/Kinesis) edge styling — including shared-database couplings (`mongodb`/`postgresql`) and CDC replication edges (the `skelloapp-bus` DMS backbone and cross-service DynamoDB streams, discovered from serverless config) — the exact endpoints each connection uses, a CRUD-annotated endpoint drawer, and discovered recurring tasks (⏰ EventBridge schedules).
 - **Domain view** — 8 bounded contexts with aggregated cross-domain dependencies.
-- **Business flows** — 23 verified end-to-end flows (shift creation, auto-planning generation, leave lifecycle…) rendered as step-by-step DAGs including the AWS infrastructure each step touches (PostgreSQL, MongoDB, SQS, Lambdas, Step Functions). Page-load flows group steps into ordered phases.
-- **Code-level flow detail** — flows can declare a *code layer*: the controllers, service objects, managers, Sidekiq jobs and model-callback groups an action traverses inside a service, with call semantics (sync / async-job, transaction boundaries, feature-flag and conditional guards) and table-level storage touches. The flow modal gains a `Services | Code detail` toggle (permalink: `?detail=code`). The layer is human-authored from code reading (assisted by `pnpm discover:trace <file>`) and machine-verified by `pnpm discover`: every unit's file path must exist and every call edge's callee must be referenced from its caller's source (🫀 report section). Flagship: the **Shift Creation** flow's full monolith path.
+- **Business flows** — 33 verified end-to-end flows (shift creation, auto-planning generation, leave lifecycle…) rendered as step-by-step DAGs including the AWS infrastructure each step touches (PostgreSQL, MongoDB, SQS, Lambdas, Step Functions). Page-load flows group steps into ordered phases.
+- **Code-level flow detail** — flows can declare a *code layer*: the controllers, service objects, managers, Sidekiq jobs and model-callback groups an action traverses inside a service, with call semantics (sync / async-job, transaction boundaries, feature-flag and conditional guards) and table-level storage touches. The flow modal gains a `Services | Code detail` toggle (permalink: `?detail=code`). The layer is human-authored from code reading (assisted by `pnpm discover:trace <file>`) and machine-verified by `pnpm discover`: every unit's file path must exist and every call edge's callee must be referenced from its caller's source (🫀 report section). 16 flows carry a code layer; flagship: the **Shift Creation** flow's full monolith path.
 - **Blast radius** — BFS over the dependency graph showing which services are affected if a service fails.
 - **Permalinks** — every view state (selected service, connection popup, endpoint drawer, flow, domain filter, blast radius) is encoded in the URL: copy the link, share it in Slack or a PR, and the recipient lands on the exact same view.
 - **Global search (⌘K)** — one palette over every service, endpoint, connection, flow, domain, database and queue (~600 entries). Picking a result navigates to a permalink-backed view — an endpoint hit opens the drawer scrolled to that endpoint.
@@ -29,8 +29,8 @@ That's it. No database, no seeding, no Docker: the dataset is imported at build 
 | Package | Purpose |
 |---|---|
 | `packages/schema` | Zod schemas + inferred types — the single source of truth for the data model |
-| `packages/data` | The dataset (33 services, 352 endpoints, 113 connections — 100 of them discovery-verified — 23 flows, 8 domains, 12 teams) + referential-integrity test suite |
-| `packages/discovery` | Repo scanner: detects drift between the dataset and actual `@skelloapp/*` SDK usage in sibling repos (`pnpm discover`) |
+| `packages/data` | The dataset (35 services, 346 endpoints, 132 connections — 115 of them discovery-verified — 33 flows, 8 domains, 12 teams) + referential-integrity test suite |
+| `packages/discovery` | Repo scanner: detects drift between the dataset and sibling repos — SDK usage, serverless config (HTTP, SQS, Kinesis/DynamoDB streams, S3 triggers, EventBridge schedules), Rails clients/routes, frontend env usage (`pnpm discover`) |
 | `packages/web` | Static React + React Flow SPA — the visualization |
 
 ## Principles
@@ -64,6 +64,7 @@ pnpm check           # everything CI runs
 | 0 | Reboot: static SPA, workspace structure, integrity gates, CI | ✅ done |
 | 1 | Automation-first: SDK + Rails + CODEOWNERS extractors, provenance metadata, two-layer merge, classified drift report ([ADR-0007](docs/adr/0007-discovery-semantics.md)) | ✅ done (nightly drift PRs pending org token — Infra discussion) |
 | 1.5 | More extractors: serverless configs (deploy-state + static, endpoint verification), Rails routes (monolith inbound surface), frontend env/usage, async queue cross-reference | ✅ done (AWS read-only verification remains — needs credentials story) |
+| 1.7 | AWS resource discovery — Layer 1: stream/S3/schedule event sources + owned CloudFormation resources from serverless config (🌀 report section, `RecurringTask` model, CDC backbone edges). Layer 2 (application-code AWS clients: produce/read-write direction) and Layer 3 (Terraform/IAM ground truth — blocked on locating the terraform repos) to follow | 🚧 Layer 1 ✅ |
 | 2 | Org-audience features: permalinks, global search, ownership pages, export | 🚧 — permalinks ✅, ⌘K search ✅, PNG export ✅; ownership pages blocked on teamId coverage (CODEOWNERS wildcard adoption) |
 | 3 | "Suggest edit" → pre-filled PR via GitHub App, permissions from GitHub teams | |
 | 4 | Live operational overlays (deploys, alarms, queue depth, on-call) via a read-only API | |
