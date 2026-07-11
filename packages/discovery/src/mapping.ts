@@ -24,6 +24,8 @@ export const MONGO_CONTRACT_SDKS = new Set(['@skelloapp/svc-search-sdk'])
 // SDKs whose target does not follow the `@skelloapp/svc-<name>-sdk` convention.
 export const SDK_SERVICE_OVERRIDES: Record<string, string> = {
   '@skelloapp/skello-app-sdk': 'skello-app',
+  // Verified 2026-06-15: AnalyticsDashboard.vue instantiates SkelloAnalyticsClient(skelloApiUrl) — the monolith, not a separate analytics service.
+  '@skelloapp/skello-analytics-client': 'skello-app',
   '@skelloapp/svc-esignature-sdk': 'svc-documents-esignature',
   '@skelloapp/workload-plan-sdk': 'svc-workload-plan',
 }
@@ -42,7 +44,6 @@ export function sdkToServiceName(sdkPkg: string): string | null {
 export const FRONTEND_HOST_ALIASES: Record<string, string | null> = {
   'svc-esignature': 'svc-documents-esignature', // host/SDK drift — repo is svc-documents-esignature
   'svc-documents': null, // documents v1 — legacy
-  'svc-kpis': null, // kpis v1 — legacy
 }
 
 // GitHub teams that never own services: Terraform-generated PR-approval

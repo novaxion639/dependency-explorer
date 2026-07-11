@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T15:07:33.992Z",
+  "generatedAt": "2026-07-11T15:20:45.583Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
@@ -151,6 +151,14 @@
         "@skelloapp/team-dev"
       ]
     },
+    "svc-kpis": {
+      "repoUrl": "https://github.com/skelloapp/svc-kpis",
+      "githubTeams": [
+        "@skelloapp/squad-infra",
+        "@skelloapp/squad-perf",
+        "@skelloapp/team-dev"
+      ]
+    },
     "svc-kpis-v2": {
       "repoUrl": "https://github.com/skelloapp/svc-kpi-v2",
       "githubTeams": [
@@ -282,7 +290,7 @@
   "connections": {
     "skello-app-front→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+      "evidence": "package.json: @skelloapp/skello-analytics-client (value import); package.json: @skelloapp/skello-app-sdk (value import)"
     },
     "skello-app-front→svc-automatic-scheduling": {
       "lastVerified": "2026-07-11",
@@ -323,6 +331,10 @@
     "skello-app-front→svc-intelligence": {
       "lastVerified": "2026-07-11",
       "evidence": "package.json: @skelloapp/svc-intelligence-sdk (value import); frontend: env SVC_INTELLIGENCE_URL, VUE_APP_SVC_INTELLIGENCE_API_URL used in 2 files"
+    },
+    "skello-app-front→svc-kpis": {
+      "lastVerified": "2026-07-11",
+      "evidence": "package.json: @skelloapp/svc-kpis-sdk (value import); frontend: env MS_KPIS_BASE_URL, VUE_APP_SVC_KPIS_API_URL used in 8 files"
     },
     "skello-app-front→svc-kpis-v2": {
       "lastVerified": "2026-07-11",

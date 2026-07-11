@@ -1347,6 +1347,16 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "api-key",
     "description": "Strangler write-back: the DPAE step function updates deposit status in the monolith (UpdateSkelloDpaeStatusSfnJobHandler → DpaeManager; SSM skelloApp/SKELLO_APP_API_URL + SKELLO_APP_EMPLOYEES_API_KEY — the dpae_deposits#update endpoint the monolith marks 'called only by svc-employee'). Verified 2026-06-15.",
     "usedEndpoints": []
+  },
+  {
+    "from": "skello-app-front",
+    "to": "svc-kpis",
+    "sdkPackage": "@skelloapp/svc-kpis-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "LEGACY v1 usage still live: planning KPIs store reads/writes user KPI display settings (svc_kpis_client getUserKpiSettings/patchUserKpiSettings) alongside the v2 metrics client; base-app SvcKpis client (KpisForDateModel, svcKpisApiUrl). Migration required before v1 decommission.",
+    "usedEndpoints": []
   }
 ])
 

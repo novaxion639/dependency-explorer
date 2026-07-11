@@ -81,6 +81,7 @@ const domains: Domain[] = z.array(DomainSchema).parse([
     serviceNames: [
       'svc-intelligence',
       'svc-skello-assistant',
+      'svc-kpis',
       'svc-kpis-v2',
       'svc-reports',
     ],

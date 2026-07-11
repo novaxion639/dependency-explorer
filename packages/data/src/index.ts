@@ -17,6 +17,7 @@ import svc_billing_automation from './services/svc-billing-automation'
 import svc_hiring from './services/svc-hiring'
 import svc_hris from './services/svc-hris'
 import svc_intelligence from './services/svc-intelligence'
+import svc_kpis from './services/svc-kpis'
 import svc_kpis_v2 from './services/svc-kpis-v2'
 import svc_trackers from './services/svc-trackers'
 import svc_bff from './services/svc-bff'
@@ -41,7 +42,10 @@ import skello_app from './services/skello-app'
 import skello_app_front from './services/skello-app-front'
 
 import assistant_chat from './flows/assistant-chat'
+import analytics_dashboard_load from './flows/analytics-dashboard-load'
+import availability_submission from './flows/availability-submission'
 import badging_review from './flows/badging-review'
+import payslip_dispatch from './flows/payslip-dispatch'
 import employee_clock_in from './flows/employee-clock-in'
 import self_serve_signup from './flows/self-serve-signup'
 import subscription_upgrade from './flows/subscription-upgrade'
@@ -124,6 +128,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   svc_hiring,
   svc_hris,
   svc_intelligence,
+  svc_kpis,
   svc_kpis_v2,
   svc_trackers,
   svc_bff,
@@ -150,7 +155,10 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   connections: enrichConnections(connections),
   flows: [
   assistant_chat,
+  analytics_dashboard_load,
+  availability_submission,
   badging_review,
+  payslip_dispatch,
   employee_clock_in,
   self_serve_signup,
   subscription_upgrade,
