@@ -1,92 +1,136 @@
 import { ServiceFlowSchema } from '@dependency-explorer/schema'
 import type { ServiceFlow } from '@dependency-explorer/schema'
 
+// Code layer traced 2026-07-11. Applying a template uses the same
+// 5-weeks-sync / rest-async split as week-copy (CreateFromTemplateJob per
+// extra week). The remaining fabrications were removed: no monolith event,
+// no skello-sqs-events queue, no shift-notify-dispatch lambda, no
+// notification — employees hear about their shifts at publication.
 const planning_template: ServiceFlow = ServiceFlowSchema.parse({
   "id": "planning-template",
   "name": "Planning Template — Save & Apply",
-  "description": "A manager saves the current week's planning as a reusable template, or applies an existing template to populate a new week. Applying a template evaluates labour-law compliance in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call) and updates metrics identically to a batch shift creation. (Corrected 2026-06-12: the previously documented svc-shifts metrics call had no code path — no svc-shifts client exists anywhere in the monolith.)",
+  "description": "A manager saves the current week's planning as a reusable template, or applies one to populate a week. Save = TemplatesController#create snapshots the shop's shifts. Apply = the first 5 selected weeks run synchronously through V3::Templates::ApplyService (shift creation with in-process labour-law compliance, skipped-postes reporting, counter updates via CombinedTrackerUpdateService); any further weeks are enqueued one CreateFromTemplateJob each — the same sync/async split as week-copy. Nobody is notified; publication does that.",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "POST /v3/api/templates — save current week's shifts as a named template"
+      "action": "POST /v3/api/plannings/templates — save current week as a named template"
     },
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "POST /v3/api/plannings/from_template — apply selected template to target week"
+      "action": "POST apply — populate the selected week(s) from a template (5 sync + rest async)"
+    }
+  ],
+  "codeUnits": [
+    {
+      "id": "cu-tpl-controller",
+      "service": "skello-app",
+      "kind": "controller",
+      "label": "V3::Api::Plannings::TemplatesController",
+      "path": "app/controllers/v3/api/plannings/templates_controller.rb",
+      "description": "#create snapshots the shop's current shifts as a template; #apply splits the selected weeks into 5 synchronous + N async and reports skipped postes"
     },
     {
-      "from": "skello-app",
-      "to": "svc-events",
-      "action": "POST /events — emit shifts.created-from-template event"
+      "id": "cu-tpl-apply",
+      "service": "skello-app",
+      "kind": "service",
+      "label": "V3::Templates::ApplyService",
+      "path": "app/services/v3/templates/apply_service.rb",
+      "description": "Creates the template's shifts onto the target week (labour-law compliance in-process), tracks skipped postes, and recomputes counters for assigned users"
     },
     {
-      "from": "svc-events",
-      "to": "svc-communications-v2",
-      "action": "SQS email-normal — notify employees of their shifts for the applied week"
+      "id": "cu-tpl-async-job",
+      "service": "skello-app",
+      "kind": "job",
+      "label": "CreateFromTemplateJob",
+      "path": "app/jobs/create_from_template_job.rb",
+      "description": "Sidekiq job applying the template to one extra week (weeks beyond the first 5)"
+    },
+    {
+      "id": "cu-tpl-tracker",
+      "service": "skello-app",
+      "kind": "manager",
+      "label": "V3::CombinedTrackerUpdateService",
+      "path": "app/services/v3/combined_tracker_update_service.rb",
+      "description": "Hours / RCR / paid-leave counters for the users receiving shifts"
+    }
+  ],
+  "codeEdges": [
+    {
+      "from": "skello-app-front",
+      "to": "cu-tpl-controller",
+      "label": "save template / apply template",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-tpl-controller",
+      "to": "pg-templates",
+      "label": "template snapshot (create)",
+      "mode": "sync",
+      "crud": ["create"]
+    },
+    {
+      "from": "cu-tpl-controller",
+      "to": "cu-tpl-apply",
+      "label": "V3::Templates::ApplyService.run!",
+      "mode": "sync",
+      "condition": "first 5 selected weeks"
+    },
+    {
+      "from": "cu-tpl-controller",
+      "to": "cu-tpl-async-job",
+      "label": "CreateFromTemplateJob.perform_async per week",
+      "mode": "async-job",
+      "condition": "weeks beyond the first 5"
+    },
+    {
+      "from": "cu-tpl-async-job",
+      "to": "cu-tpl-apply",
+      "label": "V3::Templates::ApplyService.run!",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-tpl-apply",
+      "to": "pg-templates",
+      "label": "create shifts from template",
+      "mode": "sync",
+      "crud": ["create"]
+    },
+    {
+      "from": "cu-tpl-apply",
+      "to": "cu-tpl-tracker",
+      "label": "V3::CombinedTrackerUpdateService (assigned users)",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-tpl-tracker",
+      "to": "pg-templates",
+      "label": "PlanningHoursDatas + RCR + paid leaves",
+      "mode": "sync",
+      "crud": ["update"]
+    },
+    {
+      "from": "pg-templates",
+      "to": "svc-search",
+      "label": "DMS CDC → raw_shifts replica",
+      "mode": "async-event"
     }
   ],
   "infraNodes": [
     {
       "id": "pg-templates",
       "type": "postgresql",
-      "label": "skello_production",
-      "description": "Stores named planning templates as serialised shift definitions"
-    },
-    {
-      "id": "pg-template-shifts",
-      "type": "postgresql",
-      "label": "skello_production",
-      "description": "Bulk-inserts shifts generated from the applied template"
-    },
-    {
-      "id": "sqs-template",
-      "type": "sqs",
-      "label": "skello-sqs-events",
-      "description": "Async event queue for template-generated shift notifications"
-    },
-    {
-      "id": "dynamo-events-template",
-      "type": "dynamodb",
-      "label": "svcEvents-{env}",
-      "description": "Audit event store for shifts.created-from-template"
-    },
-    {
-      "id": "lambda-notify-template",
-      "type": "lambda",
-      "label": "shift-notify-dispatch",
-      "description": "Dispatches shift notifications to all employees in the applied template"
+      "label": "skello_production — templates + shifts",
+      "description": "Template snapshots and the shifts created from them"
     }
   ],
   "infraEdges": [
     {
       "from": "skello-app",
       "to": "pg-templates",
-      "label": "write template",
-      "crud": ["create"]
-    },
-    {
-      "from": "skello-app",
-      "to": "pg-template-shifts",
-      "label": "bulk insert shifts",
-      "crud": ["create"]
-    },
-    {
-      "from": "skello-app",
-      "to": "sqs-template",
-      "label": "enqueue"
-    },
-    {
-      "from": "svc-events",
-      "to": "dynamo-events-template",
-      "label": "write",
-      "crud": ["create"]
-    },
-    {
-      "from": "svc-communications-v2",
-      "to": "lambda-notify-template",
-      "label": "invoke"
+      "label": "templates + created shifts",
+      "crud": ["create", "read", "update"]
     }
   ]
 })
