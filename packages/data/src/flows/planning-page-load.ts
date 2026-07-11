@@ -21,7 +21,7 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "Compliance panels — ShiftsController#alerts + #weekly_rests (labour-law alerts computed in-process)",
+      "action": "Compliance panels — ShiftsController#weekly_rests; the labour-law alerts themselves are computed IN THE BROWSER (ShiftsAlertsService, @skelloapp/skello-shifts-alerts)",
       "phase": "compliance panels"
     },
     {
@@ -35,6 +35,85 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
       "to": "svc-workload-plan",
       "action": "GET /v2/workload-plans — fetch workload forecast for the week",
       "phase": "forecast"
+    }
+  ],
+  "codeUnits": [
+    {
+      "id": "cu-ppl-store",
+      "service": "skello-app-front",
+      "kind": "service",
+      "label": "plannings/shifts store",
+      "path": "apps/vue-app/src/shared/store/modules/plannings/shifts.js",
+      "description": "Orchestrates the phased load: fetchShifts (chunked), fetchShiftAlerts (history reads for rolling-week alerts), weekly options, counters"
+    },
+    {
+      "id": "cu-ppl-alerts-lib",
+      "service": "skello-app-front",
+      "kind": "service",
+      "label": "ShiftsAlertsService (@skelloapp/skello-shifts-alerts)",
+      "description": "Labour-law compliance alerts computed IN THE BROWSER from the loaded shifts + active alert list — no per-alert server call"
+    },
+    {
+      "id": "cu-ppl-index",
+      "service": "skello-app",
+      "kind": "controller",
+      "label": "V3::Api::Plannings::ShiftsController#index",
+      "path": "app/controllers/v3/api/plannings/shifts_controller.rb",
+      "description": "Week-shift reads, routed to the read replica when REPLICA_SHIFTS_CONTROLLER_ENABLED (distribute_reads)"
+    },
+    {
+      "id": "cu-ppl-weekly-rests",
+      "service": "skello-app",
+      "kind": "service",
+      "label": "V3::Shifts::WeeklyRests::WeeklyRestsService",
+      "path": "app/services/v3/shifts/weekly_rests/weekly_rests_service.rb",
+      "description": "Weekly-rest compliance computation (PTO absence keys excluded) behind ShiftsController#weekly_rests"
+    }
+  ],
+  "codeEdges": [
+    {
+      "from": "skello-app-front",
+      "to": "cu-ppl-store",
+      "label": "open planning page",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-ppl-store",
+      "to": "cu-ppl-index",
+      "label": "GET shifts (chunked fetch)",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-ppl-index",
+      "to": "pg-skello-planning",
+      "label": "shift reads",
+      "mode": "sync",
+      "condition": "read replica when REPLICA_SHIFTS_CONTROLLER_ENABLED",
+      "crud": ["read"]
+    },
+    {
+      "from": "cu-ppl-store",
+      "to": "cu-ppl-alerts-lib",
+      "label": "compute compliance alerts in-browser",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-ppl-store",
+      "to": "skello-app",
+      "label": "GET weekly_rests",
+      "mode": "sync"
+    },
+    {
+      "from": "skello-app",
+      "to": "cu-ppl-weekly-rests",
+      "label": "ShiftsController#weekly_rests → WeeklyRestsService",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-ppl-store",
+      "to": "svc-workload-plan",
+      "label": "GET /v2/workload-plans (forecast phase)",
+      "mode": "sync"
     }
   ],
   "infraNodes": [
