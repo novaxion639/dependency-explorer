@@ -41,6 +41,7 @@ import skello_app from './services/skello-app'
 import skello_app_front from './services/skello-app-front'
 
 import assistant_chat from './flows/assistant-chat'
+import badging_review from './flows/badging-review'
 import employee_clock_in from './flows/employee-clock-in'
 import self_serve_signup from './flows/self-serve-signup'
 import subscription_upgrade from './flows/subscription-upgrade'
@@ -149,6 +150,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   connections: enrichConnections(connections),
   flows: [
   assistant_chat,
+  badging_review,
   employee_clock_in,
   self_serve_signup,
   subscription_upgrade,
