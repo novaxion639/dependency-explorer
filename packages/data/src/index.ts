@@ -14,6 +14,7 @@ import svc_shops from './services/svc-shops'
 import svc_search from './services/svc-search'
 import svc_requests from './services/svc-requests'
 import svc_billing_automation from './services/svc-billing-automation'
+import svc_hiring from './services/svc-hiring'
 import svc_hris from './services/svc-hris'
 import svc_intelligence from './services/svc-intelligence'
 import svc_kpis_v2 from './services/svc-kpis-v2'
@@ -113,6 +114,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   svc_search,
   svc_requests,
   svc_billing_automation,
+  svc_hiring,
   svc_hris,
   svc_intelligence,
   svc_kpis_v2,

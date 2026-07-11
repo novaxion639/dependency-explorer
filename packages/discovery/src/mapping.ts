@@ -64,6 +64,7 @@ export const RAILS_CLIENT_TARGETS: Record<string, string | null> = {
   'employee_service.rb': 'svc-employees',
   'esignature_service.rb': 'svc-documents-esignature',
   'event_service.rb': 'svc-events',
+  'hiring_service.rb': 'svc-hiring',
   'feature_flag_service.rb': 'svc-feature-flags',
   'labour_law_service.rb': 'svc-labour-laws',
   'modularisation_service.rb': 'svc-modularisation',

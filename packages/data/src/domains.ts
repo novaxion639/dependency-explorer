@@ -25,6 +25,7 @@ const domains: Domain[] = z.array(DomainSchema).parse([
     color: '#8b5cf6',
     serviceNames: [
       'svc-employees',
+      'svc-hiring',
       'svc-hris',
       'svc-documents-v2',
       'svc-documents-esignature',

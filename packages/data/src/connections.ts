@@ -1291,6 +1291,42 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "iam-role",
     "description": "Step-function billing flows ping clients through the LEGACY websockets service's pingTypeAndUuid queue (WEBSOCKET_SQS_URL in stepFunctions env) — not yet migrated to websockets-v2",
     "usedEndpoints": []
+  },
+  {
+    "from": "skello-app-front",
+    "to": "svc-hiring",
+    "sdkPackage": "@skelloapp/svc-hiring-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Navbar Hiring entry: generates a Join auto-login token and opens the returned redirectUrl in a new tab (useGenerateJoinTokenApi — provisions the Join account on first use)",
+    "usedEndpoints": [
+      "api-generate-join-token"
+    ]
+  },
+  {
+    "from": "skello-app",
+    "to": "svc-hiring",
+    "sdkPackage": "Microservices::HiringService (HTTParty)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "internal",
+    "description": "Organisation setup on the Join hiring product (POST /setup via SVC_HIRING_URL)",
+    "usedEndpoints": [
+      "api-setup"
+    ]
+  },
+  {
+    "from": "skello-app-front",
+    "to": "svc-payroll",
+    "sdkPackage": "@skelloapp/svc-payroll-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Pay Partners settings page reads variable pay elements and export templates (svc_payroll_client.js — getEvps/getTemplate, env VUE_APP_SVC_PAYROLL_API_URL)",
+    "usedEndpoints": [
+      "api-evps-list"
+    ]
   }
 ])
 
