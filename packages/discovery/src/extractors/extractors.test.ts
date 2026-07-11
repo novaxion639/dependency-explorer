@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
+import { classifyAwsUsage } from './aws-clients'
+import { parseTerraform } from './terraform'
 import { parseRoutesContent } from './rails-routes'
 import { parseEnvServiceUrls } from './frontend'
 import { classifyImports } from './typescript'
@@ -315,6 +317,112 @@ describe('parseServerlessStatic', () => {
     expect(parseServerlessStatic(src).ownedResources).toEqual([
       { cfType: 'AWS::S3::Bucket', name: 'svc-payroll-evp-data' },
     ])
+  })
+})
+
+describe('classifyAwsUsage', () => {
+  it('detects firehose producers (raw sdk and skello wrapper)', () => {
+    const src = `
+import {Firehose, PutRecordBatchInput} from '@aws-sdk/client-firehose';
+export class FirehoseClient {
+  public async putRecordBatch(events: unknown[]): Promise<void> {
+    await this.client.putRecordBatch(input);
+  }
+}`
+    expect(classifyAwsUsage(src)).toEqual([{ kind: 'firehose', operations: ['produce'] }])
+  })
+
+  it('detects s3 read/write/presign directions', () => {
+    const src = `
+import {AwsS3Client} from '@skelloapp/aws-sdk-lib';
+import {getSignedUrl} from '@aws-sdk/s3-request-presigner';
+const a = await client.getObject({bucket, key});
+await client.putObject({bucket, key, body});
+const url = await getSignedUrl(raw, command);`
+    expect(classifyAwsUsage(src)).toEqual([
+      { kind: 's3', operations: ['read', 'write', 'presign'] },
+    ])
+  })
+
+  it('detects dynamodb CRUD via command imports', () => {
+    const src = `
+import {GetCommand, QueryCommand, UpdateCommand} from '@aws-sdk/lib-dynamodb';`
+    expect(classifyAwsUsage(src)).toEqual([
+      { kind: 'dynamodb', operations: ['read', 'query', 'update'] },
+    ])
+  })
+
+  it('detects typeorm postgres coupling via @Entity', () => {
+    const src = `
+import {Column, Entity, PrimaryColumn} from 'typeorm';
+@Entity({name: 'shops'})
+export class ShopEntity {}`
+    expect(classifyAwsUsage(src)).toEqual([{ kind: 'postgresql', operations: ['entity'] }])
+  })
+
+  it('never attributes an operation without the kind import in the same file', () => {
+    const src = `await this.someOtherClient.putRecords(events);`
+    expect(classifyAwsUsage(src)).toEqual([])
+  })
+})
+
+describe('parseTerraform', () => {
+  it('mines owned data resources with their name attribute', () => {
+    const src = `
+resource "aws_dynamodb_table" "table" {
+  name         = "\${local.project}-\${local.workspace}"
+  billing_mode = "PAY_PER_REQUEST"
+}
+
+resource "aws_s3_bucket" "evp_data" {
+  bucket = "svc-payroll-evp-data-\${local.workspace}"
+}
+
+resource "aws_ssm_parameter" "ignored" {
+  name = "/foo/bar"
+}`
+    const facts = parseTerraform(src)
+    expect(facts.resources).toEqual([
+      { tfType: 'aws_dynamodb_table', label: 'table', name: '${local.project}-${local.workspace}' },
+      { tfType: 'aws_s3_bucket', label: 'evp_data', name: 'svc-payroll-evp-data-${local.workspace}' },
+    ])
+  })
+
+  it('mines DMS replication tasks and endpoints (the CDC backbone proof)', () => {
+    const src = `
+resource "aws_dms_replication_task" "dms_replication_task" {
+  migration_type           = "full-load"
+  replication_task_id      = lower("skelloapp-\${local.project}-fullload-\${local.workspace}")
+  source_endpoint_arn      = data.aws_dms_endpoint.aurora.endpoint_arn
+  target_endpoint_arn      = aws_dms_endpoint.kinesis[0].endpoint_arn
+}
+
+resource "aws_dms_endpoint" "kinesis" {
+  endpoint_id   = "skelloapp-\${lower(local.project)}-fullload-\${local.workspace}"
+  endpoint_type = "target"
+  engine_name   = "kinesis"
+}`
+    const facts = parseTerraform(src)
+    expect(facts.dmsTasks).toEqual([
+      expect.objectContaining({
+        migrationType: 'full-load',
+        source: 'data.aws_dms_endpoint.aurora.endpoint_arn',
+        target: 'aws_dms_endpoint.kinesis[0].endpoint_arn',
+      }),
+    ])
+    expect(facts.dmsEndpoints).toEqual([
+      expect.objectContaining({ endpointType: 'target', engineName: 'kinesis' }),
+    ])
+  })
+
+  it('collects recognized data-plane IAM actions', () => {
+    const src = `
+data "aws_iam_policy_document" "firehose" {
+  statement {
+    actions = ["s3:GetObject", "s3:PutObject", "kinesis:PutRecord", "sts:AssumeRole"]
+  }
+}`
+    expect(parseTerraform(src).iamActions).toEqual(['kinesis:PutRecord', 's3:GetObject', 's3:PutObject'])
   })
 })
 

@@ -131,6 +131,18 @@ export function streamSourceService(
   return null
 }
 
+// ── Terraform repo resolution ────────────────────────────────────────────────
+// The estate is one `<service>-tf` repo per service; a few names drifted.
+export const TF_REPO_SERVICE_OVERRIDES: Record<string, string> = {
+  'svc-kpi-tf': 'svc-kpis',
+  'websocket-tf': 'svc-websockets',
+  'svc-superadmin-tf': 'superadmin',
+}
+
+export function tfRepoToService(tfRepo: string): string {
+  return TF_REPO_SERVICE_OVERRIDES[tfRepo] ?? tfRepo.replace(/-tf$/, '')
+}
+
 // Subdirectories of microservices/ acting as clients of a single service.
 export const RAILS_CLIENT_DIR_TARGETS: Record<string, string | null> = {
   'communications_v2': 'svc-communications-v2',

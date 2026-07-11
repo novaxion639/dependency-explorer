@@ -99,6 +99,11 @@ const svc_payroll: ConnectivityService = ConnectivityServiceSchema.parse({
       "type": "dynamodb",
       "name": "svcPayroll-{env}",
       "description": "Provider/company mappings and payroll sync state"
+    },
+    {
+      "type": "s3",
+      "name": "svc-payroll-evp-data-{env}",
+      "description": "Owned EVP staging bucket (AWS::S3::Bucket in serverless resources): *.evp.json drops trigger HandleEvpReady (build A3 payloads), *.error.json drops trigger HandleEvpFailure (release stuck syncs). Surfaced by the AWS client-usage discovery pass, 2026-07-11."
     }
   ]
 })

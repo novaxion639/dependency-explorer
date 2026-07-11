@@ -193,7 +193,12 @@ const svc_workload_plan: ConnectivityService = ConnectivityServiceSchema.parse({
     {
       "type": "mongodb",
       "name": "svc-workload-plan",
-      "description": "Primary store — workload plans and rules (WorkloadPlanRepository/WorkloadRuleRepository on the service's own MongoDB, SSM {serviceName}/MONGO_DB_URI). The DynamoDB→MongoDB migration the 2026 board described is complete in code: the DynamoDB repository class remains in the tree but is no longer bound in the container (corrected 2026-06-10)."
+      "description": "V2 store — workload plans and rules (WorkloadPlanManagerV2 on Mongo repositories, SSM {serviceName}/MONGO_DB_URI). The DynamoDB→MongoDB migration is ONGOING, not complete: the V1 WorkloadPlanController still serves reads/writes from the DynamoDB-backed WorkloadPlanManager, and TriggerDynamoToFullLoadSqsJobHandler replicates dynamo→mongo (re-verified 2026-07-11 — the 2026-06-10 'no longer bound' correction was wrong against current code)."
+    },
+    {
+      "type": "dynamodb",
+      "name": "workloadPlan (V1)",
+      "description": "Legacy V1 store still live during the Mongo migration: bound in the container (WorkloadPlanManager) and consumed by WorkloadPlanController; its table stream feeds the dynamo→mongo replication and the two own-stream listeners seen in serverless config. Surfaced by the AWS client-usage discovery pass, 2026-07-11."
     },
     {
       "type": "sqs",

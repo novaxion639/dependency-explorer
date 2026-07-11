@@ -554,6 +554,11 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
       "description": "Employee profiles and absence configs"
     },
     {
+      "type": "s3",
+      "name": "sstCodesBucket",
+      "description": "SST codes reference bucket (SstS3Client get/put/head; refreshed by the monthly SstRefresh schedule, cron(0 8 1 * ? *)). Surfaced by the AWS client-usage discovery pass, 2026-07-11."
+    },
+    {
       "type": "mongodb",
       "name": "svc-employees",
       "description": "Legacy employee data store (migration in progress)"

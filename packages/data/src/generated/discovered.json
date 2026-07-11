@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T17:53:45.594Z",
+  "generatedAt": "2026-07-11T18:17:02.495Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
@@ -515,7 +515,7 @@
     },
     "svc-documents-v2→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on svcDocumentsV2-fullload (1 listener); serverless static-scan: unknown stream event on streamSkelloAppBus (1 listener)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on svcDocumentsV2-fullload (1 listener); serverless static-scan: unknown stream event on streamSkelloAppBus (1 listener); terraform svc-documents-v2-tf: DMS full-load task ${local.application}-fullload-${local.workspace} → kinesis endpoint lower(aws_kinesis_stream.templates_full_load[0].name)"
     },
     "svc-documents-v2→svc-documents-esignature": {
       "lastVerified": "2026-07-11",
@@ -591,7 +591,7 @@
     },
     "svc-kpis-v2→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "serverless deploy-state: kinesis stream event on skelloapp-bus-sdbx (1 listener)"
+      "evidence": "serverless deploy-state: kinesis stream event on skelloapp-bus-sdbx (1 listener); terraform svc-kpis-v2-tf: DMS full-load task skelloapp-${lower(local.project)}-fullload-${local.workspace} → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
     },
     "svc-kpis-v2→svc-employees": {
       "lastVerified": "2026-07-11",
@@ -619,15 +619,15 @@
     },
     "svc-punch→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "serverless deploy-state: kinesis stream event on skelloapp-bus-sdbx (1 listener); serverless deploy-state: kinesis stream event on skelloapp-svcpunch-fullload-sdbx (1 listener)"
+      "evidence": "serverless deploy-state: kinesis stream event on skelloapp-bus-sdbx (1 listener); serverless deploy-state: kinesis stream event on skelloapp-svcpunch-fullload-sdbx (1 listener); terraform svc-punch-tf: DMS full-load task lower(\"skelloapp-${local.project}-fullload-${local.workspace}\") → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
     },
     "svc-reports→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-svcreports-fullload (1 listener)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-svcreports-fullload (1 listener); terraform svc-reports-tf: DMS full-load task skelloapp-${local.application}-fullload-${local.workspace} → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
     },
     "svc-requests→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "serverless static-scan: kinesis stream event on svcRequests-fullload (1 listener); serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
+      "evidence": "serverless static-scan: kinesis stream event on svcRequests-fullload (1 listener); serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); terraform svc-requests-tf: DMS cdc task lower(\"${local.project}-database-aurora-replication-task-${local.workspace}\") → kinesis endpoint lower(\"${local.project}-${local.workspace}\")"
     },
     "svc-requests→svc-communications-v2": {
       "lastVerified": "2026-07-11",
@@ -639,7 +639,7 @@
     },
     "svc-search→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on skelloapp-svcsearch-fullload (1 listener); package.json: @skelloapp/skello-app-sdk (value import)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on skelloapp-svcsearch-fullload (1 listener); package.json: @skelloapp/skello-app-sdk (value import); terraform svc-search-tf: DMS full-load task skelloapp-${lower(local.project)}-fullload-${local.workspace} → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
     },
     "svc-search→svc-pos": {
       "lastVerified": "2026-07-11",
@@ -683,7 +683,7 @@
     },
     "svc-users→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on skelloapp-bus-fullload-svcusers (1 listener)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on skelloapp-bus-fullload-svcusers (1 listener); terraform svc-users-tf: DMS full-load task ${lower(local.project)}-${local.workspace}-users-with-email → kinesis endpoint skelloapp-bus-${local.workspace}-svcusers"
     },
     "svc-users→svc-communications-v2": {
       "lastVerified": "2026-07-11",

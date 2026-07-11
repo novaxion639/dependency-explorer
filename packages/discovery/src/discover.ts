@@ -24,11 +24,13 @@ import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap } from '@dependency-explorer/data'
 import type { DiscoveredOverlay } from '@dependency-explorer/schema'
-import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService } from './mapping'
+import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService, tfRepoToService } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
 import { extractRailsMonolith } from './extractors/rails'
 import { extractServerless, type ServerlessFacts } from './extractors/serverless'
+import { extractAwsClients, type AwsUsageFact, type AwsUsageKind } from './extractors/aws-clients'
+import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
@@ -77,6 +79,15 @@ interface AwsBinding {
   ownedResources: Array<{ cfType: string; name: string }>
 }
 
+interface AwsClientUsage {
+  service: string
+  facts: AwsUsageFact[]
+  /** resource kinds proven in code with no matching service.databases entry */
+  missingDatabaseEntries: string[]
+  /** AWS-type databases entries with no code evidence (possible drift) */
+  unevidencedDatabaseEntries: string[]
+}
+
 interface Report {
   scannedRepos: string[]
   /** connection key → accumulated evidence strings */
@@ -89,6 +100,8 @@ interface Report {
   endpointStamps: Record<string, { lastVerified: string; evidence: string }>
   asyncSenders: Array<{ from: string; to: string; queues: string[]; files: string[] }>
   awsBindings: AwsBinding[]
+  awsClientUsage: AwsClientUsage[]
+  terraform: Array<{ tfRepo: string; service: string; inMap: boolean; facts: TerraformFacts }>
   frontendServices: Array<{ service: string; inMap: boolean; evidence: string }>
   monolithSurface: { totalRoutes: number; resourceDeclarations: number; topSegments: Array<[string, number]> } | null
   /** SDK dependencies whose imports are type-only or absent — weak evidence, likely not runtime calls */
@@ -111,6 +124,7 @@ function findRepos(): string[] {
   try {
     return fs.readdirSync(REPO_BASE, { withFileTypes: true })
       .filter(e => e.isDirectory()
+        && !e.name.endsWith('-tf') // terraform checkouts have their own pass
         && (e.name.startsWith('svc-') || ['skello-app', 'skello-app-front', 'superadmin'].includes(e.name)))
       .map(e => e.name)
       .sort()
@@ -146,6 +160,8 @@ function run(): Report {
     endpointStamps: {},
     asyncSenders: [],
     awsBindings: [],
+    awsClientUsage: [],
+    terraform: [],
     frontendServices: [],
     monolithSurface: null,
     weakSdkEvidence: [],
@@ -250,6 +266,31 @@ function run(): Report {
       })
     }
 
+    // ── Application-code AWS client usage vs service.databases (two-way) ─────
+    // firehose is deliberately NOT part of the drift check: it is the org-wide
+    // export convention to the data-platform delivery streams (AWS-DATA),
+    // external to this map — shown as a fact, never a missing-databases flag.
+    const awsFacts = extractAwsClients(REPO_BASE, repo)
+    if (awsFacts) {
+      const KIND_TO_DB_TYPE: Partial<Record<AwsUsageKind, string>> = {
+        kinesis: 'kinesis', s3: 's3', dynamodb: 'dynamodb', postgresql: 'postgresql',
+      }
+      const svcDef = connectivityMap.services.find(s => s.name === repo)
+      const codeTypes = new Set(
+        awsFacts.map(f => KIND_TO_DB_TYPE[f.kind]).filter((t): t is string => t != null),
+      )
+      const AWS_DB_TYPES = new Set(['kinesis', 's3', 'dynamodb', 'postgresql'])
+      const declaredTypes = new Set(
+        (svcDef?.databases ?? []).map(d => d.type as string).filter(t => AWS_DB_TYPES.has(t)),
+      )
+      report.awsClientUsage.push({
+        service: repo,
+        facts: awsFacts,
+        missingDatabaseEntries: [...codeTypes].filter(t => !declaredTypes.has(t)).sort(),
+        unevidencedDatabaseEntries: [...declaredTypes].filter(t => !codeTypes.has(t)).sort(),
+      })
+    }
+
     for (const pkg of tsFacts?.sdkPackages ?? []) {
       if (pkg in IGNORED_SDKS) {
         ;(report.ignoredSdks[pkg] ??= []).push(repo)
@@ -333,6 +374,37 @@ function run(): Report {
   for (const s of senders) {
     report.asyncSenders.push(s)
     addEvidence(s.from, s.to, `queue literal ${s.queues.join(', ')} in ${s.files.join(', ')}`, 'sqs (queue literal)')
+  }
+
+  // ── Terraform ground truth (sibling <service>-tf checkouts) ────────────────
+  let tfRepos: string[] = []
+  try {
+    tfRepos = fs.readdirSync(REPO_BASE, { withFileTypes: true })
+      .filter(e => e.isDirectory() && e.name.endsWith('-tf'))
+      .map(e => e.name)
+      .sort()
+  } catch {
+    // repo base unreadable — skip terraform pass
+  }
+  for (const tfRepo of tfRepos) {
+    const facts = extractTerraform(REPO_BASE, tfRepo)
+    if (!facts) continue
+    const service = tfRepoToService(tfRepo)
+    const inMap = serviceNames.has(service)
+    report.terraform.push({ tfRepo, service, inMap, facts })
+    if (!inMap) continue
+
+    // DMS task targeting a kinesis endpoint = the provisioned side of the
+    // monolith CDC/full-load backbone — authoritative evidence for the
+    // service's cdc connection to skello-app.
+    const kinesisTarget = facts.dmsEndpoints.find(e => e.engineName === 'kinesis' && e.endpointType === 'target')
+    const dmsTask = facts.dmsTasks[0]
+    if (kinesisTarget && dmsTask && connectivityMap.connections.some(c =>
+      c.from === service && c.to === 'skello-app' && c.protocol === 'cdc')) {
+      addEvidence(service, 'skello-app',
+        `terraform ${tfRepo}: DMS ${dmsTask.migrationType ?? ''} task ${dmsTask.taskId ?? dmsTask.label} → kinesis endpoint ${kinesisTarget.endpointId ?? kinesisTarget.label}`,
+        'cdc (DMS provision)')
+    }
   }
 
   // ── Endpoint verification for dataset services ─────────────────────────────
@@ -514,6 +586,49 @@ function printMarkdown(r: Report) {
       }
       for (const o of b.ownedResources) {
         console.log(`  - owns ${o.cfType.replace('AWS::', '')} \`${o.name}\``)
+      }
+    }
+  }
+
+  console.log(`\n## 🏗 Terraform ground truth (sibling *-tf checkouts)\n`)
+  if (!r.terraform.length) {
+    console.log('_no terraform checkouts found next to the repos_')
+  } else {
+    const platform = r.terraform.filter(t => !t.inMap)
+    console.log(`${r.terraform.length} terraform repos scanned (${platform.length} platform/non-service).\n`)
+    for (const t of r.terraform) {
+      const bits: string[] = []
+      const byType = new Map<string, number>()
+      for (const res of t.facts.resources) byType.set(res.tfType, (byType.get(res.tfType) ?? 0) + 1)
+      for (const [ty, n] of byType) bits.push(`${ty.replace('aws_', '')}×${n}`)
+      if (t.facts.dmsTasks.length) bits.push(`dms-task×${t.facts.dmsTasks.length}`)
+      if (t.facts.iamActions.length) bits.push(`iam[${t.facts.iamActions.slice(0, 4).join(',')}${t.facts.iamActions.length > 4 ? ',…' : ''}]`)
+      console.log(`- **${t.tfRepo}**${t.inMap ? ` → ${t.service}` : ' _(platform)_'} — ${bits.join(' ') || 'no data resources'}`)
+      for (const task of t.facts.dmsTasks) {
+        const target = t.facts.dmsEndpoints.find(e => e.endpointType === 'target')
+        console.log(`  - DMS ${task.migrationType ?? '?'} task \`${task.taskId ?? task.label}\`${target?.engineName ? ` → ${target.engineName}` : ''}`)
+      }
+    }
+  }
+
+  const usageDrift = r.awsClientUsage.filter(u => u.missingDatabaseEntries.length || u.unevidencedDatabaseEntries.length)
+  console.log(`\n## 🔧 AWS client usage in application code (produce/read-write direction)\n`)
+  if (!r.awsClientUsage.length) {
+    console.log('_none_')
+  } else {
+    console.log(`${r.awsClientUsage.length} services scanned; ${usageDrift.length} with databases drift:\n`)
+    for (const u of r.awsClientUsage) {
+      const kinds = u.facts
+        .map(f => `${f.kind}[${f.operations.join(',') || 'import-only'}]×${f.fileCount}`)
+        .join(' ')
+      console.log(`- **${u.service}** — ${kinds}`)
+      for (const t of u.missingDatabaseEntries) {
+        const files = u.facts.filter(f => f.kind === t)
+          .flatMap(f => f.files).slice(0, 2)
+        console.log(`  - 🆕 code uses **${t}** but service.databases has no entry (${files.join(', ')})`)
+      }
+      for (const t of u.unevidencedDatabaseEntries) {
+        console.log(`  - ⚠️ databases declares **${t}** but no client code found`)
       }
     }
   }
