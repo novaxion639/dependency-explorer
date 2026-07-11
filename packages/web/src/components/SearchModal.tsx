@@ -9,6 +9,7 @@ const TYPE_META: Record<SearchResultType, { label: string; color: string }> = {
   connection: { label: 'connection', color: '#4f6ef7' },
   flow: { label: 'flow', color: '#e0761b' },
   domain: { label: 'domain', color: '#8b5cf6' },
+  team: { label: 'team', color: '#ec4899' },
   infra: { label: 'infra', color: '#f59e0b' },
 }
 

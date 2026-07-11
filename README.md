@@ -2,7 +2,7 @@
 
 The canonical, continuously verified map of Skello's distributed architecture — every service, endpoint, connection, queue and business flow — **generated from code and deployed state, enriched by humans where automation can't reach**.
 
-> **Status: Phase 2 — local POC, org-audience features in progress.** Runs entirely on your machine with no backend and no external dependencies. Hosting, SSO and network integration are deliberately deferred until the approach is validated with the Infrastructure team and Architects (see [ADR-0005](docs/adr/0005-local-poc-first.md)). The architecture is hosting-agnostic by construction: the build output is a static bundle that can later sit behind any SSO proxy, ALB or CDN the supervising teams choose.
+> **Status: Phase 2 complete — local POC with the full org-audience feature set.** Runs entirely on your machine with no backend and no external dependencies. Hosting, SSO and network integration are deliberately deferred until the approach is validated with the Infrastructure team and Architects (see [ADR-0005](docs/adr/0005-local-poc-first.md)). The architecture is hosting-agnostic by construction: the build output is a static bundle that can later sit behind any SSO proxy, ALB or CDN the supervising teams choose.
 
 ## What it shows
 
@@ -14,6 +14,7 @@ The canonical, continuously verified map of Skello's distributed architecture �
 - **Permalinks** — every view state (selected service, connection popup, endpoint drawer, flow, domain filter, blast radius) is encoded in the URL: copy the link, share it in Slack or a PR, and the recipient lands on the exact same view.
 - **Global search (⌘K)** — one palette over every service, endpoint, connection, flow, domain, database and queue (~600 entries). Picking a result navigates to a permalink-backed view — an endpoint hit opens the drawer scrolled to that endpoint.
 - **PNG export** — every graph (service view, domain view, flow DAGs) exports the full laid-out graph as a 2× PNG for RFCs, arch reviews and incident docs.
+- **Ownership view** — per-team service ownership resolved from CODEOWNERS: a service is assigned to a team when its wildcard (`*`) line names exactly one product team (path-rule frequency is not ownership; process squads and the team-dev catch-all are excluded). Team pages are permalink-backed (`?view=teams&team=team-salsa`) and searchable from ⌘K; each owned service shows its CODEOWNERS evidence chips, connection counts and a jump into the graph. Services without a resolved owner are listed as the adoption call-to-action — coverage grows with zero code changes as teams add CODEOWNERS wildcards.
 
 ## Quickstart
 
@@ -65,7 +66,7 @@ pnpm check           # everything CI runs
 | 1 | Automation-first: SDK + Rails + CODEOWNERS extractors, provenance metadata, two-layer merge, classified drift report ([ADR-0007](docs/adr/0007-discovery-semantics.md)) | ✅ done (nightly drift PRs pending org token — Infra discussion) |
 | 1.5 | More extractors: serverless configs (deploy-state + static, endpoint verification), Rails routes (monolith inbound surface), frontend env/usage, async queue cross-reference | ✅ done (AWS read-only verification remains — needs credentials story) |
 | 1.7 | AWS resource discovery — Layer 1: stream/S3/schedule event sources + owned CloudFormation resources from serverless config (🌀 report section, `RecurringTask` model, CDC backbone edges). Layer 2: application-code AWS client usage (🔧 section — Kinesis/Firehose produce, S3 read/write, DynamoDB CRUD, TypeORM Postgres coupling, two-way drift vs `service.databases`). Layer 3: Terraform ground truth (🏗 section — the org's `<service>-tf` estate: owned data resources, DMS replication tasks proving the aurora → kinesis CDC backbone, data-plane IAM actions) | ✅ done |
-| 2 | Org-audience features: permalinks, global search, ownership pages, export | 🚧 — permalinks ✅, ⌘K search ✅, PNG export ✅; ownership pages blocked on teamId coverage (CODEOWNERS wildcard adoption) |
+| 2 | Org-audience features: permalinks, global search, ownership pages, export | ✅ done — the ownership view renders whatever CODEOWNERS coverage exists (2/35 services today, team-salsa); coverage grows through org adoption, not code |
 | 3 | "Suggest edit" → pre-filled PR via GitHub App, permissions from GitHub teams | |
 | 4 | Live operational overlays (deploys, alarms, queue depth, on-call) via a read-only API | |
 
