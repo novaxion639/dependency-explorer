@@ -1,0 +1,25 @@
+{
+  "name": "@dependency-explorer/discovery",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "discover": "tsx src/discover.ts",
+    "discover:json": "tsx src/discover.ts --json",
+    "discover:apply": "tsx src/discover.ts --apply",
+    "discover:scaffold": "tsx src/scaffold.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "discover:trace": "tsx src/trace.ts"
+  },
+  "dependencies": {
+    "@dependency-explorer/data": "workspace:*",
+    "@dependency-explorer/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.7.2",
+    "vitest": "^3.2.0"
+  }
+}
