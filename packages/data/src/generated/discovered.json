@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T19:19:28.778Z",
+  "generatedAt": "2026-07-11T22:49:29.477Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
@@ -623,7 +623,7 @@
     },
     "svc-reports→skello-app": {
       "lastVerified": "2026-07-11",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-svcreports-fullload (1 listener); terraform svc-reports-tf: DMS full-load task skelloapp-${local.application}-fullload-${local.workspace} → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-svcreports-fullload (1 listener); serverless static-scan: s3 bucket-notification trigger on skello-app.temporary-assets (SendAutomatedPAMReportToSFTPJob); terraform svc-reports-tf: DMS full-load task skelloapp-${local.application}-fullload-${local.workspace} → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
     },
     "svc-requests→skello-app": {
       "lastVerified": "2026-07-11",

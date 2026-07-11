@@ -1469,6 +1469,16 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "usedEndpoints": []
   },
   {
+    "from": "svc-reports",
+    "to": "skello-app",
+    "sdkPackage": "serverless s3 event → skello-app.temporary-assets bucket",
+    "communicationType": "async",
+    "protocol": "s3",
+    "authType": "internal",
+    "description": "Bucket-notification coupling: SendAutomatedPAMReportToSFTPJob triggers on pam_auto_reports/* objects the monolith drops in its temporary-assets bucket, and ships them to the customer's SFTP. Adopted from the AWS-bindings discovery pass, 2026-07-12.",
+    "usedEndpoints": []
+  },
+  {
     "from": "svc-trackers",
     "to": "skello-app",
     "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",

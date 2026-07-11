@@ -74,7 +74,8 @@ interface AwsBinding {
   service: string
   /** aggregated stream event sources: source service resolved via curated mapping */
   streams: Array<{ stream: string; kind: string; source: string | null; listeners: number; cdcChannelInMap: boolean; pairInMap: boolean }>
-  s3Triggers: Array<{ bucket: string; functionName?: string }>
+  /** bucket-notification triggers: same source resolution as streams */
+  s3Triggers: Array<{ bucket: string; functionName?: string; source: string | null; s3ChannelInMap: boolean; pairInMap: boolean }>
   schedules: Array<{ name: string; schedule: string; description?: string }>
   ownedResources: Array<{ cfType: string; name: string }>
 }
@@ -257,10 +258,26 @@ function run(): Report {
         }
         return { stream: s.stream, kind: s.kind, source, listeners: s.listeners, cdcChannelInMap, pairInMap }
       })
+      // bucket names resolve like stream identities: skello-app.* buckets are
+      // the monolith's, own-token buckets are internal staging
+      const s3Triggers = sls.s3Triggers.map(t => {
+        const source = streamSourceService(t.bucket, repo, serviceNames)
+        const foreign = source && source !== 'self' ? source : null
+        const s3ChannelInMap = foreign != null && connectivityMap.connections.some(c =>
+          c.from === repo && c.to === foreign && c.protocol === 's3')
+        const pairInMap = foreign != null && connectionKeys.has(`${repo}→${foreign}`)
+        if (foreign && (s3ChannelInMap || !pairInMap)) {
+          addEvidence(repo, foreign,
+            `serverless ${sls.source}: s3 bucket-notification trigger on ${t.bucket}${t.functionName ? ` (${t.functionName})` : ''}`,
+            's3 (bucket notification)')
+        }
+        return { ...t, source, s3ChannelInMap, pairInMap }
+      })
+
       report.awsBindings.push({
         service: repo,
         streams,
-        s3Triggers: sls.s3Triggers,
+        s3Triggers,
         schedules: recurringTasks,
         ownedResources: sls.ownedResources,
       })
@@ -579,7 +596,14 @@ function printMarkdown(r: Report) {
         console.log(`  - ${s.kind} stream \`${s.stream}\`${s.listeners > 1 ? ` ×${s.listeners}` : ''} — ${src}`)
       }
       for (const t of b.s3Triggers) {
-        console.log(`  - s3 trigger on \`${t.bucket}\`${t.functionName ? ` (${t.functionName})` : ''}`)
+        const src = t.source === 'self'
+          ? 'own bucket (internal staging)'
+          : t.source === null
+            ? '**bucket owner unmapped — needs a mapping decision**'
+            : `source: ${t.source}${t.s3ChannelInMap ? ' ✅'
+              : t.pairInMap ? ' — **pair mapped under another protocol only, s3 channel missing**'
+                : ' — proposed in 🆕 candidates'}`
+        console.log(`  - s3 trigger on \`${t.bucket}\`${t.functionName ? ` (${t.functionName})` : ''} — ${src}`)
       }
       for (const sc of b.schedules) {
         console.log(`  - ⏰ ${sc.name} \`${sc.schedule}\`${sc.description ? ` — ${sc.description}` : ''}`)
