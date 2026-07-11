@@ -4,7 +4,7 @@ import type { ConnectivityService } from '@dependency-explorer/schema'
 const svc_pos: ConnectivityService = ConnectivityServiceSchema.parse({
   "name": "svc-pos",
   "type": "typescript-microservice",
-  "description": "Point-of-sale integration — syncs revenue and transaction data from POS terminals for KPI forecasting",
+  "description": "Point-of-sale integration — syncs revenue and transaction data from POS terminals for KPI forecasting. Providers connect two ways: through the Chift integration platform (webhooks + activation API) AND directly — L'Addition, Revo and Agora each have a dedicated client and a cron integrationEventDispatcher (verified 2026-07-12). Monolith data arrives via skelloapp-bus CDC plus a DMS full-load that writes SKELLOAPP_SHOP rows straight into the service's own DynamoDB table (FullLoadSkelloAppShopJob consumes the own-table stream filtered on that identifier). Aggregated revenue KPIs are written back to the monolith's WeeklyOptions (PATCH /private/pos/kpis).",
   "endpoints": [
     {
       "id": "api-get-chift-providers",

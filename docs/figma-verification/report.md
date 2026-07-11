@@ -249,3 +249,26 @@ The 8 contested items queued during sweeps #1–3, each settled in code:
 ## SvcIntelligence — [Documents dispatch](https://www.figma.com/board/6qkWkTTCBAxudWcvLYijtp) (2025-10)
 
 - ✅ Global-archi page is node-for-node IDENTICAL to the Payslip dispatch board (same diagram duplicated) — swept by identity, no additional claims. (Remaining pages are DRAFT contract-dispatch sketches.)
+
+## Sweep #4 batch — 12 boards via parallel readers (2026-07-12)
+
+## SvcBillingAutomation ×4 — [Avoir+facture](https://www.figma.com/board/Hj33hfMXfYedBZ1lGvrEda) · [selfServe new offer](https://www.figma.com/board/svMfR4nW85zQuDViybvl3r) · [Autonomous switch](https://www.figma.com/board/PtGiclhve7658sRnwhZpMJ) · [Shop synchronization](https://www.figma.com/board/nWPtl3VAjWnMcAoWz9RCq8)
+
+- Avoir+facture = UNSHIPPED PROPOSAL (its SFN doesn't exist; only dead-code remnants `ChargebeeRepository.getDownloadUrl`); its Mongo icon contradicts the DynamoDB reality
+- selfServe new offer = near 1:1 with dataset (17/18 endpoints, SFN states map to Sfn*JobHandlers); ⚠ its PUT /invoices + invoiceUpsertSqs flow is ORPHANED in code (queue provisioned, no consumer, handler unrouted) — recorded on the service's queue inventory
+- Autonomous switch = accurate; front call sites verified → usedEndpoints filled on front→billing (5 contract estimate/finalize endpoints); narrative corrected: annual switch is AUTONOMOUS alongside sales-assisted feature upsells
+- Shop synchronization = accurate ('Next' lane is shipped reality: pack+options from own DynamoDB, bulkSetShopsFeatures write-back; 'Target 2026' Salesforce source still commented out); 🆕-unverified superadmin→skello-app "ask for sync" (needs monolith-side check); PACK#/OPTION# reverse indexes never implemented
+
+## SvcShops / SvcEnrollment / Assistant / KpisManager — [Shops](https://www.figma.com/board/MWvKyOnpnOU7tGERt4Mx9E) · [Enrollment](https://www.figma.com/board/jElpWKqLnyMGv4GwuqbbqJ) · [Absence metrics](https://www.figma.com/board/H0p5xohGXg5rFfLzzYI5I9) · [KpisManager](https://www.figma.com/board/wrQnwP6kNZC6zxUFKrutge)
+
+- SvcShops board = EMPTY STUB (title card only)
+- SvcEnrollment: API surface ✅; ⚠ draws a nonexistent OnboardingDelete lambda + retired 'SvcOnboardingSdk' name; DynamoDB-stream → Firehose → AWS-DATA export verified in code+terraform (recorded here; per Layer-2 convention the org-wide Firehose export is not modeled as per-service infra); data.gouv.fr = likely offline source of the S3 french_conventions.json, not a runtime call
+- Absence metrics board = UNREADABLE (root page deleted); needs a node-id URL from the board owner
+- KpisManager = accurate v1 internals (compute services + WeeklyOptionModel fields match code exactly); corroborates the v1 endpoints adopted below
+
+## SvcKpis v1 / SvcDocuments V2 short / SvcPos CHIFT / SvcPunch badges-merge — [Kpis](https://www.figma.com/board/euVtWsjQyo8ypRT8Dwjso8) · [DocsV2](https://www.figma.com/board/on70JiQ1T26cHJVC6gRTjb) · [Pos](https://www.figma.com/board/JFqHQFyVNYaeHlwYZOB4wA) · [Punch](https://www.figma.com/board/12IB4ekZMWYGBSOIFGzKmv)
+
+- SvcKpis v1: accurate & current; 🆕 adopted: 4 endpoints (GET/PATCH user_kpis_settings, GET /kpis, GET /kpis-for-day) + svc-kpis → svc-websockets (websocket-pingShopIdAndDate — third legacy queue family member); table-filter list matches serverless verbatim
+- DocsV2 short: accurate but partial; 🆕 adopted: shared skello-app.temporary-assets bucket entry (print staging); Firehose→AWS-DATA real but not modeled per convention
+- SvcPos CHIFT (2024 draft): Chift paths stale, but all 3 infra claims verify → 🆕 adopted: svc-pos → skello-app write-back (PATCH /private/pos/kpis — the FIFTH strangler write-back) + service description gains L'Addition/Revo/Agora direct integrations and the DMS-fullload-into-own-DynamoDB detail
+- Punch badges-merge (draft): svcPunch + svcWorkloadPlan MergeShop legs ✅ already mapped; skelloPunchclock-mergeShop leg NEVER BUILT (zero refs) — do not adopt
