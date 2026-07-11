@@ -316,7 +316,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "communicationType": "async",
     "protocol": "sqs",
     "authType": "iam-role",
-    "description": "Sends documents for AI data extraction via SQS (DocumentExtractDataSqsRepository — intelligence-sdk DTOs as the message contract); extraction results consumed back through analyze listener jobs",
+    "description": "The document-analysis request path: document writes hit svc-documents-v2's own DynamoDB stream, AnalyzeDocumentListenerJobHandler builds ExtractDataFromDocumentDto messages (intelligence-sdk contract) and DocumentExtractDataManager batch-sends them to svc-intelligence's extractDataFromDocument queue (svcIntelligenceExtractDataFromDocumentSqsURL). Resolves the previously untraced sender of payslip/document analysis requests — confirmed against the 'Payslip dispatch' FigJam board + source, 2026-07-12.",
     "usedEndpoints": []
   },
   {
@@ -666,8 +666,14 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "communicationType": "sync",
     "protocol": "rest",
     "authType": "jwt",
-    "description": "Read subscription quotes and billing state for the organisation",
-    "usedEndpoints": []
+    "description": "Read subscription quotes and billing state — including the AUTONOMOUS annual-switch flow (contract estimate/finalize at shop and organisation level; front call sites verified 2026-07-12 in svc_billing_automation_client: estimateShopContract / estimateOrganisationContract / finalizeShopContract / finalizeOrganisationContract, per the 'Autonomous switch' board)",
+    "usedEndpoints": [
+      "api-get-organisation-contracts",
+      "api-post-shop-contract-estimation",
+      "api-post-shop-contract-finalize",
+      "api-post-orga-contract-estimation",
+      "api-post-orga-contract-finalize"
+    ]
   },
   {
     "from": "skello-app-front",
@@ -1506,6 +1512,26 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "cdc",
     "authType": "internal",
     "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus Kinesis stream, two listeners) to keep workload-plan context current. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-pos",
+    "to": "skello-app",
+    "sdkPackage": "SkelloAppClient (PATCH /private/pos/kpis, X-Api-Key)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "Strangler write-back: ComputeAggregationService/ForecastService push aggregated POS revenue KPIs into the monolith's WeeklyOptions (SkelloAppClient.updateShopWeeklyOptionsKpis — PATCH /private/pos/kpis with X-Source-Client: svcPos). The fifth write-back of the pattern. Surfaced by the 'SvcPos with CHIFT' board, code-verified 2026-07-12.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-kpis",
+    "to": "svc-websockets",
+    "sdkPackage": "SqsWebsocketPingShopIdAndDateClient → websocket-pingShopIdAndDate-{stage} (SQS)",
+    "communicationType": "async",
+    "protocol": "sqs",
+    "authType": "iam-role",
+    "description": "After CDC replication lands (SendSkelloAppToRds), PingShopIdAndDateSqsManager pings clients through the LEGACY websockets service's pingShopIdAndDate queue — the third member of the legacy websocket queue family (genericMessage, pingTypeAndUuid). Surfaced by the '[Architecture] SvcKpis' board, code-verified 2026-07-12.",
     "usedEndpoints": []
   }
 ])

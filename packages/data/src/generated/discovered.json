@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T22:49:29.477Z",
+  "generatedAt": "2026-07-11T23:13:09.419Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
@@ -1638,6 +1638,22 @@
     "svc-intelligence#get-validation-response": {
       "lastVerified": "2026-07-11",
       "evidence": "serverless static-scan: GET /validationResponses/{documentId}"
+    },
+    "svc-kpis#api-get-user-kpis-settings": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: GET /user_kpis_settings/user/{user_id}"
+    },
+    "svc-kpis#api-patch-user-kpis-settings": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: PATCH /user_kpis_settings/user/{user_id}"
+    },
+    "svc-kpis#api-get-kpis": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: GET /kpis"
+    },
+    "svc-kpis#api-get-kpis-for-day": {
+      "lastVerified": "2026-07-11",
+      "evidence": "serverless static-scan: GET /kpis-for-day"
     },
     "svc-kpis-v2#api-create-kpis": {
       "lastVerified": "2026-07-11",

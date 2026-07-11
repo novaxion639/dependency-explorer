@@ -1104,8 +1104,8 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
     },
     {
       "type": "sqs",
-      "name": "svc-billing-automation-dlq",
-      "description": "Failed billing event retry queue"
+      "name": "billing job queues ×6 (+DLQs)",
+      "description": "toggleFeaturesSqs, updateSkelloShopSqs, updateSkelloOrganisationSqs, deleteSkelloShopSqs, deleteSkelloOrganisationSqs (each with a consumer lambda and DLQ) and invoiceUpsertSqs — ORPHANED: queue provisioned but no consumer lambda, and its notifyInvoiceUpsert API handler is exported yet unrouted. Inventory verified against serverless/resources/sqs/queues.ts, 2026-07-12 (board sweep #4)."
     },
     {
       "type": "sns",

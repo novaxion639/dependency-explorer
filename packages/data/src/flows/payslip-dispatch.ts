@@ -2,16 +2,24 @@ import { ServiceFlowSchema } from '@dependency-explorer/schema'
 import type { ServiceFlow } from '@dependency-explorer/schema'
 
 // Flow inventory follow-up (documents domain). Traced 2026-06-15 in
-// svc-intelligence source: PAYSLIPS is the DEFAULT AnalysisType of the
-// document-extraction pipeline (ExtractDataFromDocumentHandler; known limits
-// documented in the repo's docs/payslip-limitations.md). The SvcIntelligence
-// 'Payslip dispatch' FigJam board (8c9T22Sgu9rosbqwrXznCg) remains unswept —
-// diff this flow against it when board access is available.
+// svc-intelligence source; diffed against the 'Payslip dispatch' FigJam board
+// (8c9T22Sgu9rosbqwrXznCg) on 2026-07-12, which resolved the sender AND
+// corrected the notify trigger: the analysis request comes from
+// svc-documents-v2's AnalyzeDocumentListenerJob (own-Dynamo-stream consumer
+// batch-sending ExtractDataFromDocumentDto to the intelligence queue), and
+// NotifyUser is triggered by svc-intelligence's own DynamoDB stream
+// (INSERT of LLMResponse entities, questionScope filter incl. PAYSLIPS) —
+// not by its own SQS queue as previously written.
 const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
   "id": "payslip-dispatch",
   "name": "Payslip Extraction & Dispatch",
-  "description": "An employer's bulk payslip document is processed by svc-intelligence's AI extraction pipeline: an SQS analysis request (sender not yet traced — candidate: svc-documents-v2's ingestion) drives the extraction job, which fetches the document content from svc-documents-v2, converts PDF pages to images, and runs LLM extraction on Bedrock to identify per-employee payslips (analysisType defaults to PAYSLIPS; LLM field-accuracy limits are documented in the service's payslip-limitations doc). Progress and completion are pushed to the client over the LEGACY websockets genericMessage queue; per-employee document delivery and the 'document ready' employee notification ride the existing svc-documents-v2 → comms-v2 path.",
+  "description": "An employer's bulk payslip document is processed by svc-intelligence's AI extraction pipeline. The request originates in svc-documents-v2: the document write hits its own DynamoDB stream, AnalyzeDocumentListenerJob batch-sends ExtractDataFromDocumentDto messages to svc-intelligence's queue. The extraction job fetches the document content back from svc-documents-v2, converts PDF pages to images, and runs LLM extraction on Bedrock to identify per-employee payslips (analysisType defaults to PAYSLIPS; field-accuracy limits documented in the service's payslip-limitations doc). When the LLMResponse lands in the intelligence DynamoDB table, its stream triggers NotifyUser, which pushes progress/completion to the client over the LEGACY websockets genericMessage queue; per-employee document delivery and the 'document ready' employee notification ride the existing svc-documents-v2 → comms-v2 path.",
   "steps": [
+    {
+      "from": "svc-documents-v2",
+      "to": "svc-intelligence",
+      "action": "Analysis request: own-stream listener → ExtractDataFromDocumentDto → extractDataFromDocument SQS"
+    },
     {
       "from": "svc-intelligence",
       "to": "svc-documents-v2",
@@ -29,6 +37,22 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
     }
   ],
   "codeUnits": [
+    {
+      "id": "cu-pd-analyze-listener",
+      "service": "svc-documents-v2",
+      "kind": "job",
+      "label": "AnalyzeDocumentListenerJobHandler",
+      "path": "src/Handler/Job/AnalyzeDocumentListenerJobHandler.ts",
+      "description": "Consumes svc-documents-v2's own DynamoDB stream and builds the analysis requests — the resolved sender of the extraction pipeline"
+    },
+    {
+      "id": "cu-pd-extract-mgr",
+      "service": "svc-documents-v2",
+      "kind": "manager",
+      "label": "DocumentExtractDataManager",
+      "path": "src/Manager/DocumentExtractDataManager.ts",
+      "description": "Builds ExtractDataFromDocumentDto (svc-intelligence-sdk) and batch-sends to svcIntelligenceExtractDataFromDocumentSqsURL"
+    },
     {
       "id": "cu-pd-handler",
       "service": "svc-intelligence",
@@ -51,7 +75,7 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "job",
       "label": "NotifyUserHandler",
       "path": "src/Handler/Jobs/NotifyUserHandler.ts",
-      "description": "Separate SQS job delivering progress/completion pushes through NotifyUserManager"
+      "description": "Triggered by the intelligence table's own DynamoDB stream (INSERT of LLMResponse entities, questionScope filter incl. PAYSLIPS) — delivers progress/completion through NotifyUserManager (corrected 2026-07-12 via the Payslip dispatch board + serverless config)"
     },
     {
       "id": "cu-pd-bedrock",
@@ -79,6 +103,24 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
     }
   ],
   "codeEdges": [
+    {
+      "from": "dynamo-docs-v2-pd",
+      "to": "cu-pd-analyze-listener",
+      "label": "own DynamoDB stream (document writes)",
+      "mode": "async-event"
+    },
+    {
+      "from": "cu-pd-analyze-listener",
+      "to": "cu-pd-extract-mgr",
+      "label": "DocumentExtractDataManager batchSend",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-pd-extract-mgr",
+      "to": "svc-intelligence",
+      "label": "ExtractDataFromDocumentDto → extractDataFromDocument SQS",
+      "mode": "async-job"
+    },
     {
       "from": "cu-pd-handler",
       "to": "cu-pd-doc-manager",
@@ -111,9 +153,15 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
       "mode": "sync"
     },
     {
+      "from": "dynamo-intelligence",
+      "to": "cu-pd-notify-handler",
+      "label": "own DynamoDB stream — INSERT LLMResponse (questionScope filter)",
+      "mode": "async-event"
+    },
+    {
       "from": "cu-pd-notify-handler",
       "to": "cu-pd-notify",
-      "label": "progress + completion (own SQS trigger)",
+      "label": "progress + completion",
       "mode": "sync"
     },
     {
@@ -124,6 +172,12 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
     }
   ],
   "infraNodes": [
+    {
+      "id": "dynamo-docs-v2-pd",
+      "type": "dynamodb",
+      "label": "SvcDocV2-{env}",
+      "description": "svc-documents-v2's table — its stream is the analysis-request trigger"
+    },
     {
       "id": "dynamo-intelligence",
       "type": "dynamodb",

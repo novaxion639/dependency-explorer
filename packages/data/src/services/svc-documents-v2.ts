@@ -662,6 +662,11 @@ const svc_documents_v2: ConnectivityService = ConnectivityServiceSchema.parse({
       "description": "Generated PDFs, XLSX and templates"
     },
     {
+      "type": "s3",
+      "name": "skello-app.temporary-assets",
+      "description": "SHARED monolith-named bucket: ApiPrintDocument stages printed documents here for presigned download (awsBucketTemporaryBucketName, serverless.ts). Same bucket the monolith's report exports use and svc-reports listens on. Surfaced by the 'SvcDocuments V2 (short)' board, code-verified 2026-07-12."
+    },
+    {
       "type": "sqs",
       "name": "svc-documents-v2-dlq",
       "description": "Failed document generation retry queue"
