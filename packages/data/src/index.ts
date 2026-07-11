@@ -40,6 +40,7 @@ import superadmin from './services/superadmin'
 import skello_app from './services/skello-app'
 import skello_app_front from './services/skello-app-front'
 
+import assistant_chat from './flows/assistant-chat'
 import leave_request_lifecycle from './flows/leave-request-lifecycle'
 import document_generation_esignature from './flows/document-generation-esignature'
 import auto_planning_generation from './flows/auto-planning-generation'
@@ -142,6 +143,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   ]),
   connections: enrichConnections(connections),
   flows: [
+  assistant_chat,
   leave_request_lifecycle,
   document_generation_esignature,
   auto_planning_generation,
