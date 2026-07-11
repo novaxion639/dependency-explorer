@@ -1359,6 +1359,16 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "usedEndpoints": []
   },
   {
+    "from": "svc-documents-v2",
+    "to": "svc-intelligence",
+    "sdkPackage": "@skelloapp/svc-intelligence-sdk (ExtractDataFromDocumentDto → SQS)",
+    "communicationType": "async",
+    "protocol": "sqs",
+    "authType": "iam-role",
+    "description": "The document-analysis request path: document writes hit svc-documents-v2's own DynamoDB stream, AnalyzeDocumentListenerJobHandler builds ExtractDataFromDocumentDto messages (svc-intelligence-sdk contract) and DocumentExtractDataManager batch-sends them to svc-intelligence's extractDataFromDocument queue (svcIntelligenceExtractDataFromDocumentSqsURL). Resolves the previously untraced sender of payslip/document analysis requests. Verified against the 'Payslip dispatch' FigJam board + source, 2026-07-12.",
+    "usedEndpoints": []
+  },
+  {
     "from": "svc-automatic-scheduling",
     "to": "skello-app",
     "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",

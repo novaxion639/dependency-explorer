@@ -235,3 +235,17 @@ The 8 contested items queued during sweeps #1–3, each settled in code:
 **Net dataset effect:** 98 → 113 connections (100 discovery-verified), 33 services, multi-channel pairs now legal (uniqueness = from→to:protocol — skello-app talks REST *and* shop-merge SNS to punch/requests), 34 tests green, 0 candidates / 0 stale / 0 flow findings.
 
 **New leads queued by this pass:** assistant's esignature dependency is LIVE (decommission plan must include it); front still declares legacy `svc-kpis-sdk` + `skello-analytics-client` (unknown targets); svc-kpis repo has 6 HTTP endpoints + 3 queues but no service definition.
+
+## Sweep #4 (2026-07-12) — Figma MCP reconnected
+
+## SvcIntelligence — [Payslip dispatch](https://www.figma.com/board/8c9T22Sgu9rosbqwrXznCg) (2025-08)
+
+- 🆕→✅ **SENDER RESOLVED**: the board draws `analyzeDocumentListener` (svc-doc-v2 section) → `extractDataFromDocumentSQS (TF)` (svc-intelligence section). Code-verified: `AnalyzeDocumentListenerJobHandler` consumes docs-v2's own DynamoDB stream and `DocumentExtractDataManager` batch-sends `ExtractDataFromDocumentDto` (svc-intelligence-sdk) to `svcIntelligenceExtractDataFromDocumentSqsURL`. Connection svc-documents-v2 → svc-intelligence (sqs) adopted; payslip-dispatch flow updated.
+- ⚠→fixed: the board draws DynamoDB → NotifyUser — and the board is RIGHT: `NotifyUser` is triggered by the intelligence table's own DynamoDB stream (filterPatterns: INSERT of `LLMResponse` entities, questionScope incl. PAYSLIPS), not by its own SQS queue as the flow previously said. Flow corrected.
+- ✅ ExtractDataFromDocument → Bedrock (Claude3), → SvcIntelligence DynamoDB, DLQs on both queues
+- ✅ NotifyUser → legacy Websocket (embedded board reference) — matches the svc-intelligence → svc-websockets genericMessage edge
+- ✅ docs-v2 API surface (CreateDocument / UpdateDocuments / ExtractPages / GetDocumentUrlApi / SplitInPages, S3 bucket, SvcDocV2 DynamoDB) and Person → SvcCommunicationV2 notification path
+
+## SvcIntelligence — [Documents dispatch](https://www.figma.com/board/6qkWkTTCBAxudWcvLYijtp) (2025-10)
+
+- ✅ Global-archi page is node-for-node IDENTICAL to the Payslip dispatch board (same diagram duplicated) — swept by identity, no additional claims. (Remaining pages are DRAFT contract-dispatch sketches.)
