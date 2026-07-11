@@ -61,6 +61,127 @@ const shift_replacement_search: ServiceFlow = ServiceFlowSchema.parse({
       "label": "send replacement metrics report",
       "crud": ["create"]
     }
+  ],
+  "codeUnits": [
+    {
+      "id": "cu-rep-controller",
+      "service": "svc-automatic-scheduling",
+      "kind": "controller",
+      "label": "ShiftsEmployeeReplacementsController",
+      "path": "src/Controller/ShiftsEmployeeReplacementsController.ts",
+      "description": "GET /shifts/{shiftId}/employee_replacements — the single synchronous Lambda entry (29s timeout)"
+    },
+    {
+      "id": "cu-rep-manager",
+      "service": "svc-automatic-scheduling",
+      "kind": "manager",
+      "label": "ShiftsEmployeeReplacementsManager#computeSuggestions",
+      "path": "src/Manager/ShiftsEmployeeReplacementsManager.ts",
+      "description": "Orchestrates fetch → process → sort → count and ships the metrics report"
+    },
+    {
+      "id": "cu-rep-fetcher",
+      "service": "svc-automatic-scheduling",
+      "kind": "service",
+      "label": "SuggestionsDataFetcher",
+      "path": "src/Manager/Fetcher/SuggestionsDataFetcher.ts",
+      "description": "Parallel data pull: shop + users from the monolith (SkelloAppRepository, shift_id param excludes already-replaced users), shift/postes/candidate shifts from svc-search's Mongo (ShiftRepository, PosteRepository)"
+    },
+    {
+      "id": "cu-rep-processor",
+      "service": "svc-automatic-scheduling",
+      "kind": "service",
+      "label": "SuggestionsProcessor",
+      "path": "src/Manager/ShiftsEmployeeReplacements/Processor/SuggestionsProcessor.ts",
+      "description": "Runs the eligibility rule classes in-memory over every candidate"
+    },
+    {
+      "id": "cu-rep-sorter",
+      "service": "svc-automatic-scheduling",
+      "kind": "service",
+      "label": "SuggestionsSorter",
+      "path": "src/Manager/ShiftsEmployeeReplacements/Sort/SuggestionsSorter.ts",
+      "description": "Ranks the eligible candidates by availability and contract fit"
+    },
+    {
+      "id": "cu-rep-metrics-repo",
+      "service": "svc-automatic-scheduling",
+      "kind": "service",
+      "label": "MetricsSqsRepository",
+      "path": "src/Repository/MetricsSqsRepository.ts",
+      "description": "Sends the replacement metrics report to the shiftsEmployeeReplacementsMetrics queue"
+    },
+    {
+      "id": "cu-rep-metrics-job",
+      "service": "svc-automatic-scheduling",
+      "kind": "job",
+      "label": "MetricsTrackingHandlerJob",
+      "path": "src/Handler/MetricsTrackingHandlerJob.ts",
+      "description": "Separate Lambda (120s) consuming the metrics queue and forwarding to the data-platform ingestion API"
+    }
+  ],
+  "codeEdges": [
+    {
+      "from": "skello-app-front",
+      "to": "cu-rep-controller",
+      "label": "GET /shifts/{shiftId}/employee_replacements",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-rep-controller",
+      "to": "cu-rep-manager",
+      "label": "ShiftsEmployeeReplacementsManager#computeSuggestions",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-rep-manager",
+      "to": "cu-rep-fetcher",
+      "label": "SuggestionsDataFetcher — parallel pulls",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-rep-fetcher",
+      "to": "skello-app",
+      "label": "SkelloAppRepository — shop + users (shift_id exclusion)",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-rep-fetcher",
+      "to": "mongo-svc-search",
+      "label": "ShiftRepository / PosteRepository — shift, postes, candidate shifts",
+      "mode": "sync",
+      "crud": ["read"]
+    },
+    {
+      "from": "cu-rep-manager",
+      "to": "cu-rep-processor",
+      "label": "SuggestionsProcessor — eligibility rules",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-rep-manager",
+      "to": "cu-rep-sorter",
+      "label": "SuggestionsSorter — rank candidates",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-rep-manager",
+      "to": "cu-rep-metrics-repo",
+      "label": "MetricsSqsRepository — metrics report",
+      "mode": "async-job"
+    },
+    {
+      "from": "cu-rep-metrics-repo",
+      "to": "sqs-metrics",
+      "label": "SendMessage",
+      "mode": "async-job"
+    },
+    {
+      "from": "sqs-metrics",
+      "to": "cu-rep-metrics-job",
+      "label": "SQS trigger",
+      "mode": "async-job"
+    }
   ]
 })
 
