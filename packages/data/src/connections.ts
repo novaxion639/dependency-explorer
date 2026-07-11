@@ -1327,6 +1327,16 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "usedEndpoints": [
       "api-evps-list"
     ]
+  },
+  {
+    "from": "svc-billing-automation",
+    "to": "skello-app",
+    "sdkPackage": "SkelloManager (SKELLO_HOST + SKELLO_BILLING_API_PATH)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "Strangler write-back: billing pushes organisation/shop/license state into the monolith (v3/api/billing_automation/* controllers, from_svc_billing_auto guard) — churn processing handlers (Update/DeleteSkelloOrganisation/Shop) and subscription lifecycle changes. Verified 2026-06-15 (SKELLO_API_KEY + SKELLO_HOST in EnvVarsHelper).",
+    "usedEndpoints": []
   }
 ])
 
