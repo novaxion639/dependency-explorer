@@ -44,6 +44,8 @@ import assistant_chat from './flows/assistant-chat'
 import employee_clock_in from './flows/employee-clock-in'
 import self_serve_signup from './flows/self-serve-signup'
 import subscription_upgrade from './flows/subscription-upgrade'
+import employee_onboarding from './flows/employee-onboarding'
+import payroll_export from './flows/payroll-export'
 import leave_request_lifecycle from './flows/leave-request-lifecycle'
 import document_generation_esignature from './flows/document-generation-esignature'
 import auto_planning_generation from './flows/auto-planning-generation'
@@ -150,6 +152,8 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   employee_clock_in,
   self_serve_signup,
   subscription_upgrade,
+  employee_onboarding,
+  payroll_export,
   leave_request_lifecycle,
   document_generation_esignature,
   auto_planning_generation,

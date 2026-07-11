@@ -1337,6 +1337,16 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "authType": "api-key",
     "description": "Strangler write-back: billing pushes organisation/shop/license state into the monolith (v3/api/billing_automation/* controllers, from_svc_billing_auto guard) — churn processing handlers (Update/DeleteSkelloOrganisation/Shop) and subscription lifecycle changes. Verified 2026-06-15 (SKELLO_API_KEY + SKELLO_HOST in EnvVarsHelper).",
     "usedEndpoints": []
+  },
+  {
+    "from": "svc-employees",
+    "to": "skello-app",
+    "sdkPackage": "DPAE SFN write-back (SKELLO_APP_API_URL)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "Strangler write-back: the DPAE step function updates deposit status in the monolith (UpdateSkelloDpaeStatusSfnJobHandler → DpaeManager; SSM skelloApp/SKELLO_APP_API_URL + SKELLO_APP_EMPLOYEES_API_KEY — the dpae_deposits#update endpoint the monolith marks 'called only by svc-employee'). Verified 2026-06-15.",
+    "usedEndpoints": []
   }
 ])
 
