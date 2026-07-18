@@ -12,6 +12,14 @@ export const IGNORED_SDKS: Record<string, string> = {
   '@skelloapp/aws-sdk-lib': 'shared AWS helper library',
   '@skelloapp/skello-auth-client': 'JWT auth client library (used by every service)',
   '@skelloapp/data-platform-svc-ingestion-sdk': 'data-platform ingestion — external to this map',
+  // pure computation/UI libraries pulled by the mobile apps — no service behind them
+  '@skelloapp/expo-sso-lib': 'SSO helper library (mobile)',
+  '@skelloapp/i18n-lib': 'i18n library',
+  '@skelloapp/skello-absences': 'absence computation library (runs in-client)',
+  '@skelloapp/skello-annualization': 'annualization counter library (runs in-client)',
+  '@skelloapp/skello-planning-helper': 'planning duration helpers (runs in-client)',
+  '@skelloapp/skello-shifts-alerts': 'compliance alert computation library (runs in-browser)',
+  '@skelloapp/lambda-logger-js': 'Lambda logging library',
 }
 
 // SDKs that are pure data contracts over a SHARED DATABASE — importing them
@@ -28,6 +36,8 @@ export const SDK_SERVICE_OVERRIDES: Record<string, string> = {
   '@skelloapp/skello-analytics-client': 'skello-app',
   '@skelloapp/svc-esignature-sdk': 'svc-documents-esignature',
   '@skelloapp/workload-plan-sdk': 'svc-workload-plan',
+  // the mobile flavor of the punch SDK — same service as svc-punch-sdk
+  '@skelloapp/svc-punch-js': 'svc-punch',
 }
 
 /** Resolve an SDK package to a service name; null = ignored library/external. */

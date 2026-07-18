@@ -9,15 +9,28 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const availability_submission: ServiceFlow = ServiceFlowSchema.parse({
   "id": "availability-submission",
   "name": "Availability Submission & Review",
-  "description": "An employee declares availability/unavailability slots (one-off on a date, or weekly recurring) from the employee surface (api/v2 — also used by the mobile app, which is outside the map). Submissions land as pending; the manager reviews them in the pending list and manages availabilities from the planning side (v3 API). Fully monolith-internal: rows in PostgreSQL consumed by planning display and shift-assignment tooling — no cross-service hop.",
+  "description": "An employee declares availability/unavailability slots (one-off on a date, or weekly recurring) from the employee surface (api/v2 — shared by web and mobile: skello-mobile's legacy v2 screens create/edit on the same endpoints, client-verified 2026-07-18). Submissions land as pending; the manager reviews them in the pending list and manages availabilities from the planning side (v3 API on web, api/v1 PATCH on mobile). Fully monolith-internal: rows in PostgreSQL consumed by planning display and shift-assignment tooling — no cross-service hop. One of the flows where web and mobile CONVERGE on the same legacy surface.",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "skello-app",
       "action": "Submit availability (api/v2/availabilities — one-off or weekly recurrence); manager review via pending list + v3 API"
+    },
+    {
+      "from": "skello-mobile",
+      "to": "skello-app",
+      "action": "Same api/v2 surface from the phone (AvailabilityNew/Edit legacy screens; pending list; PATCH api/v1/availabilities/:id)"
     }
   ],
   "codeUnits": [
+    {
+      "id": "cu-avs-mobile-screen",
+      "service": "skello-mobile",
+      "kind": "component",
+      "label": "availability screens (legacy v2)",
+      "path": "src/v2/screens/AvailabilityNew/index.js",
+      "description": "Create/edit availabilities from the phone on the same api/v2 endpoints the web employee surface uses"
+    },
     {
       "id": "cu-avs-employee-api",
       "service": "skello-app",
@@ -56,6 +69,12 @@ const availability_submission: ServiceFlow = ServiceFlowSchema.parse({
       "from": "skello-app-front",
       "to": "cu-avs-employee-api",
       "label": "employee submits slot",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-avs-mobile-screen",
+      "to": "skello-app",
+      "label": "same api/v2 endpoints from the phone",
       "mode": "sync"
     },
     {

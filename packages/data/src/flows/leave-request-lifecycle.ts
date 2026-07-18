@@ -14,12 +14,22 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
   "id": "leave-request-lifecycle",
   "name": "Leave Request Lifecycle",
-  "description": "An employee submits a leave request. The web front calls svc-requests directly (the monolith v3 controller is the mobile proxy onto the same API). svc-requests persists the request in its own Aurora Postgres, sends an activity-log batch to svc-events (feature-flagged), and lets its CDC event spine do the notifying: a DMS task streams the row change onto the service's kinesis stream, DecodeAndPublishRequestJobHandler republishes to the SnsDispatch SNS topic with a computed trigger attribute, and the sendCreatedLeaveRequest mail + notification queues deliver the manager's email and in-app notification through svc-communications-v2.",
+  "description": "An employee submits a leave request. The web front calls svc-requests directly; the mobile app takes the OPPOSITE route — client-verified 2026-07-18: skello-mobile POSTs /v3/api/leave_requests on the monolith (plus legacy api/v2 screens for manager approve/refuse), touching svc-requests directly only for getPreSelectedManager (the monolith v3 controller is that mobile proxy onto the same API). svc-requests persists the request in its own Aurora Postgres, sends an activity-log batch to svc-events (feature-flagged), and lets its CDC event spine do the notifying: a DMS task streams the row change onto the service's kinesis stream, DecodeAndPublishRequestJobHandler republishes to the SnsDispatch SNS topic with a computed trigger attribute, and the sendCreatedLeaveRequest mail + notification queues deliver the manager's email and in-app notification through svc-communications-v2.",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "svc-requests",
       "action": "POST /leave-requests — employee submits (web; SvcRequestsRepository.create)"
+    },
+    {
+      "from": "skello-mobile",
+      "to": "skello-app",
+      "action": "Mobile create/list/delete on /v3/api/leave_requests (+ legacy api/v2 for manager decisions) — the proxy route into svc-requests"
+    },
+    {
+      "from": "skello-mobile",
+      "to": "svc-requests",
+      "action": "getPreSelectedManager — the ONLY direct svc-requests call on mobile"
     },
     {
       "from": "skello-app",
@@ -38,6 +48,22 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
     }
   ],
   "codeUnits": [
+    {
+      "id": "cu-lrl-mob-form",
+      "service": "skello-mobile",
+      "kind": "component",
+      "label": "LeaveRequestFormModal",
+      "path": "src/screens/LeaveRequests/LeaveRequestForm/LeaveRequestFormModal.tsx",
+      "description": "Employee form — preselected manager from svc-requests, absence config from svc-employees, over-midnight shops normalize after-midnight times +1 day (isOverMidnightShop / normalizeTimeToShopSchedule)"
+    },
+    {
+      "id": "cu-lrl-mob-api",
+      "service": "skello-mobile",
+      "kind": "service",
+      "label": "leave requests api (v3 via the monolith)",
+      "path": "src/modules/leaveRequests/api.ts",
+      "description": "fetch/create/delete on /v3/api/leave_requests — the mobile proxy path; manager decisions still ride legacy PATCH /api/v2/received_leave_requests/:id"
+    },
     {
       "id": "cu-lrl-front-client",
       "service": "skello-app-front",
@@ -124,6 +150,24 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
       "from": "skello-app-front",
       "to": "cu-lrl-front-client",
       "label": "employee submits leave request",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-lrl-mob-form",
+      "to": "cu-lrl-mob-api",
+      "label": "create / delete leave request",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-lrl-mob-form",
+      "to": "svc-requests",
+      "label": "getPreSelectedManager (only direct mobile call)",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-lrl-mob-api",
+      "to": "skello-app",
+      "label": "/v3/api/leave_requests (proxy) + legacy api/v2 decisions",
       "mode": "sync"
     },
     {

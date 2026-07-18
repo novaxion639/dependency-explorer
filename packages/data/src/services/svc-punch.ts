@@ -4,7 +4,7 @@ import type { ConnectivityService } from '@dependency-explorer/schema'
 const svc_punch: ConnectivityService = ConnectivityServiceSchema.parse({
   "name": "svc-punch",
   "type": "typescript-microservice",
-  "description": "Punch-clock attendance tracking — records clock-in/out events and computes worked time",
+  "description": "Punch-clock attendance tracking — the system of record for raw clock-ins (domain object: ClockInOut; 'badging' is monolith vocabulary). Both the tablet (SkelloPunchClock) and the mobile app write paired ClockInOut documents here DIRECTLY; the monolith reads them back for badging review and stores its computed shift↔badging matches into HISTORY rows (POST /histories). A ClockInOut carries shop/user/timestamps ONLY — no shift reference; matching is entirely monolith-side. Auto-close has NO cron: calculateOutAuto precomputes outAuto at write time from the shop's closing hour in the shop timezone (+1 day for overnight shops — defineOpeningDate attributes an after-midnight punch to the previous shop-day) and closedByBackend is derived as out === outAuto. Two auth models: legacy endpoints check in-lambda (monolith API key OR shop-scoped time-clock JWT with per-shop permissions); /v1 + /settings/mobile sit behind svc-users authorizers. Own-table streams drive the lateness callback into the monolith (lastTabletSync/lastMobileBadgeDate), mobile-permission recalculation (SnsMobilePermissions), GPS-location purge scheduling and a Firehose export. Deep-dive 2026-07-18.",
   "endpoints": [
     {
       "id": "api-create-clock-in-out",

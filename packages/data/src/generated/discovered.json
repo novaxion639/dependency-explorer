@@ -1,8 +1,10 @@
 {
-  "generatedAt": "2026-07-18T17:35:05.636Z",
+  "generatedAt": "2026-07-18T20:45:26.284Z",
   "scannedRepos": [
     "skello-app",
     "skello-app-front",
+    "skello-mobile",
+    "skello-punchclock",
     "superadmin",
     "svc-automatic-scheduling",
     "svc-bff",
@@ -51,6 +53,20 @@
         "@skelloapp/squad-front",
         "@skelloapp/squad-perf",
         "@skelloapp/team-salsa"
+      ]
+    },
+    "skello-mobile": {
+      "repoUrl": "https://github.com/skelloapp/skello-mobile",
+      "githubTeams": [
+        "@skelloapp/squad-perf-mobile",
+        "@skelloapp/team-reaper"
+      ]
+    },
+    "skello-punchclock": {
+      "repoUrl": "https://github.com/skelloapp/skello-punchclock",
+      "githubTeams": [
+        "@skelloapp/squad-perf-mobile",
+        "@skelloapp/team-reaper"
       ]
     },
     "superadmin": {
@@ -421,6 +437,50 @@
     "skello-app-front→svc-workload-plan": {
       "lastVerified": "2026-07-18",
       "evidence": "package.json: @skelloapp/workload-plan-sdk (value import); frontend: env SVC_WORKLOAD_PLAN_API_URL, VUE_APP_SVC_WORKLOAD_PLAN_API_URL used in 8 files"
+    },
+    "skello-mobile→skello-app": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+    },
+    "skello-mobile→svc-communications-v2": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
+    },
+    "skello-mobile→svc-documents-v2": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import)"
+    },
+    "skello-mobile→svc-employees": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/svc-employees-client (value import)"
+    },
+    "skello-mobile→svc-punch": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/svc-punch-js (value import)"
+    },
+    "skello-mobile→svc-requests": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/svc-requests-sdk (value import)"
+    },
+    "skello-mobile→svc-shops": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/svc-shops-sdk (value import)"
+    },
+    "skello-mobile→svc-users": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/svc-users-sdk (value import)"
+    },
+    "skello-punchclock→skello-app": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+    },
+    "skello-punchclock→svc-punch": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/svc-punch-sdk (value import)"
+    },
+    "skello-punchclock→svc-users": {
+      "lastVerified": "2026-07-18",
+      "evidence": "package.json: @skelloapp/svc-users-sdk (value import)"
     },
     "superadmin→svc-billing-automation": {
       "lastVerified": "2026-07-18",

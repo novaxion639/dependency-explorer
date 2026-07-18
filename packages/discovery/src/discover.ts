@@ -152,7 +152,7 @@ function findRepos(): string[] {
     return fs.readdirSync(REPO_BASE, { withFileTypes: true })
       .filter(e => e.isDirectory()
         && !e.name.endsWith('-tf') // terraform checkouts have their own pass
-        && (e.name.startsWith('svc-') || ['skello-app', 'skello-app-front', 'superadmin'].includes(e.name)))
+        && (e.name.startsWith('svc-') || ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock'].includes(e.name)))
       .map(e => e.name)
       .sort()
   } catch {
