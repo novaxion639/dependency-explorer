@@ -16,6 +16,8 @@ export const DatabaseTypeSchema = z.enum([
   'kinesis',
   'lambda',
   'cdc',
+  // on-device store (mobile/tablet offline-first queues)
+  'sqlite',
 ])
 
 export const ServiceTypeSchema = z.enum([
@@ -142,6 +144,8 @@ export const ServiceFlowStepSchema = z.object({
 
 export const FlowCodeUnitKindSchema = z.enum([
   'controller', 'service', 'manager', 'job', 'model-callback',
+  // client-app units (web/mobile/tablet flows)
+  'component', 'client',
 ])
 
 export const FlowCodeUnitSchema = z.object({

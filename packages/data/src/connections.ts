@@ -784,11 +784,11 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
   {
     "from": "skello-app-front",
     "to": "svc-punch",
-    "sdkPackage": "@skelloapp/svc-punch-sdk",
+    "sdkPackage": "@skelloapp/svc-punch-sdk (FactoryPunchWeb, VUE_APP_SVC_PUNCH_API_URL)",
     "communicationType": "sync",
     "protocol": "rest",
     "authType": "jwt",
-    "description": "Display and validate employee punch clock records",
+    "description": "Punch settings ONLY, edited direct (punch_client.js: getSetting/partialUpdateSetting/getUsers — the shop-settings PunchClock page and the time-management tab's rounding/tolerance reads). Badging DATA still flows through the monolith's v3/api/badgings; a store comment ('Will not be useful when svc punch fully in production') marks that list as mid-migration. Client-verified 2026-07-18.",
     "usedEndpoints": [
       "api-create-clock-in-out"
     ]
@@ -1542,6 +1542,146 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "sqs",
     "authType": "iam-role",
     "description": "After CDC replication lands (SendSkelloAppToRds), PingShopIdAndDateSqsManager pings clients through the LEGACY websockets service's pingShopIdAndDate queue — the third member of the legacy websocket queue family (genericMessage, pingTypeAndUuid). Surfaced by the '[Architecture] SvcKpis' board, code-verified 2026-07-12.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-mobile",
+    "to": "skello-app",
+    "sdkPackage": "axios HttpClient + @skelloapp/skello-app-sdk (X-Source-Client: skelloApp:mobile)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "The mobile app's main surface: v3/api (plannings/shifts CRUD, leave_requests, counters, weekly_options, shops, current_user, memberships), legacy api/v1 (requests sent/received, availabilities) and api/v2 screens (shift swaps, availabilities, received_leave_requests, profiles), plus mobile-only v3/api/mobile/{config,banners} — and the auth surface itself: AuthMobileClient login/refresh hit /v3/login* behind the auth.skello.io host, which terminates in the monolith (config/routes.rb login#*). Leave requests notably go THROUGH the monolith here while the web goes direct to svc-requests. Traced 2026-07-18 (src/plugins/clients/HttpClient, src/modules/*/api.ts).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-mobile",
+    "to": "svc-punch",
+    "sdkPackage": "@skelloapp/svc-punch-js (FactoryPunchMobile → PUNCH_URL, direct)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Mobile clock in/out goes DIRECT to svc-punch — createClockInOut/partialUpdateClockInOut on clocks-in-out with badgedFrom: mobile_app, an inUuid idempotency key and best-effort GPS locations (never blocking the punch, BR-15285), plus settings/ and settings/mobile/ reads and the user clock-in list. The monolith is not in this request path. Traced 2026-07-18 (src/modules/punchClock/api.ts, src/plugins/clients/PunchClient).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-mobile",
+    "to": "svc-users",
+    "sdkPackage": "@skelloapp/skello-auth-client/mobile + @skelloapp/svc-users-sdk (auth.skello.io + MS_USERS_BASE_URL)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "SSO pre-auth capability checks (login-capability), multi-org identity switch (token-employee — swaps to an employee-scoped token) and user reads via svc-users-sdk repositories. Password login itself is /v3/login on the monolith (auth.skello.io host); tokens are chunked into expo-secure-store. Traced 2026-07-18 (src/plugins/clients/{AuthenticationClient,SvcUsersClient}).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-mobile",
+    "to": "svc-feature-flags",
+    "sdkPackage": "plain axios (SVC_FEATURE_FLAG_URL, unauthenticated)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "none",
+    "description": "Pre-auth feature flag fetch (GET /features) at app startup. Traced 2026-07-18 (src/modules/featureFlags/api.ts).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-mobile",
+    "to": "svc-employees",
+    "sdkPackage": "@skelloapp/svc-employees-client (MS_EMPLOYEES_BASE_URL, direct)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Absence and annualization config reads for the leave form and Home counters (EmployeesFactory absenceConfig/annualizationConfig). Traced 2026-07-18 (src/plugins/clients/SvcEmployeesClient, src/modules/employees/api.ts).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-mobile",
+    "to": "svc-documents-v2",
+    "sdkPackage": "@skelloapp/svc-documents-v2-client (MS_DOCUMENT_V2_BASE_URL, direct)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Documents & payslips: folder/document reads, uploads through S3 presigned URLs (FileSystem.uploadAsync PUT), downloads, deletion, and attendance-sheet signature reads feeding Home notifications. Traced 2026-07-18 (src/modules/{documents,folders,signatures}/api.ts).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-mobile",
+    "to": "svc-communications-v2",
+    "sdkPackage": "@skelloapp/svc-communications-v2-sdk (MS_COMMUNICATIONS_BASE_URL, direct)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Push-notification device token upsert/delete (DeviceTokenRepository) with the Expo push token. Traced 2026-07-18 (src/plugins/skPushNotifications, src/plugins/clients/SvcCommunicationsClient).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-mobile",
+    "to": "svc-requests",
+    "sdkPackage": "@skelloapp/svc-requests-sdk (MS_REQUESTS_BASE_URL, direct)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Single call: getPreSelectedManager for the leave-request form. Everything else request-related goes through the monolith on mobile — the inverse of the web client, which drives svc-requests directly. Traced 2026-07-18 (src/modules/requests/api.ts).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-mobile",
+    "to": "svc-shops",
+    "sdkPackage": "@skelloapp/svc-shops-sdk (MS_SHOPS_BASE_URL, direct)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Missions reads for shift details (MissionsRepository). Traced 2026-07-18 (src/modules/missions/api.ts).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-punchclock",
+    "to": "svc-punch",
+    "sdkPackage": "@skelloapp/svc-punch-sdk (FactoryPunchMobile → PUNCH_URL, direct)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "The tablet's whole punch surface, called with the shop-scoped time-clock JWT: settings reads/partial updates (tolerance, rounding, shopPin), the shop's employee list including punch PINs (GET /users/shop/{shopId}), clock-in-out reads by shop/user window, the paired-document upsert (POST /clocks-in-out — a clock-out UPDATES the same record; offline-first SQLite queue drains here) and the /config version gate driving forced updates. Traced 2026-07-18 (src/plugins/clients/PunchClient, src/modules/clockInOuts/hooks/*).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-punchclock",
+    "to": "skello-app",
+    "sdkPackage": "@skelloapp/skello-auth-client + @skelloapp/skello-app-sdk (auth.skello.io + API_URL)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "Auth and org context only: POST /v3/login (manager sign-in), POST /v3/login/login_time_clock (shop-scoped device JWT), POST /v3/login/refresh_time_clock_token, and GET /v3/api/me/organisations for the org selector. The legacy punch_clock/v1 device protocol (raw punches → BadgingParser) is DEAD: routes deleted 2025-08-05 ('fix: Disabled legacy punch clock routes') and FEATUREDEV_ALLOW_TABLET_LEGACY raises UnavailableError even if re-routed. Traced 2026-07-18.",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-punchclock",
+    "to": "svc-users",
+    "sdkPackage": "@skelloapp/svc-users-sdk (SVC_USERS_URL + auth.skello.io)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "jwt",
+    "description": "SSO pre-auth capability check (login-capability via expo-sso-lib) and the multi-org employee-token swap (POST /token-employee, requires canEditPunchClockSettings). Traced 2026-07-18 (src/plugins/clients/UsersClient, src/screens/SignIn/OrganisationSelector.tsx).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "skello-punchclock",
+    "to": "svc-feature-flags",
+    "sdkPackage": "plain axios (FEATURE_FLAG_URL, unauthenticated)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "none",
+    "description": "Unauthenticated GET /features at startup — gates the SQLite offline stacks (FEATUREDEV_CLOCK_IN_OUTS_SQLITE, FEATUREDEV_TIMECLOCK_USERS_SQLITE), tablet onboarding and the debug state dump. Traced 2026-07-18 (src/modules/featureFlags/api.ts).",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-punch",
+    "to": "skello-app",
+    "sdkPackage": "SkelloAppClient (POST /private/punch/trigger_lateness_sms_job, X-Api-Key)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "Lateness-notification callback: TriggerLatenessSMSJobHandler reacts to SETTING rows changing on svc-punch's own DynamoDB stream (lastTabletSync / lastMobileBadgeDate moving) and pings the monolith to run its lateness SMS job (X-Source-Client: svcPunch). The sixth service→monolith callback of the strangler pattern. Code-verified 2026-07-18 (src/Handler/Jobs/TriggerLatenessSMSJobHandler.ts, src/Client/SkelloAppClient.ts).",
     "usedEndpoints": []
   }
 ])

@@ -7,6 +7,8 @@ export const CODE_UNIT_KIND_META: Record<FlowCodeUnit['kind'], { label: string; 
   'manager':        { label: 'MGR',  color: '#8b5cf6' },
   'job':            { label: 'JOB',  color: '#e0761b' },
   'model-callback': { label: 'CB',   color: '#10b981' },
+  'component':      { label: 'UI',   color: '#ec4899' },
+  'client':         { label: 'HTTP', color: '#06b6d4' },
 }
 
 export interface CodeUnitNodeData {

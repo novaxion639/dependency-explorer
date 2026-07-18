@@ -163,7 +163,8 @@ export function extractTsRepo(repoBase: string, repo: string): TsRepoFacts | nul
       ...(pkg.devDependencies as Record<string, string> | undefined ?? {}),
     }
     for (const d of Object.keys(deps)) {
-      if (d.startsWith('@skelloapp/') && (d.includes('-sdk') || d.includes('-client'))) sdkSet.add(d)
+      // '-js' covers the mobile SDK flavor (@skelloapp/svc-punch-js)
+      if (d.startsWith('@skelloapp/') && (d.includes('-sdk') || d.includes('-client') || d.endsWith('-js'))) sdkSet.add(d)
     }
   }
   const sdkPackages = [...sdkSet].sort()

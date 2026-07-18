@@ -13,6 +13,7 @@ export const DB_COLORS: Record<DatabaseType, { color: string; label: string; ico
   kinesis:       { color: '#9b59b6', label: 'Kinesis',       icon: '🌊' },
   lambda:        { color: '#f97316', label: 'Lambda',        icon: 'λ' },
   cdc:           { color: '#ec4899', label: 'CDC',           icon: '⚡' },
+  sqlite:        { color: '#0f80cc', label: 'SQLite',        icon: '📱' },
 }
 
 const CRUD_STYLE: Record<string, { bg: string; color: string }> = {

@@ -40,6 +40,8 @@ import svc_websockets_v2 from './services/svc-websockets-v2'
 import superadmin from './services/superadmin'
 import skello_app from './services/skello-app'
 import skello_app_front from './services/skello-app-front'
+import skello_mobile from './services/skello-mobile'
+import skello_punchclock from './services/skello-punchclock'
 
 import assistant_chat from './flows/assistant-chat'
 import analytics_dashboard_load from './flows/analytics-dashboard-load'
@@ -47,6 +49,7 @@ import availability_submission from './flows/availability-submission'
 import badging_review from './flows/badging-review'
 import payslip_dispatch from './flows/payslip-dispatch'
 import employee_clock_in from './flows/employee-clock-in'
+import mobile_clock_in from './flows/mobile-clock-in'
 import self_serve_signup from './flows/self-serve-signup'
 import subscription_upgrade from './flows/subscription-upgrade'
 import employee_onboarding from './flows/employee-onboarding'
@@ -156,6 +159,8 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   superadmin,
   skello_app,
   skello_app_front,
+  skello_mobile,
+  skello_punchclock,
   ]),
   connections: enrichConnections(connections),
   flows: [
@@ -165,6 +170,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   badging_review,
   payslip_dispatch,
   employee_clock_in,
+  mobile_clock_in,
   self_serve_signup,
   subscription_upgrade,
   employee_onboarding,

@@ -69,6 +69,7 @@ const domains: Domain[] = z.array(DomainSchema).parse([
       'svc-punch',
       'svc-trackers',
       'svc-pos',
+      'skello-punchclock',
     ],
     dataEntities: ['Punch', 'Timesheet', 'PosTransaction'],
     publishedEvents: ['punch.created', 'tracker.updated'],
@@ -107,11 +108,12 @@ const domains: Domain[] = z.array(DomainSchema).parse([
   {
     id: 'core',
     name: 'Core',
-    description: 'Rails monolith, Vue frontend, and admin tools — the legacy core of the system',
+    description: 'Rails monolith, Vue frontend, mobile app, and admin tools — the core clients and legacy heart of the system',
     color: '#ef4444',
     serviceNames: [
       'skello-app',
       'skello-app-front',
+      'skello-mobile',
       'superadmin',
     ],
     dataEntities: ['AllLegacyModels'],

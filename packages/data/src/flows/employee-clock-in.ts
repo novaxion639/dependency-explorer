@@ -1,121 +1,166 @@
 import { ServiceFlowSchema } from '@dependency-explorer/schema'
 import type { ServiceFlow } from '@dependency-explorer/schema'
 
-// Flow inventory candidate #2 (time clock — previously a zero-flow domain).
-// Traced 2026-06-15: punch_clock/v1/badgings_controller.rb → badging_parser_job.rb
-// → badging_parser.rb → microservices/punch/ms_badging.rb. The physical punch
-// clock (SkelloPunchClock tablet app — outside the map per the GLOBAL board)
-// posts raw punch events; a mobile clock-in path exists separately via
-// Microservices::Punch::ClockInOutService.
+// REWRITTEN 2026-07-18 (mobile-apps arc): the original 2026-06-15 trace
+// described the punch_clock/v1 raw-punch pipeline (BadgingsController →
+// BadgingParserJob → BadgingParser → fake-badging mirror). That pipeline is
+// DEAD in deployed code: routes deleted 2025-08-05 ('fix: Disabled legacy
+// punch clock routes', double-gated by FEATUREDEV_ALLOW_TABLET_LEGACY) and
+// CloseOldBadgingsJob's hourly cron is commented out of sidekiq.rb ('cause
+// large lock problem'). The current tablet writes paired documents straight
+// into svc-punch, offline-first.
 const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
   "id": "employee-clock-in",
-  "name": "Employee Clock-In (Punch Clock)",
-  "description": "An employee badges in/out on the shop's punch clock tablet (SkelloPunchClock app, outside the map). The monolith's punch_clock/v1 API accepts the raw punch payload and returns immediately — parsing is asynchronous: BadgingParserJob runs BadgingParser, which reads the shop's punch settings from svc-punch, pairs in/out and pause events into Badging rows in PostgreSQL, and mirrors in-progress ('fake') badgings into svc-punch so the punch domain service holds the live state. Managers later reconcile badgings against planned shifts in the badgings section (v3/api/badgings matched/day controllers — a separate review flow).",
+  "name": "Employee Clock-In (Punch Clock Tablet)",
+  "description": "An employee badges on the shop's tablet (SkelloPunchClock): types a 4-digit PIN matched against svc-punch's replicated user data, and the app upserts ONE paired ClockInOut document (in/out/pauses, badgedFrom: tablet_app, client-generated inUuid) DIRECTLY into svc-punch — a clock-out UPDATES the same record. Writes are offline-first: the SQLite row lands before the network call (sentToAPI=false → true), and the unsent queue drains in chunks of 25 on a 15-minute foreground timer, on connectivity regain and on screen focus — retrying forever except on 409/422 (the BR-15241/BR-15224 missing-punch fixes). svc-punch precomputes outAuto (auto-close = shop closing hour in the shop tz, +1 day for overnight shops — closedByBackend is DERIVED, no cron); the tablet's last-badging lookup prefers an OPEN badging over the newest record so a backend-auto-closed row can't block an overnight clock-out — a guard present in the offline path but ABSENT from the online-only path. The tablet never sees shifts: badging↔shift matching is entirely monolith-side at review time. The monolith's legacy punch_clock/v1 raw-punch pipeline (BadgingParser) is DEAD — routes deleted 2025-08-05; monolith Badging rows now materialize at badging-review validation. Each sync bumps lastTabletSync on the shop's SETTING row, which triggers the lateness callback into the monolith (see mobile-clock-in for that leg's code layer).",
   "steps": [
     {
-      "from": "skello-app",
+      "from": "skello-punchclock",
       "to": "svc-punch",
-      "action": "Read punch settings (Punch::SettingService) + mirror parsed badgings (Punch::MsBadging.create_or_update_fake_badging)"
+      "action": "Upsert paired ClockInOut (POST clocks-in-out — offline-first queue) + sync settings, users & PINs"
+    },
+    {
+      "from": "svc-punch",
+      "to": "skello-app",
+      "action": "Lateness callback — SETTING stream (lastTabletSync) → POST /private/punch/trigger_lateness_sms_job"
     }
   ],
   "codeUnits": [
     {
-      "id": "cu-ci-controller",
-      "service": "skello-app",
+      "id": "cu-eci-pinscreen",
+      "service": "skello-punchclock",
+      "kind": "component",
+      "label": "ClockPin screen (PIN gate)",
+      "path": "src/screens/ClockPin/ClockPin.tsx",
+      "description": "Reached from the Clock screen's Start/Finish buttons; useClockPin matches the 4-digit PIN against svc-punch user data, fetches the last clock-in-out (rolling 24h window, PREFERRING an open badging over the newest record — the BR-15241 overnight guard), validates the transition and builds the upsert payload"
+    },
+    {
+      "id": "cu-eci-card",
+      "service": "skello-punchclock",
+      "kind": "component",
+      "label": "UserClockInOutModal — ClockInOutCard",
+      "path": "src/screens/ClockPin/UserClockInOutModal/ClockInOutCard.tsx",
+      "description": "Confirmation card inside the user clock-in-out modal — submits the punch to the SQLite-first upsert hook"
+    },
+    {
+      "id": "cu-eci-upsert",
+      "service": "skello-punchclock",
+      "kind": "service",
+      "label": "useSQLiteUpsertClockInOuts",
+      "path": "src/modules/clockInOuts/hooks/useSQLiteUpsertClockInOuts.ts",
+      "description": "SQLite write FIRST (sentToAPI=false), then best-effort POST to svc-punch; on success re-upserts with sentToAPI=true keeping the same inUuid. Network failure at punch time is non-fatal — the row stays queued"
+    },
+    {
+      "id": "cu-eci-sync",
+      "service": "skello-punchclock",
+      "kind": "service",
+      "label": "syncAppdata (config hooks)",
+      "path": "src/modules/config/hooks/hooks.ts",
+      "description": "15-minute foreground timer (no OS background task despite the UIBackgroundModes manifest), connectivity-regain and screen-focus triggers: refreshes settings + users into SQLite and drains the unsent punch queue. API-fetched badgings are never pulled back into SQLite — offline, a backend auto-close is invisible to the device"
+    },
+    {
+      "id": "cu-eci-queue",
+      "service": "skello-punchclock",
+      "kind": "service",
+      "label": "queue drain (useSQLiteSyncClockInOuts)",
+      "path": "src/modules/clockInOuts/hooks/useSQLiteSyncClockInOuts.ts",
+      "description": "SELECT … WHERE sentToAPI = 0, chunks of 25, Promise.allSettled; only 409/422 are dropped permanently — everything else retries forever"
+    },
+    {
+      "id": "cu-eci-controller",
+      "service": "svc-punch",
       "kind": "controller",
-      "label": "PunchClock::V1::BadgingsController#update",
-      "path": "app/controllers/punch_clock/v1/badgings_controller.rb",
-      "description": "Punch clock device API — accepts the raw punch payload, enqueues the parser, responds empty immediately (the tablet never waits); also serves yesterday's backend-closed badgings back to devices"
+      "label": "ClocksInOutController",
+      "path": "src/Controller/ClocksInOutController.ts",
+      "description": "clocks-in-out CRUD surface — in-lambda auth accepts the shop-scoped time-clock JWT (canWriteClockInOuts) or the monolith API key"
     },
     {
-      "id": "cu-ci-parser-job",
-      "service": "skello-app",
-      "kind": "job",
-      "label": "BadgingParserJob",
-      "path": "app/jobs/badging_parser_job.rb",
-      "description": "Sidekiq — replays the raw payload into BadgingParser out-of-request"
-    },
-    {
-      "id": "cu-ci-parser",
-      "service": "skello-app",
-      "kind": "service",
-      "label": "BadgingParser",
-      "path": "app/services/badging_parser.rb",
-      "description": "Pairs punch events into badgings (in/out, pause_start/pause_end pairs, matching pauses to previous badges), persists Badging rows, and mirrors in-progress badgings to svc-punch"
-    },
-    {
-      "id": "cu-ci-ms-badging",
-      "service": "skello-app",
-      "kind": "service",
-      "label": "Microservices::Punch::MsBadging",
-      "path": "app/services/microservices/punch/ms_badging.rb",
-      "description": "HTTP client mirroring 'fake' (in-progress) badgings into svc-punch — create_or_update_fake_badging / update_fake_badging"
+      "id": "cu-eci-manager",
+      "service": "svc-punch",
+      "kind": "manager",
+      "label": "ClockInOutManager",
+      "path": "src/Manager/ClockInOutManager.ts",
+      "description": "calculateOutAuto precomputes the auto-close timestamp at write time (getShopClosingTime: shop closing hour in the shop tz, +1 day when already past it — the overnight case); closedByBackend = out === outAuto, no cron. Repository sweeps duplicate rows sharing an id after key-changing updates"
     }
   ],
   "codeEdges": [
     {
-      "from": "cu-ci-controller",
-      "to": "cu-ci-parser-job",
-      "label": "raw punch payload",
-      "mode": "async-job"
-    },
-    {
-      "from": "cu-ci-controller",
-      "to": "svc-punch",
-      "label": "Punch::SettingService.get — shop punch settings",
+      "from": "cu-eci-pinscreen",
+      "to": "cu-eci-card",
+      "label": "PIN ok → confirm punch",
       "mode": "sync"
     },
     {
-      "from": "cu-ci-parser-job",
-      "to": "cu-ci-parser",
-      "label": "parse punches",
+      "from": "cu-eci-card",
+      "to": "cu-eci-upsert",
+      "label": "doUpsertClockInOut",
       "mode": "sync"
     },
     {
-      "from": "cu-ci-parser",
-      "to": "pg-skello-badgings",
-      "label": "Badging rows (in/out + pause pairs)",
+      "from": "cu-eci-upsert",
+      "to": "sqlite-tablet",
+      "label": "row first (sentToAPI=false), flip on API success",
       "mode": "sync",
       "crud": ["create", "update"]
     },
     {
-      "from": "cu-ci-parser",
-      "to": "cu-ci-ms-badging",
-      "label": "mirror in-progress badgings",
+      "from": "cu-eci-upsert",
+      "to": "svc-punch",
+      "label": "best-effort POST clocks-in-out",
       "mode": "sync"
     },
     {
-      "from": "cu-ci-ms-badging",
-      "to": "svc-punch",
-      "label": "create_or_update_fake_badging",
+      "from": "cu-eci-sync",
+      "to": "cu-eci-queue",
+      "label": "drain unsent queue (15-min timer / reconnect / focus)",
       "mode": "sync"
+    },
+    {
+      "from": "cu-eci-queue",
+      "to": "svc-punch",
+      "label": "replay queued punches (chunks of 25)",
+      "mode": "sync"
+    },
+    {
+      "from": "svc-punch",
+      "to": "cu-eci-controller",
+      "label": "clocks-in-out routes",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-eci-controller",
+      "to": "cu-eci-manager",
+      "label": "create/update (same-second dedup on retry)",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-eci-manager",
+      "to": "dynamo-svc-punch-tablet",
+      "label": "ClockInOut item — shop/user/timestamps only, no shift reference",
+      "mode": "sync",
+      "crud": ["create", "update"]
     }
   ],
   "infraNodes": [
     {
-      "id": "pg-skello-badgings",
-      "type": "postgresql",
-      "label": "skello_production — badgings",
-      "description": "Badging rows paired from raw punches; later reconciled against shifts by managers (shift-update unlinks badging on unassign — the coupling seen in the shift-update flow)"
+      "id": "sqlite-tablet",
+      "type": "sqlite",
+      "label": "on-device SQLite (CLOCK_IN_OUTS, USERS, CONFIG)",
+      "description": "Offline-first store — serialized writes, 2-month retention; compliance photos/signatures stay in local files (no upload endpoint exists)"
     },
     {
-      "id": "redis-skello-badgings",
-      "type": "redis",
-      "label": "skello-redis",
-      "description": "Sidekiq broker for BadgingParserJob"
+      "id": "dynamo-svc-punch-tablet",
+      "type": "dynamodb",
+      "label": "svcPunch-{env}",
+      "description": "Single-table store (CLOCKINOUT/SETTING/HISTORY + replicated users). The SETTING stream feeds the lateness callback and mobile-permission recalculation"
     }
   ],
   "infraEdges": [
     {
-      "from": "skello-app",
-      "to": "pg-skello-badgings",
-      "label": "persist badgings",
+      "from": "svc-punch",
+      "to": "dynamo-svc-punch-tablet",
+      "label": "clock-in-out writes",
       "crud": ["create", "update"]
-    },
-    {
-      "from": "skello-app",
-      "to": "redis-skello-badgings",
-      "label": "enqueue parser"
     }
   ]
 })
