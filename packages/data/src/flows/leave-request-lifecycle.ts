@@ -22,6 +22,16 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
       "action": "POST /leave-requests — employee submits (web; SvcRequestsRepository.create)"
     },
     {
+      "from": "skello-mobile",
+      "to": "skello-app",
+      "action": "Mobile create/list/delete on /v3/api/leave_requests (+ legacy api/v2 for manager decisions) — the proxy route into svc-requests"
+    },
+    {
+      "from": "skello-mobile",
+      "to": "svc-requests",
+      "action": "getPreSelectedManager — the ONLY direct svc-requests call on mobile"
+    },
+    {
       "from": "skello-app",
       "to": "svc-requests",
       "action": "POST /leave-requests — mobile surface proxy (V3::Api::LeaveRequestsController#create)"
@@ -38,6 +48,22 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
     }
   ],
   "codeUnits": [
+    {
+      "id": "cu-lrl-mob-form",
+      "service": "skello-mobile",
+      "kind": "component",
+      "label": "LeaveRequestFormModal",
+      "path": "src/screens/LeaveRequests/LeaveRequestForm/LeaveRequestFormModal.tsx",
+      "description": "Employee form — preselected manager from svc-requests, absence config from svc-employees, over-midnight shops normalize after-midnight times +1 day (isOverMidnightShop / normalizeTimeToShopSchedule)"
+    },
+    {
+      "id": "cu-lrl-mob-api",
+      "service": "skello-mobile",
+      "kind": "service",
+      "label": "leave requests api (v3 via the monolith)",
+      "path": "src/modules/leaveRequests/api.ts",
+      "description": "fetch/create/delete on /v3/api/leave_requests — the mobile proxy path; manager decisions still ride legacy PATCH /api/v2/received_leave_requests/:id"
+    },
     {
       "id": "cu-lrl-front-client",
       "service": "skello-app-front",
@@ -124,6 +150,24 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
       "from": "skello-app-front",
       "to": "cu-lrl-front-client",
       "label": "employee submits leave request",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-lrl-mob-form",
+      "to": "cu-lrl-mob-api",
+      "label": "create / delete leave request",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-lrl-mob-form",
+      "to": "svc-requests",
+      "label": "getPreSelectedManager (only direct mobile call)",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-lrl-mob-api",
+      "to": "skello-app",
+      "label": "/v3/api/leave_requests (proxy) + legacy api/v2 decisions",
       "mode": "sync"
     },
     {

@@ -50,6 +50,11 @@ import badging_review from './flows/badging-review'
 import payslip_dispatch from './flows/payslip-dispatch'
 import employee_clock_in from './flows/employee-clock-in'
 import mobile_clock_in from './flows/mobile-clock-in'
+import mobile_app_bootstrap from './flows/mobile-app-bootstrap'
+import mobile_planning_management from './flows/mobile-planning-management'
+import mobile_shift_swap_request from './flows/mobile-shift-swap-request'
+import mobile_documents_payslips from './flows/mobile-documents-payslips'
+import punchclock_device_setup from './flows/punchclock-device-setup'
 import self_serve_signup from './flows/self-serve-signup'
 import subscription_upgrade from './flows/subscription-upgrade'
 import employee_onboarding from './flows/employee-onboarding'
@@ -171,6 +176,11 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   payslip_dispatch,
   employee_clock_in,
   mobile_clock_in,
+  mobile_app_bootstrap,
+  mobile_planning_management,
+  mobile_shift_swap_request,
+  mobile_documents_payslips,
+  punchclock_device_setup,
   self_serve_signup,
   subscription_upgrade,
   employee_onboarding,

@@ -19,6 +19,7 @@ export const IGNORED_SDKS: Record<string, string> = {
   '@skelloapp/skello-annualization': 'annualization counter library (runs in-client)',
   '@skelloapp/skello-planning-helper': 'planning duration helpers (runs in-client)',
   '@skelloapp/skello-shifts-alerts': 'compliance alert computation library (runs in-browser)',
+  '@skelloapp/lambda-logger-js': 'Lambda logging library',
 }
 
 // SDKs that are pure data contracts over a SHARED DATABASE — importing them
