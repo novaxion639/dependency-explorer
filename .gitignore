@@ -1,6 +1,8 @@
 node_modules/
 dist/
 build/
+# AWS live-verification snapshots carry account IDs and ARNs — never committed
+.aws-snapshots/
 .env
 .DS_Store
 *.log
