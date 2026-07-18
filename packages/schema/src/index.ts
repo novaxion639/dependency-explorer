@@ -101,6 +101,8 @@ export const ConnectivityServiceSchema = z.object({
   databases: z.array(ServiceDatabaseSchema).optional(),
   recurringTasks: z.array(RecurringTaskSchema).optional(),
   teamId: z.string().optional(),
+  // Raw CODEOWNERS wildcard teams (discovery evidence behind teamId)
+  githubTeams: z.array(z.string()).optional(),
   repoUrl: z.string().optional(),
   tags: z.array(z.string()).optional(),
   provenance: ProvenanceSchema.optional(),

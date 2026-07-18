@@ -7,6 +7,8 @@ import { useCallback, useEffect, useState } from 'react'
  *
  *   ?s=svc-users                 selected service
  *   ?view=domains                domain view (default: services)
+ *   ?view=teams                  ownership view (per-team service ownership)
+ *   ?team=team-salsa             team focused inside the ownership view
  *   ?domain=hr                   sidebar domain filter
  *   ?blast=1                     blast-radius overlay on
  *   ?flows=svc-users             flow LIST modal for a service
@@ -18,7 +20,8 @@ import { useCallback, useEffect, useState } from 'react'
  */
 export interface UrlState {
   s: string | null
-  view: 'services' | 'domains'
+  view: 'services' | 'domains' | 'teams'
+  team: string | null
   domain: string | null
   blast: boolean
   flows: string | null
@@ -40,7 +43,8 @@ export function parseUrl(search: string): UrlState {
   const p = new URLSearchParams(search)
   return {
     s: p.get('s'),
-    view: p.get('view') === 'domains' ? 'domains' : 'services',
+    view: p.get('view') === 'domains' ? 'domains' : p.get('view') === 'teams' ? 'teams' : 'services',
+    team: p.get('team'),
     domain: p.get('domain'),
     blast: p.get('blast') === '1',
     flows: p.get('flows'),
@@ -56,6 +60,7 @@ function serialize(state: UrlState): string {
   const p = new URLSearchParams()
   if (state.s) p.set('s', state.s)
   if (state.view !== 'services') p.set('view', state.view)
+  if (state.view === 'teams' && state.team) p.set('team', state.team)
   if (state.domain) p.set('domain', state.domain)
   if (state.blast) p.set('blast', '1')
   if (state.flows) p.set('flows', state.flows)

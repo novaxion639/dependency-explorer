@@ -11,6 +11,7 @@ import { DomainGraph } from './DomainGraph'
 import { FlowsPanel } from './FlowsPanel'
 import { FlowListModal } from './FlowListModal'
 import { FlowGraphModal } from './FlowGraphModal'
+import { OwnershipPage } from '../ownership/OwnershipPage'
 
 const map = connectivityMap
 const searchIndex = buildSearchIndex(map)
@@ -22,6 +23,7 @@ function validateUrlState(st: UrlState): UrlState {
   const serviceNames = new Set(map.services.map(s => s.name))
   const next = { ...st }
   if (next.s && !serviceNames.has(next.s)) next.s = null
+  if (next.team && !(map.teams ?? []).some(t => t.id === next.team)) next.team = null
   if (next.domain && !(map.domains ?? []).some(d => d.id === next.domain)) next.domain = null
   if (next.flows && !serviceNames.has(next.flows)) next.flows = null
   if (next.flow && !(map.flows ?? []).some(f => f.id === next.flow)) next.flow = null
@@ -113,7 +115,7 @@ export function ConnectivityPage() {
           padding: '6px 16px', background: '#1a1d27', borderBottom: '1px solid #2e3250',
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
-          {(['services', 'domains'] as const).map(mode => (
+          {(['services', 'domains', 'teams'] as const).map(mode => (
             <button
               key={mode}
               onClick={() => patch({ view: mode })}
@@ -124,7 +126,7 @@ export function ConnectivityPage() {
                 color: viewMode === mode ? '#fff' : '#64748b',
               }}
             >
-              {mode === 'services' ? 'Service View' : 'Domain View'}
+              {mode === 'services' ? 'Service View' : mode === 'domains' ? 'Domain View' : 'Ownership'}
             </button>
           ))}
           <button
@@ -231,10 +233,17 @@ export function ConnectivityPage() {
             onDrawerSelect={name => patch({ drawer: name, ep: null })}
             highlightEndpointId={url.ep}
           />
-        ) : (
+        ) : viewMode === 'domains' ? (
           <DomainGraph
             map={map}
             onSelectDomain={domainId => patch({ domain: domainId, view: 'services' })}
+          />
+        ) : (
+          <OwnershipPage
+            map={map}
+            focusedTeam={url.team}
+            onFocusTeam={team => patch({ team }, { push: true })}
+            onSelectService={selectService}
           />
         )}
 

@@ -2,7 +2,7 @@ import type { ConnectivityMap } from '@dependency-explorer/data'
 import type { UrlState } from '../hooks/useUrlState'
 import { edgeKey } from '../hooks/useUrlState'
 
-export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'domain' | 'infra'
+export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'domain' | 'team' | 'infra'
 
 export interface SearchEntry {
   type: SearchResultType
@@ -17,7 +17,7 @@ export interface SearchEntry {
 }
 
 const TYPE_ORDER: Record<SearchResultType, number> = {
-  service: 0, endpoint: 1, connection: 2, flow: 3, domain: 4, infra: 5,
+  service: 0, endpoint: 1, connection: 2, flow: 3, domain: 4, team: 5, infra: 6,
 }
 
 // Choosing a result fully describes the target view: modal/popup params are
@@ -72,6 +72,17 @@ export function buildSearchIndex(map: ConnectivityMap): SearchEntry[] {
       sublabel: flow.description,
       haystack: flow.steps.map(s => `${s.from} ${s.to} ${s.action}`).join(' '),
       patch: { ...CLOSE_OVERLAYS, flow: flow.id },
+    })
+  }
+
+  for (const team of map.teams ?? []) {
+    const ownedServices = map.services.filter(s => s.teamId === team.id)
+    entries.push({
+      type: 'team',
+      label: team.name,
+      sublabel: `team · owns ${ownedServices.length} service${ownedServices.length === 1 ? '' : 's'}`,
+      haystack: `${(team.githubTeams ?? []).join(' ')} ${ownedServices.map(s => s.name).join(' ')}`,
+      patch: { ...CLOSE_OVERLAYS, view: 'teams', team: team.id, s: null },
     })
   }
 
