@@ -1405,6 +1405,16 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "usedEndpoints": []
   },
   {
+    "from": "svc-hiring",
+    "to": "skello-app",
+    "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",
+    "communicationType": "async",
+    "protocol": "cdc",
+    "authType": "internal",
+    "description": "ProcessDmsStreamJob consumes the monolith's DMS CDC backbone (skelloapp-bus) with partition-key filters on public.organisations/shops/users/user_licenses/memberships to keep Join companies/offices/accounts in sync (SyncJoinFromSkelloAppJobHandler). Surfaced by the AWS live-verification pilot (sandbox event source mapping, Enabled), 2026-07-18; code-verified in serverless/functions/kinesis.ts after cloning the repo.",
+    "usedEndpoints": []
+  },
+  {
     "from": "svc-kpis",
     "to": "skello-app",
     "sdkPackage": "serverless stream event → skelloapp-bus (Kinesis, DMS CDC)",
