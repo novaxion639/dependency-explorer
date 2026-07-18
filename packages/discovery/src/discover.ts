@@ -30,6 +30,7 @@ import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extract
 import { extractRailsMonolith } from './extractors/rails'
 import { extractServerless, type ServerlessFacts } from './extractors/serverless'
 import { extractAwsClients, type AwsUsageFact, type AwsUsageKind } from './extractors/aws-clients'
+import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extractors/aws-live'
 import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
@@ -44,6 +45,29 @@ const OVERLAY_PATH = path.resolve(__dirname, '../../data/src/generated/discovere
 
 const JSON_MODE = process.argv.includes('--json')
 const APPLY_MODE = process.argv.includes('--apply')
+// --aws [dir]: diff a read-only AWS snapshot (see aws-fetch.ts) against the map.
+// The dir resolves against the cwd, then the workspace root; without a value,
+// the most recent snapshot under .aws-snapshots/ is used.
+function resolveAwsSnapshotDir(): string | null {
+  const i = process.argv.indexOf('--aws')
+  if (i < 0) return null
+  const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+  const given = process.argv[i + 1]
+  if (given && !given.startsWith('--')) {
+    for (const base of [process.cwd(), path.resolve(pkgRoot, '../..'), pkgRoot]) {
+      const candidate = path.resolve(base, given)
+      if (fs.existsSync(candidate)) return candidate
+    }
+    throw new Error(`--aws snapshot directory not found: ${given}`)
+  }
+  const home = path.join(pkgRoot, '.aws-snapshots')
+  const latest = fs.existsSync(home)
+    ? fs.readdirSync(home, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort().pop()
+    : undefined
+  if (!latest) throw new Error(`--aws given but no snapshot found under ${home} — run pnpm discover:aws:fetch first`)
+  return path.join(home, latest)
+}
+const AWS_SNAPSHOT_DIR = resolveAwsSnapshotDir()
 
 // ── Dataset lookups ───────────────────────────────────────────────────────────
 
@@ -117,6 +141,8 @@ interface Report {
   railsUnmapped: string[]
   unmappedGithubTeams: string[]
   serviceFacts: DiscoveredOverlay['services']
+  /** Layer 4: read-only AWS snapshot diff (only with --aws <dir>) */
+  awsLive: AwsLiveFindings | null
 }
 
 const TODAY = new Date().toISOString().slice(0, 10)
@@ -175,6 +201,7 @@ function run(): Report {
     railsUnmapped: [],
     unmappedGithubTeams: [],
     serviceFacts: {},
+    awsLive: null,
   }
 
   const allSlugs = new Set<string>()
@@ -519,6 +546,16 @@ function run(): Report {
   report.unmappedGithubTeams = [...allSlugs]
     .filter(s => !slugToTeamId.has(s) && !isStructuralGithubTeam(s))
     .sort()
+
+  if (AWS_SNAPSHOT_DIR) {
+    report.awsLive = analyzeAwsLive(loadAwsSnapshot(AWS_SNAPSHOT_DIR), {
+      serviceNames: connectivityMap.services.map(s => s.name),
+      connections: connectivityMap.connections.map(c => ({ from: c.from, to: c.to, protocol: c.protocol })),
+      recurringTasksByService: Object.fromEntries(
+        connectivityMap.services.map(s => [s.name, (s.recurringTasks ?? []).map(t => t.name)]),
+      ),
+    })
+  }
   return report
 }
 
@@ -654,6 +691,42 @@ function printMarkdown(r: Report) {
       for (const t of u.unevidencedDatabaseEntries) {
         console.log(`  - ⚠️ databases declares **${t}** but no client code found`)
       }
+    }
+  }
+
+  if (r.awsLive) {
+    const live = r.awsLive
+    console.log(`\n## 🛰 AWS live verification (read-only snapshot diff)\n`)
+    const matches = live.streamConsumptions.filter(e => e.verdict === 'match')
+    console.log(`${live.streamConsumptions.length} cross-service stream consumptions (${matches.length} match the map):`)
+    for (const e of live.streamConsumptions) {
+      const mark = e.verdict === 'match' ? '✅' : e.verdict === 'new' ? '🆕' : `⚠ pair in map as [${e.mapProtocols.join(',')}]`
+      console.log(`- ${mark} ${e.consumer} → ${e.source} _(${e.via}, ${e.state})_`)
+    }
+    if (live.mapEdgesWithoutLiveBinding.length) {
+      console.log(`\nMap cdc/kinesis edges with no live binding (informational — absence in this account is weak evidence):`)
+      for (const e of live.mapEdgesWithoutLiveBinding) console.log(`- ⏭ ${e.from} → ${e.to} (${e.protocol})`)
+    }
+    if (live.orphanQueues.length) {
+      console.log(`\nService-prefixed queues with NO consumer binding (orphan candidates):`)
+      for (const q of live.orphanQueues) console.log(`- ❓ ${q}`)
+    }
+    if (live.bucketCouplings.length) {
+      console.log(`\nBucket-notification couplings:`)
+      for (const b of live.bucketCouplings) console.log(`- ${b.bucket} → ${b.targets.join(' | ')}`)
+    }
+    if (live.dmsTasks.length) {
+      console.log(`\nDMS replication tasks:`)
+      for (const t of live.dmsTasks) console.log(`- ${t.status.padEnd(8)} ${t.id} [${t.type}]`)
+    }
+    if (live.scheduledRules.length) {
+      console.log(`\nScheduled rules:`)
+      for (const s of live.scheduledRules) {
+        console.log(`- ${s.known ? '✅' : '🆕'} [${s.state}] ${s.rule} \`${s.schedule}\`${s.service ? ` (${s.service})` : ''}`)
+      }
+    }
+    if (live.unresolvedPrefixes.length) {
+      console.log(`\nUnresolved function prefixes (noise/POCs/unmodeled): ${live.unresolvedPrefixes.join(', ')}`)
     }
   }
 

@@ -31,7 +31,7 @@ That's it. No database, no seeding, no Docker: the dataset is imported at build 
 |---|---|
 | `packages/schema` | Zod schemas + inferred types — the single source of truth for the data model |
 | `packages/data` | The dataset (35 services, 346 endpoints, 132 connections — 115 of them discovery-verified — 33 flows, 8 domains, 12 teams) + referential-integrity test suite |
-| `packages/discovery` | Repo scanner: detects drift between the dataset and sibling repos — SDK usage, serverless config (HTTP, SQS, Kinesis/DynamoDB streams, S3 triggers, EventBridge schedules), application-code AWS clients (Kinesis/Firehose/S3/DynamoDB/TypeORM direction vs `service.databases`), Terraform ground truth (`<service>-tf` checkouts: owned resources, DMS replication tasks, IAM actions), Rails clients/routes, frontend env usage (`pnpm discover`) |
+| `packages/discovery` | Repo scanner: detects drift between the dataset and sibling repos — SDK usage, serverless config (HTTP, SQS, Kinesis/DynamoDB streams, S3 triggers, EventBridge schedules), application-code AWS clients (Kinesis/Firehose/S3/DynamoDB/TypeORM direction vs `service.databases`), Terraform ground truth (`<service>-tf` checkouts: owned resources, DMS replication tasks, IAM actions), Rails clients/routes, frontend env usage (`pnpm discover`), and Layer 4 live AWS verification — a read-only account snapshot (event source mappings, subscriptions + filter policies, DMS tasks, bucket notifications, schedules) diffed against the map (`pnpm discover -- --aws`; snapshots are gitignored, sandbox account only per the credentials story in the shared docs) |
 | `packages/web` | Static React + React Flow SPA — the visualization |
 
 ## Principles
@@ -49,6 +49,8 @@ pnpm typecheck       # typecheck all packages
 pnpm test            # data integrity + discovery mapping suites
 pnpm discover        # scan sibling Skello repos → classified drift report
 pnpm discover:apply  # same + regenerate the discovered overlay (provenance stamps)
+pnpm discover -- --aws [dir]   # + 🛰 live AWS snapshot diff (defaults to the latest snapshot)
+pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (~215 calls, MFA'd session required)
 pnpm check           # everything CI runs
 ```
 
@@ -64,7 +66,7 @@ pnpm check           # everything CI runs
 |---|---|---|
 | 0 | Reboot: static SPA, workspace structure, integrity gates, CI | ✅ done |
 | 1 | Automation-first: SDK + Rails + CODEOWNERS extractors, provenance metadata, two-layer merge, classified drift report ([ADR-0007](docs/adr/0007-discovery-semantics.md)) | ✅ done (nightly drift PRs pending org token — Infra discussion) |
-| 1.5 | More extractors: serverless configs (deploy-state + static, endpoint verification), Rails routes (monolith inbound surface), frontend env/usage, async queue cross-reference | ✅ done — AWS live verification piloted against the sandbox account (2026-07-18: every CDC edge live-confirmed, one new edge adopted); credentials story in the shared docs (`research/aws-live-verification-credentials.md`), nightly automation pending the Infra role |
+| 1.5 | More extractors: serverless configs (deploy-state + static, endpoint verification), Rails routes (monolith inbound surface), frontend env/usage, async queue cross-reference | ✅ done — Layer 4 live AWS verification ships as the `aws-live` extractor (`pnpm discover -- --aws`): sandbox snapshot diff, every CDC edge live-confirmed 2026-07-18, one new edge adopted; credentials story in the shared docs (`research/aws-live-verification-credentials.md`), nightly automation pending the Infra role |
 | 1.7 | AWS resource discovery — Layer 1: stream/S3/schedule event sources + owned CloudFormation resources from serverless config (🌀 report section, `RecurringTask` model, CDC backbone edges). Layer 2: application-code AWS client usage (🔧 section — Kinesis/Firehose produce, S3 read/write, DynamoDB CRUD, TypeORM Postgres coupling, two-way drift vs `service.databases`). Layer 3: Terraform ground truth (🏗 section — the org's `<service>-tf` estate: owned data resources, DMS replication tasks proving the aurora → kinesis CDC backbone, data-plane IAM actions) | ✅ done |
 | 2 | Org-audience features: permalinks, global search, ownership pages, export | ✅ done — the ownership view renders whatever CODEOWNERS coverage exists (2/35 services today, team-salsa); coverage grows through org adoption, not code |
 | 3 | "Suggest edit" → pre-filled PR via GitHub App, permissions from GitHub teams | |

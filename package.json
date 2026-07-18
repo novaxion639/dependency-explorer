@@ -11,6 +11,7 @@
     "test": "pnpm -r --if-present run test",
     "discover": "pnpm --filter @dependency-explorer/discovery discover",
     "discover:apply": "pnpm --filter @dependency-explorer/discovery discover:apply",
+    "discover:aws:fetch": "pnpm --filter @dependency-explorer/discovery discover:aws:fetch",
     "discover:scaffold": "pnpm --filter @dependency-explorer/discovery discover:scaffold",
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "discover:trace": "pnpm --filter @dependency-explorer/discovery discover:trace"
