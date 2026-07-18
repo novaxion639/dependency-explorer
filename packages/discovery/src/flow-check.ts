@@ -147,6 +147,57 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): Cod
   return result
 }
 
+// ── Domain-rule verification (📐) ────────────────────────────────────────────
+// Rule statements are human-owned meaning; what the scanner CAN verify is that
+// every sourcePath ("<repo>/<path>") still exists in the sibling checkouts —
+// the structural half of keeping rule cards honest (staleness hashes are M2).
+
+export interface RuleCheckFinding {
+  rule: string
+  kind: 'missing-rule-source'
+  detail: string
+}
+
+export interface RuleCheckResult {
+  findings: RuleCheckFinding[]
+  rulesChecked: number
+  pathsVerified: number
+  /** repos not checked out — their paths are skipped, not failed */
+  skippedRepos: string[]
+}
+
+export function checkDomainRules(map: ConnectivityMap, repoBase: string): RuleCheckResult {
+  const result: RuleCheckResult = { findings: [], rulesChecked: 0, pathsVerified: 0, skippedRepos: [] }
+  const skipped = new Set<string>()
+  for (const rule of map.rules ?? []) {
+    result.rulesChecked++
+    for (const sourcePath of rule.sourcePaths) {
+      const [repo, ...rest] = sourcePath.split('/')
+      if (!repo || !rest.length) {
+        result.findings.push({
+          rule: rule.id, kind: 'missing-rule-source',
+          detail: `sourcePath "${sourcePath}" is not "<repo>/<path>"-shaped`,
+        })
+        continue
+      }
+      if (!fs.existsSync(path.join(repoBase, repo))) {
+        skipped.add(repo)
+        continue
+      }
+      if (fs.existsSync(path.join(repoBase, sourcePath))) {
+        result.pathsVerified++
+      } else {
+        result.findings.push({
+          rule: rule.id, kind: 'missing-rule-source',
+          detail: `${sourcePath} does not exist`,
+        })
+      }
+    }
+  }
+  result.skippedRepos = [...skipped].sort()
+  return result
+}
+
 function stepBase(name: string, serviceNames: Set<string>): string | null {
   if (serviceNames.has(name)) return name
   if (name.startsWith('sfn-')) return null

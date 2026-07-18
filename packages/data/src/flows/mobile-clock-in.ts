@@ -62,7 +62,8 @@ const mobile_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "manager",
       "label": "ClockInOutManager",
       "path": "src/Manager/ClockInOutManager.ts",
-      "description": "Write path: calculateOutAuto precomputes the auto-close timestamp (getShopClosingTime — shop closing hour in the shop tz, +1 day when the clock-in is already past it: the overnight case). closedByBackend = out === outAuto, derived — no cron. Carries a @todo tolerating outAuto ± tz-offset because the monolith once sent wrong values"
+      "description": "Write path: calculateOutAuto precomputes the auto-close timestamp (getShopClosingTime — shop closing hour in the shop tz, +1 day when the clock-in is already past it: the overnight case). closedByBackend = out === outAuto, derived — no cron. Carries a @todo tolerating outAuto ± tz-offset because the monolith once sent wrong values",
+      "ruleRefs": ["rule-overnight-day-attribution", "rule-clockin-shift-coupling"]
     },
     {
       "id": "cu-mci-lateness",

@@ -133,6 +133,37 @@ export const ServiceFlowStepSchema = z.object({
   action: z.string(),
   // Page-load flows: groups steps into ordered lanes ("initial paint", "lazy", "polling")
   phase: z.string().optional(),
+  /** Domain rules governing this step (DomainRule ids) */
+  ruleRefs: z.array(z.string()).optional(),
+})
+
+// ── Domain rules ─────────────────────────────────────────────────────────────
+// Cross-flow business rules whose knowledge would otherwise rot in flow prose
+// (day attribution, matching windows, platform divergences). The statement is
+// human-owned meaning — never machine-verified; everything around it is
+// checked: rule refs resolve (integrity tests), sourcePaths exist in the
+// sibling repos (discovery scanner — the 📐 report section).
+
+export const RulePlatformSchema = z.enum(['backend', 'monolith', 'web', 'mobile', 'tablet'])
+
+export const DomainRuleDivergenceSchema = z.object({
+  platform: RulePlatformSchema,
+  /** How this platform implements (or deliberately deviates from) the rule */
+  behavior: z.string(),
+  /** Code unit carrying this platform's implementation (FlowCodeUnit id) */
+  codeUnitRef: z.string().optional(),
+})
+
+export const DomainRuleSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  /** The rule itself — human-owned narrative */
+  statement: z.string(),
+  /** Code unit holding the authoritative implementation (FlowCodeUnit id) */
+  sourceOfTruth: z.string().optional(),
+  divergences: z.array(DomainRuleDivergenceSchema).optional(),
+  /** "<repo>/<path>" source files behind the rule — existence checked by discovery */
+  sourcePaths: z.array(z.string()).min(1),
 })
 
 // ── Flow code layer ──────────────────────────────────────────────────────────
@@ -158,6 +189,8 @@ export const FlowCodeUnitSchema = z.object({
   /** Repo-relative file path — verified to exist by the flow checker */
   path: z.string().optional(),
   description: z.string().optional(),
+  /** Domain rules this unit implements or mirrors (DomainRule ids) */
+  ruleRefs: z.array(z.string()).optional(),
 })
 
 export const FlowCodeEdgeSchema = z.object({
@@ -264,6 +297,7 @@ export const ConnectivityMapSchema = z.object({
   flows: z.array(ServiceFlowSchema),
   teams: z.array(TeamSchema).optional(),
   domains: z.array(DomainSchema).optional(),
+  rules: z.array(DomainRuleSchema).optional(),
 })
 
 // ── Inferred types (replaces types-connectivity.ts) ──────────────────────────
@@ -290,6 +324,9 @@ export type FlowInfraEdge = z.infer<typeof FlowInfraEdgeSchema>
 export type FlowCodeUnit = z.infer<typeof FlowCodeUnitSchema>
 export type FlowCodeEdge = z.infer<typeof FlowCodeEdgeSchema>
 export type ServiceFlow = z.infer<typeof ServiceFlowSchema>
+export type RulePlatform = z.infer<typeof RulePlatformSchema>
+export type DomainRuleDivergence = z.infer<typeof DomainRuleDivergenceSchema>
+export type DomainRule = z.infer<typeof DomainRuleSchema>
 export type Team = z.infer<typeof TeamSchema>
 export type Domain = z.infer<typeof DomainSchema>
 export type ConnectivityMap = z.infer<typeof ConnectivityMapSchema>

@@ -17,7 +17,8 @@ const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-punchclock",
       "to": "svc-punch",
-      "action": "Upsert paired ClockInOut (POST clocks-in-out — offline-first queue) + sync settings, users & PINs"
+      "action": "Upsert paired ClockInOut (POST clocks-in-out — offline-first queue) + sync settings, users & PINs",
+      "ruleRefs": ["rule-overnight-day-attribution", "rule-clockin-shift-coupling"]
     },
     {
       "from": "svc-punch",
@@ -32,7 +33,8 @@ const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "component",
       "label": "ClockPin screen (PIN gate)",
       "path": "src/screens/ClockPin/ClockPin.tsx",
-      "description": "Reached from the Clock screen's Start/Finish buttons; useClockPin matches the 4-digit PIN against svc-punch user data, fetches the last clock-in-out (rolling 24h window, PREFERRING an open badging over the newest record — the BR-15241 overnight guard), validates the transition and builds the upsert payload"
+      "description": "Reached from the Clock screen's Start/Finish buttons; useClockPin matches the 4-digit PIN against svc-punch user data, fetches the last clock-in-out (rolling 24h window, PREFERRING an open badging over the newest record — the BR-15241 overnight guard), validates the transition and builds the upsert payload",
+      "ruleRefs": ["rule-overnight-day-attribution", "rule-clockin-shift-coupling"]
     },
     {
       "id": "cu-eci-card",
@@ -80,7 +82,8 @@ const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "manager",
       "label": "ClockInOutManager",
       "path": "src/Manager/ClockInOutManager.ts",
-      "description": "calculateOutAuto precomputes the auto-close timestamp at write time (getShopClosingTime: shop closing hour in the shop tz, +1 day when already past it — the overnight case); closedByBackend = out === outAuto, no cron. Repository sweeps duplicate rows sharing an id after key-changing updates"
+      "description": "calculateOutAuto precomputes the auto-close timestamp at write time (getShopClosingTime: shop closing hour in the shop tz, +1 day when already past it — the overnight case); closedByBackend = out === outAuto, no cron. Repository sweeps duplicate rows sharing an id after key-changing updates",
+      "ruleRefs": ["rule-overnight-day-attribution", "rule-clockin-shift-coupling"]
     }
   ],
   "codeEdges": [

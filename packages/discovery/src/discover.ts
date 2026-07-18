@@ -35,7 +35,7 @@ import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
-import { checkFlows, checkFlowCodeLayers, type FlowCheckResult, type CodeLayerCheckResult } from './flow-check'
+import { checkFlows, checkFlowCodeLayers, checkDomainRules, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 
@@ -136,6 +136,7 @@ interface Report {
   sdkRegistryStats: { packages: number; methods: number } | null
   flowCheck: FlowCheckResult
   codeLayerCheck: CodeLayerCheckResult
+  ruleCheck: RuleCheckResult
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
@@ -196,6 +197,7 @@ function run(): Report {
     sdkRegistryStats: null,
     flowCheck: checkFlows(connectivityMap),
     codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE),
+    ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -780,6 +782,20 @@ function printMarkdown(r: Report) {
       console.log(cl.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
     } else {
       console.log('_every code unit path exists and every call edge is referenced from its caller_')
+    }
+  }
+
+  const rc = r.ruleCheck
+  console.log(`\n## 📐 Domain rules (${rc.findings.length} findings)\n`)
+  if (rc.rulesChecked === 0) {
+    console.log('_no domain rules declared yet_')
+  } else {
+    console.log(`${rc.rulesChecked} rule(s) — ${rc.pathsVerified} source paths verified on disk.`
+      + (rc.skippedRepos.length ? ` Skipped (repo not checked out): ${rc.skippedRepos.join(', ')}.` : ''))
+    if (rc.findings.length) {
+      console.log(rc.findings.map(f => `- [${f.kind}] **${f.rule}**: ${f.detail}`).join('\n'))
+    } else {
+      console.log('_every rule source path exists_')
     }
   }
 

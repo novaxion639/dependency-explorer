@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -13,7 +13,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import type { ServiceFlow, ConnectivityMap, FlowInfraNode } from '@dependency-explorer/data'
+import type { ServiceFlow, ConnectivityMap, FlowInfraNode, DomainRule, FlowCodeUnit, RulePlatform } from '@dependency-explorer/data'
 import { buildFlowGraph } from '../../utils/buildFlowGraph'
 import { buildFlowCodeGraph } from '../../utils/buildFlowCodeGraph'
 import { ServiceNode } from '../nodes/ServiceNode'
@@ -45,6 +45,18 @@ function FlowInner({ flow, map, detail, onDetailChange, onBack, onClose }: Props
 
   const hasCodeLayer = (flow.codeUnits?.length ?? 0) > 0
   const showCode = detail && hasCodeLayer
+
+  // Domain rules referenced by this flow's steps/units → chips + card panel
+  const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null)
+  const ruleById = useMemo(
+    () => new Map((map.rules ?? []).map(r => [r.id, r])),
+    [map.rules],
+  )
+  const unitById = useMemo(
+    () => new Map(map.flows.flatMap(f => (f.codeUnits ?? []).map(u => [u.id, u] as const))),
+    [map.flows],
+  )
+  const selectedRule = selectedRuleId ? ruleById.get(selectedRuleId) : undefined
 
   useEffect(() => {
     const { nodes: n, edges: e } = showCode ? buildFlowCodeGraph(flow, map) : buildFlowGraph(flow, map)
@@ -212,13 +224,118 @@ function FlowInner({ flow, map, detail, onDetailChange, onBack, onClose }: Props
         </ReactFlow>
 
         {/* Step legend */}
-        <StepLegend flow={flow} />
+        <StepLegend flow={flow} ruleById={ruleById} onRuleClick={setSelectedRuleId} />
+
+        {/* Rule card */}
+        {selectedRule && (
+          <RuleCard rule={selectedRule} unitById={unitById} onClose={() => setSelectedRuleId(null)} />
+        )}
       </div>
     </div>
   )
 }
 
-function StepLegend({ flow }: { flow: ServiceFlow }) {
+const RULE_PLATFORM_COLORS: Record<RulePlatform, string> = {
+  backend: '#f59e0b',
+  monolith: '#cc342d',
+  web: '#42b883',
+  mobile: '#ec4899',
+  tablet: '#06b6d4',
+}
+
+function RuleChip({ rule, onClick }: { rule: DomainRule; onClick: (id: string) => void }) {
+  return (
+    <button
+      onClick={() => onClick(rule.id)}
+      title={rule.title}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 3,
+        fontSize: 9, padding: '1px 6px', borderRadius: 4, cursor: 'pointer',
+        background: '#a78bfa16', border: '1px solid #a78bfa44', color: '#a78bfa',
+        fontWeight: 600,
+      }}
+    >
+      <span>📐</span>
+      <span>{rule.title}</span>
+    </button>
+  )
+}
+
+function RuleCard({ rule, unitById, onClose }: {
+  rule: DomainRule
+  unitById: Map<string, FlowCodeUnit>
+  onClose: () => void
+}) {
+  const sourceUnit = rule.sourceOfTruth ? unitById.get(rule.sourceOfTruth) : undefined
+  return (
+    <div style={{
+      position: 'absolute', top: 12, right: 12, bottom: 12, width: 420, zIndex: 20,
+      background: '#1a1d27f2', border: '1px solid #a78bfa44', borderRadius: 10,
+      padding: '14px 16px', overflowY: 'auto', backdropFilter: 'blur(6px)',
+      display: 'flex', flexDirection: 'column', gap: 10,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 14 }}>📐</span>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', flex: 1 }}>{rule.title}</div>
+        <button
+          onClick={onClose}
+          style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 0 }}
+        >
+          ×
+        </button>
+      </div>
+
+      <div style={{ fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 }}>{rule.statement}</div>
+
+      {sourceUnit && (
+        <div style={{ fontSize: 10, color: '#94a3b8' }}>
+          <span style={{ fontWeight: 700, color: '#a78bfa' }}>Source of truth: </span>
+          {sourceUnit.label} <span style={{ color: '#64748b' }}>({sourceUnit.service}{sourceUnit.path ? ` — ${sourceUnit.path}` : ''})</span>
+        </div>
+      )}
+
+      {(rule.divergences ?? []).length > 0 && (
+        <div>
+          <div style={{ fontSize: 9, fontWeight: 700, color: '#3e4363', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+            Platform divergences
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {(rule.divergences ?? []).map((div, i) => {
+              const color = RULE_PLATFORM_COLORS[div.platform]
+              const unit = div.codeUnitRef ? unitById.get(div.codeUnitRef) : undefined
+              return (
+                <div key={i} style={{ borderLeft: `2px solid ${color}`, paddingLeft: 8 }}>
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, color, textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}>
+                    {div.platform}
+                  </span>
+                  <div style={{ fontSize: 10.5, color: '#94a3b8', lineHeight: 1.5, marginTop: 2 }}>{div.behavior}</div>
+                  {unit && (
+                    <div style={{ fontSize: 9.5, color: '#64748b', marginTop: 2 }}>
+                      ↳ {unit.label} <span style={{ opacity: 0.7 }}>({unit.service}{unit.path ? ` — ${unit.path}` : ''})</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      <div style={{ fontSize: 9, color: '#3e4363', marginTop: 'auto' }}>
+        Sources: {rule.sourcePaths.join(' · ')}
+      </div>
+    </div>
+  )
+}
+
+function StepLegend({ flow, ruleById, onRuleClick }: {
+  flow: ServiceFlow
+  ruleById: Map<string, DomainRule>
+  onRuleClick: (id: string) => void
+}) {
   return (
     <div style={{
       position: 'absolute',
@@ -245,7 +362,7 @@ function StepLegend({ flow }: { flow: ServiceFlow }) {
                 ▸ {step.phase}
               </div>
             )}
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
               <span style={{
                 fontSize: 9, fontWeight: 700, color: '#6366f1',
                 background: '#6366f122', border: '1px solid #6366f133',
@@ -258,6 +375,10 @@ function StepLegend({ flow }: { flow: ServiceFlow }) {
                 {' → '}
                 <span style={{ color: '#4f6ef7' }}>{step.to}</span>
               </span>
+              {(step.ruleRefs ?? []).map(ref => {
+                const rule = ruleById.get(ref)
+                return rule ? <RuleChip key={ref} rule={rule} onClick={onRuleClick} /> : null
+              })}
             </div>
           </div>
         ))}
