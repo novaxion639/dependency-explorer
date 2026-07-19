@@ -117,6 +117,13 @@ const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
     },
     {
       "from": "cu-eci-sync",
+      "to": "svc-punch",
+      "label": "settings + users refresh (name/email/phone + PIN into SQLite)",
+      "mode": "sync",
+      "pii": ["email", "firstName", "lastName", "phone"]
+    },
+    {
+      "from": "cu-eci-sync",
       "to": "cu-eci-queue",
       "label": "drain unsent queue (15-min timer / reconnect / focus)",
       "mode": "sync"

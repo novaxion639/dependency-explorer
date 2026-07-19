@@ -285,6 +285,13 @@ export const FlowCodeEdgeSchema = z.object({
   failure: FlowFailureSchema.optional(),
   /** What authenticates this hop — gate/authorizer verified by 🔐 */
   auth: AuthRefSchema.optional(),
+  /**
+   * PII field classes this hop's payload carries (e.g. "email", "firstName").
+   * Authored ONLY where the target's SDK types the field PII via
+   * lib-anonymizer decorators — the 🧬 check verifies each class against the
+   * decorator scan; name-heuristic guesses are never authored.
+   */
+  pii: z.array(z.string()).optional(),
 })
 
 export const FlowInfraNodeSchema = z.object({
