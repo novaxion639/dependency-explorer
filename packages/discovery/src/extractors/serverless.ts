@@ -72,6 +72,8 @@ export interface ServerlessFacts {
   ownedResources: OwnedResourceFact[]
   /** DLQ/retry wiring facts (🧯 failure-layer verification) */
   dlqWirings: DlqWiringFact[]
+  /** Named gateway authorizers declared on routes — both syntaxes: bare string per function, object form in split resource files (🔐) */
+  authorizerNames: string[]
 }
 
 // ── Stream / template identity helpers ────────────────────────────────────────
@@ -250,6 +252,15 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
     }
   }
 
+  const authorizerNames = new Set<string>()
+  for (const fn of Object.values<any>(state?.service?.functions ?? {})) {
+    for (const event of fn?.events ?? []) {
+      const auth = event?.httpApi?.authorizer ?? event?.http?.authorizer
+      if (typeof auth === 'string') authorizerNames.add(auth)
+      else if (auth && typeof auth === 'object' && typeof auth.name === 'string') authorizerNames.add(auth.name)
+    }
+  }
+
   return {
     endpoints,
     queueNames: [...queueNames].sort(),
@@ -258,6 +269,7 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
     schedules,
     ownedResources,
     dlqWirings,
+    authorizerNames: [...authorizerNames].sort(),
   }
 }
 
@@ -565,7 +577,12 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     }
   }
 
-  return { endpoints, queueNames: [...queueNames].sort(), streamConsumers, s3Triggers, schedules, ownedResources, dlqWirings: parseDlqStatic(content) }
+  // Gateway authorizers — bare string and object forms
+  const authorizerNames = new Set<string>()
+  for (const m of content.matchAll(/\bauthorizer:\s*['"`]([A-Za-z][\w-]*)['"`]/g)) authorizerNames.add(m[1]!)
+  for (const m of content.matchAll(/\bauthorizer:\s*\{[^}]*?\bname:\s*['"`]([A-Za-z][\w-]*)['"`]/gs)) authorizerNames.add(m[1]!)
+
+  return { endpoints, queueNames: [...queueNames].sort(), streamConsumers, s3Triggers, schedules, ownedResources, dlqWirings: parseDlqStatic(content), authorizerNames: [...authorizerNames].sort() }
 }
 
 function walkTsFiles(dir: string, out: string[] = []): string[] {
@@ -625,8 +642,9 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
   if (!sources.length) return null
 
   const merged: Omit<ServerlessFacts, 'source'> = {
-    endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [], ownedResources: [], dlqWirings: [],
+    endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [], ownedResources: [], dlqWirings: [], authorizerNames: [],
   }
+  const authorizerNames = new Set<string>()
   const queueNames = new Set<string>()
   for (const file of sources) {
     try {
@@ -638,12 +656,14 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
       merged.schedules.push(...parsed.schedules)
       merged.ownedResources.push(...parsed.ownedResources)
       merged.dlqWirings.push(...parsed.dlqWirings)
+      parsed.authorizerNames.forEach(a => authorizerNames.add(a))
     } catch {
       // unreadable file — skip
     }
   }
   merged.queueNames = [...queueNames].sort()
   merged.dlqWirings.push(...tfWirings)
+  merged.authorizerNames = [...authorizerNames].sort()
 
   if (!merged.endpoints.length && !merged.queueNames.length
     && !merged.streamConsumers.length && !merged.s3Triggers.length

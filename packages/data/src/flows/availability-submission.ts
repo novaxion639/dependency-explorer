@@ -10,6 +10,7 @@ const availability_submission: ServiceFlow = ServiceFlowSchema.parse({
   "id": "availability-submission",
   "name": "Availability Submission & Review",
   "description": "An employee declares availability/unavailability slots (one-off on a date, or weekly recurring) from the employee surface (api/v2 — shared by web and mobile: skello-mobile's legacy v2 screens create/edit on the same endpoints, client-verified 2026-07-18). Submissions land as pending; the manager reviews them in the pending list and manages availabilities from the planning side (v3 API on web, api/v1 PATCH on mobile). Fully monolith-internal: rows in PostgreSQL consumed by planning display and shift-assignment tooling — no cross-service hop. One of the flows where web and mobile CONVERGE on the same legacy surface.",
+  "trigger": {"actor": "employee"},
   "steps": [
     {
       "from": "skello-app-front",

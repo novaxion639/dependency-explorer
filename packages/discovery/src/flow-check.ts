@@ -148,6 +148,94 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): Cod
   return result
 }
 
+// ── Auth-context verification (🔐) ───────────────────────────────────────────
+// Trigger coverage is an authored invariant (integrity suite enforces
+// presence); what the SCANNER verifies: every `auth.gate` literal appears in
+// the edge's caller or callee source file, and every `auth.authorizer` name
+// exists among the target service's extracted gateway-authorizer
+// declarations. Kind/tier semantics stay authored — authorizer NAMES mix
+// token type and permission tier, so no inference is attempted.
+
+export interface AuthCheckFinding {
+  flow: string
+  kind: 'gate-not-in-source' | 'authorizer-not-in-config'
+  detail: string
+}
+
+export interface AuthCheckResult {
+  findings: AuthCheckFinding[]
+  gatesChecked: number
+  gatesVerified: number
+  authorizersChecked: number
+  authorizersVerified: number
+  skippedRepos: string[]
+}
+
+export function checkAuthContext(
+  map: ConnectivityMap,
+  repoBase: string,
+  authorizersByService: Map<string, string[]>,
+): AuthCheckResult {
+  const result: AuthCheckResult = { findings: [], gatesChecked: 0, gatesVerified: 0, authorizersChecked: 0, authorizersVerified: 0, skippedRepos: [] }
+  const skipped = new Set<string>()
+  const readFile = (service: string, relPath: string): string | null => {
+    try {
+      return fs.readFileSync(path.join(repoBase, service, relPath), 'utf-8')
+    } catch {
+      return null
+    }
+  }
+
+  for (const flow of map.flows) {
+    const unitById = new Map((flow.codeUnits ?? []).map(u => [u.id, u]))
+    for (const edge of flow.codeEdges ?? []) {
+      const auth = edge.auth
+      if (!auth) continue
+
+      if (auth.gate) {
+        const candidates = [edge.from, edge.to]
+          .map(id => unitById.get(id))
+          .filter((u): u is NonNullable<typeof u> => !!u?.path)
+        const present = candidates.filter(u => fs.existsSync(path.join(repoBase, u.service)))
+        candidates.filter(u => !fs.existsSync(path.join(repoBase, u.service))).forEach(u => skipped.add(u.service))
+        if (present.length) {
+          result.gatesChecked++
+          const hit = present.some(u => readFile(u.service, u.path!)?.includes(auth.gate!))
+          if (hit) {
+            result.gatesVerified++
+          } else {
+            result.findings.push({
+              flow: flow.id, kind: 'gate-not-in-source',
+              detail: `edge "${edge.from} → ${edge.to}": gate "${auth.gate}" in neither ${present.map(u => `${u.service}/${u.path}`).join(' nor ')}`,
+            })
+          }
+        }
+      }
+
+      if (auth.authorizer) {
+        const target = edge.to
+        const names = authorizersByService.get(target)
+        if (!names) {
+          skipped.add(target)
+        } else {
+          result.authorizersChecked++
+          if (names.includes(auth.authorizer)) {
+            result.authorizersVerified++
+          } else {
+            result.findings.push({
+              flow: flow.id, kind: 'authorizer-not-in-config',
+              detail: `edge "${edge.from} → ${edge.to}": authorizer "${auth.authorizer}" not declared in ${target}'s config (${names.join(', ') || 'none extracted'})`,
+            })
+          }
+        }
+      }
+    }
+  }
+
+  result.skippedRepos = [...skipped].sort()
+  return result
+}
+
 // ── Failure-layer verification (🧯) ──────────────────────────────────────────
 // The audit over async hops into services (edge.from = code unit, edge.to =
 // service, mode async-*): every in-scope edge either carries a DLQ fact that

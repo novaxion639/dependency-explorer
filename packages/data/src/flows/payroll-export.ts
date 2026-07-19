@@ -12,6 +12,7 @@ const payroll_export: ServiceFlow = ServiceFlowSchema.parse({
   "id": "payroll-export",
   "name": "Payroll Software Sync",
   "description": "A manager configures the Pay Partners integration (variable pay elements and export template — the front's svc_payroll_client) and triggers a sync. svc-payroll's orchestrator loads the provider config, template mappings and company mappings (provider today: A3 Innuva Nomina, Spain), pulls employee data from svc-hris, processes EVPs through ready/failure handlers, and on finalisation notifies the manager through svc-communications-v2. Sync state and per-run EVP results live in the service's DynamoDB.",
+  "trigger": {"actor": "manager", "role": "payroll"},
   "steps": [
     {
       "from": "skello-app-front",

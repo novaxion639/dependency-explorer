@@ -181,6 +181,28 @@ describe('feature-flag refs', () => {
   })
 })
 
+describe('auth context', () => {
+  it('every flow states its trigger (who can initiate it)', () => {
+    for (const flow of flows) {
+      expect(flow.trigger?.actor, `flow ${flow.id} has no trigger`).toBeTruthy()
+    }
+  })
+
+  it('auth refs carry at least one fact (tokenType, gate, authorizer, or authAbsent)', () => {
+    for (const flow of flows) {
+      for (const edge of flow.codeEdges ?? []) {
+        if (edge.auth) {
+          const { tokenType, gate, authorizer, authAbsent } = edge.auth
+          expect(
+            !!(tokenType || gate || authorizer || authAbsent),
+            `${flow.id}: empty auth ref on "${edge.from} → ${edge.to}"`,
+          ).toBe(true)
+        }
+      }
+    }
+  })
+})
+
 describe('failure layer', () => {
   it('only annotates async edges, never sync ones', () => {
     for (const flow of flows) {

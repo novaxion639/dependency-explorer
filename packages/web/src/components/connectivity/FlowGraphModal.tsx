@@ -118,8 +118,19 @@ function FlowInner({ flow, map, detail, onDetailChange, onBack, onClose }: Props
             ← Back
           </button>
 
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', flex: 1 }}>
-            {flow.name}
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>{flow.name}</span>
+            {flow.trigger && (
+              <span
+                title={flow.trigger.role ? `role: ${flow.trigger.role}` : undefined}
+                style={{
+                  fontSize: 10, fontWeight: 600, padding: '1px 7px', borderRadius: 4,
+                  background: '#4f6ef716', border: '1px solid #4f6ef733', color: '#4f6ef7',
+                }}
+              >
+                👤 {flow.trigger.actor}{flow.trigger.role ? ` · ${flow.trigger.role}` : ''}
+              </span>
+            )}
           </div>
 
           <button

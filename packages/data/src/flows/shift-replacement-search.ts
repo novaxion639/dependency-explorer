@@ -5,6 +5,7 @@ const shift_replacement_search: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-replacement-search",
   "name": "Shift Replacement Search",
   "description": "A planner searches for a replacement for an uncovered shift. The frontend calls svc-automatic-scheduling (single synchronous Lambda, 29s timeout) which reads the target shift and postes from svc-search's MongoDB over VPC, fetches shop + users data from skello-app (with shift_id param to exclude already-replaced users via the shift_replacements table), reads all candidate assigned shifts from MongoDB, then runs 13 eligibility rule classes in-memory to rank candidates by availability and contract fit. A metrics report is sent to SQS and consumed by a separate Lambda that forwards to the data platform ingestion API.",
+  "trigger": {"actor": "manager", "role": "planner"},
   "steps": [
     {
       "from": "skello-app-front",

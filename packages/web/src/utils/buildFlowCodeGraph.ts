@@ -193,7 +193,7 @@ export function buildFlowCodeGraph(
       target: e.to,
       type: isInfraTarget || infraById.has(e.from) ? 'floatingDbEdge' : 'connectivityEdge',
       label: parts.join('\n'),
-      data: { failure: e.failure },
+      data: { failure: e.failure, auth: e.auth },
       markerEnd: { type: MarkerType.ArrowClosed, color: stroke, width: 12, height: 12 },
       style: { stroke, strokeWidth: 1.8, ...(dash ? { strokeDasharray: dash } : {}) },
       labelStyle: { fill: '#94a3b8', fontSize: 9 },

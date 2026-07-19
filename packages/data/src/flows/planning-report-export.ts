@@ -12,6 +12,7 @@ const planning_report_export: ServiceFlow = ServiceFlowSchema.parse({
   "id": "planning-report-export",
   "name": "Planning Report Export",
   "description": "A manager exports the planning/payroll Excel report. ReportsController#excel_report saves the user's report preferences, resolves the date interval and enqueues the export: ExportExcelParallelJob (Sidekiq, batch-mode feature flag) or ExportReportJob. The job builds the workbook with Report::XlsxCreator from PostgreSQL planning data, uploads it to the temporary-assets S3 bucket and streams progress + the presigned download URL over the monolith's own ActionCable channel. svc-reports is NOT in the generation path — it provides payroll-export configuration (PAM configs via Microservices::ReportService) used by the payroll-integration transforms on the same controller.",
+  "trigger": {"actor": "manager"},
   "steps": [
     {
       "from": "skello-app-front",

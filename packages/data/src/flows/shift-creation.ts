@@ -9,6 +9,7 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-creation",
   "name": "Shift Creation",
   "description": "A planner creates a shift on the planning page. The monolith validates params, persists the shift to PostgreSQL within a transaction, runs sync tracker updates, then AR commit callbacks fan out three Sidekiq jobs (weekly-option staleness, shift data, paid-leave counters). For absence shifts only, an ActivityJob posts an audit event to svc-events. Labour law compliance is NOT checked at creation — alerts are fetched separately via GET /alerts. The created row also reaches svc-search's raw_shifts replica via DMS CDC, powering auto-scheduling and BFF reads.",
+  "trigger": {"actor": "manager", "role": "planner (can_create_shifts!)"},
   "steps": [
     {
       "from": "skello-app-front",

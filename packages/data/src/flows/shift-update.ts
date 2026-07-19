@@ -10,6 +10,7 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-update",
   "name": "Shift Update",
   "description": "A planner edits an existing shift. The monolith evaluates labour-law compliance in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call) and persists the change inside a transaction; AR commit callbacks then fan out the same three Sidekiq jobs as creation. Updating does NOT emit a svc-events activity nor notify the employee — notifications happen at planning publication. (Corrected 2026-06-12: the previously documented svc-shifts metrics call, shift.updated event and notification email had no code path.)",
+  "trigger": {"actor": "manager", "role": "planner"},
   "steps": [
     {
       "from": "skello-app-front",

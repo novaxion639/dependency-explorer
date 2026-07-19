@@ -10,6 +10,7 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
   "id": "badging-review",
   "name": "Badging Review & Validation",
   "description": "A manager reviews the day's badgings against planned shifts in the time-management tab. The badging list is READ FROM svc-punch through the monolith (Punch::MsBadging.get_badgings — svc-punch is the system of record for raw clock-ins), and the tab is NOT live: no polling or websocket, the day snapshot refetches on mount/date-change/save only. Punch settings are the exception — the front reads AND edits them DIRECTLY against svc-punch (punch_client.js, FactoryPunchWeb), and a store comment ('Will not be useful when svc punch fully in production') marks the badging list itself as mid-migration. DAY ATTRIBUTION is the overnight hotspot, computed against the shop's opening/closing hours (no overnight flag exists — over_midnight? = opening.hour >= closing.hour): a badging belongs to the shop-day whose opening-hour window contains it (Badging#day_index; 30-min pre-opening buffer, Sunday→Monday week-boundary special case), shifts bucket via Shift#badging_date_at_opening (previsional_start preferred), and badging↔shift matching uses a 1.5h window (SHIFT_MATCHING_TIME_WINDOW — deliberately reduced from 2h to stop late-Sunday badges matching early-Monday shifts). Validating a day runs DayUpdateService under a pg advisory lock: the PLANNED Shift row is updated IN PLACE with badging-derived times (the original plan survives only in previsional_* columns — no parallel worked-shift row; previsional_saved marks validation), unmatched badgings create new shifts, ends_at rolls +1 day whenever ends <= starts (the 22:00→02:00 build), manager-edited hours resolve to a calendar day via a ±12h heuristic, adjustments are recorded into svc-punch AFTER commit, and counters recompute (CombinedTrackerUpdateService + forced PlanningHoursDatas recalculation).",
+  "trigger": {"actor": "manager", "role": "time-management tab access"},
   "steps": [
     {
       "from": "skello-app-front",
@@ -153,7 +154,8 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-br-front-punchclient",
       "to": "svc-punch",
       "label": "getSetting / partialUpdateSetting / getUsers (direct)",
-      "mode": "sync"
+      "mode": "sync",
+      "auth": { "tokenType": "jwt", "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey" }
     },
     {
       "from": "cu-br-front-store",

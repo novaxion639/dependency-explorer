@@ -8,6 +8,7 @@ const mobile_documents_payslips: ServiceFlow = ServiceFlowSchema.parse({
   "id": "mobile-documents-payslips",
   "name": "Mobile Documents & Payslips",
   "description": "An employee browses folders (payslips are the pay_slips folder type — same document model as everything else), views, uploads and deletes documents from the phone. All document operations go DIRECT to svc-documents-v2 (same as the web — one of the flows where the two clients AGREE): folder/document reads, downloads via getDownloadUri, uploads as a two-step create-then-presigned-S3-PUT (FileSystem.uploadAsync — the phone writes S3 directly, the service only issues the URL), camera capture feeding the same upload path. The monolith is touched only for creator display names. Attendance-sheet signature reads (svc-documents-v2 signatures) feed the Home screen's pending-signature notifications. Dispatch/analysis of payslips is the payslip-dispatch flow; this is the consumption side.",
+  "trigger": {"actor": "employee"},
   "steps": [
     {
       "from": "skello-mobile",

@@ -11,6 +11,7 @@ const shift_publication: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-publication",
   "name": "Planning Publication",
   "description": "A planner publishes the week. The monolith records per-user WeeklyOptionPublication rows and marks the week published, then PublishJob (Sidekiq) builds the notification fan-out: missions fetched from svc-shops, the planning PDF rendered in-process, then push/SMS notifications and high-priority emails (PDF attached) sent through svc-communications-v2 — with a legacy comms-v1 fallback path still present. (Corrected 2026-06-12: publication lives on WeeklyOptions, not /v3/shifts/publish; no svc-events audit exists in this path.)",
+  "trigger": {"actor": "manager", "role": "planner"},
   "steps": [
     {
       "from": "skello-app-front",

@@ -10,6 +10,7 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-deletion",
   "name": "Shift Deletion",
   "description": "A planner deletes a shift. The monolith destroys the row and synchronously recomputes the user's counters inside the transaction; after destruction, AR callbacks clean the first-shift cache, drop any future PredictedShift, and enqueue a Sidekiq job that deletes the shift's attached documents in svc-documents-v2. Deleting does NOT emit a svc-events activity nor notify the employee. (Corrected 2026-06-12.)",
+  "trigger": {"actor": "manager", "role": "planner"},
   "steps": [
     {
       "from": "skello-app-front",
