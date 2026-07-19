@@ -35,7 +35,8 @@ import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
-import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult } from './flow-check'
+import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, checkPiiRefs, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult, type PiiCheckResult } from './flow-check'
+import { extractPiiFacts, type PiiFacts } from './extractors/pii'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 
@@ -140,6 +141,8 @@ interface Report {
   flagCheck: FlagCheckResult
   failureCheck: FailureCheckResult
   authCheck: AuthCheckResult
+  piiFacts: PiiFacts | null
+  piiCheck: PiiCheckResult
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
@@ -206,6 +209,8 @@ function run(): Report {
     failureCheck: { findings: [], inScopeEdges: 0, verifiedDlqs: 0, waivers: 0, skippedServices: [] },
     // filled after the repo loop — needs the extracted authorizer declarations
     authCheck: { findings: [], gatesChecked: 0, gatesVerified: 0, authorizersChecked: 0, authorizersVerified: 0, skippedRepos: [] },
+    piiFacts: null,
+    piiCheck: { findings: [], refsChecked: 0, refsVerified: 0, skippedServices: [] },
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -426,6 +431,20 @@ function run(): Report {
     if (serviceNames.has(repo) && sls.authorizerNames.length) authorizersByService.set(repo, sls.authorizerNames)
   }
   report.authCheck = checkAuthContext(connectivityMap, REPO_BASE, authorizersByService)
+
+  // ── PII surface (🧬): lib-anonymizer decorator scan + edge-ref verification ─
+  report.piiFacts = extractPiiFacts(REPO_BASE)
+  if (report.piiFacts) {
+    const piiTypedByService = new Map<string, Set<string>>()
+    for (const fact of report.piiFacts.piiTyped) {
+      const service = fact.pkg.replace(/-sdk$/, '').replace(/-js$/, '')
+      const target = service.startsWith('svc-') ? service : `svc-${service}`
+      if (!serviceNames.has(target)) continue
+      if (!piiTypedByService.has(target)) piiTypedByService.set(target, new Set())
+      piiTypedByService.get(target)!.add(fact.field)
+    }
+    report.piiCheck = checkPiiRefs(connectivityMap, piiTypedByService)
+  }
 
   // ── Async queue cross-reference ────────────────────────────────────────────
   const queueOwners = new Map<string, string>()
@@ -846,6 +865,29 @@ function printMarkdown(r: Report) {
       console.log(ac.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
     } else {
       console.log('_every gate appears in source and every authorizer is declared in config_')
+    }
+  }
+
+  const pf = r.piiFacts
+  const pc = r.piiCheck
+  console.log(`\n## 🧬 PII surface — decorator-first, heuristic as review-assist (${pc.findings.length} findings)\n`)
+  if (!pf) {
+    console.log('_skello-libs-ts not checked out — PII scan skipped_')
+  } else {
+    console.log(`${pf.piiTyped.length} decorator-typed PII field(s) across ${pf.decoratedPackages.join(', ')} — ${pf.explicitNonPii} fields explicitly non-PII (@NoAnonymizer). `
+      + `${pc.refsVerified}/${pc.refsChecked} edge PII ref(s) verified.`
+      + (pc.skippedServices.length ? ` Skipped (no decorator-covered SDK): ${pc.skippedServices.join(', ')}.` : ''))
+    if (pc.findings.length) {
+      console.log(pc.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
+    }
+    if (pf.candidates.length) {
+      const byPkg = new Map<string, number>()
+      pf.candidates.forEach(c => byPkg.set(c.pkg, (byPkg.get(c.pkg) ?? 0) + 1))
+      console.log(`\nReview-assist — ${pf.candidates.length} name-heuristic candidate field(s) in packages WITHOUT decorator coverage `
+        + `(${[...byPkg.entries()].map(([p, n]) => `${p}: ${n}`).join(', ')}). `
+        + 'Candidates are NOT facts — they are the adoption backlog for lib-anonymizer decorators.')
+      console.log(pf.candidates.slice(0, 12).map(c => `- ${c.file} · \`${c.field}\``).join('\n')
+        + (pf.candidates.length > 12 ? `\n- … ${pf.candidates.length - 12} more` : ''))
     }
   }
 

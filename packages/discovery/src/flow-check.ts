@@ -148,6 +148,55 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): Cod
   return result
 }
 
+// ── PII-ref verification (🧬) ────────────────────────────────────────────────
+// Edges may declare the PII field classes their payload carries — but only
+// decorator-backed: each class must be a lib-anonymizer PII-typed field of
+// the target service's SDK. The name-heuristic candidates never gate
+// anything; they surface in the report as review-assist material.
+
+export interface PiiCheckFinding {
+  flow: string
+  kind: 'pii-class-not-decorator-typed'
+  detail: string
+}
+
+export interface PiiCheckResult {
+  findings: PiiCheckFinding[]
+  refsChecked: number
+  refsVerified: number
+  skippedServices: string[]
+}
+
+export function checkPiiRefs(
+  map: ConnectivityMap,
+  piiTypedByService: Map<string, Set<string>>,
+): PiiCheckResult {
+  const result: PiiCheckResult = { findings: [], refsChecked: 0, refsVerified: 0, skippedServices: [] }
+  const skipped = new Set<string>()
+  for (const flow of map.flows) {
+    for (const edge of flow.codeEdges ?? []) {
+      for (const cls of edge.pii ?? []) {
+        const typed = piiTypedByService.get(edge.to)
+        if (!typed) {
+          skipped.add(edge.to)
+          continue
+        }
+        result.refsChecked++
+        if (typed.has(cls)) {
+          result.refsVerified++
+        } else {
+          result.findings.push({
+            flow: flow.id, kind: 'pii-class-not-decorator-typed',
+            detail: `edge "${edge.from} → ${edge.to}": "${cls}" is not a decorator-typed PII field of ${edge.to}'s SDK (typed: ${[...typed].join(', ') || 'none'})`,
+          })
+        }
+      }
+    }
+  }
+  result.skippedServices = [...skipped].sort()
+  return result
+}
+
 // ── Auth-context verification (🔐) ───────────────────────────────────────────
 // Trigger coverage is an authored invariant (integrity suite enforces
 // presence); what the SCANNER verifies: every `auth.gate` literal appears in

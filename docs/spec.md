@@ -19,9 +19,10 @@ every extractable fact. It is NOT: a timing/SLA view (statically unverifiable �
 create the dataset's first unverifiable-claim class), an observability overlay (Phase 4
 renders live data read-only at view time), a test-coverage dashboard (a CI concern, not a
 map concern), a flag rollout-state tracker (runtime data that changes without a commit), or
-a PII classifier (deferred until `@skelloapp/lib-anonymizer` decorator coverage grows beyond
-svc-punch-sdk — the name-heuristic alternative has its lowest hit density in the
-highest-stakes SDKs).
+an authoritative PII auto-tagger — the PII surface ships decorator-first (feature 9): only
+`@skelloapp/lib-anonymizer`-typed fields become facts, and the name-heuristic sweep is a
+review-assist backlog, never authored data (its hit density is lowest in the highest-stakes
+SDKs).
 
 Two invariants govern every dimension. **Every new schema field is optional** — schema
 changes land with zero dataset migration and `pnpm check` stays green at each step. **The
@@ -175,6 +176,20 @@ dataset is fully client-resident at load) — zero new authored data. Tier one a
 paths to the flow entries' ⌘K haystack; tier two adds a `file` entity type whose result
 lands on a view listing the flows traversing that path (new `file` URL param). The incident
 question "which documented flows cross the file I'm changing?" becomes a ⌘K query.
+
+### 9. PII surface (decorator-first)
+
+Code edges accept an optional `pii` array naming the PII field classes their payload
+carries. The authoring rule is absolute: a class is authorable only when the target
+service's SDK types that field PII via `@skelloapp/lib-anonymizer` decorators
+(`@RandomAnonymizer(EMAIL|FIRST_NAME|…)`, `@PasswordAnonymizer`, `@DeleteAnonymizer`) —
+the 🧬 discovery section verifies every ref against the decorator scan. `@NoAnonymizer`
+fields count as explicitly non-PII: the punch ClockInOut documents carry zero PII-typed
+fields by design, and the map states that as machine-readable fact. The user-replication
+hops (tablet first sync, periodic settings+users refresh, the badging-history userName)
+carry the decorator-backed classes. The name-heuristic sweep over packages without
+decorator coverage prints as review-assist in the report — the lib-anonymizer adoption
+backlog, never dataset facts. 🧬 badges render on carrying edges in the code view.
 
 ---
 

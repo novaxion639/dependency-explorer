@@ -2,7 +2,7 @@ import { getBezierPath, EdgeLabelRenderer, BaseEdge, type EdgeProps } from '@xyf
 import type { ServiceConnection, FlowFailure, AuthRef } from '@dependency-explorer/data'
 
 interface Props extends EdgeProps {
-  data?: { connection?: ServiceConnection; failure?: FlowFailure; auth?: AuthRef }
+  data?: { connection?: ServiceConnection; failure?: FlowFailure; auth?: AuthRef; pii?: string[] }
 }
 
 export function ConnectivityEdge({
@@ -49,6 +49,18 @@ export function ConnectivityEdge({
               whiteSpace: 'nowrap',
             }}>
               {count} endpoint{count !== 1 ? 's' : ''}
+            </span>
+          )}
+          {(data?.pii?.length ?? 0) > 0 && (
+            <span
+              title={`payload carries PII: ${data!.pii!.join(', ')} (lib-anonymizer decorator-typed)`}
+              style={{
+                fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
+                whiteSpace: 'nowrap', pointerEvents: 'all',
+                background: '#ec489916', border: '1px solid #ec489944', color: '#ec4899',
+              }}
+            >
+              🧬 PII×{data!.pii!.length}
             </span>
           )}
           {auth && (auth.tokenType || auth.gate || auth.authorizer) && (

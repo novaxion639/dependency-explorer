@@ -255,3 +255,20 @@ A source-file path answers "which flows cross this file?", for developers mid-in
 File paths join the flow search haystack, plus a file result type in ⌘K with a landing list view backed by a shareable URL. No new authored data anywhere — the index derives from what flows already declare.
 
 ---
+
+## 19. PII surface — decorator scan & edge refs
+
+Payload PII becomes visible where a hop carries it, with decorator-backed facts only, for developers and leads assessing data exposure.
+
+**User flow**
+1. The scanner sweeps skello-libs-ts for lib-anonymizer decorators: PII-typed fields become facts, @NoAnonymizer fields count as explicitly non-PII, and name-matching fields in packages without decorators list as review-assist candidates.
+2. A flow author declares `pii` classes on an edge only when the target SDK decorator-types those fields; `pnpm discover` rejects any class the decorators do not back.
+3. A developer opening a flow's code detail sees a 🧬 badge on carrying edges — the user-replication syncs show email/name/phone, while the punch documents themselves show nothing, because they carry nothing.
+4. A lead reads the candidate list as the lib-anonymizer adoption backlog.
+
+**UI overview**
+A pink 🧬 badge on code edges whose payload carries PII, with the classes in the tooltip. The report section carries the decorator coverage stats, edge verification counts, and the capped candidate list.
+
+---
+
+---

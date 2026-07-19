@@ -229,7 +229,8 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-br-histories",
       "to": "svc-punch",
       "label": "history create",
-      "mode": "sync"
+      "mode": "sync",
+      "pii": ["userName"]
     },
     {
       "from": "cu-br-matched-controller",

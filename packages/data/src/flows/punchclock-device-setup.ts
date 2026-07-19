@@ -141,6 +141,13 @@ const punchclock_device_setup: ServiceFlow = ServiceFlowSchema.parse({
       "mode": "sync"
     },
     {
+      "from": "cu-pds-loader",
+      "to": "svc-punch",
+      "label": "first sync — settings + employee list with PINs",
+      "mode": "sync",
+      "pii": ["email", "firstName", "lastName", "phone"]
+    },
+    {
       "from": "cu-pds-review",
       "to": "svc-punch",
       "label": "GET /clocks-in-out/shop/{shopId} (day window on clock-IN)",
