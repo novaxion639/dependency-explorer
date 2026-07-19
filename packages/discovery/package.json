@@ -9,6 +9,7 @@
     "discover:apply": "tsx src/discover.ts --apply",
     "discover:aws:fetch": "tsx src/aws-fetch.ts",
     "discover:scaffold": "tsx src/scaffold.ts",
+    "docs:gen": "tsx src/docs-gen-cli.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "discover:trace": "tsx src/trace.ts"

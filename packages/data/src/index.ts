@@ -216,3 +216,4 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
 })
 
 export * from '@dependency-explorer/schema'
+export { getFlowDomains } from './flow-domains'

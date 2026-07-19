@@ -1,4 +1,5 @@
-import type { ServiceFlow, ConnectivityMap, Domain } from '@dependency-explorer/data'
+import type { ServiceFlow, ConnectivityMap } from '@dependency-explorer/data'
+import { getFlowDomains } from '@dependency-explorer/data'
 import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const TYPE_COLOR: Record<string, string> = {
@@ -7,15 +8,6 @@ const TYPE_COLOR: Record<string, string> = {
   'rails-monolith':          '#cc342d',
   'vue-frontend':            '#42b883',
   'react-native':            '#61dafb',
-}
-
-function getFlowDomains(flow: ServiceFlow, domains: Domain[]): Domain[] {
-  const serviceNames = new Set<string>()
-  for (const step of flow.steps) {
-    serviceNames.add(step.from)
-    serviceNames.add(step.to)
-  }
-  return domains.filter(d => d.serviceNames.some(s => serviceNames.has(s)))
 }
 
 interface Props {
