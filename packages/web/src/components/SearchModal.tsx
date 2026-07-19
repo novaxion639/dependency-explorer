@@ -12,6 +12,7 @@ const TYPE_META: Record<SearchResultType, { label: string; color: string }> = {
   team: { label: 'team', color: '#ec4899' },
   infra: { label: 'infra', color: '#f59e0b' },
   flag: { label: 'flag', color: '#a78bfa' },
+  file: { label: 'file', color: '#94a3b8' },
 }
 
 interface Props {
