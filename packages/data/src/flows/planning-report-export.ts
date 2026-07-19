@@ -75,7 +75,8 @@ const planning_report_export: ServiceFlow = ServiceFlowSchema.parse({
       "to": "cu-exp-parallel-job",
       "label": "Report::ExportExcelParallelJob.perform_async",
       "mode": "async-job",
-      "condition": "FF: FEATUREDEV_EXCEL_REPORT_EXPORT_BATCH_MODE"
+      "condition": "FF: FEATUREDEV_EXCEL_REPORT_EXPORT_BATCH_MODE",
+      "flags": [{ "name": "FEATUREDEV_EXCEL_REPORT_EXPORT_BATCH_MODE", "kind": "dev" }]
     },
     {
       "from": "cu-exp-controller",

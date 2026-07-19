@@ -83,6 +83,18 @@ export function CodeUnitNode({ data }: { data: CodeUnitNodeData }) {
             {unit.description}
           </div>
         )}
+        {(unit.flags ?? []).length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 3 }}>
+            {(unit.flags ?? []).map(f => (
+              <span key={f.name} title={`${f.kind} flag`} style={{
+                fontSize: 8, fontWeight: 700, padding: '0px 4px', borderRadius: 3,
+                background: '#a78bfa22', color: '#a78bfa',
+              }}>
+                🚩 {f.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </>
   )

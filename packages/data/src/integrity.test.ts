@@ -161,6 +161,26 @@ describe('rules', () => {
   })
 })
 
+describe('feature-flag refs', () => {
+  it('use one consistent kind per flag name across the whole dataset', () => {
+    const kinds = new Map<string, string>()
+    for (const flow of flows) {
+      const refs = [
+        ...(flow.codeUnits ?? []).flatMap(u => u.flags ?? []),
+        ...(flow.codeEdges ?? []).flatMap(e => e.flags ?? []),
+      ]
+      for (const ref of refs) {
+        const seen = kinds.get(ref.name)
+        if (seen) {
+          expect(seen, `flag ${ref.name} declared as both "${seen}" and "${ref.kind}"`).toBe(ref.kind)
+        } else {
+          kinds.set(ref.name, ref.kind)
+        }
+      }
+    }
+  })
+})
+
 describe('domains', () => {
   it('have unique ids', () => {
     const ids = (domains ?? []).map(d => d.id)

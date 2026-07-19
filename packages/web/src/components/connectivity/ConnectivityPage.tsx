@@ -11,10 +11,13 @@ import { DomainGraph } from './DomainGraph'
 import { FlowsPanel } from './FlowsPanel'
 import { FlowListModal } from './FlowListModal'
 import { FlowGraphModal } from './FlowGraphModal'
+import { FlagModal } from './FlagModal'
 import { OwnershipPage } from '../ownership/OwnershipPage'
+import { buildFlagRegistry } from '../../utils/flagRegistry'
 
 const map = connectivityMap
 const searchIndex = buildSearchIndex(map)
+const flagRegistry = buildFlagRegistry(map)
 
 // Strip URL params that don't resolve against the dataset, so a stale shared
 // link (renamed service, retired flow) degrades gracefully instead of
@@ -26,6 +29,7 @@ function validateUrlState(st: UrlState): UrlState {
   if (next.team && !(map.teams ?? []).some(t => t.id === next.team)) next.team = null
   if (next.domain && !(map.domains ?? []).some(d => d.id === next.domain)) next.domain = null
   if (next.flows && !serviceNames.has(next.flows)) next.flows = null
+  if (next.flag && !flagRegistry.has(next.flag)) next.flag = null
   if (next.flow && !(map.flows ?? []).some(f => f.id === next.flow)) next.flow = null
   if (!next.flow) next.detail = null
   if (next.drawer && !serviceNames.has(next.drawer)) next.drawer = null
@@ -278,6 +282,15 @@ export function ConnectivityPage() {
           onDetailChange={d => patch({ detail: d ? 'code' : null })}
           onBack={() => patch({ flow: null, detail: null })}
           onClose={() => patch({ flow: null, flows: null, detail: null })}
+        />
+      )}
+
+      {/* Feature-flag view (?flag=…) */}
+      {url.flag && !selectedFlow && flagRegistry.get(url.flag) && (
+        <FlagModal
+          entry={flagRegistry.get(url.flag)!}
+          onSelectFlow={flow => patch({ flow: flow.id, flag: null }, { push: true })}
+          onClose={() => patch({ flag: null })}
         />
       )}
 

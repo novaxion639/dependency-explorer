@@ -110,7 +110,8 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
       "label": "recompute sick-leave durations",
       "mode": "sync",
       "condition": "FF: FEATUREDEV_CANARY_CORRECT_OVERTIME",
-      "inTransaction": true
+      "inTransaction": true,
+      "flags": [{ "name": "FEATUREDEV_CANARY_CORRECT_OVERTIME", "kind": "dev" }]
     },
     {
       "from": "cu-abs-create-service",

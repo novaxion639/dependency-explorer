@@ -17,6 +17,7 @@ import { useCallback, useEffect, useState } from 'react'
  *                                multi-channel pairs, e.g. rest vs sns)
  *   ?drawer=svc-users            endpoint drawer for a service
  *   ?ep=api-sign-up              endpoint highlighted inside the drawer
+ *   ?flag=FEATUREDEV_X           feature-flag view (flows gated by the flag)
  */
 export interface UrlState {
   s: string | null
@@ -31,6 +32,7 @@ export interface UrlState {
   edge: string | null
   drawer: string | null
   ep: string | null
+  flag: string | null
 }
 
 export const EDGE_SEP = '~'
@@ -53,6 +55,7 @@ export function parseUrl(search: string): UrlState {
     edge: p.get('edge'),
     drawer: p.get('drawer'),
     ep: p.get('ep'),
+    flag: p.get('flag'),
   }
 }
 
@@ -69,6 +72,7 @@ function serialize(state: UrlState): string {
   if (state.edge) p.set('edge', state.edge)
   if (state.drawer) p.set('drawer', state.drawer)
   if (state.drawer && state.ep) p.set('ep', state.ep)
+  if (state.flag) p.set('flag', state.flag)
   const qs = p.toString()
   return qs ? `${window.location.pathname}?${qs}` : window.location.pathname
 }

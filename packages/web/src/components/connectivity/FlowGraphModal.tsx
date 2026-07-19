@@ -58,6 +58,26 @@ function FlowInner({ flow, map, detail, onDetailChange, onBack, onClose }: Props
   )
   const selectedRule = selectedRuleId ? ruleById.get(selectedRuleId) : undefined
 
+  // Flags gating parts of this flow — aggregated over code units and edges
+  const flowFlags = useMemo(() => {
+    const byName = new Map<string, { kind: string; gates: string[] }>()
+    for (const u of flow.codeUnits ?? []) {
+      for (const f of u.flags ?? []) {
+        const e = byName.get(f.name) ?? { kind: f.kind, gates: [] }
+        e.gates.push(u.label)
+        byName.set(f.name, e)
+      }
+    }
+    for (const edge of flow.codeEdges ?? []) {
+      for (const f of edge.flags ?? []) {
+        const e = byName.get(f.name) ?? { kind: f.kind, gates: [] }
+        e.gates.push(edge.label ?? `${edge.from} → ${edge.to}`)
+        byName.set(f.name, e)
+      }
+    }
+    return [...byName.entries()]
+  }, [flow])
+
   useEffect(() => {
     const { nodes: n, edges: e } = showCode ? buildFlowCodeGraph(flow, map) : buildFlowGraph(flow, map)
     setNodes(n)
@@ -118,6 +138,27 @@ function FlowInner({ flow, map, detail, onDetailChange, onBack, onClose }: Props
         {flow.description && (
           <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.5 }}>
             {flow.description}
+          </div>
+        )}
+
+        {/* Feature flags gating parts of this flow */}
+        {flowFlags.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+            {flowFlags.map(([name, meta]) => (
+              <span
+                key={name}
+                title={`${meta.kind} flag — gates: ${meta.gates.join(' · ')}`}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 3,
+                  fontSize: 10, padding: '2px 6px', borderRadius: 4,
+                  background: '#a78bfa16', border: '1px solid #a78bfa33',
+                  color: '#a78bfa', fontWeight: 600,
+                }}
+              >
+                <span>🚩</span>
+                <code>{name}</code>
+              </span>
+            ))}
           </div>
         )}
 
