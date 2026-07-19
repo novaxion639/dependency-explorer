@@ -118,7 +118,8 @@ const mobile_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "to": "svc-punch",
       "label": "POST clocks-in-out / PATCH clocks-in-out/{id}",
       "mode": "sync",
-      "auth": { "tokenType": "jwt", "authAbsent": "no-authorizer-configured" }
+      "auth": { "tokenType": "jwt", "authAbsent": "no-authorizer-configured" },
+      "contractRefs": ["POST /clocks-in-out", "PATCH /clocks-in-out/{id}"]
     },
     {
       "from": "svc-punch",

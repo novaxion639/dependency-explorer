@@ -1,8 +1,9 @@
 import { getBezierPath, EdgeLabelRenderer, BaseEdge, type EdgeProps } from '@xyflow/react'
-import type { ServiceConnection, FlowFailure, AuthRef } from '@dependency-explorer/data'
+import type { ServiceConnection } from '@dependency-explorer/data'
+import { EdgeBadges, type EdgeBadgeData } from './EdgeBadges'
 
 interface Props extends EdgeProps {
-  data?: { connection?: ServiceConnection; failure?: FlowFailure; auth?: AuthRef; pii?: string[] }
+  data?: { connection?: ServiceConnection } & EdgeBadgeData
 }
 
 export function ConnectivityEdge({
@@ -17,8 +18,6 @@ export function ConnectivityEdge({
   const conn = data?.connection
   const count = conn?.usedEndpoints?.length ?? 0
   const isAsync = conn?.communicationType === 'async'
-  const failure = data?.failure
-  const auth = data?.auth
 
   return (
     <>
@@ -51,51 +50,7 @@ export function ConnectivityEdge({
               {count} endpoint{count !== 1 ? 's' : ''}
             </span>
           )}
-          {(data?.pii?.length ?? 0) > 0 && (
-            <span
-              title={`payload carries PII: ${data!.pii!.join(', ')} (lib-anonymizer decorator-typed)`}
-              style={{
-                fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
-                whiteSpace: 'nowrap', pointerEvents: 'all',
-                background: '#ec489916', border: '1px solid #ec489944', color: '#ec4899',
-              }}
-            >
-              🧬 PII×{data!.pii!.length}
-            </span>
-          )}
-          {auth && (auth.tokenType || auth.gate || auth.authorizer) && (
-            <span
-              title={[
-                auth.tokenType ? `token: ${auth.tokenType}` : null,
-                auth.gate ? `gate: ${auth.gate}` : null,
-                auth.authorizer ? `authorizer: ${auth.authorizer}` : null,
-                auth.authAbsent ? 'no gateway authorizer — auth enforced in-lambda' : null,
-              ].filter(Boolean).join('\n')}
-              style={{
-                fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
-                whiteSpace: 'nowrap', pointerEvents: 'all',
-                background: '#4f6ef716', border: '1px solid #4f6ef744', color: '#4f6ef7',
-              }}
-            >
-              🔑 {auth.gate ?? auth.tokenType}
-            </span>
-          )}
-          {failure && (failure.dlq || failure.dlqAbsent) && (
-            <span
-              title={failure.dlq
-                ? `DLQ: ${failure.dlq}${failure.retryPolicy ? ` — ${failure.retryPolicy}` : ''}${failure.onError ? `\n${failure.onError}` : ''}`
-                : `No DLQ on this hop (confirmed)${failure.onError ? `\n${failure.onError}` : ''}`}
-              style={{
-                fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
-                whiteSpace: 'nowrap', pointerEvents: 'all',
-                background: failure.dlq ? '#10b98122' : '#ef444422',
-                border: `1px solid ${failure.dlq ? '#10b98144' : '#ef444444'}`,
-                color: failure.dlq ? '#10b981' : '#ef4444',
-              }}
-            >
-              {failure.dlq ? `🛡 ${failure.dlq}` : '⚠ no DLQ'}
-            </span>
-          )}
+          <EdgeBadges data={data} />
         </div>
       </EdgeLabelRenderer>
     </>
