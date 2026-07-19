@@ -286,6 +286,15 @@ export const FlowCodeEdgeSchema = z.object({
   /** What authenticates this hop — gate/authorizer verified by 🔐 */
   auth: AuthRefSchema.optional(),
   /**
+   * Contract references — the target's API operations this hop invokes, as
+   * "METHOD /path" exactly as spelled in the target's generated TSOA spec
+   * (tmp/swagger.json). Navigation refs, never embedded payloads; the 📜
+   * check verifies each ref exists in the spec (operationIds repeat across
+   * controllers, so method+path is the unique key). svc-* only — the
+   * monolith has no generated spec.
+   */
+  contractRefs: z.array(z.string()).optional(),
+  /**
    * PII field classes this hop's payload carries (e.g. "email", "firstName").
    * Authored ONLY where the target's SDK types the field PII via
    * lib-anonymizer decorators — the 🧬 check verifies each class against the

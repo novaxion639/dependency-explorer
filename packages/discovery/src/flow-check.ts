@@ -148,6 +148,56 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): Cod
   return result
 }
 
+// ── Contract-ref verification (📜) ───────────────────────────────────────────
+// Edges may name the target's API operations they invoke ("METHOD /path" as
+// spelled in the generated TSOA spec). The check proves the contract EXISTS
+// in the spec — a navigation ref that goes stale loudly when a route is
+// renamed or retired. Services without a checked-in spec are skipped.
+
+export interface ContractCheckFinding {
+  flow: string
+  kind: 'contract-not-in-spec'
+  detail: string
+}
+
+export interface ContractCheckResult {
+  findings: ContractCheckFinding[]
+  refsChecked: number
+  refsVerified: number
+  skippedServices: string[]
+}
+
+export function checkContractRefs(
+  map: ConnectivityMap,
+  operationsByService: Map<string, Map<string, string>>,
+): ContractCheckResult {
+  const result: ContractCheckResult = { findings: [], refsChecked: 0, refsVerified: 0, skippedServices: [] }
+  const skipped = new Set<string>()
+  for (const flow of map.flows) {
+    for (const edge of flow.codeEdges ?? []) {
+      for (const ref of edge.contractRefs ?? []) {
+        const ops = operationsByService.get(edge.to)
+        if (!ops) {
+          skipped.add(edge.to)
+          continue
+        }
+        result.refsChecked++
+        if (ops.has(ref)) {
+          result.refsVerified++
+        } else {
+          const candidates = [...ops.keys()].filter(k => k.split(' ')[1]?.split('/')[1] === ref.split(' ')[1]?.split('/')[1])
+          result.findings.push({
+            flow: flow.id, kind: 'contract-not-in-spec',
+            detail: `edge "${edge.from} → ${edge.to}": "${ref}" not in ${edge.to}'s generated spec${candidates.length ? ` (nearby: ${candidates.slice(0, 4).join(', ')})` : ''}`,
+          })
+        }
+      }
+    }
+  }
+  result.skippedServices = [...skipped].sort()
+  return result
+}
+
 // ── PII-ref verification (🧬) ────────────────────────────────────────────────
 // Edges may declare the PII field classes their payload carries — but only
 // decorator-backed: each class must be a lib-anonymizer PII-typed field of

@@ -145,13 +145,15 @@ const punchclock_device_setup: ServiceFlow = ServiceFlowSchema.parse({
       "to": "svc-punch",
       "label": "first sync — settings + employee list with PINs",
       "mode": "sync",
-      "pii": ["email", "firstName", "lastName", "phone"]
+      "pii": ["email", "firstName", "lastName", "phone"],
+      "contractRefs": ["GET /settings/{shopId}", "GET /users/shop/{shopId}"]
     },
     {
       "from": "cu-pds-review",
       "to": "svc-punch",
       "label": "GET /clocks-in-out/shop/{shopId} (day window on clock-IN)",
-      "mode": "sync"
+      "mode": "sync",
+      "contractRefs": ["GET /clocks-in-out/shop/{shopId}"]
     }
   ],
   "infraNodes": [

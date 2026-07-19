@@ -1,5 +1,6 @@
-import { useInternalNode, getBezierPath, BaseEdge, Position, type EdgeProps } from '@xyflow/react'
+import { useInternalNode, getBezierPath, BaseEdge, EdgeLabelRenderer, Position, type EdgeProps } from '@xyflow/react'
 import type { InternalNode } from '@xyflow/react'
+import { EdgeBadges, type EdgeBadgeData } from './EdgeBadges'
 
 function getFloatingEdgeParams(source: InternalNode, target: InternalNode) {
   const sw = source.measured?.width ?? 200
@@ -44,7 +45,7 @@ function getFloatingEdgeParams(source: InternalNode, target: InternalNode) {
   return { sx, sy, tx, ty, sourcePos, targetPos }
 }
 
-export function FloatingDbEdge({ id, source, target, style, markerEnd }: EdgeProps) {
+export function FloatingDbEdge({ id, source, target, style, markerEnd, data }: EdgeProps & { data?: EdgeBadgeData }) {
   const sourceNode = useInternalNode(source)
   const targetNode = useInternalNode(target)
 
@@ -52,10 +53,31 @@ export function FloatingDbEdge({ id, source, target, style, markerEnd }: EdgePro
 
   const { sx, sy, tx, ty, sourcePos, targetPos } = getFloatingEdgeParams(sourceNode, targetNode)
 
-  const [edgePath] = getBezierPath({
+  const [edgePath, labelX, labelY] = getBezierPath({
     sourceX: sx, sourceY: sy, sourcePosition: sourcePos,
     targetX: tx, targetY: ty, targetPosition: targetPos,
   })
 
-  return <BaseEdge id={id} path={edgePath} style={style} markerEnd={markerEnd} />
+  const hasBadges = !!(data && (data.failure || data.auth || data.pii?.length || data.contractRefs?.length))
+
+  return (
+    <>
+      <BaseEdge id={id} path={edgePath} style={style} markerEnd={markerEnd} />
+      {hasBadges && (
+        <EdgeLabelRenderer>
+          <div
+            className="nodrag nopan"
+            style={{
+              position: 'absolute',
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              pointerEvents: 'none',
+              display: 'flex', gap: 3, alignItems: 'center',
+            }}
+          >
+            <EdgeBadges data={data} />
+          </div>
+        </EdgeLabelRenderer>
+      )}
+    </>
+  )
 }

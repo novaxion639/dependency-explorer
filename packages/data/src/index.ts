@@ -83,6 +83,15 @@ import shift_bulk_erase from './flows/shift-bulk-erase'
 import shift_swap from './flows/shift-swap'
 import planning_event_management from './flows/planning-event-management'
 import planning_template from './flows/planning-template'
+import contract_amendment from './flows/contract-amendment'
+import employee_archival from './flows/employee-archival'
+import staff_register_export from './flows/staff-register-export'
+import inbound_webhooks from './flows/inbound-webhooks'
+import assistant_freemium_credits from './flows/assistant-freemium-credits'
+import pos_revenue_ingestion from './flows/pos-revenue-ingestion'
+import document_share from './flows/document-share'
+import mission_management from './flows/mission-management'
+import org_onboarding from './flows/org-onboarding'
 
 // ── Discovered overlay merge (ADR-0004) ──────────────────────────────────────
 // Machine-verified facts from `pnpm discover:apply` enrich the manual layer:
@@ -209,6 +218,15 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   shift_swap,
   planning_event_management,
   planning_template,
+  contract_amendment,
+  employee_archival,
+  staff_register_export,
+  inbound_webhooks,
+  assistant_freemium_credits,
+  pos_revenue_ingestion,
+  document_share,
+  mission_management,
+  org_onboarding,
   ],
   teams,
   domains,
