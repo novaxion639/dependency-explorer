@@ -17,6 +17,7 @@
 
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { createHash } from 'node:crypto'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import { normalizeEndpoint, normalizeEndpointVersionless } from './endpoints'
 
@@ -148,13 +149,15 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): Cod
 }
 
 // ── Domain-rule verification (📐) ────────────────────────────────────────────
-// Rule statements are human-owned meaning; what the scanner CAN verify is that
-// every sourcePath ("<repo>/<path>") still exists in the sibling checkouts —
-// the structural half of keeping rule cards honest (staleness hashes are M2).
+// Rule statements are human-owned meaning; what the scanner CAN verify:
+//  1. every sourcePath ("<repo>/<path>") still exists in the sibling checkouts
+//  2. every sourceHash stamp still matches the file's sha256 — a mismatch
+//     means the source changed since the rule was authored, so the statement
+//     needs a human re-review (and a re-stamp with the printed hash)
 
 export interface RuleCheckFinding {
   rule: string
-  kind: 'missing-rule-source'
+  kind: 'missing-rule-source' | 'rule-source-drift'
   detail: string
 }
 
@@ -162,15 +165,17 @@ export interface RuleCheckResult {
   findings: RuleCheckFinding[]
   rulesChecked: number
   pathsVerified: number
+  hashesVerified: number
   /** repos not checked out — their paths are skipped, not failed */
   skippedRepos: string[]
 }
 
 export function checkDomainRules(map: ConnectivityMap, repoBase: string): RuleCheckResult {
-  const result: RuleCheckResult = { findings: [], rulesChecked: 0, pathsVerified: 0, skippedRepos: [] }
+  const result: RuleCheckResult = { findings: [], rulesChecked: 0, pathsVerified: 0, hashesVerified: 0, skippedRepos: [] }
   const skipped = new Set<string>()
   for (const rule of map.rules ?? []) {
     result.rulesChecked++
+    const stampByPath = new Map((rule.sourceHashes ?? []).map(h => [h.path, h.sha256]))
     for (const sourcePath of rule.sourcePaths) {
       const [repo, ...rest] = sourcePath.split('/')
       if (!repo || !rest.length) {
@@ -184,12 +189,26 @@ export function checkDomainRules(map: ConnectivityMap, repoBase: string): RuleCh
         skipped.add(repo)
         continue
       }
-      if (fs.existsSync(path.join(repoBase, sourcePath))) {
-        result.pathsVerified++
-      } else {
+      if (!fs.existsSync(path.join(repoBase, sourcePath))) {
         result.findings.push({
           rule: rule.id, kind: 'missing-rule-source',
           detail: `${sourcePath} does not exist`,
+        })
+        continue
+      }
+      result.pathsVerified++
+
+      const stamp = stampByPath.get(sourcePath)
+      if (!stamp) continue // unstamped path — integrity tests enforce stamp completeness
+      const actual = createHash('sha256')
+        .update(fs.readFileSync(path.join(repoBase, sourcePath)))
+        .digest('hex')
+      if (actual === stamp) {
+        result.hashesVerified++
+      } else {
+        result.findings.push({
+          rule: rule.id, kind: 'rule-source-drift',
+          detail: `needs re-review — ${sourcePath} changed since authoring (re-stamp with sha256 ${actual})`,
         })
       }
     }

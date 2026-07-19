@@ -164,6 +164,15 @@ export const DomainRuleSchema = z.object({
   divergences: z.array(DomainRuleDivergenceSchema).optional(),
   /** "<repo>/<path>" source files behind the rule — existence checked by discovery */
   sourcePaths: z.array(z.string()).min(1),
+  /**
+   * sha256 of each sourcePath's content, stamped at authoring. The discovery
+   * scanner recomputes them (📐): a mismatch flags the rule for re-review —
+   * the human-owned statement stays human-owned, its currency machine-watched.
+   */
+  sourceHashes: z.array(z.object({
+    path: z.string(),
+    sha256: z.string().length(64),
+  })).optional(),
 })
 
 // ── Flow code layer ──────────────────────────────────────────────────────────

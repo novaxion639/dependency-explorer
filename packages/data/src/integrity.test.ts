@@ -133,6 +133,20 @@ describe('rules', () => {
     }
   })
 
+  it('stamp every sourcePath with exactly one sourceHash (and no stray stamps)', () => {
+    for (const rule of rules ?? []) {
+      const paths = new Set(rule.sourcePaths)
+      const stamped = (rule.sourceHashes ?? []).map(h => h.path)
+      expect(new Set(stamped).size, `rule ${rule.id}: duplicate sourceHash paths`).toBe(stamped.length)
+      for (const p of stamped) {
+        expect(paths.has(p), `rule ${rule.id}: sourceHash for unknown path ${p}`).toBe(true)
+      }
+      for (const p of rule.sourcePaths) {
+        expect(new Set(stamped).has(p), `rule ${rule.id}: sourcePath ${p} has no staleness stamp`).toBe(true)
+      }
+    }
+  })
+
   it('point sourceOfTruth and divergence codeUnitRefs at existing code units', () => {
     for (const rule of rules ?? []) {
       if (rule.sourceOfTruth) {
