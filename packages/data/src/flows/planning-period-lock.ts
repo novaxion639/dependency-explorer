@@ -10,6 +10,7 @@ const planning_period_lock: ServiceFlow = ServiceFlowSchema.parse({
   "id": "planning-period-lock",
   "name": "Planning Period Lock / Unlock",
   "description": "A manager locks or unlocks a planning period (day, week or month). WeeklyOptionsController#validate_period runs V3::WeeklyOptions::LockService over the period's WeeklyOption rows (per-shop, per-monday lock levels), audits the action through ActivityJob → svc-events, and — when an intermediate lock is set — emails the higher authority through PlanningNotifier → NotificationMailerJob → svc-communications-v2 (/email/low-priority). The separate unlock_request action changes nothing: it only sends the unlock-request email through the same notifier.",
+  "trigger": {"actor": "manager"},
   "steps": [
     {
       "from": "skello-app-front",

@@ -15,6 +15,7 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
   "id": "leave-request-lifecycle",
   "name": "Leave Request Lifecycle",
   "description": "An employee submits a leave request. The web front calls svc-requests directly; the mobile app takes the OPPOSITE route — client-verified 2026-07-18: skello-mobile POSTs /v3/api/leave_requests on the monolith (plus legacy api/v2 screens for manager approve/refuse), touching svc-requests directly only for getPreSelectedManager (the monolith v3 controller is that mobile proxy onto the same API). svc-requests persists the request in its own Aurora Postgres, sends an activity-log batch to svc-events (feature-flagged), and lets its CDC event spine do the notifying: a DMS task streams the row change onto the service's kinesis stream, DecodeAndPublishRequestJobHandler republishes to the SnsDispatch SNS topic with a computed trigger attribute, and the sendCreatedLeaveRequest mail + notification queues deliver the manager's email and in-app notification through svc-communications-v2.",
+  "trigger": {"actor": "employee"},
   "steps": [
     {
       "from": "skello-app-front",

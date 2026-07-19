@@ -1,8 +1,8 @@
 import { getBezierPath, EdgeLabelRenderer, BaseEdge, type EdgeProps } from '@xyflow/react'
-import type { ServiceConnection, FlowFailure } from '@dependency-explorer/data'
+import type { ServiceConnection, FlowFailure, AuthRef } from '@dependency-explorer/data'
 
 interface Props extends EdgeProps {
-  data?: { connection?: ServiceConnection; failure?: FlowFailure }
+  data?: { connection?: ServiceConnection; failure?: FlowFailure; auth?: AuthRef }
 }
 
 export function ConnectivityEdge({
@@ -18,6 +18,7 @@ export function ConnectivityEdge({
   const count = conn?.usedEndpoints?.length ?? 0
   const isAsync = conn?.communicationType === 'async'
   const failure = data?.failure
+  const auth = data?.auth
 
   return (
     <>
@@ -48,6 +49,23 @@ export function ConnectivityEdge({
               whiteSpace: 'nowrap',
             }}>
               {count} endpoint{count !== 1 ? 's' : ''}
+            </span>
+          )}
+          {auth && (auth.tokenType || auth.gate || auth.authorizer) && (
+            <span
+              title={[
+                auth.tokenType ? `token: ${auth.tokenType}` : null,
+                auth.gate ? `gate: ${auth.gate}` : null,
+                auth.authorizer ? `authorizer: ${auth.authorizer}` : null,
+                auth.authAbsent ? 'no gateway authorizer — auth enforced in-lambda' : null,
+              ].filter(Boolean).join('\n')}
+              style={{
+                fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
+                whiteSpace: 'nowrap', pointerEvents: 'all',
+                background: '#4f6ef716', border: '1px solid #4f6ef744', color: '#4f6ef7',
+              }}
+            >
+              🔑 {auth.gate ?? auth.tokenType}
             </span>
           )}
           {failure && (failure.dlq || failure.dlqAbsent) && (

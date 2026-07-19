@@ -11,6 +11,7 @@ const self_serve_signup: ServiceFlow = ServiceFlowSchema.parse({
   "id": "self-serve-signup",
   "name": "Self-Serve Signup",
   "description": "A prospect signs up through the self-serve funnel (SkelloSelfServe front, outside the map). The monolith drives the funnel step by step: a Prospect row with activation token, then user registration (User + planning config + extended info), shop & organisation creation (with a labour-law convention canary check), while every completed step is synced to svc-billing-automation (step infos + /pricing) AND pushed as a lead create/update DIRECTLY to Salesforce over HTTP from the monolith. Onboarding emails go out through comms-v2 (with attachments; comms-v1 fallback), plus an internal Skello-team notification. The account-identity leg (svc-users POST /sign-up) is called by the SelfServe front itself.",
+  "trigger": {"actor": "prospect"},
   "steps": [
     {
       "from": "skello-app",

@@ -13,6 +13,7 @@ const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
   "id": "employee-clock-in",
   "name": "Employee Clock-In (Punch Clock Tablet)",
   "description": "An employee badges on the shop's tablet (SkelloPunchClock): types a 4-digit PIN matched against svc-punch's replicated user data, and the app upserts ONE paired ClockInOut document (in/out/pauses, badgedFrom: tablet_app, client-generated inUuid) DIRECTLY into svc-punch — a clock-out UPDATES the same record. Writes are offline-first: the SQLite row lands before the network call (sentToAPI=false → true), and the unsent queue drains in chunks of 25 on a 15-minute foreground timer, on connectivity regain and on screen focus — retrying forever except on 409/422 (the BR-15241/BR-15224 missing-punch fixes). svc-punch precomputes outAuto (auto-close = shop closing hour in the shop tz, +1 day for overnight shops — closedByBackend is DERIVED, no cron); the tablet's last-badging lookup prefers an OPEN badging over the newest record so a backend-auto-closed row can't block an overnight clock-out — a guard present in the offline path but ABSENT from the online-only path. The tablet never sees shifts: badging↔shift matching is entirely monolith-side at review time. The monolith's legacy punch_clock/v1 raw-punch pipeline (BadgingParser) is DEAD — routes deleted 2025-08-05; monolith Badging rows now materialize at badging-review validation. Each sync bumps lastTabletSync on the shop's SETTING row, which triggers the lateness callback into the monolith (see mobile-clock-in for that leg's code layer).",
+  "trigger": {"actor": "employee", "role": "shop tablet PIN"},
   "steps": [
     {
       "from": "skello-punchclock",
@@ -110,7 +111,8 @@ const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-eci-upsert",
       "to": "svc-punch",
       "label": "best-effort POST clocks-in-out",
-      "mode": "sync"
+      "mode": "sync",
+      "auth": { "tokenType": "jwt", "authAbsent": "no-authorizer-configured" }
     },
     {
       "from": "cu-eci-sync",

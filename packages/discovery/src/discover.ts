@@ -35,7 +35,7 @@ import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
-import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult } from './flow-check'
+import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 
@@ -139,6 +139,7 @@ interface Report {
   ruleCheck: RuleCheckResult
   flagCheck: FlagCheckResult
   failureCheck: FailureCheckResult
+  authCheck: AuthCheckResult
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
@@ -203,6 +204,8 @@ function run(): Report {
     flagCheck: checkFeatureFlags(connectivityMap, REPO_BASE),
     // filled after the repo loop — needs the extracted serverless/tf DLQ facts
     failureCheck: { findings: [], inScopeEdges: 0, verifiedDlqs: 0, waivers: 0, skippedServices: [] },
+    // filled after the repo loop — needs the extracted authorizer declarations
+    authCheck: { findings: [], gatesChecked: 0, gatesVerified: 0, authorizersChecked: 0, authorizersVerified: 0, skippedRepos: [] },
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -416,6 +419,13 @@ function run(): Report {
     if (serviceNames.has(repo) && sls.dlqWirings.length) dlqByService.set(repo, sls.dlqWirings)
   }
   report.failureCheck = checkFailureLayer(connectivityMap, dlqByService)
+
+  // ── Auth context (🔐): gates in source + authorizers vs extracted facts ────
+  const authorizersByService = new Map<string, string[]>()
+  for (const [repo, sls] of serverlessByRepo) {
+    if (serviceNames.has(repo) && sls.authorizerNames.length) authorizersByService.set(repo, sls.authorizerNames)
+  }
+  report.authCheck = checkAuthContext(connectivityMap, REPO_BASE, authorizersByService)
 
   // ── Async queue cross-reference ────────────────────────────────────────────
   const queueOwners = new Map<string, string>()
@@ -822,6 +832,20 @@ function printMarkdown(r: Report) {
       console.log(flc.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
     } else {
       console.log('_every in-scope async edge carries a verified DLQ fact or an explicit waiver_')
+    }
+  }
+
+  const ac = r.authCheck
+  console.log(`\n## 🔐 Auth context (${ac.findings.length} findings)\n`)
+  if (ac.gatesChecked === 0 && ac.authorizersChecked === 0) {
+    console.log('_no typed auth refs yet_')
+  } else {
+    console.log(`${ac.gatesVerified}/${ac.gatesChecked} permission gate(s) verified in source, ${ac.authorizersVerified}/${ac.authorizersChecked} authorizer(s) verified against config.`
+      + (ac.skippedRepos.length ? ` Skipped (repo/facts unavailable): ${ac.skippedRepos.join(', ')}.` : ''))
+    if (ac.findings.length) {
+      console.log(ac.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
+    } else {
+      console.log('_every gate appears in source and every authorizer is declared in config_')
     }
   }
 

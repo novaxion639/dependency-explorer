@@ -13,6 +13,7 @@ const document_generation_esignature: ServiceFlow = ServiceFlowSchema.parse({
   "id": "document-generation-esignature",
   "name": "Document Generation & E-Signature",
   "description": "A manager triggers an e-signature (per-document, or attendance sheets in bulk). RequestEsignaturesController enqueues one Esignatures::TriggerWorkflowJob per signer; the job generates the PDF through svc-documents-v2 (attendance-sheet GenerateService / document fetch), uploads it to S3, and orchestrates Yousign directly — upload, signature-request creation, activation (YousignClientService). The follow-up panel polls signature state through the LEGACY svc-documents-esignature (POST /documents_status, with document info from the documents-v1 surface) — the live call that keeps that service on decommission watch. Separately, uploading a document to an employee (Users::DocumentsController#create) notifies them through comms-v2 (NEW_DOCUMENT email + mobile notification).",
+  "trigger": {"actor": "manager", "role": "HR"},
   "steps": [
     {
       "from": "skello-app-front",

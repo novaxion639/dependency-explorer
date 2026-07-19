@@ -13,6 +13,7 @@ const shift_swap: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-swap",
   "name": "Shift Swap Between Employees",
   "description": "A manager swaps two employees' shifts on the planning (drag-drop). The front sends the regular bulk shift update with the user_ids exchanged; V3::Shifts::UpdateService reassigns both rows in one transaction (labour-law compliance is evaluated in-process; stale employee ShiftSwap-request rows on the moved shifts are destroyed) and the usual counter/callback machinery runs. The swap-specific part lives in the FRONT: the store flags isSwappingUserShifts and posts an UPDATE_SWAP_USER_SHIFTS activity to svc-events itself. Nobody is notified — publication does that.",
+  "trigger": {"actor": "manager", "role": "planner (drag-drop)"},
   "steps": [
     {
       "from": "skello-app-front",

@@ -12,6 +12,7 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
   "id": "employee-onboarding",
   "name": "Employee Onboarding",
   "description": "A manager creates a new employee. One transactional service builds the whole record — User, Contract, schedule amendments, planning config, extended info, team memberships — then invitation emails go out through comms-v2 and the internal Skello-team mailer. The legal leg runs through svc-employees: the DPAE (pre-hiring declaration to URSSAF, via the Fortify cluster per the GLOBAL board) is tracked as DpaeDeposit rows in the monolith, submitted and followed up by svc-employees' DPAE step function, which writes the resulting status BACK into the monolith's dpae_deposits#update — an endpoint the code marks 'called only by svc-employee'.",
+  "trigger": {"actor": "manager", "role": "HR"},
   "steps": [
     {
       "from": "skello-app-front",

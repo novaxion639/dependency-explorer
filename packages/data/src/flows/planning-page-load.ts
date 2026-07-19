@@ -5,6 +5,7 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
   "id": "planning-page-load",
   "name": "Planning Page Load",
   "description": "A manager opens the planning page. Phased loading: the initial paint fetches the planning context and week shifts from the monolith (shift reads can hit the read replica behind REPLICA_SHIFTS_CONTROLLER_ENABLED), then the compliance panels fetch alerts and weekly rests (labour-law rules are evaluated in-process from synced rule data), and the workload forecast loads from svc-workload-plan. svc-bff-planning has been decommissioned and is no longer in this flow; a previously documented frontend→svc-search call was removed (no evidence: svc-search exposes no HTTP API).",
+  "trigger": {"actor": "manager"},
   "steps": [
     {
       "from": "skello-app-front",

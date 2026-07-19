@@ -13,6 +13,7 @@ const bff_dashboard_load: ServiceFlow = ServiceFlowSchema.parse({
   "id": "bff-dashboard-load",
   "name": "BFF Month-Planning Initial Load",
   "description": "Opening the month planning view hits svc-bff's aggregated initial load (GET /v1/plannings/month/load): MonthPlanningInitialLoadManager fans out to the monolith over the skello-app SDK (planning config, planning calendar, shop catalog, shop rules, shop) and to svc-shops (missions), then assembles one response for the grid. The BFF's other surfaces are writes, not reads: POST /v1/kpis bulk-updates manual KPIs to BOTH svc-kpis-v2 and the monolith in parallel (the dual-write side of the KPIs migration), and /v1/documents orchestrates document generation on svc-documents-v2. (Re-traced 2026-07-11: the earlier 'dashboard KPIs compute + recent documents fetch' reading of these endpoints was wrong.)",
+  "trigger": {"actor": "manager"},
   "steps": [
     {
       "from": "skello-app-front",

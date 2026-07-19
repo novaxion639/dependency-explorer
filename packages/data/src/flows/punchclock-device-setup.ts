@@ -9,6 +9,7 @@ const punchclock_device_setup: ServiceFlow = ServiceFlowSchema.parse({
   "id": "punchclock-device-setup",
   "name": "Punch Clock Device Setup & Admin Area",
   "description": "A manager turns a tablet into the shop's punch clock. Three-tier auth chain: (1) manager signs in with email/password or SSO — POST /v3/login terminates in the MONOLITH behind the auth.skello.io host, SSO capability checks hit svc-users; (2) multi-org accounts pick an organisation (GET /v3/api/me/organisations) and swap to an employee-scoped token (svc-users POST /token-employee, requires canEditPunchClockSettings); (3) shop selection issues the device's long-lived identity — a shop-scoped time-clock JWT (POST /v3/login/login_time_clock, refreshed via refresh_time_clock_token, stored in expo-secure-store with AFTER_FIRST_UNLOCK; the stale token is deliberately reusable offline). First sync pulls punch settings and the employee list (with PINs) from svc-punch into on-device SQLite. The ADMIN AREA on the device (settings edit, day review of the shop's clock-in-outs, manual sync) sits behind a shop PIN read from svc-punch settings (shopPin). Feature flags (unauthenticated) gate the SQLite offline stacks and onboarding. Employees never authenticate: they punch with a 4-digit PIN matched locally (employee-clock-in flow).",
+  "trigger": {"actor": "manager", "role": "punch settings (canEditPunchClockSettings)"},
   "steps": [
     {
       "from": "skello-punchclock",
@@ -110,13 +111,15 @@ const punchclock_device_setup: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-pds-orgsel",
       "to": "svc-users",
       "label": "POST /token-employee",
-      "mode": "sync"
+      "mode": "sync",
+      "auth": { "tokenType": "jwt", "gate": "canEditPunchClockSettings" }
     },
     {
       "from": "cu-pds-auth",
       "to": "skello-app",
       "label": "/v3/login + login_time_clock + refresh_time_clock_token",
-      "mode": "sync"
+      "mode": "sync",
+      "auth": { "tokenType": "jwt" }
     },
     {
       "from": "cu-pds-loader",

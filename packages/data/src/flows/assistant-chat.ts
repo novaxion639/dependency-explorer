@@ -9,6 +9,7 @@ const assistant_chat: ServiceFlow = ServiceFlowSchema.parse({
   "id": "assistant-chat",
   "name": "AI Assistant Chat Turn",
   "description": "A manager asks the Skello AI assistant a question. The chat session manager gates the turn on the organisation's freemium credit balance (svc-billing-automation), then the LangGraph agent runs on Bedrock Converse (or direct Anthropic behind a flag) with conversation state checkpointed in svc-intelligence's MongoDB ('for continuity'). Agent tools fan out to real data: shift/worked-hours tools call svc-shifts over HTTP (MCP), document tools read svc-documents-v2 and poll e-signature status on the decommission-watch service, and employee tools read svc-search's employees replica directly over VPC Mongo. A credit is consumed after a successful turn.",
+  "trigger": {"actor": "manager", "role": "assistant user (freemium credits gate)"},
   "steps": [
     {
       "from": "skello-app-front",

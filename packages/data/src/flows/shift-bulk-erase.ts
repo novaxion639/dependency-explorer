@@ -11,6 +11,7 @@ const shift_bulk_erase: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-bulk-erase",
   "name": "Bulk Erase Shifts",
   "description": "A manager erases the shifts of a period (or of selected employees) in one action. The front DELETEs /v3/api/plannings/shifts/bulk_delete and logs the BULK_DELETE activity to svc-events itself. In the monolith, BulkDestroyService destroys assigned shifts WITH callbacks (so DeleteShiftDocumentsJob cleans their documents in svc-documents-v2), fast-deletes unassigned shifts without callbacks, purges the attached PredictedShift / ShiftSwap / ShiftReplacement rows, and recomputes the affected users' counters. When employees are selected, BulkDestroyByUsersService resolves their shift ids first.",
+  "trigger": {"actor": "manager", "role": "planner"},
   "steps": [
     {
       "from": "skello-app-front",

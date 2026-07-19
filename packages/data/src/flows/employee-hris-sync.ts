@@ -12,6 +12,7 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
   "id": "employee-hris-sync",
   "name": "Employee HRIS Sync",
   "description": "An organisation's HRIS (connected through the Kombo integration platform) syncs employees into Skello. Kombo webhooks (sync finished, data changed, integration lifecycle) land on svc-hris; SyncManager pulls the organisation's employees from svc-employees (getEmployeesByOrganisation — the matching/diff base), reads the HRIS-side data through KomboManager, and dispatches one UpsertEmployeeFromHrisDto per changed employee onto svc-employees' upsert queue, where UpsertEmployeeJob applies it. Failed upserts flow through a DLQ handler into SyncError entries (DynamoDB TTL), and the generate-sync-error-reports schedule (cron, Layer-1-discovered recurring task) builds the error report on S3 and mails it via SES directly.",
+  "trigger": {"actor": "system", "role": "HRIS integration (Kombo)"},
   "steps": [
     {
       "from": "svc-hris",

@@ -11,6 +11,7 @@ const leave_request_cancellation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "leave-request-cancellation",
   "name": "Leave Request Cancellation",
   "description": "An employee (or manager) cancels a leave request — the web front calls svc-requests directly, the monolith v3 controller proxies the same DELETE for mobile. The request row is deleted in the service's Aurora; the change flows through the CDC stream into DecodeAndPublishRequestJobHandler like every row change, but NO SNS subscription matches a deletion: there is no cancellation trigger, and the createShifts FilterPolicy excludes deleted rows. Cancellation notifies nobody — the earlier 'notify manager or employee of cancellation' path never existed in code.",
+  "trigger": {"actor": "employee"},
   "steps": [
     {
       "from": "skello-app-front",

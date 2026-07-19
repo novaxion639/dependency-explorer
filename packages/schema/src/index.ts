@@ -220,6 +220,32 @@ export const FlowCodeUnitSchema = z.object({
   flags: z.array(FeatureFlagRefSchema).optional(),
 })
 
+// ── Auth & permission context ────────────────────────────────────────────────
+// Who can trigger a flow, and what authenticates each hop. `gate` is a
+// permission predicate whose literal must appear in the edge's unit sources
+// (🔐); `authorizer` is a named gateway authorizer verified against extracted
+// serverless facts; `authAbsent` records routes with no gateway authorizer
+// (auth enforced in-lambda or genuinely open) — absence is representable,
+// never inferred. Token-LIFECYCLE facts (e.g. a deliberately-reusable stale
+// device token) have no home here and stay prose — a named schema boundary.
+
+export const FlowTriggerSchema = z.object({
+  /** Who initiates the flow — "manager", "employee", "system (cron)", "prospect" */
+  actor: z.string(),
+  /** License/permission context when known */
+  role: z.string().optional(),
+})
+
+export const AuthRefSchema = z.object({
+  tokenType: AuthTypeSchema.optional(),
+  /** Permission predicate — literal verified in the edge's unit sources (🔐) */
+  gate: z.string().optional(),
+  /** Named gateway authorizer — verified against the target's serverless config (🔐) */
+  authorizer: z.string().optional(),
+  /** No gateway authorizer on the target route(s) — auth is in-lambda or absent */
+  authAbsent: z.literal('no-authorizer-configured').optional(),
+})
+
 // ── Failure & resilience (async edges) ───────────────────────────────────────
 // What happens when an async hop fails. dlq/queue/retryPolicy are FACTS,
 // verified against the target service's serverless/Terraform config by the
@@ -257,6 +283,8 @@ export const FlowCodeEdgeSchema = z.object({
   flags: z.array(FeatureFlagRefSchema).optional(),
   /** Failure semantics of an async hop — facts verified by 🧯, narrative human-owned */
   failure: FlowFailureSchema.optional(),
+  /** What authenticates this hop — gate/authorizer verified by 🔐 */
+  auth: AuthRefSchema.optional(),
 })
 
 export const FlowInfraNodeSchema = z.object({
@@ -277,6 +305,8 @@ export const ServiceFlowSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
+  /** Who can trigger this flow — enforced present by the integrity suite */
+  trigger: FlowTriggerSchema.optional(),
   steps: z.array(ServiceFlowStepSchema),
   infraNodes: z.array(FlowInfraNodeSchema).optional(),
   infraEdges: z.array(FlowInfraEdgeSchema).optional(),
@@ -378,6 +408,8 @@ export type FlowCodeEdge = z.infer<typeof FlowCodeEdgeSchema>
 export type ServiceFlow = z.infer<typeof ServiceFlowSchema>
 export type FeatureFlagRef = z.infer<typeof FeatureFlagRefSchema>
 export type FlowFailure = z.infer<typeof FlowFailureSchema>
+export type FlowTrigger = z.infer<typeof FlowTriggerSchema>
+export type AuthRef = z.infer<typeof AuthRefSchema>
 export type RulePlatform = z.infer<typeof RulePlatformSchema>
 export type DomainRuleDivergence = z.infer<typeof DomainRuleDivergenceSchema>
 export type DomainRule = z.infer<typeof DomainRuleSchema>

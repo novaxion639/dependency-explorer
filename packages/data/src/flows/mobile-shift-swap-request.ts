@@ -10,6 +10,7 @@ const mobile_shift_swap_request: ServiceFlow = ServiceFlowSchema.parse({
   "id": "mobile-shift-swap-request",
   "name": "Shift Swap Request (Mobile-Only)",
   "description": "An employee proposes a shift swap from the phone — a lifecycle the WEB DOES NOT HAVE (client divergence: web offers only manager drag-and-drop reassignment). Screens still live in the legacy v2 stack: browse swappable shifts, create the request (POST /api/v2/shifts/:shiftId/shift_swaps), the target employee sees it in the requests hub (GET /api/v1/requests/received) and accepts/refuses (PATCH /api/v2/shift_swaps/:id). Everything runs through the monolith's api/v2 surface; ShiftSwap rows live in monolith PostgreSQL, and V3::Shifts::UpdateService destroys pending ShiftSwaps when the underlying shift is reassigned or changes day (the same remove_dependencies that unlinks badgings). Acceptance applies the swap as a shift update — the shift-swap flow's code layer covers that server side.",
+  "trigger": {"actor": "employee"},
   "steps": [
     {
       "from": "skello-mobile",
