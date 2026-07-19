@@ -3,7 +3,7 @@ import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
 import { connectivityMap } from './index'
 import discoveredJson from './generated/discovered.json'
 
-const { services, connections, flows, teams, domains } = connectivityMap
+const { services, connections, flows, teams, domains, rules } = connectivityMap
 
 const serviceNames = new Set(services.map(s => s.name))
 const teamIds = new Set((teams ?? []).map(t => t.id))
@@ -98,6 +98,50 @@ describe('flows', () => {
         const toOk = stepNodes.has(edge.to) || infraIds.has(edge.to)
         expect(fromOk, `${flow.id}: infra edge from unknown node "${edge.from}"`).toBe(true)
         expect(toOk, `${flow.id}: infra edge to unknown node "${edge.to}"`).toBe(true)
+      }
+    }
+  })
+})
+
+describe('rules', () => {
+  const ruleIds = new Set((rules ?? []).map(r => r.id))
+  const codeUnitIds = new Set(flows.flatMap(f => (f.codeUnits ?? []).map(u => u.id)))
+
+  it('have unique ids', () => {
+    expect((rules ?? []).length).toBe(ruleIds.size)
+  })
+
+  it('are referenced by steps and code units that resolve', () => {
+    for (const flow of flows) {
+      const refs = [
+        ...flow.steps.flatMap(s => s.ruleRefs ?? []),
+        ...(flow.codeUnits ?? []).flatMap(u => u.ruleRefs ?? []),
+      ]
+      for (const ref of refs) {
+        expect(ruleIds.has(ref), `${flow.id} references unknown rule ${ref}`).toBe(true)
+      }
+    }
+  })
+
+  it('are each referenced by at least one flow (no orphan rules)', () => {
+    const referenced = new Set(flows.flatMap(f => [
+      ...f.steps.flatMap(s => s.ruleRefs ?? []),
+      ...(f.codeUnits ?? []).flatMap(u => u.ruleRefs ?? []),
+    ]))
+    for (const rule of rules ?? []) {
+      expect(referenced.has(rule.id), `rule ${rule.id} is referenced by no flow`).toBe(true)
+    }
+  })
+
+  it('point sourceOfTruth and divergence codeUnitRefs at existing code units', () => {
+    for (const rule of rules ?? []) {
+      if (rule.sourceOfTruth) {
+        expect(codeUnitIds.has(rule.sourceOfTruth), `rule ${rule.id}: unknown sourceOfTruth ${rule.sourceOfTruth}`).toBe(true)
+      }
+      for (const div of rule.divergences ?? []) {
+        if (div.codeUnitRef) {
+          expect(codeUnitIds.has(div.codeUnitRef), `rule ${rule.id}: unknown codeUnitRef ${div.codeUnitRef}`).toBe(true)
+        }
       }
     }
   })

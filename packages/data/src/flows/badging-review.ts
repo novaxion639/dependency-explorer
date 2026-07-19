@@ -14,7 +14,8 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "Badgings section — read day badgings + history, validate the day (badgings/{day,matched}_badgings controllers)"
+      "action": "Badgings section — read day badgings + history, validate the day (badgings/{day,matched}_badgings controllers)",
+      "ruleRefs": ["rule-overnight-day-attribution", "rule-clockin-shift-coupling"]
     },
     {
       "from": "skello-app-front",
@@ -50,7 +51,8 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "service",
       "label": "day-window / overnight bucketing helpers",
       "path": "apps/vue-app/src/badgings/shared/utils/index.js",
-      "description": "Client-side mirror of the backend day attribution: badgingDayWindow from the shop's openingTime/closingTime with a 30-min pre-opening buffer, midnight-shop special cases (Sunday→Monday buffer rule mirroring Shift#badging_date_at_opening), and modular midnight-crossing overlap math (isShiftInBadgingRange)"
+      "description": "Client-side mirror of the backend day attribution: badgingDayWindow from the shop's openingTime/closingTime with a 30-min pre-opening buffer, midnight-shop special cases (Sunday→Monday buffer rule mirroring Shift#badging_date_at_opening), and modular midnight-crossing overlap math (isShiftInBadgingRange)",
+      "ruleRefs": ["rule-overnight-day-attribution"]
     },
     {
       "id": "cu-br-front-punchclient",
@@ -66,7 +68,8 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "model-callback",
       "label": "Badging day attribution + matching windows",
       "path": "app/models/badging.rb",
-      "description": "day_index buckets a badging into the shop-day whose opening-hour window contains it (badge before opening → previous day; ALLOWED_BADGING_TIME_BEFORE = 30min; Sun→Mon buffer case). SHIFT_MATCHING_TIME_WINDOW = 1.5h — reduced from 2h ('fix: badges on late sunday applied on next monday'). belongs_to :shift optional — shift_id is the match pointer, nullified when a shift is reassigned or changes opening-window day"
+      "description": "day_index buckets a badging into the shop-day whose opening-hour window contains it (badge before opening → previous day; ALLOWED_BADGING_TIME_BEFORE = 30min; Sun→Mon buffer case). SHIFT_MATCHING_TIME_WINDOW = 1.5h — reduced from 2h ('fix: badges on late sunday applied on next monday'). belongs_to :shift optional — shift_id is the match pointer, nullified when a shift is reassigned or changes opening-window day",
+      "ruleRefs": ["rule-overnight-day-attribution", "rule-clockin-shift-coupling"]
     },
     {
       "id": "cu-br-shift-model",
@@ -74,7 +77,8 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "model-callback",
       "label": "Shift day-at-opening methods",
       "path": "app/models/shift.rb",
-      "description": "date_at_opening/badging_date_at_opening bucket shifts by the shop's opening hour (previsional_start preferred for review); displayed_on_previous_day_on_planning? is the direct overnight-shop check (opening.hour > closing.hour && starts_at.hour < opening.hour); has_one :badging dependent: :nullify"
+      "description": "date_at_opening/badging_date_at_opening bucket shifts by the shop's opening hour (previsional_start preferred for review); displayed_on_previous_day_on_planning? is the direct overnight-shop check (opening.hour > closing.hour && starts_at.hour < opening.hour); has_one :badging dependent: :nullify",
+      "ruleRefs": ["rule-overnight-day-attribution"]
     },
     {
       "id": "cu-br-read-surface",
@@ -98,7 +102,8 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "service",
       "label": "V3::MatchedBadgings::DayUpdateService",
       "path": "app/services/v3/matched_badgings/day_update_service.rb",
-      "description": "The reconciliation core, under pg_advisory_xact_lock(shop, day): a badging already carrying shift_id UPDATES the planned Shift IN PLACE (badging-derived starts/ends; the plan survives in previsional_* columns; previsional_saved marks validation) — there is no parallel worked-shift row. Unmatched badgings create new Shift rows (idempotency guard reuses identical existing shifts). handle_day_differences resolves manager-edited hours to the right calendar day via ±12h against the badging date, and compute_ends_at rolls +1 day whenever ends <= starts (the 22:00→02:00 overnight build). svc-punch history writes flush AFTER the transaction commits"
+      "description": "The reconciliation core, under pg_advisory_xact_lock(shop, day): a badging already carrying shift_id UPDATES the planned Shift IN PLACE (badging-derived starts/ends; the plan survives in previsional_* columns; previsional_saved marks validation) — there is no parallel worked-shift row. Unmatched badgings create new Shift rows (idempotency guard reuses identical existing shifts). handle_day_differences resolves manager-edited hours to the right calendar day via ±12h against the badging date, and compute_ends_at rolls +1 day whenever ends <= starts (the 22:00→02:00 overnight build). svc-punch history writes flush AFTER the transaction commits",
+      "ruleRefs": ["rule-overnight-day-attribution", "rule-clockin-shift-coupling"]
     },
     {
       "id": "cu-br-histories",
