@@ -35,7 +35,7 @@ import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
-import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult } from './flow-check'
+import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 
@@ -138,6 +138,7 @@ interface Report {
   codeLayerCheck: CodeLayerCheckResult
   ruleCheck: RuleCheckResult
   flagCheck: FlagCheckResult
+  failureCheck: FailureCheckResult
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
@@ -200,6 +201,8 @@ function run(): Report {
     codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE),
     ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),
     flagCheck: checkFeatureFlags(connectivityMap, REPO_BASE),
+    // filled after the repo loop — needs the extracted serverless/tf DLQ facts
+    failureCheck: { findings: [], inScopeEdges: 0, verifiedDlqs: 0, waivers: 0, skippedServices: [] },
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -406,6 +409,13 @@ function run(): Report {
       }
     }
   }
+
+  // ── Failure layer (🧯): async edges vs extracted DLQ wiring ────────────────
+  const dlqByService = new Map<string, ServerlessFacts['dlqWirings']>()
+  for (const [repo, sls] of serverlessByRepo) {
+    if (serviceNames.has(repo) && sls.dlqWirings.length) dlqByService.set(repo, sls.dlqWirings)
+  }
+  report.failureCheck = checkFailureLayer(connectivityMap, dlqByService)
 
   // ── Async queue cross-reference ────────────────────────────────────────────
   const queueOwners = new Map<string, string>()
@@ -798,6 +808,20 @@ function printMarkdown(r: Report) {
       console.log(rc.findings.map(f => `- [${f.kind}] **${f.rule}**: ${f.detail}`).join('\n'))
     } else {
       console.log('_every rule source path exists_')
+    }
+  }
+
+  const flc = r.failureCheck
+  console.log(`\n## 🧯 Failure layer — async edges into services (${flc.findings.length} findings)\n`)
+  if (flc.inScopeEdges === 0) {
+    console.log('_no in-scope async edges (unit → svc-*)_')
+  } else {
+    console.log(`${flc.inScopeEdges} in-scope edge(s) — ${flc.verifiedDlqs} DLQ fact(s) verified against config, ${flc.waivers} confirmed-missing waiver(s).`
+      + (flc.skippedServices.length ? ` Skipped (no facts extracted): ${flc.skippedServices.join(', ')}.` : ''))
+    if (flc.findings.length) {
+      console.log(flc.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
+    } else {
+      console.log('_every in-scope async edge carries a verified DLQ fact or an explicit waiver_')
     }
   }
 

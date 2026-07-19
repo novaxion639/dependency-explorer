@@ -1,8 +1,8 @@
 import { getBezierPath, EdgeLabelRenderer, BaseEdge, type EdgeProps } from '@xyflow/react'
-import type { ServiceConnection } from '@dependency-explorer/data'
+import type { ServiceConnection, FlowFailure } from '@dependency-explorer/data'
 
 interface Props extends EdgeProps {
-  data?: { connection: ServiceConnection }
+  data?: { connection?: ServiceConnection; failure?: FlowFailure }
 }
 
 export function ConnectivityEdge({
@@ -17,6 +17,7 @@ export function ConnectivityEdge({
   const conn = data?.connection
   const count = conn?.usedEndpoints?.length ?? 0
   const isAsync = conn?.communicationType === 'async'
+  const failure = data?.failure
 
   return (
     <>
@@ -47,6 +48,22 @@ export function ConnectivityEdge({
               whiteSpace: 'nowrap',
             }}>
               {count} endpoint{count !== 1 ? 's' : ''}
+            </span>
+          )}
+          {failure && (failure.dlq || failure.dlqAbsent) && (
+            <span
+              title={failure.dlq
+                ? `DLQ: ${failure.dlq}${failure.retryPolicy ? ` — ${failure.retryPolicy}` : ''}${failure.onError ? `\n${failure.onError}` : ''}`
+                : `No DLQ on this hop (confirmed)${failure.onError ? `\n${failure.onError}` : ''}`}
+              style={{
+                fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
+                whiteSpace: 'nowrap', pointerEvents: 'all',
+                background: failure.dlq ? '#10b98122' : '#ef444422',
+                border: `1px solid ${failure.dlq ? '#10b98144' : '#ef444444'}`,
+                color: failure.dlq ? '#10b981' : '#ef4444',
+              }}
+            >
+              {failure.dlq ? `🛡 ${failure.dlq}` : '⚠ no DLQ'}
             </span>
           )}
         </div>

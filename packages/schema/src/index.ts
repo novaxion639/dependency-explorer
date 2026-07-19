@@ -220,6 +220,27 @@ export const FlowCodeUnitSchema = z.object({
   flags: z.array(FeatureFlagRefSchema).optional(),
 })
 
+// ── Failure & resilience (async edges) ───────────────────────────────────────
+// What happens when an async hop fails. dlq/queue/retryPolicy are FACTS,
+// verified against the target service's serverless/Terraform config by the
+// 🧯 discovery section; onError is human-owned narrative; dlqAbsent is the
+// honest waiver for hops with genuinely no DLQ wiring (HTTP fire-and-forget
+// event posts, unwired queues) — representable truth instead of permanent red.
+// `idempotent` is deliberately NOT a field: no extractor can verify it.
+
+export const FlowFailureSchema = z.object({
+  /** Queue/consumer the edge fires into, as named in the target's config (template parts stripped) */
+  queue: z.string().optional(),
+  /** DLQ wired to it — must match an extracted DLQ fact of the target service */
+  dlq: z.string().optional(),
+  /** e.g. "maxReceiveCount 3", "maximumRetryAttempts 5" */
+  retryPolicy: z.string().optional(),
+  /** No DLQ wiring exists for this hop — asserted, cross-checked against extraction */
+  dlqAbsent: z.literal('confirmed-missing').optional(),
+  /** Human-owned narrative: what a lost/failed message means for the user */
+  onError: z.string().optional(),
+})
+
 export const FlowCodeEdgeSchema = z.object({
   /** Code-unit id, service name, or infra-node id */
   from: z.string(),
@@ -234,6 +255,8 @@ export const FlowCodeEdgeSchema = z.object({
   crud: z.array(CrudOperationSchema).optional(),
   /** Flags gating this edge — name verified in the caller/callee source (🚩); `condition` stays for non-flag guards */
   flags: z.array(FeatureFlagRefSchema).optional(),
+  /** Failure semantics of an async hop — facts verified by 🧯, narrative human-owned */
+  failure: FlowFailureSchema.optional(),
 })
 
 export const FlowInfraNodeSchema = z.object({
@@ -354,6 +377,7 @@ export type FlowCodeUnit = z.infer<typeof FlowCodeUnitSchema>
 export type FlowCodeEdge = z.infer<typeof FlowCodeEdgeSchema>
 export type ServiceFlow = z.infer<typeof ServiceFlowSchema>
 export type FeatureFlagRef = z.infer<typeof FeatureFlagRefSchema>
+export type FlowFailure = z.infer<typeof FlowFailureSchema>
 export type RulePlatform = z.infer<typeof RulePlatformSchema>
 export type DomainRuleDivergence = z.infer<typeof DomainRuleDivergenceSchema>
 export type DomainRule = z.infer<typeof DomainRuleSchema>

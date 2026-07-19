@@ -119,7 +119,13 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-pd-extract-mgr",
       "to": "svc-intelligence",
       "label": "ExtractDataFromDocumentDto → extractDataFromDocument SQS",
-      "mode": "async-job"
+      "mode": "async-job",
+      "failure": {
+        "queue": "extractDataFromDocumentSQS",
+        "dlq": "extractDataFromDocumentDlq",
+        "retryPolicy": "maxReceiveCount 1 (queue managed in svc-intelligence-tf)",
+        "onError": "A failed extraction lands in the DLQ after a single attempt — the payslip stays undispatched until the message is redriven or the document re-uploaded"
+      }
     },
     {
       "from": "cu-pd-handler",

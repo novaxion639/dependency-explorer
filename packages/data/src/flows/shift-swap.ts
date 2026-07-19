@@ -93,7 +93,11 @@ const shift_swap: ServiceFlow = ServiceFlowSchema.parse({
       "to": "svc-events",
       "label": "postOnSvcEvent UPDATE_SWAP_USER_SHIFTS",
       "mode": "async-event",
-      "condition": "isSwappingUserShifts"
+      "condition": "isSwappingUserShifts",
+      "failure": {
+        "dlqAbsent": "confirmed-missing",
+        "onError": "HTTP fire-and-forget event post — no queue, no retry, no DLQ on this hop; a lost swap event silently misses the activity log"
+      }
     },
     {
       "from": "cu-swap-controller",

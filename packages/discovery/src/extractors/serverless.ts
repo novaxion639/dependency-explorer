@@ -38,6 +38,24 @@ export interface OwnedResourceFact {
   name: string
 }
 
+// DLQ/retry wiring, in every literal shape the estate actually uses:
+//  'redrive'   — raw CloudFormation RedrivePolicy{deadLetterTargetArn,maxReceiveCount}
+//  'helper'    — createSqs({name, dlqToAppend, maxReceiveCount}) factory call sites
+//                (dlqToAppend may be `someDlqVar.name` — resolved per file)
+//  'onfailure' — stream-event destinations.onFailure (Fn::GetAtt or arn literal)
+//                + sibling maximumRetryAttempts
+//  'terraform' — <repo>-tf module blocks with dlq_name/redrive_policy (queues
+//                managed outside serverless, e.g. svc-intelligence extract queue)
+export interface DlqWiringFact {
+  /** owning queue/consumer name when identifiable (template parts stripped) */
+  queue: string | null
+  /** DLQ name/logical id — null = wiring block found but target unresolvable */
+  dlq: string | null
+  /** "maxReceiveCount 3" | "maximumRetryAttempts 5" */
+  retry: string | null
+  via: 'redrive' | 'helper' | 'onfailure' | 'terraform'
+}
+
 export interface ServerlessFacts {
   /** deploy-state = resolved config from a real deploy; static-scan = literals mined from serverless TS sources */
   source: 'deploy-state' | 'static-scan'
@@ -52,6 +70,8 @@ export interface ServerlessFacts {
   schedules: ScheduleFact[]
   /** CloudFormation resources this service provisions (DynamoDB/S3/Kinesis/Events::Rule) */
   ownedResources: OwnedResourceFact[]
+  /** DLQ/retry wiring facts (🧯 failure-layer verification) */
+  dlqWirings: DlqWiringFact[]
 }
 
 // ── Stream / template identity helpers ────────────────────────────────────────
@@ -126,12 +146,23 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
   const s3Triggers: S3TriggerFact[] = []
   const schedules: ScheduleFact[] = []
   const ownedResources: OwnedResourceFact[] = []
+  const dlqWirings: DlqWiringFact[] = []
   const resources: Record<string, any> = state?.service?.resources?.Resources ?? {}
 
   for (const [logical, res] of Object.entries<any>(resources)) {
     if (res?.Type === 'AWS::SQS::Queue') {
       const name = res.Properties?.QueueName
       queueNames.add(typeof name === 'string' ? name : logical)
+      const redrive = res.Properties?.RedrivePolicy
+      if (redrive) {
+        const target = queueNameFromArn(redrive.deadLetterTargetArn, resources)
+        dlqWirings.push({
+          queue: typeof name === 'string' ? stripTemplate(name) || name : logical,
+          dlq: target ? stripTemplate(target) || target : null,
+          retry: redrive.maxReceiveCount != null ? `maxReceiveCount ${redrive.maxReceiveCount}` : null,
+          via: 'redrive',
+        })
+      }
     }
     if (OWNED_RESOURCE_TYPES.has(res?.Type)) {
       const p = res.Properties ?? {}
@@ -185,6 +216,17 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
           ? streamArn
           : typeof streamArn?.['Fn::ImportValue'] === 'string' ? streamArn['Fn::ImportValue'] : '(non-literal arn)'
         streamConsumers.push({ ...classifyStreamRef(raw, event.stream?.type), functionName: fnKey })
+        const onFailure = event.stream?.destinations?.onFailure
+        if (onFailure) {
+          const target = queueNameFromArn(onFailure?.arn ?? onFailure, resources)
+          const retries = event.stream?.maximumRetryAttempts
+          dlqWirings.push({
+            queue: fnKey,
+            dlq: target ? stripTemplate(target) || target : null,
+            retry: retries != null ? `maximumRetryAttempts ${retries}` : null,
+            via: 'onfailure',
+          })
+        }
         continue
       }
       const bucket = typeof event?.s3 === 'string' ? event.s3 : event?.s3?.bucket
@@ -215,6 +257,7 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
     s3Triggers,
     schedules,
     ownedResources,
+    dlqWirings,
   }
 }
 
@@ -250,6 +293,127 @@ function findFunctionIdentity(lines: string[], eventLineIdx: number): { function
     }
   }
   return { description }
+}
+
+/**
+ * DLQ/retry wiring from serverless TS source — the three static shapes.
+ * Exported for tests.
+ */
+export function parseDlqStatic(content: string): DlqWiringFact[] {
+  const facts: DlqWiringFact[] = []
+  const lines = content.split('\n')
+
+  // Pass 1 — createSqs-style factory vars: const x = createSqs({ name: 'y', … })
+  // so `dlqToAppend: x.name` / Fn::GetAtt [x.name] resolve to the literal.
+  const varToName = new Map<string, string>()
+  const varRe = /(?:const|export const)\s+([A-Za-z_$][\w$]*)\s*=\s*create\w*Sqs\w*\(\{/g
+  for (let m = varRe.exec(content); m; m = varRe.exec(content)) {
+    const block = content.slice(m.index, Math.min(content.length, m.index + 400))
+    const name = block.match(/\bname:\s*['"`]([^'"`]+)['"`]/)
+    if (name) varToName.set(m[1]!, stripTemplate(name[1]!) || name[1]!)
+  }
+  const resolveRef = (ref: string): string => {
+    const viaVar = ref.match(/^([A-Za-z_$][\w$]*)\.name$/)
+    if (viaVar) return varToName.get(viaVar[1]!) ?? viaVar[1]!
+    return stripTemplate(ref.replace(/['"`]/g, '')) || ref
+  }
+
+  // Pass 2a — helper call sites carrying dlqToAppend
+  const helperRe = /create\w*Sqs\w*\(\{([^)]*?)\}\)/gs
+  for (let m = helperRe.exec(content); m; m = helperRe.exec(content)) {
+    const body = m[1]!
+    const dlqRef = body.match(/\bdlqToAppend:\s*([^,\n]+)/)
+    if (!dlqRef) continue
+    const name = body.match(/\bname:\s*['"`]([^'"`]+)['"`]/)
+    const count = body.match(/\bmaxReceiveCount:\s*(\d+)/)
+    facts.push({
+      queue: name ? stripTemplate(name[1]!) || name[1]! : null,
+      dlq: resolveRef(dlqRef[1]!.trim()),
+      retry: count ? `maxReceiveCount ${count[1]}` : null,
+      via: 'helper',
+    })
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!
+
+    // Pass 2b — raw RedrivePolicy blocks: owning QueueName above, target/count within
+    if (/\bRedrivePolicy:\s*\{/.test(line)) {
+      let queue: string | null = null
+      for (let j = i - 1; j >= Math.max(0, i - 12); j--) {
+        const q = lines[j]!.match(/\bQueueName:\s*['"`]([^'"`]+)['"`]/)
+        if (q) { queue = stripTemplate(q[1]!) || q[1]!; break }
+      }
+      let dlq: string | null = null
+      let retry: string | null = null
+      for (let j = i; j < Math.min(lines.length, i + 8); j++) {
+        const inner = lines[j]!
+        const getAtt = inner.match(/Fn::GetAtt['"`]?\]?\s*:\s*\[\s*['"`]?([\w$.]+)['"`]?/)
+          ?? inner.match(/\[['"`]Fn::GetAtt['"`],?\s*['"`]?([\w$.]+)/)
+        if (getAtt && !dlq) dlq = resolveRef(getAtt[1]!)
+        const arnLit = inner.match(/deadLetterTargetArn['"`]?:\s*['"`]([^'"`]+)['"`]/)
+        if (arnLit && !dlq) {
+          const last = arnLit[1]!.split(':').pop()!
+          dlq = stripTemplate(last) || last
+        }
+        const count = inner.match(/maxReceiveCount['"`]?:\s*(\d+)/)
+        if (count) retry = `maxReceiveCount ${count[1]}`
+        if (/^\s*\},?\s*$/.test(inner) && j > i) break
+      }
+      facts.push({ queue, dlq, retry, via: 'redrive' })
+      continue
+    }
+
+    // Pass 2c — stream destinations.onFailure + sibling maximumRetryAttempts
+    if (/\bonFailure:\s*\{/.test(line)) {
+      let dlq: string | null = null
+      for (let j = i; j < Math.min(lines.length, i + 6); j++) {
+        const inner = lines[j]!
+        const getAtt = inner.match(/Fn::GetAtt['"`]?\]?\s*:\s*\[\s*([\w$.]+|['"`][^'"`]+['"`])/)
+        if (getAtt) { dlq = resolveRef(getAtt[1]!.trim()); break }
+        const arnLit = inner.match(/\barn:\s*['"`]([^'"`]+)['"`]/)
+        if (arnLit) {
+          const last = arnLit[1]!.split(':').pop()!
+          dlq = stripTemplate(last) || last
+          break
+        }
+      }
+      let retry: string | null = null
+      let queue: string | null = null
+      for (let j = Math.max(0, i - 14); j < Math.min(lines.length, i + 14); j++) {
+        const count = lines[j]!.match(/\bmaximumRetryAttempts:\s*(\d+)/)
+        if (count) retry = `maximumRetryAttempts ${count[1]}`
+      }
+      const fn = findFunctionIdentity(lines, i).functionName
+      if (fn) queue = fn
+      facts.push({ queue, dlq, retry, via: 'onfailure' })
+      continue
+    }
+  }
+
+  return facts
+}
+
+/**
+ * DLQ wiring from Terraform module blocks (<repo>-tf) — queues managed
+ * outside serverless: `name = "…"` + `dlq_name = "…"` (+ maxReceiveCount).
+ */
+export function parseTerraformDlq(content: string): DlqWiringFact[] {
+  const facts: DlqWiringFact[] = []
+  const dlqRe = /\bdlq_name\s*=\s*"([^"]+)"/g
+  for (let m = dlqRe.exec(content); m; m = dlqRe.exec(content)) {
+    const before = content.slice(Math.max(0, m.index - 600), m.index)
+    const after = content.slice(m.index, Math.min(content.length, m.index + 300))
+    const name = [...before.matchAll(/\bname\s*=\s*"([^"]+)"/g)].pop()
+    const count = after.match(/maxReceiveCount\s*=\s*(\d+)/)
+    facts.push({
+      queue: name ? stripTemplate(name[1]!) || name[1]! : null,
+      dlq: stripTemplate(m[1]!) || m[1]!,
+      retry: count ? `maxReceiveCount ${count[1]}` : null,
+      via: 'terraform',
+    })
+  }
+  return facts
 }
 
 /** Mine method/path literals from serverless TypeScript source. Exported for tests. */
@@ -401,7 +565,7 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     }
   }
 
-  return { endpoints, queueNames: [...queueNames].sort(), streamConsumers, s3Triggers, schedules, ownedResources }
+  return { endpoints, queueNames: [...queueNames].sort(), streamConsumers, s3Triggers, schedules, ownedResources, dlqWirings: parseDlqStatic(content) }
 }
 
 function walkTsFiles(dir: string, out: string[] = []): string[] {
@@ -425,12 +589,28 @@ function walkTsFiles(dir: string, out: string[] = []): string[] {
 export function extractServerless(repoBase: string, repo: string): ServerlessFacts | null {
   const repoPath = path.join(repoBase, repo)
 
+  // Queues managed outside serverless live in the sibling <repo>-tf estate —
+  // appended whichever parse path wins below.
+  const tfWirings: DlqWiringFact[] = []
+  const tfDir = path.join(repoBase, `${repo}-tf`)
+  if (fs.existsSync(tfDir)) {
+    for (const entry of fs.readdirSync(tfDir)) {
+      if (!entry.endsWith('.tf')) continue
+      try {
+        tfWirings.push(...parseTerraformDlq(fs.readFileSync(path.join(tfDir, entry), 'utf-8')))
+      } catch {
+        // unreadable file — skip
+      }
+    }
+  }
+
   const statePath = path.join(repoPath, '.serverless', 'serverless-state.json')
   if (fs.existsSync(statePath)) {
     try {
       const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'))
       const parsed = parseServerlessState(state)
       if (parsed.endpoints.length || parsed.queueNames.length) {
+        parsed.dlqWirings.push(...tfWirings)
         return { source: 'deploy-state', ...parsed }
       }
     } catch {
@@ -445,7 +625,7 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
   if (!sources.length) return null
 
   const merged: Omit<ServerlessFacts, 'source'> = {
-    endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [], ownedResources: [],
+    endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [], ownedResources: [], dlqWirings: [],
   }
   const queueNames = new Set<string>()
   for (const file of sources) {
@@ -457,13 +637,17 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
       merged.s3Triggers.push(...parsed.s3Triggers)
       merged.schedules.push(...parsed.schedules)
       merged.ownedResources.push(...parsed.ownedResources)
+      merged.dlqWirings.push(...parsed.dlqWirings)
     } catch {
       // unreadable file — skip
     }
   }
   merged.queueNames = [...queueNames].sort()
+  merged.dlqWirings.push(...tfWirings)
+
   if (!merged.endpoints.length && !merged.queueNames.length
     && !merged.streamConsumers.length && !merged.s3Triggers.length
-    && !merged.schedules.length && !merged.ownedResources.length) return null
+    && !merged.schedules.length && !merged.ownedResources.length
+    && !merged.dlqWirings.length) return null
   return { source: 'static-scan', ...merged }
 }

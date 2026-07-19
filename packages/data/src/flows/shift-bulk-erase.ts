@@ -103,7 +103,11 @@ const shift_bulk_erase: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-bulk-store",
       "to": "svc-events",
       "label": "postOnSvcEvent BULK_DELETE",
-      "mode": "async-event"
+      "mode": "async-event",
+      "failure": {
+        "dlqAbsent": "confirmed-missing",
+        "onError": "HTTP fire-and-forget event post — no queue, no retry, no DLQ on this hop; a lost BULK_DELETE event silently misses the activity log"
+      }
     },
     {
       "from": "cu-bulk-controller",
