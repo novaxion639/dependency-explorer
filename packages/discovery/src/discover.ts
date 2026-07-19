@@ -790,7 +790,7 @@ function printMarkdown(r: Report) {
   if (rc.rulesChecked === 0) {
     console.log('_no domain rules declared yet_')
   } else {
-    console.log(`${rc.rulesChecked} rule(s) — ${rc.pathsVerified} source paths verified on disk.`
+    console.log(`${rc.rulesChecked} rule(s) — ${rc.pathsVerified} source paths verified on disk, ${rc.hashesVerified} staleness stamps matched.`
       + (rc.skippedRepos.length ? ` Skipped (repo not checked out): ${rc.skippedRepos.join(', ')}.` : ''))
     if (rc.findings.length) {
       console.log(rc.findings.map(f => `- [${f.kind}] **${f.rule}**: ${f.detail}`).join('\n'))

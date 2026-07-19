@@ -49,6 +49,16 @@ const rules: DomainRule[] = z.array(DomainRuleSchema).parse([
       'skello-app-front/apps/vue-app/src/badgings/shared/utils/index.js',
       'skello-punchclock/src/screens/ClockPin/ClockPin.tsx',
     ],
+    // Stamped 2026-07-19 — on drift, re-read the file, update the statement if
+    // needed, and re-stamp with the sha256 the 📐 finding prints.
+    sourceHashes: [
+      { path: 'svc-punch/src/Manager/ClockInOutManager.ts', sha256: '06054133caf7bd9900e533131fa74642789a5a53562ac97210d750dd57073ba6' },
+      { path: 'skello-app/app/models/badging.rb', sha256: '74062510dc7e4ec747bcaf3db2702991ae6c2a9ad3714fbaa2814a3154c4feef' },
+      { path: 'skello-app/app/models/shift.rb', sha256: '27eafcf1b194ab8e08d92b8d8b50659580aee48f745ed85c79e5bcc65f199aab' },
+      { path: 'skello-app/app/services/v3/matched_badgings/day_update_service.rb', sha256: 'f2fc9a05b75a250178eaec147a5cfc07b9567f944ad780951c49d10a9cf7c5b7' },
+      { path: 'skello-app-front/apps/vue-app/src/badgings/shared/utils/index.js', sha256: '310adacbfa25720bd6c17c5ca0428237f86a9722eff07dcbfa1f8e5f7beb8728' },
+      { path: 'skello-punchclock/src/screens/ClockPin/ClockPin.tsx', sha256: 'bc753adbb129861f40ff2e4426515b14e1a46a7cb7f09056043c86818d308dbd' },
+    ],
   },
   {
     id: 'rule-clockin-shift-coupling',
@@ -81,6 +91,12 @@ const rules: DomainRule[] = z.array(DomainRuleSchema).parse([
       'skello-app/app/models/badging.rb',
       'skello-app/app/services/v3/matched_badgings/day_update_service.rb',
       'skello-app/app/services/v3/shifts/update_service.rb',
+    ],
+    sourceHashes: [
+      { path: 'svc-punch/src/Manager/ClockInOutManager.ts', sha256: '06054133caf7bd9900e533131fa74642789a5a53562ac97210d750dd57073ba6' },
+      { path: 'skello-app/app/models/badging.rb', sha256: '74062510dc7e4ec747bcaf3db2702991ae6c2a9ad3714fbaa2814a3154c4feef' },
+      { path: 'skello-app/app/services/v3/matched_badgings/day_update_service.rb', sha256: 'f2fc9a05b75a250178eaec147a5cfc07b9567f944ad780951c49d10a9cf7c5b7' },
+      { path: 'skello-app/app/services/v3/shifts/update_service.rb', sha256: 'c7851ca0013c27499f24be6e90b34469cd9808b9638ecbf504f1cb5b6d0778ba' },
     ],
   },
 ])
