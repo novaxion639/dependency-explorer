@@ -188,6 +188,22 @@ export const FlowCodeUnitKindSchema = z.enum([
   'component', 'client',
 ])
 
+// ── Feature-flag refs ────────────────────────────────────────────────────────
+// Typed flag references on code units/edges. `kind` is determined by the
+// wrapping helper at the call site — FeatureFlagHelper.can_access? = product
+// (sector/country gate), dev_flag_activated? = dev (canary by shop/org/user) —
+// and is AUTHORED here, never inferred from the name (prefix-less product
+// flags exist). The discovery scanner verifies the name appears literally in
+// the owning unit's source (🚩); the flag → flows registry is derived at
+// build time, never authored. Rollout state is runtime data — Phase 4 overlay.
+
+export const FeatureFlagRefSchema = z.object({
+  name: z.string().regex(/^[A-Z][A-Z0-9_]*$/),
+  kind: z.enum(['product', 'dev']),
+  /** Canary granularity when known — "shop", "organisation", "user" */
+  scope: z.string().optional(),
+})
+
 export const FlowCodeUnitSchema = z.object({
   id: z.string(),
   /** Service this unit lives in (must match a flow participant, e.g. "skello-app") */
@@ -200,6 +216,8 @@ export const FlowCodeUnitSchema = z.object({
   description: z.string().optional(),
   /** Domain rules this unit implements or mirrors (DomainRule ids) */
   ruleRefs: z.array(z.string()).optional(),
+  /** Flags gating this unit's behavior — name verified in the unit's source (🚩) */
+  flags: z.array(FeatureFlagRefSchema).optional(),
 })
 
 export const FlowCodeEdgeSchema = z.object({
@@ -214,6 +232,8 @@ export const FlowCodeEdgeSchema = z.object({
   /** True when the call happens inside the surrounding DB transaction */
   inTransaction: z.boolean().optional(),
   crud: z.array(CrudOperationSchema).optional(),
+  /** Flags gating this edge — name verified in the caller/callee source (🚩); `condition` stays for non-flag guards */
+  flags: z.array(FeatureFlagRefSchema).optional(),
 })
 
 export const FlowInfraNodeSchema = z.object({
@@ -333,6 +353,7 @@ export type FlowInfraEdge = z.infer<typeof FlowInfraEdgeSchema>
 export type FlowCodeUnit = z.infer<typeof FlowCodeUnitSchema>
 export type FlowCodeEdge = z.infer<typeof FlowCodeEdgeSchema>
 export type ServiceFlow = z.infer<typeof ServiceFlowSchema>
+export type FeatureFlagRef = z.infer<typeof FeatureFlagRefSchema>
 export type RulePlatform = z.infer<typeof RulePlatformSchema>
 export type DomainRuleDivergence = z.infer<typeof DomainRuleDivergenceSchema>
 export type DomainRule = z.infer<typeof DomainRuleSchema>

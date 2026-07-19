@@ -1,8 +1,9 @@
 import type { ConnectivityMap } from '@dependency-explorer/data'
 import type { UrlState } from '../hooks/useUrlState'
 import { edgeKey } from '../hooks/useUrlState'
+import { buildFlagRegistry } from './flagRegistry'
 
-export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'domain' | 'team' | 'infra'
+export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'domain' | 'team' | 'infra' | 'flag'
 
 export interface SearchEntry {
   type: SearchResultType
@@ -17,12 +18,12 @@ export interface SearchEntry {
 }
 
 const TYPE_ORDER: Record<SearchResultType, number> = {
-  service: 0, endpoint: 1, connection: 2, flow: 3, domain: 4, team: 5, infra: 6,
+  service: 0, endpoint: 1, connection: 2, flow: 3, domain: 4, team: 5, infra: 6, flag: 7,
 }
 
 // Choosing a result fully describes the target view: modal/popup params are
 // reset explicitly so the landing state never mixes with whatever was open.
-const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null }
+const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null }
 
 export function buildSearchIndex(map: ConnectivityMap): SearchEntry[] {
   const entries: SearchEntry[] = []
@@ -93,6 +94,16 @@ export function buildSearchIndex(map: ConnectivityMap): SearchEntry[] {
       sublabel: `domain · ${domain.serviceNames.length} services`,
       haystack: domain.serviceNames.join(' '),
       patch: { ...CLOSE_OVERLAYS, view: 'services', domain: domain.id },
+    })
+  }
+
+  for (const entry of buildFlagRegistry(map).values()) {
+    entries.push({
+      type: 'flag',
+      label: entry.name,
+      sublabel: `${entry.kind} flag · gates ${entry.flows.length} flow${entry.flows.length === 1 ? '' : 's'}`,
+      haystack: entry.flows.map(f => `${f.id} ${f.name}`).join(' '),
+      patch: { ...CLOSE_OVERLAYS, flag: entry.name },
     })
   }
 

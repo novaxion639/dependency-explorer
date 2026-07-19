@@ -148,6 +148,91 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): Cod
   return result
 }
 
+// ── Feature-flag verification (🚩) ───────────────────────────────────────────
+// Typed flag refs cannot silently point at flags the code no longer checks:
+// a flag on a code UNIT must appear literally in that unit's source; a flag
+// on a code EDGE must appear in the caller's or the callee's source (the FF
+// wrap can live on either side of the call). Kind stays authored — it is a
+// call-site property (can_access? vs dev_flag_activated?), not a name rule.
+
+export interface FlagCheckFinding {
+  flow: string
+  kind: 'flag-not-in-source'
+  detail: string
+}
+
+export interface FlagCheckResult {
+  findings: FlagCheckFinding[]
+  refsChecked: number
+  refsVerified: number
+  distinctFlags: number
+  /** repos not checked out — their refs are skipped, not failed */
+  skippedRepos: string[]
+}
+
+export function checkFeatureFlags(map: ConnectivityMap, repoBase: string): FlagCheckResult {
+  const result: FlagCheckResult = { findings: [], refsChecked: 0, refsVerified: 0, distinctFlags: 0, skippedRepos: [] }
+  const skipped = new Set<string>()
+  const distinct = new Set<string>()
+  const readFile = (service: string, relPath: string): string | null => {
+    try {
+      return fs.readFileSync(path.join(repoBase, service, relPath), 'utf-8')
+    } catch {
+      return null
+    }
+  }
+  const repoMissing = (service: string): boolean => {
+    if (fs.existsSync(path.join(repoBase, service))) return false
+    skipped.add(service)
+    return true
+  }
+
+  for (const flow of map.flows) {
+    const unitById = new Map((flow.codeUnits ?? []).map(u => [u.id, u]))
+
+    for (const unit of flow.codeUnits ?? []) {
+      for (const flag of unit.flags ?? []) {
+        distinct.add(flag.name)
+        if (!unit.path || repoMissing(unit.service)) continue
+        result.refsChecked++
+        const content = readFile(unit.service, unit.path)
+        if (content?.includes(flag.name)) {
+          result.refsVerified++
+        } else {
+          result.findings.push({
+            flow: flow.id, kind: 'flag-not-in-source',
+            detail: `unit ${unit.id}: "${flag.name}" not in ${unit.service}/${unit.path}`,
+          })
+        }
+      }
+    }
+
+    for (const edge of flow.codeEdges ?? []) {
+      for (const flag of edge.flags ?? []) {
+        distinct.add(flag.name)
+        const candidates = [edge.from, edge.to]
+          .map(id => unitById.get(id))
+          .filter((u): u is NonNullable<typeof u> => !!u?.path && !repoMissing(u.service))
+        if (!candidates.length) continue
+        result.refsChecked++
+        const hit = candidates.some(u => readFile(u.service, u.path!)?.includes(flag.name))
+        if (hit) {
+          result.refsVerified++
+        } else {
+          result.findings.push({
+            flow: flow.id, kind: 'flag-not-in-source',
+            detail: `edge "${edge.from} → ${edge.to}": "${flag.name}" in neither ${candidates.map(u => `${u.service}/${u.path}`).join(' nor ')}`,
+          })
+        }
+      }
+    }
+  }
+
+  result.distinctFlags = distinct.size
+  result.skippedRepos = [...skipped].sort()
+  return result
+}
+
 // ── Domain-rule verification (📐) ────────────────────────────────────────────
 // Rule statements are human-owned meaning; what the scanner CAN verify:
 //  1. every sourcePath ("<repo>/<path>") still exists in the sibling checkouts

@@ -35,7 +35,7 @@ import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
-import { checkFlows, checkFlowCodeLayers, checkDomainRules, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult } from './flow-check'
+import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 
@@ -137,6 +137,7 @@ interface Report {
   flowCheck: FlowCheckResult
   codeLayerCheck: CodeLayerCheckResult
   ruleCheck: RuleCheckResult
+  flagCheck: FlagCheckResult
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
@@ -198,6 +199,7 @@ function run(): Report {
     flowCheck: checkFlows(connectivityMap),
     codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE),
     ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),
+    flagCheck: checkFeatureFlags(connectivityMap, REPO_BASE),
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -796,6 +798,20 @@ function printMarkdown(r: Report) {
       console.log(rc.findings.map(f => `- [${f.kind}] **${f.rule}**: ${f.detail}`).join('\n'))
     } else {
       console.log('_every rule source path exists_')
+    }
+  }
+
+  const fc = r.flagCheck
+  console.log(`\n## 🚩 Feature-flag refs (${fc.findings.length} findings)\n`)
+  if (fc.distinctFlags === 0) {
+    console.log('_no typed flag refs yet_')
+  } else {
+    console.log(`${fc.distinctFlags} distinct flag(s) — ${fc.refsVerified}/${fc.refsChecked} refs verified in source.`
+      + (fc.skippedRepos.length ? ` Skipped (repo not checked out): ${fc.skippedRepos.join(', ')}.` : ''))
+    if (fc.findings.length) {
+      console.log(fc.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
+    } else {
+      console.log('_every flag ref appears literally in its unit\'s source_')
     }
   }
 
