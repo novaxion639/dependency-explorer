@@ -280,6 +280,7 @@ export function ConnectivityPage() {
           map={map}
           detail={url.detail === 'code'}
           onDetailChange={d => patch({ detail: d ? 'code' : null })}
+          onOpenFlow={flowId => patch({ flow: flowId, detail: null }, { push: true })}
           onBack={() => patch({ flow: null, detail: null })}
           onClose={() => patch({ flow: null, flows: null, detail: null })}
         />

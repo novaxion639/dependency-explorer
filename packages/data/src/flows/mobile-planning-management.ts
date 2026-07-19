@@ -10,6 +10,7 @@ const mobile_planning_management: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Mobile Planning — Consultation & Shift Management",
   "description": "Employees consult their planning and managers manage shifts from the phone, on the SAME monolith v3 surface the web uses (server-side code layer: shift-creation / shift-update flows). Employee view reads /v3/api/users/:id/shifts; manager view reads /v3/api/plannings/{shifts,users} with team filters. Managers create/update/delete shifts (POST/PATCH/DELETE /v3/api/plannings/shifts), patch shift tasks and append comments, and can VALIDATE a period from the phone (POST /v3/api/weekly_options/validate_period — the same day-lock the badging review checks). OVERNIGHT handling is client-side and shop-hours-aware: fetch windows are padded +2 days ('to include shifts after midnight + 1 day not included by API'), and a planning 'day' renders as opening-time → next opening-time so post-midnight shifts appear on the prior day (getDayShiftsByShopRangeHours; closing ≤ opening rolls the range +1 day). Leave-request-form times normalize after-midnight input +1 day for over-midnight shops.",
   "trigger": {"actor": "employee (view) / manager (shift CRUD)"},
+  "links": [{"to": "shift-creation", "kind": "same-journey", "note": "same v3 plannings surface \u2014 the server-side code layer lives in shift-creation"}, {"to": "shift-update", "kind": "same-journey", "note": "same v3 plannings surface \u2014 the server-side code layer lives in shift-update"}],
   "steps": [
     {
       "from": "skello-mobile",

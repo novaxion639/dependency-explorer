@@ -12,6 +12,7 @@ const analytics_dashboard_load: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Analytics Dashboard Load",
   "description": "A manager opens the analytics dashboard (commercial/KPI cards over a date range). The Vue section instantiates SkelloAnalyticsClient against the MONOLITH's API (skelloApiUrl) and pulls all metrics in one getAllMetrics call — KPI computation happens in-process in the monolith over its PostgreSQL data (candidate serving surfaces: v3/api/dashboards and the token-gated public/kpis/v1 API with Public::Kpis::V1::KpisComputeService; the exact route is inside the closed-source analytics client). Not to be confused with the home dashboard (bff-dashboard-load → svc-kpis-v2) or the planning KPIs row (dual v1+v2 clients — see svc-kpis).",
   "trigger": {"actor": "manager"},
+  "links": [{"to": "bff-dashboard-load", "kind": "domain-related", "note": "sibling dashboard surface; this one still rides the legacy svcKpis client"}],
   "steps": [
     {
       "from": "skello-app-front",
