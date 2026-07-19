@@ -147,7 +147,13 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
       "to": "svc-events",
       "label": "ActivityLogCreateSqs.sendMessage",
       "mode": "async-job",
-      "condition": "activityLogInfos present"
+      "condition": "activityLogInfos present",
+      "failure": {
+        "queue": "createActivityLogJob",
+        "dlq": "createActivityLogJobDlq",
+        "retryPolicy": "maxReceiveCount 3",
+        "onError": "Failed activity-log batches land in the DLQ; the leave-request decision itself is unaffected — the loss is audit-trail only"
+      }
     },
     {
       "from": "cu-lra-manager",

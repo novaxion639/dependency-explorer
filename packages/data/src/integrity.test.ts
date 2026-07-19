@@ -181,6 +181,31 @@ describe('feature-flag refs', () => {
   })
 })
 
+describe('failure layer', () => {
+  it('only annotates async edges, never sync ones', () => {
+    for (const flow of flows) {
+      for (const edge of flow.codeEdges ?? []) {
+        if (edge.failure) {
+          expect(
+            edge.mode === 'async-job' || edge.mode === 'async-event',
+            `${flow.id}: failure on non-async edge "${edge.from} → ${edge.to}"`,
+          ).toBe(true)
+        }
+      }
+    }
+  })
+
+  it('never carries both a dlq fact and a confirmed-missing waiver', () => {
+    for (const flow of flows) {
+      for (const edge of flow.codeEdges ?? []) {
+        if (edge.failure?.dlq && edge.failure?.dlqAbsent) {
+          expect.fail(`${flow.id}: edge "${edge.from} → ${edge.to}" claims both a dlq and dlqAbsent`)
+        }
+      }
+    }
+  })
+})
+
 describe('domains', () => {
   it('have unique ids', () => {
     const ids = (domains ?? []).map(d => d.id)

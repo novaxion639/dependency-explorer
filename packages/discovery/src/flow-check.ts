@@ -148,6 +148,106 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): Cod
   return result
 }
 
+// ── Failure-layer verification (🧯) ──────────────────────────────────────────
+// The audit over async hops into services (edge.from = code unit, edge.to =
+// service, mode async-*): every in-scope edge either carries a DLQ fact that
+// matches the target's extracted config, an explicit confirmed-missing
+// waiver (cross-checked: stale if extraction shows the queue IS wired), or
+// is flagged as unannotated. Doubles as an org DLQ-standard audit — a
+// confirmed-missing entry is a real standard gap, recorded, not hidden.
+
+export interface DlqFactLike {
+  queue: string | null
+  dlq: string | null
+  retry: string | null
+  via: string
+}
+
+export interface FailureCheckFinding {
+  flow: string
+  kind: 'dlq-not-in-config' | 'stale-dlq-waiver' | 'unannotated-async-edge'
+  detail: string
+}
+
+export interface FailureCheckResult {
+  findings: FailureCheckFinding[]
+  inScopeEdges: number
+  verifiedDlqs: number
+  waivers: number
+  /** target services whose repo produced no facts — verification skipped, not failed */
+  skippedServices: string[]
+}
+
+const normalizeName = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+export function checkFailureLayer(
+  map: ConnectivityMap,
+  dlqFactsByService: Map<string, DlqFactLike[]>,
+): FailureCheckResult {
+  const serviceNames = new Set(map.services.map(s => s.name))
+  const result: FailureCheckResult = { findings: [], inScopeEdges: 0, verifiedDlqs: 0, waivers: 0, skippedServices: [] }
+  const skipped = new Set<string>()
+
+  for (const flow of map.flows) {
+    const unitIds = new Set((flow.codeUnits ?? []).map(u => u.id))
+    for (const edge of flow.codeEdges ?? []) {
+      const inScope = (edge.mode === 'async-job' || edge.mode === 'async-event')
+        && unitIds.has(edge.from)
+        && serviceNames.has(edge.to)
+        && edge.to.startsWith('svc-')
+      if (!inScope) continue
+      result.inScopeEdges++
+
+      const facts = dlqFactsByService.get(edge.to)
+      const failure = edge.failure
+
+      if (!failure || (!failure.dlq && !failure.dlqAbsent)) {
+        result.findings.push({
+          flow: flow.id, kind: 'unannotated-async-edge',
+          detail: `"${edge.from} → ${edge.to}" (${edge.label ?? edge.mode}) carries no dlq fact and no confirmed-missing waiver`,
+        })
+        continue
+      }
+
+      if (!facts) {
+        skipped.add(edge.to)
+        if (failure.dlqAbsent) result.waivers++
+        continue
+      }
+
+      if (failure.dlq) {
+        const want = normalizeName(failure.dlq)
+        const hit = facts.some(f => f.dlq && (normalizeName(f.dlq).includes(want) || want.includes(normalizeName(f.dlq))))
+        if (hit) {
+          result.verifiedDlqs++
+        } else {
+          result.findings.push({
+            flow: flow.id, kind: 'dlq-not-in-config',
+            detail: `"${edge.from} → ${edge.to}": dlq "${failure.dlq}" not found in ${edge.to}'s extracted wiring (${facts.filter(f => f.dlq).map(f => f.dlq).join(', ') || 'no DLQs extracted'})`,
+          })
+        }
+      }
+
+      if (failure.dlqAbsent) {
+        result.waivers++
+        if (failure.queue) {
+          const q = normalizeName(failure.queue)
+          const wired = facts.find(f => f.queue && normalizeName(f.queue).includes(q) && f.dlq)
+          if (wired) {
+            result.findings.push({
+              flow: flow.id, kind: 'stale-dlq-waiver',
+              detail: `"${edge.from} → ${edge.to}": waiver says no DLQ, but ${edge.to} wires "${wired.queue}" → "${wired.dlq}" (${wired.via})`,
+            })
+          }
+        }
+      }
+    }
+  }
+
+  result.skippedServices = [...skipped].sort()
+  return result
+}
+
 // ── Feature-flag verification (🚩) ───────────────────────────────────────────
 // Typed flag refs cannot silently point at flags the code no longer checks:
 // a flag on a code UNIT must appear literally in that unit's source; a flag

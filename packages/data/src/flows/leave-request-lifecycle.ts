@@ -206,7 +206,13 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-lrl-activity",
       "to": "svc-events",
       "label": "RawActivityLogBatchDto → svc-events queue",
-      "mode": "async-job"
+      "mode": "async-job",
+      "failure": {
+        "queue": "createActivityLogJob",
+        "dlq": "createActivityLogJobDlq",
+        "retryPolicy": "maxReceiveCount 3",
+        "onError": "Failed activity-log batches land in the DLQ; the leave request itself is unaffected — the loss is audit-trail only"
+      }
     },
     {
       "from": "cu-lrl-manager",
