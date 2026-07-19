@@ -14,6 +14,7 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Leave Request Approval / Rejection",
   "description": "A manager accepts or refuses a leave request from the web front, directly against svc-requests (PATCH — the monolith has no update proxy). The status change lands in the service's Aurora, its CDC stream carries it to DecodeAndPublishRequestJobHandler, and the SnsDispatch topic fans out: sendAccepted/RefusedLeaveRequest mail + notification queues deliver the employee's email and in-app notification via svc-communications-v2; on acceptance the createShifts trigger additionally runs CreateShiftsJobHandler → SkelloAppManager, the strangler write-back that creates the absence shifts in the monolith planning (with RetryCreateShiftsJobHandler as the DLQ retry path).",
   "trigger": {"actor": "manager"},
+  "links": [{"to": "shift-creation", "kind": "writes-back-to", "note": "CreateShiftsJobHandler POSTs /private/shifts \u2014 the shift-creation domain action through a private strangler entry point, not the modeled /v3/shifts path"}],
   "steps": [
     {
       "from": "skello-app-front",

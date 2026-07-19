@@ -2,7 +2,13 @@
 
 Cross-reference of all user-initiated actions in `skello-app-front` (vue-app, planning section) against the flows currently modelled in the dependency graph.
 
-**Coverage: ~23 of ~45 meaningful actions**
+<!-- GENERATED:planning-flows BEGIN — run `pnpm docs:gen`, do not edit inside -->
+**The dependency graph models 39 flows** — 6 touch the scheduling domain: `assistant-chat` `auto-planning-generation` `workload-plan-consultation` `workload-plan-creation` `shift-replacement-search` `planning-page-load`
+
+_The action-level table below is hand-maintained — sub-flow UI actions have no schema representation. Every ✅ flow id it cites is checked against the dataset by the docs-gen test._
+<!-- GENERATED:planning-flows END -->
+
+**Action coverage: ~23 of ~45 meaningful actions** (hand-maintained)
 
 ---
 

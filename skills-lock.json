@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "feature-generator": {
+      "source": "unlearndev/skills",
+      "sourceType": "github",
+      "skillPath": "skills/feature-generator/SKILL.md",
+      "computedHash": "f6e2ee6217fa60c57b437a56dc70f2561c720a5bfaa6cf349e54d4331f2a7bd5"
+    },
+    "spec-generator": {
+      "source": "unlearndev/skills",
+      "sourceType": "github",
+      "skillPath": "skills/spec-generator/SKILL.md",
+      "computedHash": "5fb617be71805a5f6da278b665931ee2110d4631606f69f197b9dd59a5af42f2"
+    }
+  }
+}

@@ -181,6 +181,31 @@ describe('feature-flag refs', () => {
   })
 })
 
+describe('flow links', () => {
+  const flowIds = new Set(flows.map(f => f.id))
+
+  it('resolve to existing flows and never self-link', () => {
+    for (const flow of flows) {
+      for (const link of flow.links ?? []) {
+        expect(flowIds.has(link.to), `${flow.id} links to unknown flow ${link.to}`).toBe(true)
+        expect(link.to, `${flow.id} links to itself`).not.toBe(flow.id)
+      }
+    }
+  })
+
+  it('author each relationship in one direction only (reverse is derived)', () => {
+    const pairs = new Set<string>()
+    for (const flow of flows) {
+      for (const link of flow.links ?? []) {
+        const forward = `${flow.id}→${link.to}`
+        const backward = `${link.to}→${flow.id}`
+        expect(pairs.has(backward), `both directions authored for ${forward}`).toBe(false)
+        pairs.add(forward)
+      }
+    }
+  })
+})
+
 describe('auth context', () => {
   it('every flow states its trigger (who can initiate it)', () => {
     for (const flow of flows) {

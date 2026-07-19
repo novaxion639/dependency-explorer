@@ -213,30 +213,103 @@ A single Rails endpoint often touches 10+ PostgreSQL tables through ActiveRecord
 
 ## 7. Schema Reference
 
+Every field a flow can carry, with the machine check each one answers to.
+Two invariants: every field below `steps` is optional at the schema level
+(the integrity suite enforces dataset conventions like trigger presence),
+and source-verifying checks run under `pnpm discover` (sibling repos on
+disk) — CI gates only self-contained integrity.
+
+### 7.1 Flow-level
+
 ```typescript
-// steps: service-to-service edges (rendered as the primary flow DAG)
-ServiceFlowStepSchema = z.object({
-  from: z.string(),   // source node name
-  to: z.string(),     // target node name
-  action: z.string(), // edge label
-})
+ServiceFlowSchema = {
+  id, name, description,
+  trigger: { actor, role? },        // who initiates — PRESENCE ENFORCED by integrity tests
+  links: [{ to, kind, note? }],     // flow-to-flow: continuation | writes-back-to |
+                                    // same-journey | domain-related. One direction authored,
+                                    // reverse derived. Integrity: ids resolve, no self/double links
+  steps, infraNodes, infraEdges,    // the macro DAG (§2-4)
+  codeUnits, codeEdges,             // the code layer (§7.2)
+}
 
-// infraNodes: AWS/DB resource nodes (rendered below their parent service)
-FlowInfraNodeSchema = z.object({
-  id: z.string(),              // unique ID (used in infraEdge.to)
-  type: DatabaseTypeSchema,    // determines color and icon
-  label: z.string(),           // displayed name on the node
-  description: z.string().optional(), // tooltip / detail text
-})
-
-// infraEdges: service → infra connections (determines node placement + CRUD badges)
-FlowInfraEdgeSchema = z.object({
-  from: z.string(),                          // must be a node name from steps
-  to: z.string(),                            // must be an infraNode.id
-  label: z.string().optional(),              // edge label
-  crud: z.array(CrudOperationSchema).optional(), // CRUD badge(s) on the target node
-})
+ServiceFlowStepSchema = {
+  from, to, action,
+  phase?,                           // page-load flows: ordered lanes
+  ruleRefs?: [ruleId],              // domain rules governing the step (📐 chips)
+}
 ```
+
+### 7.2 Code layer
+
+The controllers, service objects, managers, jobs, model-callback groups —
+and for client apps, UI components and HTTP client wrappers — an action
+traverses inside a service. Human-authored from code reading
+(`pnpm discover:trace <file>` assists); machine-verified by 🫀: every
+`path` must exist in the sibling checkout, every unit→unit edge's callee
+constant must be referenced from the caller's file.
+
+```typescript
+FlowCodeUnitSchema = {
+  id, service, kind,                // controller | service | manager | job |
+                                    // model-callback | component | client
+  label,                            // the constant — its longest Capitalized token is
+                                    // the 🫀 reference check; lowercase-only labels skip it
+  path?,                            // repo-relative — existence checked (🫀)
+  description?,
+  ruleRefs?: [ruleId],              // rules this unit implements/mirrors (📐)
+  flags?: [{ name, kind, scope? }], // flag literals verified in THIS unit's source (🚩)
+}
+
+FlowCodeEdgeSchema = {
+  from, to,                         // unit id, service name, or infra-node id
+  label?, mode?,                    // sync | async-job | async-event
+  condition?,                       // free-text guard ("absence shifts only")
+  inTransaction?, crud?,
+  flags?: [{ name, kind, scope? }], // flag gating the call — literal verified in the
+                                    // caller's OR callee's source (🚩); kind is authored
+                                    // from the call-site helper, never name-derived
+  failure?: {                       // async edges only (integrity-enforced)
+    queue?, dlq?, retryPolicy?,     // facts — dlq matched against extracted serverless/tf
+                                    // wiring (🧯); waiver cross-checked for staleness
+    dlqAbsent?,                     // 'confirmed-missing' — no DLQ wiring exists, recorded
+    onError?,                       // human-owned narrative — what a lost message means
+  },
+  auth?: {                          // what authenticates the hop (🔐)
+    tokenType?,                     // jwt | api-key | internal | iam-role | none
+    gate?,                          // permission predicate — literal verified in unit sources
+    authorizer?,                    // named gateway authorizer — verified against config
+    authAbsent?,                    // 'no-authorizer-configured' — in-lambda auth, recorded
+  },
+}
+```
+
+### 7.3 Domain rules (registry)
+
+Cross-flow business rules live in `packages/data/src/rules.ts`
+(`DomainRuleSchema`): a human-owned `statement`, a `sourceOfTruth` code-unit
+ref, per-platform `divergences` (`backend | monolith | web | mobile |
+tablet`), `sourcePaths` (existence checked, 📐) and `sourceHashes` (sha256
+stamps — a drifted source flags the rule "needs re-review" with the
+re-stamp hash printed). Stamp completeness is integrity-enforced.
+
+### 7.4 Infra nodes/edges
+
+```typescript
+FlowInfraNodeSchema = { id, type: DatabaseTypeSchema, label, description? }
+FlowInfraEdgeSchema = { from, to, label?, crud? }
+```
+
+### 7.5 Which check answers to what
+
+| Check | Where it runs | What it proves |
+|---|---|---|
+| integrity tests | `pnpm check` / CI | ids unique, every ref resolves, trigger present, stamps complete, field invariants |
+| 🫀 code layers | `pnpm discover` | unit paths exist, callees referenced from caller sources |
+| 📐 domain rules | `pnpm discover` | rule sources exist + staleness hashes match |
+| 🚩 flag refs | `pnpm discover` | flag literals present in unit sources |
+| 🧯 failure layer | `pnpm discover` | DLQ facts match serverless/Terraform wiring; waivers not stale; unannotated async edges listed |
+| 🔐 auth context | `pnpm discover` | gates in source, authorizers declared in config |
+| docs-gen gate | `pnpm check` / CI | generated inventory sections match the dataset (`pnpm docs:gen` on drift) |
 
 ---
 

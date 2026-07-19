@@ -12,12 +12,15 @@ import { FlowsPanel } from './FlowsPanel'
 import { FlowListModal } from './FlowListModal'
 import { FlowGraphModal } from './FlowGraphModal'
 import { FlagModal } from './FlagModal'
+import { FileModal } from './FileModal'
 import { OwnershipPage } from '../ownership/OwnershipPage'
 import { buildFlagRegistry } from '../../utils/flagRegistry'
+import { buildFileIndex } from '../../utils/fileIndex'
 
 const map = connectivityMap
 const searchIndex = buildSearchIndex(map)
 const flagRegistry = buildFlagRegistry(map)
+const fileIndex = buildFileIndex(map)
 
 // Strip URL params that don't resolve against the dataset, so a stale shared
 // link (renamed service, retired flow) degrades gracefully instead of
@@ -30,6 +33,7 @@ function validateUrlState(st: UrlState): UrlState {
   if (next.domain && !(map.domains ?? []).some(d => d.id === next.domain)) next.domain = null
   if (next.flows && !serviceNames.has(next.flows)) next.flows = null
   if (next.flag && !flagRegistry.has(next.flag)) next.flag = null
+  if (next.file && !fileIndex.has(next.file)) next.file = null
   if (next.flow && !(map.flows ?? []).some(f => f.id === next.flow)) next.flow = null
   if (!next.flow) next.detail = null
   if (next.drawer && !serviceNames.has(next.drawer)) next.drawer = null
@@ -280,6 +284,7 @@ export function ConnectivityPage() {
           map={map}
           detail={url.detail === 'code'}
           onDetailChange={d => patch({ detail: d ? 'code' : null })}
+          onOpenFlow={flowId => patch({ flow: flowId, detail: null }, { push: true })}
           onBack={() => patch({ flow: null, detail: null })}
           onClose={() => patch({ flow: null, flows: null, detail: null })}
         />
@@ -291,6 +296,15 @@ export function ConnectivityPage() {
           entry={flagRegistry.get(url.flag)!}
           onSelectFlow={flow => patch({ flow: flow.id, flag: null }, { push: true })}
           onClose={() => patch({ flag: null })}
+        />
+      )}
+
+      {/* Reverse code→flows view (?file=…) */}
+      {url.file && !selectedFlow && fileIndex.get(url.file) && (
+        <FileModal
+          entry={fileIndex.get(url.file)!}
+          onSelectFlow={flow => patch({ flow: flow.id, detail: 'code', file: null }, { push: true })}
+          onClose={() => patch({ file: null })}
         />
       )}
 

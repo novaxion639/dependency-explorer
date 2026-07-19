@@ -14,6 +14,8 @@ The canonical, continuously verified map of Skello's distributed architecture �
 - **Feature-flag registry** — typed flag refs on flow code units/edges (`kind` product|dev, authored from the call-site helper — never inferred from the name); the flag → flows registry is derived at build time. 🚩 chips in the flow modal, flags as a ⌘K entity type landing on the flows each flag gates (`?flag=FEATUREDEV_X`), and a 🚩 discovery section verifying every flag name appears literally in its unit's source.
 - **Failure & resilience layer** — async code edges into services carry their failure semantics: the queue, its DLQ and retry policy (facts extracted from serverless config and the `*-tf` estate — RedrivePolicy blocks, `createSqs` factory args, `onFailure` destinations, Terraform `dlq_name`), an explicit `confirmed-missing` waiver where no DLQ wiring exists, and a human-owned `onError` narrative. 🛡/⚠ badges on the edges in the code-detail view; the 🧯 discovery section audits every in-scope edge and doubles as an org DLQ-standard audit.
 - **Auth & permission context** — every flow states who triggers it (👤 chip in the flow modal; presence enforced by the integrity suite), and code edges carry typed auth refs: token type, permission gate (literal verified in the edge's unit sources), named gateway authorizer (verified against extracted serverless declarations — both syntaxes in the estate), or an explicit `no-authorizer-configured` record for in-lambda-auth routes. 🔑 chips on edges in the code view; 🔐 discovery section. Token-lifecycle facts stay prose — a named schema boundary.
+- **Flow composition links** — kind-qualified relationships between flows (`continuation` · `writes-back-to` · `same-journey` · `domain-related`), authored one direction with the reverse derived; clickable chips in the flow modal turn the 13 former prose cross-references into navigation.
+- **Reverse code→flows index** — ⌘K accepts a source-file path and answers "which documented flows traverse this file?" (`?file=svc-punch/src/Manager/ClockInOutManager.ts`) — derived entirely from the code layer's unit paths, zero authored data.
 - **Blast radius** — BFS over the dependency graph showing which services are affected if a service fails.
 - **Permalinks** — every view state (selected service, connection popup, endpoint drawer, flow, domain filter, blast radius) is encoded in the URL: copy the link, share it in Slack or a PR, and the recipient lands on the exact same view.
 - **Global search (⌘K)** — one palette over every service, endpoint, connection, flow, domain, database and queue (~600 entries). Picking a result navigates to a permalink-backed view — an endpoint hit opens the drawer scrolled to that endpoint.
@@ -55,6 +57,7 @@ pnpm discover        # scan sibling Skello repos → classified drift report
 pnpm discover:apply  # same + regenerate the discovered overlay (provenance stamps)
 pnpm discover -- --aws [dir]   # + 🛰 live AWS snapshot diff (defaults to the latest snapshot)
 pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (~215 calls, MFA'd session required)
+pnpm docs:gen        # rewrite the generated sections of the inventory docs (CI fails on drift)
 pnpm check           # everything CI runs
 ```
 

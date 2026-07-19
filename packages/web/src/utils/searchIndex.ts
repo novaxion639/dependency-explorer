@@ -2,8 +2,9 @@ import type { ConnectivityMap } from '@dependency-explorer/data'
 import type { UrlState } from '../hooks/useUrlState'
 import { edgeKey } from '../hooks/useUrlState'
 import { buildFlagRegistry } from './flagRegistry'
+import { buildFileIndex } from './fileIndex'
 
-export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'domain' | 'team' | 'infra' | 'flag'
+export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'domain' | 'team' | 'infra' | 'flag' | 'file'
 
 export interface SearchEntry {
   type: SearchResultType
@@ -18,12 +19,12 @@ export interface SearchEntry {
 }
 
 const TYPE_ORDER: Record<SearchResultType, number> = {
-  service: 0, endpoint: 1, connection: 2, flow: 3, domain: 4, team: 5, infra: 6, flag: 7,
+  service: 0, endpoint: 1, connection: 2, flow: 3, domain: 4, team: 5, infra: 6, flag: 7, file: 8,
 }
 
 // Choosing a result fully describes the target view: modal/popup params are
 // reset explicitly so the landing state never mixes with whatever was open.
-const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null }
+const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null }
 
 export function buildSearchIndex(map: ConnectivityMap): SearchEntry[] {
   const entries: SearchEntry[] = []
@@ -71,8 +72,23 @@ export function buildSearchIndex(map: ConnectivityMap): SearchEntry[] {
       type: 'flow',
       label: flow.name,
       sublabel: flow.description,
-      haystack: flow.steps.map(s => `${s.from} ${s.to} ${s.action}`).join(' '),
+      // unit paths/labels in the haystack: typing a file name surfaces the flows crossing it
+      haystack: [
+        ...flow.steps.map(s => `${s.from} ${s.to} ${s.action}`),
+        ...(flow.codeUnits ?? []).map(u => `${u.path ?? ''} ${u.label}`),
+      ].join(' '),
       patch: { ...CLOSE_OVERLAYS, flow: flow.id },
+    })
+  }
+
+  // Reverse code→flows index — derived from codeUnits[].path, zero authored data
+  for (const entry of buildFileIndex(map).values()) {
+    entries.push({
+      type: 'file',
+      label: entry.path,
+      sublabel: `${entry.service} · touched by ${entry.flows.length} flow${entry.flows.length === 1 ? '' : 's'}`,
+      haystack: entry.flows.map(f => `${f.id} ${f.name}`).join(' '),
+      patch: { ...CLOSE_OVERLAYS, file: `${entry.service}/${entry.path}` },
     })
   }
 

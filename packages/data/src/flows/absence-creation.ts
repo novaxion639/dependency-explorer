@@ -13,6 +13,7 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Absence Creation",
   "description": "A manager records an absence (paid leave, sick day…) for an employee. Absences are shifts with an absence type: the same V3::Shifts::CreateService transaction runs with the absence branches active — sick-leave duration recomputation (feature-flagged), conflict resolution that unassigns overlapping work shifts (ShiftReplacementService), paid-leave counter updates — and the absence-only ActivityJob posts the audit event to svc-events. Labour-law entitlements are evaluated in-process (rules previously synced from svc-labour-laws). Nobody is notified at this point; employee notifications happen at planning publication.",
   "trigger": {"actor": "manager", "role": "planner"},
+  "links": [{"to": "shift-creation", "kind": "domain-related", "note": "an absence IS a shift kind \u2014 same V3::Shifts::CreateService path, absence-specific branches"}],
   "steps": [
     {
       "from": "skello-app-front",

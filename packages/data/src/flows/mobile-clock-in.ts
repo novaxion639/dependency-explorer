@@ -12,6 +12,7 @@ const mobile_clock_in: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Mobile Clock-In (Employee Phone)",
   "description": "An employee clocks in from the Skello mobile app. The phone calls svc-punch DIRECTLY (clocks-in-out, badgedFrom: mobile_app) — the monolith is not in the request path. GPS capture is best-effort and NEVER blocks the punch (BR-15285); a client-generated inUuid plus svc-punch's same-second dedup guard make retries idempotent. svc-punch precomputes the auto-close timestamp at write time (calculateOutAuto = shop closing time in the shop's timezone, rolled +1 day for overnight shops) — there is NO auto-close cron anywhere; 'closedByBackend' is derived as out === outAuto. Clock-out and pauses PATCH the same record from the in-progress screen. Mobile punching is gated per-user (settings.mobileClocksInOutActivatedUsers, maintained through the settings/mobile surface and recalculated via the SnsMobilePermissions topic when settings change). Each mobile badge also bumps lastMobileBadgeDate on the shop's SETTING row — svc-punch's own table stream picks that up and calls the monolith's lateness SMS job (the sixth service→monolith callback).",
   "trigger": {"actor": "employee", "role": "mobile badging permission (svc-punch replicated user)"},
+  "links": [{"to": "badging-review", "kind": "continuation", "note": "mobile punches reviewed in the same time-management tab"}],
   "steps": [
     {
       "from": "skello-mobile",

@@ -301,12 +301,37 @@ export const FlowInfraEdgeSchema = z.object({
   crud: z.array(CrudOperationSchema).optional(),
 })
 
+// ── Flow composition links ───────────────────────────────────────────────────
+// Typed flow-to-flow relationships. The `kind` is load-bearing — the prose
+// cross-references encode genuinely different semantics, and a flat id array
+// would collapse them into false equivalence:
+//   continuation     — this flow's outcome is what the target flow processes
+//   writes-back-to   — fires the target's DOMAIN ACTION through a different,
+//                      unmodeled entry point (e.g. a /private strangler write)
+//   same-journey     — one user journey split across catalog entries by platform
+//   domain-related   — shared machinery/domain, distinct journeys
+// Only ONE direction is authored; the reverse renders derived. Links are
+// human-authored (no extractor can prove causality) — integrity tests verify
+// id resolution only.
+
+export const FlowLinkKindSchema = z.enum(['continuation', 'writes-back-to', 'same-journey', 'domain-related'])
+
+export const FlowLinkSchema = z.object({
+  /** Target flow id */
+  to: z.string(),
+  kind: FlowLinkKindSchema,
+  /** Qualifier for the relationship — entry point, shared machinery, split rationale */
+  note: z.string().optional(),
+})
+
 export const ServiceFlowSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
   /** Who can trigger this flow — enforced present by the integrity suite */
   trigger: FlowTriggerSchema.optional(),
+  /** Typed relationships to other flows — reverse direction derived at render */
+  links: z.array(FlowLinkSchema).optional(),
   steps: z.array(ServiceFlowStepSchema),
   infraNodes: z.array(FlowInfraNodeSchema).optional(),
   infraEdges: z.array(FlowInfraEdgeSchema).optional(),
@@ -410,6 +435,8 @@ export type FeatureFlagRef = z.infer<typeof FeatureFlagRefSchema>
 export type FlowFailure = z.infer<typeof FlowFailureSchema>
 export type FlowTrigger = z.infer<typeof FlowTriggerSchema>
 export type AuthRef = z.infer<typeof AuthRefSchema>
+export type FlowLinkKind = z.infer<typeof FlowLinkKindSchema>
+export type FlowLink = z.infer<typeof FlowLinkSchema>
 export type RulePlatform = z.infer<typeof RulePlatformSchema>
 export type DomainRuleDivergence = z.infer<typeof DomainRuleDivergenceSchema>
 export type DomainRule = z.infer<typeof DomainRuleSchema>

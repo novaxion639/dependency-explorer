@@ -33,11 +33,20 @@ interface Props {
   /** Code-detail view (?detail=code) — only offered when the flow has a code layer */
   detail: boolean
   onDetailChange: (detail: boolean) => void
+  /** Navigate to a linked flow (composition links) */
+  onOpenFlow: (flowId: string) => void
   onBack: () => void
   onClose: () => void
 }
 
-function FlowInner({ flow, map, detail, onDetailChange, onBack, onClose }: Props) {
+const LINK_KIND_META: Record<string, { label: string; color: string }> = {
+  'continuation':   { label: 'continues in', color: '#10b981' },
+  'writes-back-to': { label: 'writes back to', color: '#e0761b' },
+  'same-journey':   { label: 'same journey', color: '#06b6d4' },
+  'domain-related': { label: 'related', color: '#64748b' },
+}
+
+function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onBack, onClose }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<ReturnType<typeof buildFlowGraph>['edges'][number]>([])
@@ -151,6 +160,58 @@ function FlowInner({ flow, map, detail, onDetailChange, onBack, onClose }: Props
             {flow.description}
           </div>
         )}
+
+        {/* Composition links — outgoing authored, incoming derived */}
+        {(() => {
+          const flowById = new Map(map.flows.map(f => [f.id, f]))
+          const outgoing = (flow.links ?? []).map(l => ({ ...l, target: flowById.get(l.to) })).filter(l => l.target)
+          const incoming = map.flows.flatMap(f => (f.links ?? [])
+            .filter(l => l.to === flow.id)
+            .map(l => ({ ...l, source: f })))
+          if (!outgoing.length && !incoming.length) return null
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {outgoing.map((l, i) => {
+                const meta = LINK_KIND_META[l.kind]!
+                return (
+                  <button
+                    key={`out-${i}`}
+                    onClick={() => onOpenFlow(l.to)}
+                    title={l.note}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer',
+                      fontSize: 10, padding: '2px 7px', borderRadius: 4,
+                      background: meta.color + '14', border: `1px solid ${meta.color}44`, color: meta.color,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <span>{meta.label} →</span>
+                    <span>{l.target!.name}</span>
+                  </button>
+                )
+              })}
+              {incoming.map((l, i) => {
+                const meta = LINK_KIND_META[l.kind]!
+                return (
+                  <button
+                    key={`in-${i}`}
+                    onClick={() => onOpenFlow(l.source.id)}
+                    title={l.note}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer',
+                      fontSize: 10, padding: '2px 7px', borderRadius: 4,
+                      background: 'transparent', border: `1px dashed ${meta.color}55`, color: meta.color,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <span>← {meta.label}</span>
+                    <span>{l.source.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         {/* Feature flags gating parts of this flow */}
         {flowFlags.length > 0 && (

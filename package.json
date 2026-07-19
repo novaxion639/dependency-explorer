@@ -13,6 +13,7 @@
     "discover:apply": "pnpm --filter @dependency-explorer/discovery discover:apply",
     "discover:aws:fetch": "pnpm --filter @dependency-explorer/discovery discover:aws:fetch",
     "discover:scaffold": "pnpm --filter @dependency-explorer/discovery discover:scaffold",
+    "docs:gen": "pnpm --filter @dependency-explorer/discovery docs:gen",
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "discover:trace": "pnpm --filter @dependency-explorer/discovery discover:trace"
   },

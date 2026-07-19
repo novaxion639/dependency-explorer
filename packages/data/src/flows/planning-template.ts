@@ -11,6 +11,7 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Planning Template — Save & Apply",
   "description": "A manager saves the current week's planning as a reusable template, or applies one to populate a week. Save = TemplatesController#create snapshots the shop's shifts. Apply = the first 5 selected weeks run synchronously through V3::Templates::ApplyService (shift creation with in-process labour-law compliance, skipped-postes reporting, counter updates via CombinedTrackerUpdateService); any further weeks are enqueued one CreateFromTemplateJob each — the same sync/async split as week-copy. Nobody is notified; publication does that.",
   "trigger": {"actor": "manager", "role": "planner"},
+  "links": [{"to": "week-copy", "kind": "domain-related", "note": "template application reuses the week-copy engine"}],
   "steps": [
     {
       "from": "skello-app-front",
