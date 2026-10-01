@@ -42,6 +42,7 @@ import type { ContractCheckResult } from './flow-check'
 import { checkContractRefs } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
+import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const REPO_BASE = path.resolve(__dirname, '../../../../')
@@ -141,6 +142,7 @@ interface Report {
   flowCheck: FlowCheckResult
   codeLayerCheck: CodeLayerCheckResult
   ruleCheck: RuleCheckResult
+  areaCheck: AreaCheckResult
   flagCheck: FlagCheckResult
   failureCheck: FailureCheckResult
   authCheck: AuthCheckResult
@@ -208,6 +210,12 @@ function run(): Report {
     flowCheck: checkFlows(connectivityMap),
     codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE),
     ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),
+    areaCheck: checkAreas({
+      areas: connectivityMap.areas ?? [],
+      externals: connectivityMap.externals ?? [],
+      repoBase: REPO_BASE,
+      coverageRoots: COVERAGE_ROOTS,
+    }),
     flagCheck: checkFeatureFlags(connectivityMap, REPO_BASE),
     // filled after the repo loop — needs the extracted serverless/tf DLQ facts
     failureCheck: { findings: [], inScopeEdges: 0, verifiedDlqs: 0, waivers: 0, skippedServices: [] },
@@ -630,6 +638,10 @@ function writeOverlay(report: Report) {
       ]),
     ),
     endpoints: report.endpointStamps,
+    areaFiles: report.areaCheck.areaFiles,
+    areaCoverage: Object.fromEntries(
+      Object.entries(report.areaCheck.coverage).map(([repo, c]) => [repo, { mapped: c.mapped, total: c.total }]),
+    ),
   }
   fs.mkdirSync(path.dirname(OVERLAY_PATH), { recursive: true })
   fs.writeFileSync(OVERLAY_PATH, JSON.stringify(overlay, null, 2) + '\n')
@@ -852,6 +864,29 @@ function printMarkdown(r: Report) {
     } else {
       console.log('_every rule source path exists_')
     }
+  }
+
+  const ar = r.areaCheck
+  console.log(`\n## 🗺 Product areas (${ar.findings.length} findings)\n`)
+  console.log('| host repo | mapped | total | coverage |')
+  console.log('|---|---|---|---|')
+  for (const [repo, c] of Object.entries(ar.coverage)) {
+    console.log(`| ${repo} | ${c.mapped} | ${c.total} | ${c.total ? Math.round((c.mapped / c.total) * 100) : 0}% |`)
+  }
+  console.log(`\n${ar.anchorsVerified} glossary anchors verified, ${ar.evidenceVerified} external evidence literals found, ${ar.overlaps.length} files shared by two product areas.`
+    + (ar.skippedRepos.length ? ` Skipped (repo not checked out): ${ar.skippedRepos.join(', ')}.` : ''))
+  if (ar.findings.length) {
+    console.log(ar.findings.map(f => `- [${f.kind}] **${f.subject}**: ${f.detail}`).join('\n'))
+  }
+  for (const [repo, c] of Object.entries(ar.coverage)) {
+    if (c.unmappedByDir.length) {
+      console.log(`\n**Unmapped in ${repo}** (top 15 directories — the adoption backlog):`)
+      console.log(c.unmappedByDir.slice(0, 15).map(d => `- \`${d.dir}\` — ${d.files} files`).join('\n'))
+    }
+  }
+  if (ar.overlaps.length) {
+    console.log(`\n**Shared files** (first 20):`)
+    console.log(ar.overlaps.slice(0, 20).map(o => `- ${o.repo}:\`${o.file}\` — ${o.areas.join(', ')}`).join('\n'))
   }
 
   const flc = r.failureCheck

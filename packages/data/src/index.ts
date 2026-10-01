@@ -103,6 +103,12 @@ import org_onboarding from './flows/org-onboarding'
 const overlay = DiscoveredOverlaySchema.parse(discoveredJson)
 const verifiedOn = overlay.generatedAt.slice(0, 10)
 
+export const areaFacts = {
+  files: overlay.areaFiles ?? {},
+  coverage: overlay.areaCoverage ?? {},
+  verifiedOn,
+}
+
 function enrichServices(services: unknown[]): unknown[] {
   const endpointStamps = overlay.endpoints ?? {}
   return (services as Array<Record<string, unknown>>).map(svc => {
