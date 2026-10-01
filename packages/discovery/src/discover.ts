@@ -43,7 +43,8 @@ import { checkContractRefs } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
-import { pinRepos, type PinnedRepo, type PinSkip } from './pinned'
+import { pinRepos, buildGraphs, type PinnedRepo, type PinSkip } from './pinned'
+import { checkCodeGrades, type Grade, type GradeFinding } from './code-grades'
 import { findingKeys, diffBaseline, readBaseline, writeBaseline } from './baseline'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -59,6 +60,10 @@ function scanTargets(base: string): string[] {
 }
 
 const PIN = PINNED_MODE ? pinRepos(scanTargets(SOURCE_BASE), SOURCE_BASE, PINNED_BASE) : null
+const CODE_REPOS = new Set(connectivityMap.flows.flatMap(f => (f.codeUnits ?? []).map(u => u.service)))
+if (PIN) {
+  PIN.skipped.push(...buildGraphs(PIN.pinned.filter(p => CODE_REPOS.has(p.repo))))
+}
 const REPO_BASE = PIN ? PINNED_BASE : SOURCE_BASE
 const OVERLAY_PATH = path.resolve(__dirname, '../../data/src/generated/discovered.json')
 const MONOLITH_ROUTES_PATH = path.resolve(__dirname, '../../data/src/generated/monolith-routes.json')
@@ -160,6 +165,7 @@ interface Report {
   sdkRegistryStats: { packages: number; methods: number } | null
   flowCheck: FlowCheckResult
   codeLayerCheck: CodeLayerCheckResult
+  codeGrades: { findings: GradeFinding[]; grades: Record<string, Grade>; distribution: Record<Grade, number>; backlog: string[] } | null
   ruleCheck: RuleCheckResult
   areaCheck: AreaCheckResult
   flagCheck: FlagCheckResult
@@ -229,6 +235,7 @@ function run(): Report {
     sdkUsage: [],
     sdkRegistryStats: null,
     flowCheck: checkFlows(connectivityMap),
+    codeGrades: PIN ? checkCodeGrades(connectivityMap, REPO_BASE, repo => PIN.pinned.find(p => p.repo === repo)?.sha ?? null) : null,
     codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE, railsRoutes ? new Set(railsRoutes.routes.map(r => r.controllerFile)) : undefined),
     ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),
     areaCheck: checkAreas({
@@ -668,6 +675,7 @@ function writeOverlay(report: Report) {
     areaCoverage: Object.fromEntries(
       Object.entries(report.areaCheck.coverage).map(([repo, c]) => [repo, { mapped: c.mapped, total: c.total }]),
     ),
+    codeEdgeGrades: report.codeGrades?.grades,
   }
   fs.mkdirSync(path.dirname(OVERLAY_PATH), { recursive: true })
   fs.writeFileSync(OVERLAY_PATH, JSON.stringify(overlay, null, 2) + '\n')
@@ -894,12 +902,27 @@ function printMarkdown(r: Report) {
   if (cl.flowsWithCodeLayer === 0) {
     console.log('_no flow declares a code layer yet_')
   } else {
-    console.log(`${cl.flowsWithCodeLayer} flow(s) with a code layer — ${cl.pathsVerified} unit paths verified on disk, ${cl.edgesVerified} call edges verified by reference.`
+    console.log(`${cl.flowsWithCodeLayer} flow(s) with a code layer — ${cl.pathsVerified} unit paths verified on disk.`
       + (cl.skippedRepos.length ? ` Skipped (repo not checked out): ${cl.skippedRepos.join(', ')}.` : ''))
     if (cl.findings.length) {
       console.log(cl.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
     } else {
-      console.log('_every code unit path exists and every call edge is referenced from its caller_')
+      console.log('_every code unit path exists_')
+    }
+  }
+  const cg = r.codeGrades
+  if (!cg) {
+    console.log('\n🫀 grades require --pinned (graphs are only trusted at the pinned commit)')
+  } else {
+    const d = cg.distribution
+    console.log(`\n### Call-edge grades (${cg.findings.length} findings)\n`)
+    console.log('| graph | constant | import | text | none |\n|---|---|---|---|---|')
+    console.log(`| ${d.graph} | ${d.constant} | ${d.import} | ${d.text} | ${d.none} |`)
+    if (cg.findings.length) {
+      console.log(`\n${cg.findings.map(f => `- [${f.kind}] **${f.flow || f.subject}**: ${f.kind === 'ungraded-edge' ? `${f.subject} — ${f.detail}` : f.detail}`).join('\n')}`)
+    }
+    if (cg.backlog.length) {
+      console.log(`\nText-only evidence (review backlog, ${cg.backlog.length}):\n${cg.backlog.map(b => `- ${b}`).join('\n')}`)
     }
   }
 

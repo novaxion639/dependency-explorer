@@ -33,6 +33,11 @@ it('keys connection-level drift by its edge', () => {
   expect(keys).toEqual(['stale||svc-a→svc-b|', 'unknownTargets||svc-a→svc-z|'])
 })
 
+it('takes the first non-empty subject field', () => {
+  const keys = findingKeys({ codeGrades: { findings: [{ flow: '', subject: 'svc-punch', kind: 'stale-graph', detail: 'graph stale' }] } })
+  expect(keys).toEqual(['codeGrades|stale-graph|svc-punch|graph stale'])
+})
+
 describe('diffBaseline', () => {
   it('splits new, resolved and carried', () => {
     expect(diffBaseline(['a', 'b'], ['b', 'c'])).toEqual({ added: ['a'], resolved: ['c'], carried: 1 })

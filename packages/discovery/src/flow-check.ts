@@ -45,7 +45,7 @@ const PATH_FRAGMENT_RE = /\b(GET|POST|PUT|PATCH|DELETE)\s+(\/[^\s,—()]+)/g
 
 export interface CodeLayerFinding {
   flow: string
-  kind: 'missing-code-path' | 'unreferenced-callee' | 'unknown-code-edge-endpoint' | 'unknown-unit-service' | 'controller-without-route'
+  kind: 'missing-code-path' | 'unknown-code-edge-endpoint' | 'unknown-unit-service' | 'controller-without-route'
   detail: string
 }
 
@@ -53,17 +53,8 @@ export interface CodeLayerCheckResult {
   findings: CodeLayerFinding[]
   flowsWithCodeLayer: number
   pathsVerified: number
-  edgesVerified: number
   /** services whose repo is not checked out — their paths/edges are skipped, not failed */
   skippedRepos: string[]
-}
-
-/** Longest Constant-like token of a label — "V3::Shifts::CreateService", or "Shift" from "Shift callbacks (…)". */
-function calleeToken(label: string): string | null {
-  const base = label.replace(/#\w+.*$/, '') // strip "#create" action suffixes
-  const tokens = base.match(/[A-Z][A-Za-z0-9_]*(?:::[A-Z][A-Za-z0-9_]*)*/g) ?? []
-  if (!tokens.length) return null
-  return tokens.reduce((a, b) => (b.length > a.length ? b : a))
 }
 
 const ABSTRACT_CONTROLLER = /(^|\/)(base|application)_controller\.rb$/
@@ -71,21 +62,9 @@ const ABSTRACT_CONTROLLER = /(^|\/)(base|application)_controller\.rb$/
 export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string, controllerFiles?: Set<string>): CodeLayerCheckResult {
   const serviceNames = new Set(map.services.map(s => s.name))
   const result: CodeLayerCheckResult = {
-    findings: [], flowsWithCodeLayer: 0, pathsVerified: 0, edgesVerified: 0, skippedRepos: [],
+    findings: [], flowsWithCodeLayer: 0, pathsVerified: 0, skippedRepos: [],
   }
   const skipped = new Set<string>()
-  const fileCache = new Map<string, string | null>()
-  const readUnitFile = (service: string, relPath: string): string | null => {
-    const key = `${service}:${relPath}`
-    if (!fileCache.has(key)) {
-      try {
-        fileCache.set(key, fs.readFileSync(path.join(repoBase, service, relPath), 'utf-8'))
-      } catch {
-        fileCache.set(key, null)
-      }
-    }
-    return fileCache.get(key)!
-  }
 
   for (const flow of map.flows) {
     const units = flow.codeUnits ?? []
@@ -128,23 +107,6 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string, cont
             detail: `codeEdge "${edge.from} → ${edge.to}": "${end}" is neither a code unit, a service, nor an infra node`,
           })
         }
-      }
-
-      const fromUnit = unitById.get(edge.from)
-      const toUnit = unitById.get(edge.to)
-      if (!fromUnit?.path || !toUnit) continue
-      if (skipped.has(fromUnit.service) || !serviceNames.has(fromUnit.service)) continue
-      const token = calleeToken(toUnit.label)
-      if (!token) continue
-      const content = readUnitFile(fromUnit.service, fromUnit.path)
-      if (content === null) continue // missing path already reported above
-      if (content.includes(token)) {
-        result.edgesVerified++
-      } else {
-        result.findings.push({
-          flow: flow.id, kind: 'unreferenced-callee',
-          detail: `codeEdge "${edge.from} → ${edge.to}": "${token}" not referenced in ${fromUnit.service}/${fromUnit.path}`,
-        })
       }
     }
   }

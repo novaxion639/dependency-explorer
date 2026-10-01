@@ -437,6 +437,9 @@ export const ExternalSystemSchema = z.object({
 // that already exist in the manual layer — new findings go to the drift
 // report for human adoption via PR, never silently into the map.
 
+export const CodeEdgeGradeSchema = z.enum(['graph', 'constant', 'import', 'text', 'none'])
+export type CodeEdgeGrade = z.infer<typeof CodeEdgeGradeSchema>
+
 export const DiscoveredOverlaySchema = z.object({
   generatedAt: z.string(),
   scannedRepos: z.array(z.string()),
@@ -468,6 +471,8 @@ export const DiscoveredOverlaySchema = z.object({
     mapped: z.number().int().nonnegative(),
     total: z.number().int().nonnegative(),
   })).optional(),
+  // "<flowId>#<from>→<to>" → call-graph evidence grade at the pinned commit (🫀)
+  codeEdgeGrades: z.record(z.string(), CodeEdgeGradeSchema).optional(),
 })
 
 // ── Top-level map ─────────────────────────────────────────────────────────────

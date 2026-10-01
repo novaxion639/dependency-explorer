@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
-import { connectivityMap, monolithRoutes } from './index'
+import { connectivityMap, monolithRoutes, codeEdgeGrades } from './index'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { getFlowAreas } from './areas-derive'
 import discoveredJson from './generated/discovered.json'
@@ -419,6 +419,15 @@ describe('monolith surface', () => {
     const ids = new Set(monolithRoutes.map(r => `${r.verb} ${r.path}`))
     for (const id of Object.keys(skelloAppEndpointNotes)) {
       expect(ids.has(id), `note for unknown route ${id}`).toBe(true)
+    }
+  })
+})
+
+describe('code-edge grades', () => {
+  it('grade only declared unit-to-unit code edges', () => {
+    const declared = new Set(flows.flatMap(f => (f.codeEdges ?? []).map(e => `${f.id}#${e.from}→${e.to}`)))
+    for (const key of Object.keys(codeEdgeGrades)) {
+      expect(declared.has(key), `grade for undeclared edge ${key}`).toBe(true)
     }
   })
 })

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { loadRepoGraph, gradeEdge, stripComments } from './code-grades'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
+import { ConnectivityMapSchema } from '@dependency-explorer/schema'
+import { loadRepoGraph, gradeEdge, stripComments, checkCodeGrades } from './code-grades'
 
 const graphJson = {
   built_at_commit: 'abc123',
@@ -44,5 +48,79 @@ describe('gradeEdge', () => {
   })
   it('strips ruby, js line and block comments', () => {
     expect(stripComments('a # ruby\nb // js\n/* c */ d')).toBe('a \nb \n d')
+  })
+})
+
+
+describe('gradeEdge through a barrel', () => {
+  const barrel = loadRepoGraph({
+    built_at_commit: 'abc123',
+    nodes: [
+      { id: 'api', label: 'api', source_file: 'src/modules/punch/api.ts' },
+      { id: 'idx', label: 'index', source_file: 'src/plugins/clients/index.ts' },
+      { id: 'pc', label: 'PunchClient', source_file: 'src/plugins/clients/PunchClient/PunchClient.ts', _callable_class: true },
+      { id: 'ac', label: 'AuthClient', source_file: 'src/plugins/clients/AuthClient/AuthClient.ts', _callable_class: true },
+    ],
+    links: [
+      { source: 'api', target: 'idx', relation: 'imports_from', confidence: 'EXTRACTED' },
+      { source: 'idx', target: 'pc', relation: 're_exports', confidence: 'EXTRACTED' },
+      { source: 'idx', target: 'ac', relation: 're_exports', confidence: 'EXTRACTED' },
+    ],
+  })
+  if (!barrel) {
+    throw new Error('barrel graph failed to load')
+  }
+  const source = "import { punchClient } from '@plugins/clients'\nexport const clockIn = () => punchClient.clockIn()"
+
+  it('grades a re-exported callee the caller uses as import', () => {
+    expect(gradeEdge(barrel, 'src/modules/punch/api.ts', 'src/plugins/clients/PunchClient/PunchClient.ts', source, 'PunchClient')).toBe('import')
+  })
+  it('does not credit every file the barrel re-exports', () => {
+    expect(gradeEdge(barrel, 'src/modules/punch/api.ts', 'src/plugins/clients/AuthClient/AuthClient.ts', source, 'AuthClient')).toBe('none')
+  })
+})
+
+describe('checkCodeGrades', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'grades-'))
+  const write = (rel: string, content: string) => {
+    fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true })
+    fs.writeFileSync(path.join(base, rel), content)
+  }
+  write('skello-app/graphify-out/graph.json', JSON.stringify(graphJson))
+  write('skello-app/app/controllers/shifts_controller.rb', 'class ShiftsController\nend\n')
+  const map = ConnectivityMapSchema.parse({
+    services: [
+      { name: 'skello-app', type: 'rails-monolith', description: 'd', endpoints: [] },
+      { name: 'svc-x', type: 'typescript-microservice', description: 'd', endpoints: [] },
+    ],
+    connections: [],
+    flows: [{
+      id: 'f', name: 'F', description: 'd', steps: [],
+      codeUnits: [
+        { id: 'c', service: 'skello-app', kind: 'controller', label: 'ShiftsController', path: 'app/controllers/shifts_controller.rb' },
+        { id: 'm', service: 'skello-app', kind: 'model-callback', label: 'Shift', path: 'app/models/shift.rb' },
+        { id: 'u', service: 'skello-app', kind: 'model-callback', label: 'Unrelated', path: 'app/models/unrelated.rb' },
+        { id: 'x', service: 'svc-x', kind: 'manager', label: 'XManager', path: 'src/x.ts' },
+      ],
+      codeEdges: [
+        { from: 'c', to: 'm', label: 'save', mode: 'sync' },
+        { from: 'c', to: 'u', label: 'noop', mode: 'sync' },
+        { from: 'c', to: 'x', label: 'cross', mode: 'sync' },
+      ],
+    }],
+  })
+
+  it('grades same-repo edges, reports none as a finding and never grades cross-repo edges as verified', () => {
+    const r = checkCodeGrades(map, base, () => 'abc123')
+    expect(r.grades['f#c→m']).toBe('graph')
+    expect(r.grades['f#c→u']).toBe('none')
+    expect(['text', 'none']).toContain(r.grades['f#c→x'])
+    expect(r.findings.filter(f => f.kind === 'ungraded-edge').map(f => f.subject)).toContain('f#c→u')
+  })
+
+  it('refuses to grade a repo whose graph was built at another commit', () => {
+    const r = checkCodeGrades(map, base, () => 'deadbeef')
+    expect(r.grades['f#c→m']).toBeUndefined()
+    expect(r.findings.filter(f => f.kind === 'stale-graph').map(f => f.detail)).toEqual(['graph stale — run graphify update at deadbeef'])
   })
 })
