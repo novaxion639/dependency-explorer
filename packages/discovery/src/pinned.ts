@@ -20,6 +20,18 @@ function errorText(e: unknown): string {
   return text.split('\n')[0] ?? text
 }
 
+function removeWorktree(source: string, dir: string, git: GitRunner): void {
+  if (!fs.existsSync(dir)) {
+    return
+  }
+  try {
+    git(source, ['worktree', 'remove', '--force', dir])
+  } catch {
+    fs.rmSync(dir, { recursive: true, force: true })
+    git(source, ['worktree', 'prune'])
+  }
+}
+
 export function pinRepos(repos: string[], sourceBase: string, pinnedBase: string, git: GitRunner = defaultGit): { pinned: PinnedRepo[]; skipped: PinSkip[] } {
   fs.mkdirSync(pinnedBase, { recursive: true })
   const pinned: PinnedRepo[] = []
@@ -43,6 +55,7 @@ export function pinRepos(repos: string[], sourceBase: string, pinnedBase: string
       pinned.push({ repo, branch, sha, dir })
     } catch (e) {
       skipped.push({ repo, reason: `origin/${branch}: ${errorText(e)}` })
+      removeWorktree(source, dir, git)
     }
   }
   return { pinned, skipped }
@@ -65,4 +78,11 @@ export function buildGraphs(pinned: PinnedRepo[], run: (cwd: string) => void = c
     }
   }
   return skipped
+}
+
+export function applyModeError(argv: string[]): string | null {
+  if (argv.includes('--apply') && !argv.includes('--pinned')) {
+    return '--apply requires --pinned: the overlay, grades and monolith routes are written from production branches only'
+  }
+  return null
 }

@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react'
 import type { ServiceFlow } from '@dependency-explorer/data'
 import { buildSequence } from '../../utils/buildSequence'
 
@@ -43,7 +44,22 @@ export function SequenceDiagram({ flow, onSelectUnit }: Props) {
           const cx = x.get(p.id) ?? 0
           const clickable = unitIds.has(p.id)
           return (
-            <g key={p.id} onClick={clickable ? () => onSelectUnit(p.id) : undefined} style={{ cursor: clickable ? 'pointer' : 'default' }}>
+            <g
+              key={p.id}
+              {...(clickable ? {
+                role: 'button',
+                tabIndex: 0,
+                'aria-label': `Open ${p.label}`,
+                onClick: () => onSelectUnit(p.id),
+                onKeyDown: (e: KeyboardEvent<SVGGElement>) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onSelectUnit(p.id)
+                  }
+                },
+              } : {})}
+              style={{ cursor: clickable ? 'pointer' : 'default' }}
+            >
               <rect x={cx - COL / 2 + 8} y={8} width={COL - 16} height={HEADER - 16} rx={6} fill="#1a1d27" stroke="#2e3250" />
               <text x={cx} y={28} textAnchor="middle" fontSize={11} fontWeight={700} fill="#e2e8f0">{p.label.length > 26 ? `${p.label.slice(0, 25)}…` : p.label}</text>
               <text x={cx} y={42} textAnchor="middle" fontSize={9} fill="#64748b">{p.service === p.id ? '' : p.service}</text>

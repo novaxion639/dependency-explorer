@@ -59,7 +59,7 @@ pnpm build           # typecheck + production build (static bundle in packages/w
 pnpm typecheck       # typecheck all packages
 pnpm test            # data integrity + discovery mapping suites
 pnpm discover        # scan sibling Skello repos → classified drift report
-pnpm discover:apply  # same + regenerate the discovered overlay (provenance stamps)
+pnpm discover:apply  # pinned run + regenerate the discovered overlay (provenance stamps, call-edge grades) and the monolith routes; --apply refuses to run unpinned
 pnpm discover -- --pinned   # same, against each repo's production branch (master; main for *-tf) as detached worktrees in .pinned/
 pnpm discover:baseline      # pinned run + rewrite packages/discovery/baseline.json (accepted findings and scanned repo set)
 pnpm discover -- --pinned --fail-on-new   # exit 1 when a finding is not in the baseline

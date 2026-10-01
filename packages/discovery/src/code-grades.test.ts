@@ -118,6 +118,12 @@ describe('checkCodeGrades', () => {
     expect(r.findings.filter(f => f.kind === 'ungraded-edge').map(f => f.subject)).toContain('f#c→u')
   })
 
+  it('grades nothing in a repo that was not pinned', () => {
+    const r = checkCodeGrades(map, base, () => null)
+    expect(r.grades['f#c→m']).toBeUndefined()
+    expect(r.distribution.graph).toBe(0)
+  })
+
   it('refuses to grade a repo whose graph was built at another commit', () => {
     const r = checkCodeGrades(map, base, () => 'deadbeef')
     expect(r.grades['f#c→m']).toBeUndefined()

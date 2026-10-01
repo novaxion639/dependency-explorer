@@ -38,4 +38,12 @@ describe('SequenceDiagram', () => {
       expect(Number(w)).toBeGreaterThanOrEqual((text ?? '').length * 5.5)
     }
   })
+
+  it('makes code-unit participants keyboard-operable buttons, and only those', () => {
+    const flow = flowById('leave-request-approval')
+    const html = renderToStaticMarkup(<SequenceDiagram flow={flow} onSelectUnit={() => {}} />)
+    const buttons = [...html.matchAll(/<g role="button" tabindex="0" aria-label="Open ([^"]+)"/g)].map(m => m[1])
+    expect(buttons).toContain('LeaveRequestManager')
+    expect(buttons).not.toContain('svc-requests')
+  })
 })
