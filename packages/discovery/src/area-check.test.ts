@@ -33,6 +33,11 @@ const absentRepoArea = ProductAreaSchema.parse({
   codeLocations: [{ repo: 'svc-hiring', platform: 'backend', globs: ['**'] }],
   readingPath: [{ flowId: 'x', why: 'w' }], glossary: [],
 })
+const solver = ProductAreaSchema.parse({
+  id: 'automatic-scheduling', name: 'AS', description: 'd', kind: 'product', color: '#8b5cf6',
+  codeLocations: [{ repo: 'svc-solver', platform: 'backend', globs: ['**'] }, { repo: 'svc-solver', platform: 'backend', globs: ['src/fixtures/**'] }],
+  readingPath: [{ flowId: 'x', why: 'w' }], glossary: [],
+})
 const externals = [
   ExternalSystemSchema.parse({ id: 'stripe', name: 'Stripe', description: 'd', category: 'payment',
     usedBy: [{ service: 'skello-app', evidence: { kind: 'gem', literal: 'stripe' } }] }),
@@ -49,13 +54,18 @@ beforeAll(() => {
   write('skello-app/app/services/payroll/export.rb', '')
   write('skello-app/app/services/payroll/build.rb', '')
   write('skello-app/node_modules/x/app/services/ignored.rb', '')
+  write('svc-solver/src/solve.py', '')
+  write('svc-solver/src/fixtures/input.json', '')
+  write('svc-solver/lambda/.venv/lib/python3.12/site-packages/numpy/core.py', '')
+  write('svc-solver/lambda/site-packages/pandas/frame.py', '')
+  write('svc-solver/src/__pycache__/solve.cpython-312.pyc', '')
 })
 
 afterAll(() => fs.rmSync(base, { recursive: true, force: true }))
 
 function run() {
   return checkAreas({
-    areas: [planning, timeAttendance, absentRepoArea],
+    areas: [planning, timeAttendance, absentRepoArea, solver],
     externals,
     repoBase: base,
     coverageRoots: { 'skello-app': ['app/services/**/*.rb', 'app/models/**/*.rb'] },
@@ -99,6 +109,13 @@ describe('checkAreas', () => {
 
   it('reports product areas without reading path as backlog', () => {
     expect(run().findings.filter(f => f.kind === 'empty-reading-path').map(f => f.subject)).toEqual(['planning'])
+  })
+
+  it('counts source files only, ignoring virtualenvs, site-packages and bytecode', () => {
+    const r = run()
+    expect(r.areaFiles['automatic-scheduling']?.['svc-solver:**']).toBe(1)
+    expect(r.areaFiles['automatic-scheduling']?.['svc-solver:src/fixtures/**']).toBe(0)
+    expect(r.findings.some(f => f.detail.includes('src/fixtures/**'))).toBe(false)
   })
 
   it('skips repos that are not checked out without findings', () => {
