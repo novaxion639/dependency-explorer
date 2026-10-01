@@ -228,6 +228,19 @@ describe('auth context', () => {
   })
 })
 
+describe('contract refs', () => {
+  it('are "METHOD /path"-shaped and point at svc-* targets', () => {
+    for (const flow of flows) {
+      for (const edge of flow.codeEdges ?? []) {
+        for (const ref of edge.contractRefs ?? []) {
+          expect(/^(GET|POST|PUT|PATCH|DELETE) \//.test(ref), `${flow.id}: malformed contractRef "${ref}"`).toBe(true)
+          expect(edge.to.startsWith('svc-'), `${flow.id}: contractRef on non-svc target ${edge.to} (the monolith has no generated spec)`).toBe(true)
+        }
+      }
+    }
+  })
+})
+
 describe('failure layer', () => {
   it('only annotates async edges, never sync ones', () => {
     for (const flow of flows) {

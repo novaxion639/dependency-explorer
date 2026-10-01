@@ -155,7 +155,8 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "to": "svc-punch",
       "label": "getSetting / partialUpdateSetting / getUsers (direct)",
       "mode": "sync",
-      "auth": { "tokenType": "jwt", "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey" }
+      "auth": { "tokenType": "jwt", "authorizer": "SkelloLambdaAuthorizerJwtOrApiKey" },
+      "contractRefs": ["GET /settings/{shopId}", "PATCH /settings/{shopId}", "GET /users/shop/{shopId}"]
     },
     {
       "from": "cu-br-front-store",

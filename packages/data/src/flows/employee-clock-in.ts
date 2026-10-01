@@ -113,7 +113,8 @@ const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "to": "svc-punch",
       "label": "best-effort POST clocks-in-out",
       "mode": "sync",
-      "auth": { "tokenType": "jwt", "authAbsent": "no-authorizer-configured" }
+      "auth": { "tokenType": "jwt", "authAbsent": "no-authorizer-configured" },
+      "contractRefs": ["POST /clocks-in-out"]
     },
     {
       "from": "cu-eci-sync",

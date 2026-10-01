@@ -37,6 +37,9 @@ import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
 import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, checkPiiRefs, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult, type PiiCheckResult } from './flow-check'
 import { extractPiiFacts, type PiiFacts } from './extractors/pii'
+import { extractSwagger } from './extractors/swagger'
+import type { ContractCheckResult } from './flow-check'
+import { checkContractRefs } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 
@@ -143,6 +146,7 @@ interface Report {
   authCheck: AuthCheckResult
   piiFacts: PiiFacts | null
   piiCheck: PiiCheckResult
+  contractCheck: ContractCheckResult
   ignoredSdks: Record<string, string[]>
   reposWithoutServiceDefinition: Array<{ repo: string; httpEndpoints: number; queues: number }>
   railsUnmapped: string[]
@@ -211,6 +215,7 @@ function run(): Report {
     authCheck: { findings: [], gatesChecked: 0, gatesVerified: 0, authorizersChecked: 0, authorizersVerified: 0, skippedRepos: [] },
     piiFacts: null,
     piiCheck: { findings: [], refsChecked: 0, refsVerified: 0, skippedServices: [] },
+    contractCheck: { findings: [], refsChecked: 0, refsVerified: 0, skippedServices: [] },
     ignoredSdks: {},
     reposWithoutServiceDefinition: [],
     railsUnmapped: [],
@@ -431,6 +436,15 @@ function run(): Report {
     if (serviceNames.has(repo) && sls.authorizerNames.length) authorizersByService.set(repo, sls.authorizerNames)
   }
   report.authCheck = checkAuthContext(connectivityMap, REPO_BASE, authorizersByService)
+
+  // ── Contract refs (📜): edge refs vs generated TSOA specs ──────────────────
+  const operationsByService = new Map<string, Map<string, string>>()
+  for (const repo of repos) {
+    if (!serviceNames.has(repo)) continue
+    const sw = extractSwagger(REPO_BASE, repo)
+    if (sw) operationsByService.set(repo, sw.operations)
+  }
+  report.contractCheck = checkContractRefs(connectivityMap, operationsByService)
 
   // ── PII surface (🧬): lib-anonymizer decorator scan + edge-ref verification ─
   report.piiFacts = extractPiiFacts(REPO_BASE)
@@ -865,6 +879,20 @@ function printMarkdown(r: Report) {
       console.log(ac.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
     } else {
       console.log('_every gate appears in source and every authorizer is declared in config_')
+    }
+  }
+
+  const cc = r.contractCheck
+  console.log(`\n## 📜 Contract refs — edges vs generated TSOA specs (${cc.findings.length} findings)\n`)
+  if (cc.refsChecked === 0 && !cc.skippedServices.length) {
+    console.log('_no contract refs yet_')
+  } else {
+    console.log(`${cc.refsVerified}/${cc.refsChecked} refs verified against checked-in specs.`
+      + (cc.skippedServices.length ? ` Skipped (no tmp/swagger.json): ${cc.skippedServices.join(', ')}.` : ''))
+    if (cc.findings.length) {
+      console.log(cc.findings.map(f => `- [${f.kind}] **${f.flow}**: ${f.detail}`).join('\n'))
+    } else if (cc.refsChecked > 0) {
+      console.log('_every contract ref exists in its target\'s generated spec_')
     }
   }
 
