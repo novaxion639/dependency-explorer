@@ -44,6 +44,7 @@ import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
 import { pinRepos, type PinnedRepo, type PinSkip } from './pinned'
+import { findingKeys, diffBaseline, readBaseline, writeBaseline } from './baseline'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const SOURCE_BASE = path.resolve(__dirname, '../../../../')
@@ -62,6 +63,9 @@ const REPO_BASE = PIN ? PINNED_BASE : SOURCE_BASE
 const OVERLAY_PATH = path.resolve(__dirname, '../../data/src/generated/discovered.json')
 
 const JSON_MODE = process.argv.includes('--json')
+const BASELINE_PATH = path.resolve(__dirname, '../baseline.json')
+const BASELINE_MODE = process.argv.includes('--write-baseline')
+const FAIL_ON_NEW = process.argv.includes('--fail-on-new')
 const APPLY_MODE = process.argv.includes('--apply')
 // --aws [dir]: diff a read-only AWS snapshot (see aws-fetch.ts) against the map.
 // The dir resolves against the cwd, then the workspace root; without a value,
@@ -1011,6 +1015,16 @@ function printMarkdown(r: Report) {
 
   const epVerified = Object.keys(r.endpointStamps).length
   const epTotal = r.endpointChecks.reduce((n, c) => n + c.total, 0)
+  const keys = findingKeys({ ...r })
+  const delta = diffBaseline(keys, readBaseline(BASELINE_PATH))
+  console.log(`\n## 🧾 Baseline — ${delta.added.length} new · ${delta.resolved.length} resolved · ${delta.carried} carried\n`)
+  if (delta.added.length) {
+    console.log(`New:\n${delta.added.map(k => `- ${k}`).join('\n')}`)
+  }
+  if (delta.resolved.length) {
+    console.log(`\nResolved:\n${delta.resolved.map(k => `- ${k}`).join('\n')}`)
+  }
+
   console.log(`\n## Summary\n`)
   console.log(`| connections verified | endpoint stamps | candidates | stale | unverifiable | unknown targets |`)
   console.log(`|---|---|---|---|---|---|`)
@@ -1027,4 +1041,11 @@ if (JSON_MODE) {
 }
 if (APPLY_MODE) {
   writeOverlay(report)
+}
+if (BASELINE_MODE) {
+  writeBaseline(BASELINE_PATH, findingKeys({ ...report }))
+  console.log(`\nBaseline written: ${path.relative(process.cwd(), BASELINE_PATH)}`)
+}
+if (FAIL_ON_NEW && diffBaseline(findingKeys({ ...report }), readBaseline(BASELINE_PATH)).added.length) {
+  process.exitCode = 1
 }
