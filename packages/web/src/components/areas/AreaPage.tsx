@@ -99,8 +99,8 @@ export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, on
           {area.glossary.map(g => {
             const base = g.anchor ? repoUrl.get(g.anchor.repo) : undefined
             return (
-              <div key={g.term} id={`term-${g.term}`} style={{ display: 'contents' }}>
-                <dt style={{ fontWeight: 600, color: g.term === term ? area.color : '#e2e8f0' }}>
+              <div key={g.term} style={{ display: 'contents' }}>
+                <dt id={`term-${g.term}`} style={{ fontWeight: 600, color: g.term === term ? area.color : '#e2e8f0', scrollMarginTop: 24 }}>
                   {g.anchor && base
                     ? <a href={`${base}/blob/HEAD/${g.anchor.path}`} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{g.term} ↗</a>
                     : g.term}
@@ -143,7 +143,9 @@ export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, on
 
       <section style={SECTION} aria-labelledby="area-path">
         <h2 id="area-path" style={{ fontSize: 13 }}>Reading path</h2>
-        {area.readingPath.length === 0 && <p style={MUTED}>No flow yet — this area is on the documentation backlog.</p>}
+        {area.readingPath.length === 0 && (
+          <p style={MUTED}>{flows.length ? 'No reading path yet — the flows below traverse this area but none is curated as a starting point.' : 'No flow yet — this area is on the documentation backlog.'}</p>
+        )}
         <ol style={{ paddingLeft: 18, fontSize: 12 }}>
           {area.readingPath.map(r => (
             <li key={r.flowId} style={{ marginTop: 4 }}>

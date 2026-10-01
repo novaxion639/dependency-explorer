@@ -162,8 +162,8 @@ and "← triggered by" chips in the flow modal and flow list.
 
 A docs-gen module renders the dataset-derivable sections of `docs/flow-inventory.md` and
 `docs/planning-actions-coverage.md` between `<!-- GENERATED -->` markers — flow counts and
-lists, per-domain attribution (via a shared `getFlowDomains` util extracted from the web
-layer), zero-flow-domain flags — leaving analysis prose hand-authored; the action-level
+lists, per-area attribution by primary product area (via the shared `getFlowAreas` helper in
+`packages/data`), zero-flow-area flags — leaving analysis prose hand-authored; the action-level
 taxonomy in planning-actions-coverage has no schema representation and stays human-owned. A
 new self-contained `pnpm check` gate fails when generated sections drift from the dataset.
 The flow-authoring guide gains the code-layer chapter covering every field in this spec,
@@ -198,7 +198,7 @@ backlog, never dataset facts. 🧬 badges render on carrying edges in the code v
 - **Schema** — Zod in `packages/schema/src/index.ts`; all additions optional fields on
   `ServiceFlowSchema`, `ServiceFlowStepSchema`, `FlowCodeUnitSchema`, `FlowCodeEdgeSchema`,
   plus the new `DomainRuleSchema` and `FeatureFlagRefSchema`.
-- **Dataset** — `packages/data`: `rules.ts` registry beside `teams.ts`/`domains.ts`;
+- **Dataset** — `packages/data`: `rules.ts` registry beside `teams.ts`/`areas.ts`;
   integrity gates in `integrity.test.ts`; backfill in `flows/*.ts`.
 - **Discovery** — `packages/discovery`: serverless extractor extensions (DLQ/retry,
   authorizers), checker parametrizations of the `flow-check.ts` loop, the hash watch, the

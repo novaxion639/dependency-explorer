@@ -23,6 +23,9 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
       <header style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
         <h1 style={{ fontSize: 18, color: '#e2e8f0' }}>Product areas</h1>
         <span style={{ fontSize: 12, color: '#64748b' }}>Start here: pick an area, follow its reading path.</span>
+        <span style={{ fontSize: 11, color: '#64748b', width: '100%' }} title="Share of each host repo's source files mapped to an area (pnpm discover 🗺)">
+          Code mapped to an area: {Object.entries(areaFacts.coverage).map(([repo, c]) => `${repo} ${c.total ? Math.round((c.mapped / c.total) * 100) : 0}%`).join(' · ')}
+        </span>
         <button type="button" onClick={onOpenContext} style={{ marginLeft: 'auto', fontSize: 11, padding: '4px 10px', borderRadius: 5, border: '1px solid #2e3250', background: 'transparent', color: '#818cf8', cursor: 'pointer' }}>
           System context →
         </button>

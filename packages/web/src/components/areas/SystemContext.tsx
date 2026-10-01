@@ -11,6 +11,7 @@ const LANE_COLUMNS = 4
 const LANE_GAP = 30
 const LANES_X = 480
 const NODE_STYLE = { background: '#1a1d27', color: '#e2e8f0', fontSize: 11, width: NODE_WIDTH }
+const UNLANED_ID = 'area:unlaned'
 
 interface Props {
   map: ConnectivityMap
@@ -25,12 +26,15 @@ function buildContextGraph(map: ConnectivityMap): { nodes: Node[]; edges: Edge[]
     nodes.push({ id, position: { x, y }, data: { label }, style: { ...NODE_STYLE, border: `1px solid ${border}` } })
   }
   ctx.clients.forEach((s, i) => place(`svc:${s}`, s, 0, i * ROW, '#42b883'))
-  ctx.monolith.forEach((s, i) => place(`svc:${s}`, s, 240, i * ROW, '#cc342d'))
+  ctx.monolith.forEach((s, i) => {
+    const hosted = (map.areas ?? []).filter(a => a.kind === 'product' && a.codeLocations.some(l => l.repo === s)).length
+    place(`svc:${s}`, `${s} · hosts ${hosted} product areas`, 240, i * ROW, '#cc342d')
+  })
 
   const anchorOf = new Map<string, string>()
   const blocks = [
     ...ctx.lanes.map(l => ({ id: `area:${l.area.id}`, title: `▸ ${l.area.name}`, color: l.area.color, services: l.services })),
-    ...(ctx.unlaned.length ? [{ id: 'area:unlaned', title: '▸ No area', color: '#475569', services: ctx.unlaned }] : []),
+    ...(ctx.unlaned.length ? [{ id: UNLANED_ID, title: '▸ No area', color: '#475569', services: ctx.unlaned }] : []),
   ]
   let rowTop = 0
   for (let start = 0; start < blocks.length; start += LANE_COLUMNS) {
@@ -83,7 +87,7 @@ export function SystemContext({ map, onSelectService, onOpenArea }: Props) {
   const onNodeClick: NodeMouseHandler = (_, node) => {
     if (node.id.startsWith('svc:')) {
       onSelectService(node.id.slice('svc:'.length))
-    } else if (node.id.startsWith('area:')) {
+    } else if (node.id.startsWith('area:') && node.id !== UNLANED_ID) {
       onOpenArea(node.id.slice('area:'.length))
     }
   }

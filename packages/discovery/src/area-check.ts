@@ -127,7 +127,7 @@ export function checkAreas(input: {
     }
     result.areaFiles[area.id] = counts
     if (area.kind === 'product' && area.readingPath.length === 0) {
-      result.findings.push({ kind: 'empty-reading-path', subject: area.id, detail: 'no flow yet — backlog' })
+      result.findings.push({ kind: 'empty-reading-path', subject: area.id, detail: 'no reading path yet — backlog' })
     }
   }
 

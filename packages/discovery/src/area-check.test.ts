@@ -109,6 +109,7 @@ describe('checkAreas', () => {
 
   it('reports product areas without reading path as backlog', () => {
     expect(run().findings.filter(f => f.kind === 'empty-reading-path').map(f => f.subject)).toEqual(['planning'])
+    expect(run().findings.find(f => f.kind === 'empty-reading-path')?.detail).toBe('no reading path yet — backlog')
   })
 
   it('counts source files only, ignoring virtualenvs, site-packages and bytecode', () => {
