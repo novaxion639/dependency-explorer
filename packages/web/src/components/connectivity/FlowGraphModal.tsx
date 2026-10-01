@@ -13,7 +13,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 
-import type { ServiceFlow, ConnectivityMap, FlowInfraNode, DomainRule, FlowCodeUnit, RulePlatform } from '@dependency-explorer/data'
+import type { ServiceFlow, ConnectivityMap, FlowInfraNode, DomainRule, FlowCodeUnit, Platform } from '@dependency-explorer/data'
 import { buildFlowGraph } from '../../utils/buildFlowGraph'
 import { buildFlowCodeGraph } from '../../utils/buildFlowCodeGraph'
 import { ServiceNode } from '../nodes/ServiceNode'
@@ -373,12 +373,13 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onBack, onCl
   )
 }
 
-const RULE_PLATFORM_COLORS: Record<RulePlatform, string> = {
+const RULE_PLATFORM_COLORS: Record<Platform, string> = {
   backend: '#f59e0b',
   monolith: '#cc342d',
   web: '#42b883',
   mobile: '#ec4899',
   tablet: '#06b6d4',
+  superadmin: '#94a3b8',
 }
 
 function RuleChip({ rule, onClick }: { rule: DomainRule; onClick: (id: string) => void }) {

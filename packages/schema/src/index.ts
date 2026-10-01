@@ -144,10 +144,10 @@ export const ServiceFlowStepSchema = z.object({
 // checked: rule refs resolve (integrity tests), sourcePaths exist in the
 // sibling repos (discovery scanner — the 📐 report section).
 
-export const RulePlatformSchema = z.enum(['backend', 'monolith', 'web', 'mobile', 'tablet'])
+export const PlatformSchema = z.enum(['backend', 'monolith', 'web', 'mobile', 'tablet', 'superadmin'])
 
 export const DomainRuleDivergenceSchema = z.object({
-  platform: RulePlatformSchema,
+  platform: PlatformSchema,
   /** How this platform implements (or deliberately deviates from) the rule */
   behavior: z.string(),
   /** Code unit carrying this platform's implementation (FlowCodeUnit id) */
@@ -348,6 +348,8 @@ export const ServiceFlowSchema = z.object({
   trigger: FlowTriggerSchema.optional(),
   /** Typed relationships to other flows — reverse direction derived at render */
   links: z.array(FlowLinkSchema).optional(),
+  /** Product area owning this flow — must be among its derived areas (integrity) */
+  primaryArea: z.string().optional(),
   steps: z.array(ServiceFlowStepSchema),
   infraNodes: z.array(FlowInfraNodeSchema).optional(),
   infraEdges: z.array(FlowInfraEdgeSchema).optional(),
@@ -365,6 +367,59 @@ export const TeamSchema = z.object({
   // GitHub team slugs (from CODEOWNERS, e.g. "@skelloapp/squad-planning")
   // that map to this team — used by discovery to assign service ownership.
   githubTeams: z.array(z.string()).optional(),
+})
+
+// ── Product areas ────────────────────────────────────────────────────────────
+
+export const CodeLocationSchema = z.object({
+  /** Service name (= sibling repo directory) */
+  repo: z.string(),
+  platform: PlatformSchema,
+  /** Repo-relative globs — `*`, `**`, `?` only */
+  globs: z.array(z.string()).min(1),
+})
+
+export const GlossaryTermSchema = z.object({
+  term: z.string(),
+  definition: z.string(),
+  anchor: z.object({ repo: z.string(), path: z.string(), symbol: z.string() }).optional(),
+})
+
+export const ReadingPathEntrySchema = z.object({
+  flowId: z.string(),
+  why: z.string(),
+})
+
+export const ProductAreaSchema = z.object({
+  id: z.string().regex(/^[a-z][a-z0-9-]*$/),
+  name: z.string(),
+  description: z.string(),
+  kind: z.enum(['product', 'platform']),
+  color: z.string().regex(/^#[0-9a-f]{6}$/),
+  owners: z.array(z.string()).optional(),
+  codeLocations: z.array(CodeLocationSchema),
+  readingPath: z.array(ReadingPathEntrySchema),
+  glossary: z.array(GlossaryTermSchema),
+})
+
+// ── External systems ─────────────────────────────────────────────────────────
+
+export const ExternalSystemCategorySchema = z.enum([
+  'e-signature', 'payment', 'crm', 'pos', 'payroll', 'hris', 'ats', 'identity', 'messaging', 'other',
+])
+
+export const ExternalSystemSchema = z.object({
+  id: z.string().regex(/^[a-z][a-z0-9-]*$/),
+  name: z.string(),
+  description: z.string(),
+  category: ExternalSystemCategorySchema,
+  usedBy: z.array(z.object({
+    service: z.string(),
+    evidence: z.object({
+      kind: z.enum(['env', 'gem', 'npm', 'host']),
+      literal: z.string().min(3),
+    }),
+  })).min(1),
 })
 
 // ── Domain (bounded context) ─────────────────────────────────────────────────
@@ -410,6 +465,13 @@ export const DiscoveredOverlaySchema = z.object({
     lastVerified: z.string(),
     evidence: z.string(),
   })).optional(),
+  // areaId → "repo:glob" → files matched (🗺)
+  areaFiles: z.record(z.string(), z.record(z.string(), z.number().int().nonnegative())).optional(),
+  // host repo → files under its coverage roots mapped to any area (🗺)
+  areaCoverage: z.record(z.string(), z.object({
+    mapped: z.number().int().nonnegative(),
+    total: z.number().int().nonnegative(),
+  })).optional(),
 })
 
 // ── Top-level map ─────────────────────────────────────────────────────────────
@@ -421,6 +483,8 @@ export const ConnectivityMapSchema = z.object({
   teams: z.array(TeamSchema).optional(),
   domains: z.array(DomainSchema).optional(),
   rules: z.array(DomainRuleSchema).optional(),
+  areas: z.array(ProductAreaSchema).optional(),
+  externals: z.array(ExternalSystemSchema).optional(),
 })
 
 // ── Inferred types (replaces types-connectivity.ts) ──────────────────────────
@@ -453,9 +517,14 @@ export type FlowTrigger = z.infer<typeof FlowTriggerSchema>
 export type AuthRef = z.infer<typeof AuthRefSchema>
 export type FlowLinkKind = z.infer<typeof FlowLinkKindSchema>
 export type FlowLink = z.infer<typeof FlowLinkSchema>
-export type RulePlatform = z.infer<typeof RulePlatformSchema>
+export type Platform = z.infer<typeof PlatformSchema>
 export type DomainRuleDivergence = z.infer<typeof DomainRuleDivergenceSchema>
 export type DomainRule = z.infer<typeof DomainRuleSchema>
 export type Team = z.infer<typeof TeamSchema>
 export type Domain = z.infer<typeof DomainSchema>
+export type CodeLocation = z.infer<typeof CodeLocationSchema>
+export type GlossaryTerm = z.infer<typeof GlossaryTermSchema>
+export type ReadingPathEntry = z.infer<typeof ReadingPathEntrySchema>
+export type ProductArea = z.infer<typeof ProductAreaSchema>
+export type ExternalSystem = z.infer<typeof ExternalSystemSchema>
 export type ConnectivityMap = z.infer<typeof ConnectivityMapSchema>

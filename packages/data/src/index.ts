@@ -235,3 +235,6 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
 
 export * from '@dependency-explorer/schema'
 export { getFlowDomains } from './flow-domains'
+export { globToRegExp } from './glob'
+export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, getCrossAreaEdges } from './areas-derive'
+export type { CrossAreaEdge } from './areas-derive'
