@@ -28,3 +28,16 @@
   candidates — findings double as authoring aids.
 - **Absence must be representable** (`dlqAbsent`, `authAbsent`) or genuine
   gaps force fabrication or permanent red.
+
+## Product Areas phase (2026-10-01)
+
+- **Never write history (or any side effect) inside a React setState updater** — StrictMode
+  runs updaters twice in dev, so `pushState` there doubles every entry and Back looks broken.
+  Compute the next state from a ref, write history once, then `setState`.
+- **Whole-repo globs count vendored trees** — Python `site-packages`/`.venv`/`__pycache__`
+  inflated one service to 40k "files"; count source extensions only and skip env dirs.
+- **`discover:apply` re-stamps everything** — on fresh checkouts it re-dates every stamp and
+  drops drifted ones; when a PR only needs one overlay key, merge that key into the committed
+  overlay and report the drift separately.
+- **Repo-level evidence can't be attributed to a partial owner** — an area claiming part of a
+  shared host must not inherit the host's externals; attribute only wholly-claimed repos.

@@ -1,5 +1,6 @@
 import { Handle, Position } from '@xyflow/react'
 import type { ServiceNodeData } from '../../utils/buildConnectivityGraph'
+import { CLAMP_TWO_LINES } from '../../utils/clamp'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ServiceNode({ data }: any) {
@@ -62,9 +63,9 @@ export function ServiceNode({ data }: any) {
           <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>{teamName}</div>
         )}
         {description && (
-          <div style={{
+          <div title={description} style={{
             fontSize: 10, color: '#94a3b8', marginTop: 4,
-            lineHeight: 1.4, whiteSpace: 'normal', wordBreak: 'break-word',
+            lineHeight: 1.4, whiteSpace: 'normal', wordBreak: 'break-word', ...CLAMP_TWO_LINES,
           }}>
             {description}
           </div>

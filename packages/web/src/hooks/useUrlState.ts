@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
  * Permalink state — every shareable bit of UI state lives in the query string
@@ -137,9 +137,24 @@ export function isNavigation(prev: UrlState, p: Partial<UrlState>): boolean {
   return NAVIGATION_KEYS.some(k => k in p && p[k] !== prev[k])
 }
 
-function serialize(state: UrlState): string {
-  const qs = toQueryString(state)
-  return qs ? `${window.location.pathname}?${qs}` : window.location.pathname
+type HistoryWriter = Pick<History, 'pushState' | 'replaceState'>
+
+export function commitPatch(
+  prev: UrlState,
+  p: Partial<UrlState>,
+  opts: { push?: boolean } | undefined,
+  history: HistoryWriter,
+  pathname: string,
+): UrlState {
+  const next = { ...prev, notFound: null, ...p }
+  const qs = toQueryString(next)
+  const url = qs ? `${pathname}?${qs}` : pathname
+  if (opts?.push ?? isNavigation(prev, p)) {
+    history.pushState(null, '', url)
+  } else {
+    history.replaceState(null, '', url)
+  }
+  return next
 }
 
 /**
@@ -153,24 +168,21 @@ function serialize(state: UrlState): string {
  */
 export function useUrlState(validate: (st: UrlState) => UrlState) {
   const [state, setState] = useState<UrlState>(() => validate(parseUrl(window.location.search)))
+  const current = useRef(state)
 
   useEffect(() => {
-    const onPop = () => setState(validate(parseUrl(window.location.search)))
+    const onPop = () => {
+      current.current = validate(parseUrl(window.location.search))
+      setState(current.current)
+    }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [validate])
 
+  // History is written here, never inside a setState updater: StrictMode runs updaters twice.
   const patch = useCallback((p: Partial<UrlState>, opts?: { push?: boolean }) => {
-    setState(prev => {
-      const next = { ...prev, notFound: null, ...p }
-      const url = serialize(next)
-      if (opts?.push ?? isNavigation(prev, p)) {
-        window.history.pushState(null, '', url)
-      } else {
-        window.history.replaceState(null, '', url)
-      }
-      return next
-    })
+    current.current = commitPatch(current.current, p, opts, window.history, window.location.pathname)
+    setState(current.current)
   }, [])
 
   return [state, patch] as const

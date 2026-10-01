@@ -3,7 +3,8 @@ import * as path from 'node:path'
 import type { ExternalSystem, ProductArea } from '@dependency-explorer/schema'
 import { areasForFile, globToRegExp } from '@dependency-explorer/data'
 
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'tmp', 'coverage', 'graphify-out', 'vendor', '.serverless', 'ios', 'android', 'log', 'public'])
+const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'tmp', 'coverage', 'graphify-out', 'vendor', '.serverless', 'ios', 'android', 'log', 'public', '.venv', 'venv', 'site-packages', '__pycache__'])
+const CODE_FILE = /\.(rb|ts|tsx|js|jsx|mjs|vue|py)$/
 const TEST_FILE = /(^|\/)(__tests__|spec|test)\/|[._](spec|test)\.[a-z]+$/
 const SOURCE_FILE = /\.(rb|ts|tsx|js|mjs|vue|yml|yaml|json)$|(^|\/)\.env\.example$/
 const MAX_SCANNED_BYTES = 1_000_000
@@ -117,16 +118,16 @@ export function checkAreas(input: {
       }
       for (const glob of loc.globs) {
         const re = globToRegExp(glob)
-        const n = files.filter(f => re.test(f)).length
-        counts[`${loc.repo}:${glob}`] = n
-        if (n === 0) {
+        const matched = files.filter(f => re.test(f))
+        counts[`${loc.repo}:${glob}`] = matched.filter(f => CODE_FILE.test(f)).length
+        if (matched.length === 0) {
           result.findings.push({ kind: 'dead-glob', subject: area.id, detail: `${loc.repo}:${glob} matches no file — closest live directory: ${closestLiveDir(glob, files)}` })
         }
       }
     }
     result.areaFiles[area.id] = counts
     if (area.kind === 'product' && area.readingPath.length === 0) {
-      result.findings.push({ kind: 'empty-reading-path', subject: area.id, detail: 'no flow yet — backlog' })
+      result.findings.push({ kind: 'empty-reading-path', subject: area.id, detail: 'no reading path yet — backlog' })
     }
   }
 

@@ -220,7 +220,7 @@ The inventory docs regenerate from the dataset and CI refuses drift, for flow au
 
 **User flow**
 1. A flow author adds a fortieth flow.
-2. The docs generator rewrites the generated sections of the two inventory docs — counts, lists, per-domain attribution — between markers, leaving analysis prose untouched.
+2. The docs generator rewrites the generated sections of the two inventory docs — counts, lists, per-area attribution — between markers, leaving analysis prose untouched.
 3. If the author forgets to regenerate, `pnpm check` fails with a diff.
 
 **UI overview**

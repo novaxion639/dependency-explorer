@@ -7,6 +7,8 @@ interface Props {
   onSelect: (name: string) => void
   search: string
   onSearch: (v: string) => void
+  open: boolean
+  onClose: () => void
 }
 
 const TYPE_COLOR: Record<string, string> = {
@@ -17,7 +19,7 @@ const TYPE_COLOR: Record<string, string> = {
   'react-native': '#61dafb',
 }
 
-export function ServiceSidebar({ services, teams, selected, onSelect, search, onSearch }: Props) {
+export function ServiceSidebar({ services, teams, selected, onSelect, search, onSearch, open, onClose }: Props) {
   const teamById = new Map((teams ?? []).map(t => [t.id, t]))
   const filtered = services.filter(s => {
     if (search) {
@@ -31,10 +33,11 @@ export function ServiceSidebar({ services, teams, selected, onSelect, search, on
   })
 
   return (
-    <div style={{
+    <div className="sidebar" data-open={open} style={{
       width: 240, borderRight: '1px solid #2e3250', background: '#1a1d27',
       display: 'flex', flexDirection: 'column', flexShrink: 0,
     }}>
+      <button type="button" className="mobile-only" onClick={onClose} aria-label="Close services menu" style={{ alignSelf: 'flex-end', margin: 6, background: 'transparent', border: 'none', color: '#94a3b8', fontSize: 16, cursor: 'pointer' }}>✕</button>
       {/* Search */}
       <div style={{ padding: '10px 10px 8px', borderBottom: '1px solid #2e3250' }}>
         <input

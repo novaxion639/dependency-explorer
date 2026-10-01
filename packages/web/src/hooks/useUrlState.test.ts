@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseUrl, toQueryString, isNavigation } from './useUrlState'
+import { parseUrl, toQueryString, isNavigation, commitPatch } from './useUrlState'
 
 describe('parseUrl', () => {
   it('lands on the areas home with no params', () => {
@@ -52,5 +52,33 @@ describe('isNavigation', () => {
     expect(isNavigation(base, { blast: true })).toBe(false)
     expect(isNavigation(base, { detail: 'code' })).toBe(false)
     expect(isNavigation(base, { s: 'svc-punch' })).toBe(false)
+  })
+})
+
+describe('commitPatch', () => {
+  function recorder() {
+    const calls: Array<[string, string]> = []
+    return {
+      calls,
+      history: {
+        pushState: (_data: unknown, _unused: string, url?: string | URL | null) => { calls.push(['push', String(url)]) },
+        replaceState: (_data: unknown, _unused: string, url?: string | URL | null) => { calls.push(['replace', String(url)]) },
+      },
+    }
+  }
+
+  it('writes history exactly once per navigation and returns the next state', () => {
+    const { calls, history } = recorder()
+    const next = commitPatch(parseUrl('?s=svc-punch'), { flow: 'badging-review' }, undefined, history, '/')
+    expect(next.flow).toBe('badging-review')
+    expect(calls).toEqual([['push', '/?s=svc-punch&flow=badging-review']])
+  })
+
+  it('replaces in place for toggles and clears notFound', () => {
+    const { calls, history } = recorder()
+    const prev = { ...parseUrl('?s=svc-punch&flow=x'), notFound: { param: 'area' as const, value: 'nope' } }
+    const next = commitPatch(prev, { detail: 'code' }, undefined, history, '/')
+    expect(next.notFound).toBeNull()
+    expect(calls).toEqual([['replace', '/?s=svc-punch&flow=x&detail=code']])
   })
 })
