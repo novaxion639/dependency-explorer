@@ -65,6 +65,8 @@ function parseView(raw: string | null, s: string | null): View {
   return VIEWS.find(v => v === raw) ?? defaultView(s)
 }
 
+export type FlowDetail = UrlState['detail']
+
 export function parseUrl(search: string): UrlState {
   const p = new URLSearchParams(search)
   return {
