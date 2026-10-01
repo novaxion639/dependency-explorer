@@ -34,8 +34,8 @@ export interface UrlState {
   blast: boolean
   flows: string | null
   flow: string | null
-  /** 'code' = code-detail view of the open flow graph */
-  detail: 'code' | null
+  /** 'code' = code-detail view of the open flow graph, 'sequence' = its sequence diagram */
+  detail: 'code' | 'sequence' | null
   edge: string | null
   drawer: string | null
   ep: string | null
@@ -76,7 +76,7 @@ export function parseUrl(search: string): UrlState {
     blast: p.get('blast') === '1',
     flows: p.get('flows'),
     flow: p.get('flow'),
-    detail: p.get('detail') === 'code' ? 'code' : null,
+    detail: p.get('detail') === 'code' ? 'code' : p.get('detail') === 'sequence' ? 'sequence' : null,
     edge: p.get('edge'),
     drawer: p.get('drawer'),
     ep: p.get('ep'),
