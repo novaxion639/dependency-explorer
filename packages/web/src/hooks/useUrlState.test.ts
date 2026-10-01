@@ -82,3 +82,10 @@ describe('commitPatch', () => {
     expect(calls).toEqual([['replace', '/?s=svc-punch&flow=x&detail=code']])
   })
 })
+
+describe('detail=sequence', () => {
+  it('parses and round-trips the sequence mode', () => {
+    expect(parseUrl('?flow=f&detail=sequence').detail).toBe('sequence')
+    expect(toQueryString(parseUrl('?flow=f&detail=sequence'))).toBe('flow=f&detail=sequence')
+  })
+})

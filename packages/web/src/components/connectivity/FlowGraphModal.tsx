@@ -26,6 +26,8 @@ import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
 import { ExportPngButton } from '../ExportPngButton'
 import { CodeUnitDetailPanel } from './CodeUnitDetailPanel'
+import { SequenceDiagram } from './SequenceDiagram'
+import type { FlowDetail } from '../../hooks/useUrlState'
 
 const nodeTypes = { serviceNode: ServiceNode, databaseNode: DatabaseNode, codeUnitNode: CodeUnitNode, codeGroupNode: CodeGroupNode }
 const edgeTypes = { connectivityEdge: ConnectivityEdge, floatingDbEdge: FloatingDbEdge }
@@ -33,9 +35,9 @@ const edgeTypes = { connectivityEdge: ConnectivityEdge, floatingDbEdge: Floating
 interface Props {
   flow: ServiceFlow
   map: ConnectivityMap
-  /** Code-detail view (?detail=code) — only offered when the flow has a code layer */
-  detail: boolean
-  onDetailChange: (detail: boolean) => void
+  /** ?detail=code (only with a code layer) or ?detail=sequence */
+  detail: FlowDetail
+  onDetailChange: (detail: FlowDetail) => void
   /** Navigate to a linked flow (composition links) */
   onOpenFlow: (flowId: string) => void
   onOpenArea: (areaId: string) => void
@@ -57,7 +59,10 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onOpenArea, 
   const graphRef = useRef<HTMLDivElement>(null)
 
   const hasCodeLayer = (flow.codeUnits?.length ?? 0) > 0
-  const showCode = detail && hasCodeLayer
+  const showCode = detail === 'code' && hasCodeLayer
+  const showSequence = detail === 'sequence'
+  const mode: FlowDetail = showCode ? 'code' : showSequence ? 'sequence' : null
+  const modes: Array<[string, FlowDetail]> = [['Services', null], ...(hasCodeLayer ? [['Code detail', 'code'] satisfies [string, FlowDetail]] : []), ['Sequence', 'sequence']]
 
   // Domain rules referenced by this flow's steps/units → chips + card panel
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null)
@@ -291,30 +296,33 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onOpenArea, 
 
       {/* Flow graph */}
       <div ref={graphRef} style={{ flex: 1, position: 'relative' }}>
-        <ExportPngButton target={graphRef} filename={() => `flow_${flow.id}${showCode ? '_code' : ''}`} />
-        {hasCodeLayer && (
-          <div style={{
-            position: 'absolute', top: 12, left: 12, zIndex: 10,
-            display: 'flex', gap: 2, background: '#1a1d27',
-            border: '1px solid #2e3250', borderRadius: 6, padding: 2,
-          }}>
-            {([['Services', false], ['Code detail', true]] as const).map(([label, value]) => (
-              <button
-                key={label}
-                onClick={() => onDetailChange(value)}
-                style={{
-                  padding: '3px 10px', borderRadius: 4, fontSize: 10, fontWeight: 600,
-                  border: 'none', cursor: 'pointer',
-                  background: showCode === value ? '#6366f1' : 'transparent',
-                  color: showCode === value ? '#fff' : '#64748b',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+        <ExportPngButton target={graphRef} filename={() => `flow_${flow.id}${mode ? `_${mode}` : ''}`} />
+        <div style={{
+          position: 'absolute', top: 12, left: 12, zIndex: 10,
+          display: 'flex', gap: 2, background: '#1a1d27',
+          border: '1px solid #2e3250', borderRadius: 6, padding: 2,
+        }}>
+          {modes.map(([label, value]) => (
+            <button
+              key={label}
+              type="button"
+              aria-pressed={mode === value}
+              onClick={() => onDetailChange(value)}
+              style={{
+                padding: '3px 10px', borderRadius: 4, fontSize: 10, fontWeight: 600,
+                border: 'none', cursor: 'pointer',
+                background: mode === value ? '#6366f1' : 'transparent',
+                color: mode === value ? '#fff' : '#64748b',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {showSequence && (
+          <SequenceDiagram flow={flow} onSelectUnit={id => { setSelectedRuleId(null); setSelectedUnitId(prev => (prev === id ? null : id)) }} />
         )}
-        <ReactFlow
+        {!showSequence && <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
@@ -350,18 +358,18 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onOpenArea, 
             }}
             maskColor="#0f111799"
           />
-        </ReactFlow>
+        </ReactFlow>}
 
         {/* Step legend */}
-        <StepLegend flow={flow} ruleById={ruleById} onRuleClick={setSelectedRuleId} />
+        {!showSequence && <StepLegend flow={flow} ruleById={ruleById} onRuleClick={setSelectedRuleId} />}
 
         {/* Rule card */}
         {selectedRule && (
           <RuleCard rule={selectedRule} unitById={unitById} onClose={() => setSelectedRuleId(null)} />
         )}
 
-        {/* Code-unit detail panel (code view, node click) */}
-        {showCode && !selectedRule && selectedUnitId && (() => {
+        {/* Code-unit detail panel (code view node or sequence participant click) */}
+        {(showCode || showSequence) && !selectedRule && selectedUnitId && (() => {
           const unit = (flow.codeUnits ?? []).find(u => u.id === selectedUnitId)
           return unit ? (
             <CodeUnitDetailPanel

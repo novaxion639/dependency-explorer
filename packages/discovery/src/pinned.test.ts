@@ -3,7 +3,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { productionBranch, pinRepos, buildGraphs } from './pinned'
+import { productionBranch, pinRepos, buildGraphs, defaultGit, applyModeError } from './pinned'
 
 let root = ''
 const git = (cwd: string, ...args: string[]) => execFileSync('git', args, { cwd, encoding: 'utf-8' }).trim()
@@ -54,6 +54,19 @@ describe('pinRepos', () => {
     expect(fs.readFileSync(path.join(root, 'src', 'svc-a', 'file.txt'), 'utf-8')).toBe('wip')
   })
 
+  it('removes a leftover worktree when a later pin fails, so nothing reads the old commit', () => {
+    const failingFetch = (cwd: string, args: string[]) => {
+      if (args[0] === 'fetch') {
+        throw new Error('fatal: unable to access remote')
+      }
+      return defaultGit(cwd, args)
+    }
+    pinRepos(['svc-a'], path.join(root, 'src'), path.join(root, 'pinned'))
+    const { skipped } = pinRepos(['svc-a'], path.join(root, 'src'), path.join(root, 'pinned'), failingFetch)
+    expect(skipped.map(s => s.repo)).toEqual(['svc-a'])
+    expect(fs.existsSync(path.join(root, 'pinned', 'svc-a'))).toBe(false)
+  })
+
   it('re-pins an existing worktree in place', () => {
     const again = pinRepos(['svc-a'], path.join(root, 'src'), path.join(root, 'pinned'))
     expect(again.pinned).toHaveLength(1)
@@ -90,5 +103,13 @@ describe('buildGraphs', () => {
       throw Object.assign(new Error('spawnSync graphify ENOENT'), { stderr: undefined })
     })
     expect(skips).toEqual([{ repo: 'svc-c', reason: 'graphify: spawnSync graphify ENOENT' }])
+  })
+})
+
+describe('applyModeError', () => {
+  it('refuses --apply without --pinned, so the overlay and the monolith surface only come from production commits', () => {
+    expect(applyModeError(['tsx', 'discover.ts', '--apply'])).toBe('--apply requires --pinned: the overlay, grades and monolith routes are written from production branches only')
+    expect(applyModeError(['tsx', 'discover.ts', '--pinned', '--apply'])).toBeNull()
+    expect(applyModeError(['tsx', 'discover.ts'])).toBeNull()
   })
 })

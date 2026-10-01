@@ -43,7 +43,7 @@ import { checkContractRefs } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
-import { pinRepos, buildGraphs, type PinnedRepo, type PinSkip } from './pinned'
+import { pinRepos, buildGraphs, applyModeError, type PinnedRepo, type PinSkip } from './pinned'
 import { checkCodeGrades, type Grade, type GradeFinding } from './code-grades'
 import { checkBranches } from './branch-check'
 import { findingKeys, diffBaseline, readBaseline, writeBaseline } from './baseline'
@@ -60,6 +60,11 @@ function scanTargets(base: string): string[] {
     .sort()
 }
 
+const MODE_ERROR = applyModeError(process.argv)
+if (MODE_ERROR) {
+  console.error(MODE_ERROR)
+  process.exit(2)
+}
 const PIN = PINNED_MODE ? pinRepos(scanTargets(SOURCE_BASE), SOURCE_BASE, PINNED_BASE) : null
 const CODE_REPOS = new Set(connectivityMap.flows.flatMap(f => (f.codeUnits ?? []).map(u => u.service)))
 if (PIN) {

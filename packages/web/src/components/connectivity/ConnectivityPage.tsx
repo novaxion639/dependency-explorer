@@ -318,8 +318,8 @@ export function ConnectivityPage() {
         <FlowGraphModal
           flow={selectedFlow}
           map={map}
-          detail={url.detail === 'code'}
-          onDetailChange={d => patch({ detail: d ? 'code' : null })}
+          detail={url.detail}
+          onDetailChange={d => patch({ detail: d })}
           onOpenFlow={flowId => patch({ flow: flowId, detail: null })}
           onOpenArea={id => patch({ view: 'areas', area: id, term: null, flow: null, flows: null, detail: null })}
           onBack={() => patch({ flow: null, detail: null })}

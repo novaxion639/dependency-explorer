@@ -6,7 +6,7 @@
   "scripts": {
     "discover": "tsx src/discover.ts",
     "discover:json": "tsx src/discover.ts --json",
-    "discover:apply": "tsx src/discover.ts --apply",
+    "discover:apply": "tsx src/discover.ts --pinned --apply",
     "discover:baseline": "tsx src/discover.ts --pinned --write-baseline",
     "discover:aws:fetch": "tsx src/aws-fetch.ts",
     "discover:scaffold": "tsx src/scaffold.ts",

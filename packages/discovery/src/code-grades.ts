@@ -123,7 +123,9 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
       const file = path.join(repoBase, repo, 'graphify-out', 'graph.json')
       const graph = fs.existsSync(file) ? loadRepoGraph(JSON.parse(fs.readFileSync(file, 'utf-8'))) : null
       const head = headOf(repo)
-      if (graph && head && graph.builtAt !== head) {
+      if (!head) {
+        graphs.set(repo, null)
+      } else if (graph && graph.builtAt !== head) {
         findings.push({ flow: '', kind: 'stale-graph', subject: repo, detail: `graph stale — run graphify update at ${head}` })
         graphs.set(repo, null)
       } else {
@@ -153,6 +155,9 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
       const key = `${flow.id}#${edge.from}→${edge.to}`
       const callerFile = path.join(repoBase, from.service, from.path)
       const source = fs.existsSync(callerFile) ? fs.readFileSync(callerFile, 'utf-8') : ''
+      if (!headOf(from.service)) {
+        continue
+      }
       if (from.service !== to.service) {
         const empty: RepoGraph = { builtAt: '', fileEdges: new Map(), importEdges: new Map(), classesIn: new Map() }
         record(key, flow.id, gradeEdge(empty, from.path, to.path, source, to.label), `${from.service}/${from.path} → ${to.service}/${to.path} (cross-repo)`)
