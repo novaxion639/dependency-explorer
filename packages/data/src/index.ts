@@ -4,6 +4,7 @@ import connections from './connections'
 import teams from './teams'
 import domains from './domains'
 import rules from './rules'
+import externals from './externals'
 import discoveredJson from './generated/discovered.json'
 
 import svc_events from './services/svc-events'
@@ -231,6 +232,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   teams,
   domains,
   rules,
+  externals,
 })
 
 export * from '@dependency-explorer/schema'

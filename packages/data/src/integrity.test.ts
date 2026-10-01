@@ -3,7 +3,7 @@ import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
 import { connectivityMap } from './index'
 import discoveredJson from './generated/discovered.json'
 
-const { services, connections, flows, teams, domains, rules } = connectivityMap
+const { services, connections, flows, teams, domains, rules, areas, externals } = connectivityMap
 
 const serviceNames = new Set(services.map(s => s.name))
 const teamIds = new Set((teams ?? []).map(t => t.id))
@@ -284,6 +284,23 @@ describe('domains', () => {
     const covered = new Set((domains ?? []).flatMap(d => d.serviceNames))
     for (const svc of services) {
       expect(covered.has(svc.name), `service ${svc.name} belongs to no domain`).toBe(true)
+    }
+  })
+})
+
+describe('external systems', () => {
+  const list = externals ?? []
+
+  it('exist and have unique ids', () => {
+    expect(list.length).toBeGreaterThan(0)
+    expect(new Set(list.map(e => e.id)).size).toBe(list.length)
+  })
+
+  it('are used by existing services', () => {
+    for (const ext of list) {
+      for (const use of ext.usedBy) {
+        expect(serviceNames.has(use.service), `${ext.id} → unknown service ${use.service}`).toBe(true)
+      }
     }
   })
 })
