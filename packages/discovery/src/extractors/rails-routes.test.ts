@@ -103,3 +103,62 @@ describe('parseRoutesContent option forms', () => {
     expect(routes).toContain('GET /v3/api/shifts v3/api/v0/shifts#index')
   })
 })
+
+describe('parseRoutesContent constructs from the real routes.rb', () => {
+  const { routes, unparsed } = parseRoutesContent(`
+  namespace :private do
+    namespace :svc_intercom_bot, path: 'intercom-bot' do
+      resources :shops, only: %i[update]
+    end
+    resource :punch do
+      member { post :trigger_sms }
+    end
+    resources :primes, only: %i[show], param: :contract_id do
+      resources :lines, only: %i[index]
+    end
+    resources :reports, except: %i[new edit show index update destroy]
+    resource :planning_hours_data, only: %i[show]
+    resource :shop_config, only: %i[show] do
+      patch :update, to: 'shop_configs#upsert'
+    end
+    namespace :users do
+      get :organisation_ids
+    end
+    if ENV['APP_ENV'] != 'production'
+      get :debug, to: 'debug#show'
+    end
+    get :after_if, to: 'after#show'
+    resources :features,
+              only: [
+                :index,
+              ]
+  end
+  match 'v1/refresh_token' => 'v3/login#refresh_token', as: :refresh_token, via: %i[get post]`)
+  const all = routes.map(x => `${x.verb} ${x.path} ${x.controller}#${x.action}`)
+
+  it('reads %i[] lists, except:, param:, hyphenated path: and irregular plurals', () => {
+    expect(all).toContain('PATCH /private/intercom-bot/shops/:id private/svc_intercom_bot/shops#update')
+    expect(all).toContain('GET /private/primes/:contract_id private/primes#show')
+    expect(all).toContain('GET /private/primes/:prime_contract_id/lines private/lines#index')
+    expect(all).toEqual(expect.arrayContaining(['POST /private/reports private/reports#create']))
+    expect(all.filter(r => r.includes('/reports'))).toHaveLength(1)
+    expect(all).toContain('GET /private/planning_hours_data private/planning_hours_data#show')
+    expect(all).toContain('POST /private/punch/trigger_sms private/punches#trigger_sms')
+  })
+  it('maps canonical actions in a resource scope onto the resource path', () => {
+    expect(all).toContain('PATCH /private/shop_config private/shop_configs#upsert')
+  })
+  it('routes bare symbols in a namespace to the namespace controller', () => {
+    expect(all).toContain('GET /private/users/organisation_ids private/users#organisation_ids')
+  })
+  it('keeps the frame stack balanced across if blocks and multi-line options', () => {
+    expect(all).toContain('GET /private/debug private/debug#show')
+    expect(all).toContain('GET /private/after_if private/after#show')
+    expect(all).toContain('GET /private/features private/features#index')
+  })
+  it('expands match via: to every verb', () => {
+    expect(all).toContain('GET /v1/refresh_token v3/login#refresh_token')
+    expect(all).toContain('POST /v1/refresh_token v3/login#refresh_token')
+    expect(unparsed).toEqual([])
+  })
+})
