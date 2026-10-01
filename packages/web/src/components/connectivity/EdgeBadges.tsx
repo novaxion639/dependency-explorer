@@ -1,8 +1,8 @@
-import type { FlowFailure, AuthRef } from '@dependency-explorer/data'
+import type { FlowFailure, AuthRef, CodeEdgeGrade } from '@dependency-explorer/data'
 
 /**
- * The expressiveness badge cluster a code edge can carry — 📜 contracts,
- * 🔑 auth, 🧬 PII, 🛡/⚠ failure. Shared by ConnectivityEdge and
+ * The expressiveness badge cluster a code edge can carry — ✓/~/✗ call-graph
+ * grade, 📜 contracts, 🔑 auth, 🧬 PII, 🛡/⚠ failure. Shared by ConnectivityEdge and
  * FloatingDbEdge so infra-targeting edges render the same facts as
  * service-targeting ones.
  */
@@ -11,14 +11,37 @@ export interface EdgeBadgeData {
   auth?: AuthRef
   pii?: string[]
   contractRefs?: string[]
+  grade?: CodeEdgeGrade
   [key: string]: unknown
+}
+
+const VERIFIED = { symbol: '✓', color: '#10b981', title: (g: CodeEdgeGrade) => `verified in the call graph at the pinned commit — ${g}` }
+const GRADE_BADGES: Record<CodeEdgeGrade, { symbol: string; color: string; title: (g: CodeEdgeGrade) => string }> = {
+  graph: VERIFIED,
+  constant: VERIFIED,
+  import: VERIFIED,
+  text: { symbol: '~', color: '#f59e0b', title: () => 'name match only — unverified' },
+  none: { symbol: '✗', color: '#ef4444', title: () => 'no evidence in code' },
 }
 
 export function EdgeBadges({ data }: { data?: EdgeBadgeData }) {
   if (!data) return null
-  const { failure, auth, pii, contractRefs } = data
+  const { failure, auth, pii, contractRefs, grade } = data
+  const gradeBadge = grade ? GRADE_BADGES[grade] : null
   return (
     <>
+      {grade && gradeBadge && (
+        <span
+          title={gradeBadge.title(grade)}
+          style={{
+            fontSize: 8, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
+            whiteSpace: 'nowrap', pointerEvents: 'all',
+            background: `${gradeBadge.color}16`, border: `1px solid ${gradeBadge.color}44`, color: gradeBadge.color,
+          }}
+        >
+          {gradeBadge.symbol}
+        </span>
+      )}
       {(contractRefs?.length ?? 0) > 0 && (
         <span
           title={`spec-verified contracts:\n${contractRefs!.join('\n')}`}

@@ -248,8 +248,9 @@ The controllers, service objects, managers, jobs, model-callback groups —
 and for client apps, UI components and HTTP client wrappers — an action
 traverses inside a service. Human-authored from code reading
 (`pnpm discover:trace <file>` assists); machine-verified by 🫀: every
-`path` must exist in the sibling checkout, every unit→unit edge's callee
-constant must be referenced from the caller's file.
+`path` must exist in the sibling checkout, and every unit→unit edge carries
+a call-graph grade at the pinned commit (§7.6). `codeEdges` are authored in
+call order.
 
 ```typescript
 FlowCodeUnitSchema = {
@@ -324,7 +325,8 @@ FlowInfraEdgeSchema = { from, to, label?, crud? }
 |---|---|---|
 | integrity tests | `pnpm check` / CI | ids unique, every ref resolves, trigger and primaryArea present, stamps complete, field invariants |
 | 🧭 flow steps | `pnpm discover` | steps match connections; `METHOD /path` actions match the callee's endpoints, including the generated monolith surface |
-| 🫀 code layers | `pnpm discover` | unit paths exist, callees referenced from caller sources, monolith controller units serve a route |
+| 🫀 code layers | `pnpm discover` | unit paths exist, monolith controller units serve a route |
+| 🫀 call-edge grades | `pnpm discover -- --pinned` | each unit→unit edge resolves in the call graph at the pinned commit (`graph` / `constant` / `import` ✓), by name only (`text` ~, backlog) or not at all (`none` ✗, finding); stale graphs are refused |
 | 📐 domain rules | `pnpm discover` | rule sources exist + staleness hashes match |
 | 🚩 flag refs | `pnpm discover` | flag literals present in unit sources |
 | 🧯 failure layer | `pnpm discover` | DLQ facts match serverless/Terraform wiring; waivers not stale; unannotated async edges listed |

@@ -3,7 +3,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { productionBranch, pinRepos } from './pinned'
+import { productionBranch, pinRepos, buildGraphs } from './pinned'
 
 let root = ''
 const git = (cwd: string, ...args: string[]) => execFileSync('git', args, { cwd, encoding: 'utf-8' }).trim()
@@ -58,5 +58,37 @@ describe('pinRepos', () => {
     const again = pinRepos(['svc-a'], path.join(root, 'src'), path.join(root, 'pinned'))
     expect(again.pinned).toHaveLength(1)
     expect(again.skipped).toEqual([])
+  })
+})
+
+describe('buildGraphs', () => {
+  it('builds a graph only when the existing one was not built at the pinned commit', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'graphs-'))
+    const repo = { repo: 'svc-a', branch: 'master', sha: 'a'.repeat(40), dir }
+    const runs: string[] = []
+    const run = (cwd: string) => {
+      runs.push(cwd)
+      fs.mkdirSync(path.join(cwd, 'graphify-out'), { recursive: true })
+      fs.writeFileSync(path.join(cwd, 'graphify-out', 'graph.json'), JSON.stringify({ built_at_commit: repo.sha, nodes: [], links: [] }))
+    }
+    expect(buildGraphs([repo], run)).toEqual([])
+    expect(buildGraphs([repo], run)).toEqual([])
+    expect(runs).toEqual([dir])
+  })
+
+  it('reports a failed build as a skip', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'graphs-'))
+    const skips = buildGraphs([{ repo: 'svc-b', branch: 'master', sha: 'b'.repeat(40), dir }], () => {
+      throw new Error('graphify not found')
+    })
+    expect(skips).toEqual([{ repo: 'svc-b', reason: 'graphify: graphify not found' }])
+  })
+
+  it('reports a missing binary by its spawn error', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'graphs-'))
+    const skips = buildGraphs([{ repo: 'svc-c', branch: 'master', sha: 'c'.repeat(40), dir }], () => {
+      throw Object.assign(new Error('spawnSync graphify ENOENT'), { stderr: undefined })
+    })
+    expect(skips).toEqual([{ repo: 'svc-c', reason: 'graphify: spawnSync graphify ENOENT' }])
   })
 })

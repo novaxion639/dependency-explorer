@@ -15,7 +15,7 @@ export function productionBranch(repo: string): 'master' | 'main' {
 }
 
 function errorText(e: unknown): string {
-  const stderr = e instanceof Error && 'stderr' in e ? String(e.stderr).trim() : ''
+  const stderr = e instanceof Error && 'stderr' in e && e.stderr ? String(e.stderr).trim() : ''
   const text = stderr || (e instanceof Error ? e.message : String(e))
   return text.split('\n')[0] ?? text
 }
@@ -46,4 +46,23 @@ export function pinRepos(repos: string[], sourceBase: string, pinnedBase: string
     }
   }
   return { pinned, skipped }
+}
+export function buildGraphs(pinned: PinnedRepo[], run: (cwd: string) => void = cwd => {
+  execFileSync('graphify', ['extract', '.', '--code-only'], { cwd, stdio: 'ignore' })
+}): PinSkip[] {
+  const skipped: PinSkip[] = []
+  for (const p of pinned) {
+    const file = path.join(p.dir, 'graphify-out', 'graph.json')
+    const parsed: unknown = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf-8')) : null
+    const builtAt = typeof parsed === 'object' && parsed !== null && 'built_at_commit' in parsed ? String(parsed.built_at_commit) : ''
+    if (builtAt === p.sha) {
+      continue
+    }
+    try {
+      run(p.dir)
+    } catch (e) {
+      skipped.push({ repo: p.repo, reason: `graphify: ${errorText(e)}` })
+    }
+  }
+  return skipped
 }

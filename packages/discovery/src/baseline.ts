@@ -27,7 +27,7 @@ export function findingKeys(report: Record<string, unknown>): string[] {
       if (!isRecord(f)) {
         continue
       }
-      const subject = SUBJECT_FIELDS.map(k => f[k]).find(v => typeof v === 'string') ?? ''
+      const subject = SUBJECT_FIELDS.map(k => f[k]).find(v => typeof v === 'string' && v !== '') ?? ''
       keys.add([section, String(f.kind ?? ''), String(subject), stableDetail(String(f.detail ?? ''))].join('|'))
     }
   }

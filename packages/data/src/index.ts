@@ -107,6 +107,8 @@ const overlay = DiscoveredOverlaySchema.parse(discoveredJson)
 export const monolithRoutes = z.array(MonolithRouteSchema).parse(monolithRoutesJson)
 const verifiedOn = overlay.generatedAt.slice(0, 10)
 
+export const codeEdgeGrades = overlay.codeEdgeGrades ?? {}
+
 export const areaFacts = {
   files: overlay.areaFiles ?? {},
   coverage: overlay.areaCoverage ?? {},

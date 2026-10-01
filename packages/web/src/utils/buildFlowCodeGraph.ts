@@ -1,6 +1,7 @@
 import { MarkerType } from '@xyflow/react'
 import type { Node, Edge } from '@xyflow/react'
-import type { ServiceFlow, FlowCodeEdge, ConnectivityMap } from '@dependency-explorer/data'
+import type { ServiceFlow, FlowCodeEdge, ConnectivityMap, CodeEdgeGrade } from '@dependency-explorer/data'
+import { codeEdgeGrades } from '@dependency-explorer/data'
 import type { ServiceNodeData } from './buildConnectivityGraph'
 import type { DatabaseNodeData } from '../components/nodes/DatabaseNode'
 import type { CodeUnitNodeData, CodeGroupNodeData } from '../components/nodes/CodeUnitNode'
@@ -35,6 +36,7 @@ const MODE_STYLE: Record<NonNullable<FlowCodeEdge['mode']>, { color: string; das
 export function buildFlowCodeGraph(
   flow: ServiceFlow,
   map: ConnectivityMap,
+  grades: Record<string, CodeEdgeGrade> = codeEdgeGrades,
 ): { nodes: Node[]; edges: Edge[] } {
   const units = flow.codeUnits ?? []
   const codeEdges = flow.codeEdges ?? []
@@ -193,7 +195,7 @@ export function buildFlowCodeGraph(
       target: e.to,
       type: isInfraTarget || infraById.has(e.from) ? 'floatingDbEdge' : 'connectivityEdge',
       label: parts.join('\n'),
-      data: { failure: e.failure, auth: e.auth, pii: e.pii, contractRefs: e.contractRefs },
+      data: { failure: e.failure, auth: e.auth, pii: e.pii, contractRefs: e.contractRefs, grade: grades[`${flow.id}#${e.from}→${e.to}`] },
       markerEnd: { type: MarkerType.ArrowClosed, color: stroke, width: 12, height: 12 },
       style: { stroke, strokeWidth: 1.8, ...(dash ? { strokeDasharray: dash } : {}) },
       labelStyle: { fill: '#94a3b8', fontSize: 9 },
