@@ -80,7 +80,7 @@ export function ConnectivityPage() {
   const showBlastRadius = url.blast
 
   const selectService = useCallback(
-    (name: string) => patch({ s: name, view: 'services', edge: null, drawer: null, ep: null }, { push: true }),
+    (name: string) => patch({ s: name, view: 'services', edge: null, drawer: null, ep: null }),
     [patch],
   )
 
@@ -265,7 +265,7 @@ export function ConnectivityPage() {
             map={map}
             selectedService={selectedService}
             onSelectService={selectService}
-            onOpenFlows={name => patch({ flows: name, flow: null }, { push: true })}
+            onOpenFlows={name => patch({ flows: name, flow: null })}
             blastRadius={blastRadius?.affected ?? null}
             edgeConnection={edgeConnection}
             onEdgeSelect={conn => patch({ edge: conn ? edgeKey(conn.from, conn.to, conn.protocol) : null })}
@@ -277,7 +277,7 @@ export function ConnectivityPage() {
           <OwnershipPage
             map={map}
             focusedTeam={url.team}
-            onFocusTeam={team => patch({ team }, { push: true })}
+            onFocusTeam={team => patch({ team })}
             onSelectService={selectService}
             onOpenArea={id => patch({ view: 'areas', area: id, term: null })}
           />
@@ -289,7 +289,7 @@ export function ConnectivityPage() {
             selectedService={selectedService}
             map={map}
             onSelectService={selectService}
-            onOpenFlow={flow => patch({ flow: flow.id }, { push: true })}
+            onOpenFlow={flow => patch({ flow: flow.id })}
           />
         )}
       </div>
@@ -300,7 +300,7 @@ export function ConnectivityPage() {
           serviceName={url.flows}
           flows={map.flows ?? []}
           map={map}
-          onSelectFlow={flow => patch({ flow: flow.id }, { push: true })}
+          onSelectFlow={flow => patch({ flow: flow.id })}
           onClose={() => patch({ flows: null })}
         />
       )}
@@ -312,7 +312,7 @@ export function ConnectivityPage() {
           map={map}
           detail={url.detail === 'code'}
           onDetailChange={d => patch({ detail: d ? 'code' : null })}
-          onOpenFlow={flowId => patch({ flow: flowId, detail: null }, { push: true })}
+          onOpenFlow={flowId => patch({ flow: flowId, detail: null })}
           onOpenArea={id => patch({ view: 'areas', area: id, term: null, flow: null, flows: null, detail: null })}
           onBack={() => patch({ flow: null, detail: null })}
           onClose={() => patch({ flow: null, flows: null, detail: null })}
@@ -323,7 +323,7 @@ export function ConnectivityPage() {
       {url.flag && !selectedFlow && flagRegistry.get(url.flag) && (
         <FlagModal
           entry={flagRegistry.get(url.flag)!}
-          onSelectFlow={flow => patch({ flow: flow.id, flag: null }, { push: true })}
+          onSelectFlow={flow => patch({ flow: flow.id, flag: null })}
           onClose={() => patch({ flag: null })}
         />
       )}
@@ -332,7 +332,7 @@ export function ConnectivityPage() {
       {url.file && !selectedFlow && fileIndex.get(url.file) && (
         <FileModal
           entry={fileIndex.get(url.file)!}
-          onSelectFlow={flow => patch({ flow: flow.id, detail: 'code', file: null }, { push: true })}
+          onSelectFlow={flow => patch({ flow: flow.id, detail: 'code', file: null })}
           onClose={() => patch({ file: null })}
         />
       )}
@@ -342,7 +342,7 @@ export function ConnectivityPage() {
         <SearchModal
           index={searchIndex}
           onNavigate={p => {
-            patch(p, { push: true })
+            patch(p)
             setSearchOpen(false)
           }}
           onClose={() => setSearchOpen(false)}
