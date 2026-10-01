@@ -1,4 +1,5 @@
-import { ConnectivityMapSchema, DiscoveredOverlaySchema } from '@dependency-explorer/schema'
+import { z } from 'zod'
+import { ConnectivityMapSchema, DiscoveredOverlaySchema, MonolithRouteSchema } from '@dependency-explorer/schema'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import connections from './connections'
 import teams from './teams'
@@ -6,6 +7,9 @@ import rules from './rules'
 import externals from './externals'
 import areas from './areas'
 import discoveredJson from './generated/discovered.json'
+import monolithRoutesJson from './generated/monolith-routes.json'
+import { monolithEndpoints } from './monolith-endpoints'
+import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 
 import svc_events from './services/svc-events'
 import svc_communications_v2 from './services/svc-communications-v2'
@@ -100,6 +104,7 @@ import org_onboarding from './flows/org-onboarding'
 // The overlay never adds or removes entities — only annotates existing ones.
 
 const overlay = DiscoveredOverlaySchema.parse(discoveredJson)
+export const monolithRoutes = z.array(MonolithRouteSchema).parse(monolithRoutesJson)
 const verifiedOn = overlay.generatedAt.slice(0, 10)
 
 export const areaFacts = {
@@ -178,7 +183,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   svc_websockets,
   svc_websockets_v2,
   superadmin,
-  skello_app,
+  { ...skello_app, endpoints: [...skello_app.endpoints, ...monolithEndpoints(monolithRoutes, skelloAppEndpointNotes)] },
   skello_app_front,
   skello_mobile,
   skello_punchclock,

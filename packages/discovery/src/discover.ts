@@ -32,7 +32,7 @@ import { extractServerless, type ServerlessFacts } from './extractors/serverless
 import { extractAwsClients, type AwsUsageFact, type AwsUsageKind } from './extractors/aws-clients'
 import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extractors/aws-live'
 import { extractTerraform, type TerraformFacts } from './extractors/terraform'
-import { extractRailsRoutes } from './extractors/rails-routes'
+import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
 import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, checkPiiRefs, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult, type PiiCheckResult } from './flow-check'
@@ -61,6 +61,7 @@ function scanTargets(base: string): string[] {
 const PIN = PINNED_MODE ? pinRepos(scanTargets(SOURCE_BASE), SOURCE_BASE, PINNED_BASE) : null
 const REPO_BASE = PIN ? PINNED_BASE : SOURCE_BASE
 const OVERLAY_PATH = path.resolve(__dirname, '../../data/src/generated/discovered.json')
+const MONOLITH_ROUTES_PATH = path.resolve(__dirname, '../../data/src/generated/monolith-routes.json')
 
 const JSON_MODE = process.argv.includes('--json')
 const BASELINE_PATH = path.resolve(__dirname, '../baseline.json')
@@ -671,6 +672,19 @@ function writeOverlay(report: Report) {
   fs.writeFileSync(OVERLAY_PATH, JSON.stringify(overlay, null, 2) + '\n')
   console.log(`\nOverlay written: ${path.relative(process.cwd(), OVERLAY_PATH)}`)
   console.log(`  ${Object.keys(overlay.services).length} services enriched, ${Object.keys(overlay.connections).length} connections verified, ${Object.keys(overlay.endpoints ?? {}).length} endpoints verified`)
+
+  const routes = extractRailsRoutes(REPO_BASE)?.routes
+  if (routes) {
+    const byId = new Map<string, RailsRoute>()
+    for (const r of routes) {
+      if (!byId.has(`${r.verb} ${r.path}`)) {
+        byId.set(`${r.verb} ${r.path}`, r)
+      }
+    }
+    const surface = [...byId.values()].sort((a, b) => a.path.localeCompare(b.path) || a.verb.localeCompare(b.verb))
+    fs.writeFileSync(MONOLITH_ROUTES_PATH, JSON.stringify(surface, null, 2) + '\n')
+    console.log(`  ${surface.length} monolith routes written: ${path.relative(process.cwd(), MONOLITH_ROUTES_PATH)}`)
+  }
 }
 
 // ── Report ────────────────────────────────────────────────────────────────────

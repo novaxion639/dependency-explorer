@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
-import { connectivityMap } from './index'
+import { connectivityMap, monolithRoutes } from './index'
+import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { getFlowAreas } from './areas-derive'
 import discoveredJson from './generated/discovered.json'
 
@@ -406,5 +407,18 @@ describe('discovered overlay', () => {
 
   it('records area facts once areas exist', () => {
     expect(Object.keys(overlay.areaFiles ?? {}).length).toBe((areas ?? []).length)
+  })
+})
+
+describe('monolith surface', () => {
+  it('has unique route ids', () => {
+    const ids = monolithRoutes.map(r => `${r.verb} ${r.path}`)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+  it('only annotates routes that exist', () => {
+    const ids = new Set(monolithRoutes.map(r => `${r.verb} ${r.path}`))
+    for (const id of Object.keys(skelloAppEndpointNotes)) {
+      expect(ids.has(id), `note for unknown route ${id}`).toBe(true)
+    }
   })
 })
