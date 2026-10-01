@@ -151,7 +151,7 @@ interface Report {
   awsClientUsage: AwsClientUsage[]
   terraform: Array<{ tfRepo: string; service: string; inMap: boolean; facts: TerraformFacts }>
   frontendServices: Array<{ service: string; inMap: boolean; evidence: string }>
-  monolithSurface: { totalRoutes: number; resourceDeclarations: number; topSegments: Array<[string, number]> } | null
+  monolithSurface: { totalRoutes: number; unparsed: string[]; topSegments: Array<[string, number]> } | null
   /** SDK dependencies whose imports are type-only or absent — weak evidence, likely not runtime calls */
   weakSdkEvidence: Array<{ from: string; to: string; pkg: string; usage: string }>
   /** call-site verification of SDK connections against the skello-libs-ts registry */
@@ -595,10 +595,15 @@ function run(): Report {
   // ── Monolith inbound surface (informational) ───────────────────────────────
   const routes = extractRailsRoutes(REPO_BASE)
   if (routes) {
+    const bySegment = new Map<string, number>()
+    for (const route of routes.routes) {
+      const seg = route.path.split('/')[1] ?? ''
+      bySegment.set(seg, (bySegment.get(seg) ?? 0) + 1)
+    }
     report.monolithSurface = {
       totalRoutes: routes.routes.length,
-      resourceDeclarations: routes.resourceDeclarations,
-      topSegments: Object.entries(routes.byTopSegment).sort((a, b) => b[1] - a[1]).slice(0, 12),
+      unparsed: routes.unparsed,
+      topSegments: [...bySegment].sort((a, b) => b[1] - a[1]).slice(0, 12),
     }
   }
 
@@ -832,8 +837,11 @@ function printMarkdown(r: Report) {
 
   if (r.monolithSurface) {
     console.log(`\n## 📥 Monolith inbound surface (informational)\n`)
-    console.log(`${r.monolithSurface.totalRoutes} explicit routes + ${r.monolithSurface.resourceDeclarations} resource declarations. Top segments:`)
+    console.log(`${r.monolithSurface.totalRoutes} routes resolved to controller#action, ${r.monolithSurface.unparsed.length} lines unparsed. Top segments:`)
     console.log(r.monolithSurface.topSegments.map(([seg, n]) => `- /${seg} (${n})`).join('\n'))
+    if (r.monolithSurface.unparsed.length) {
+      console.log(`\nUnparsed:\n${r.monolithSurface.unparsed.map(l => `- \`${l}\``).join('\n')}`)
+    }
   }
 
   section('🩻 Weak SDK evidence — type-only or unused imports (likely NOT runtime calls)',
