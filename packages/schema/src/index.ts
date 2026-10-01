@@ -349,6 +349,18 @@ export const FlowLinkSchema = z.object({
   note: z.string().optional(),
 })
 
+// Alternative outcome at a code unit — the condition, what the caller gets,
+// and a literal from the unit's source that proves the branch exists (🔀).
+export const FlowBranchSchema = z.object({
+  id: z.string(),
+  at: z.string(),
+  when: z.string(),
+  outcome: z.string(),
+  status: z.number().int().min(100).max(599).optional(),
+  evidence: z.object({ literal: z.string().min(2) }),
+})
+export type FlowBranch = z.infer<typeof FlowBranchSchema>
+
 export const ServiceFlowSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -364,6 +376,7 @@ export const ServiceFlowSchema = z.object({
   infraEdges: z.array(FlowInfraEdgeSchema).optional(),
   codeUnits: z.array(FlowCodeUnitSchema).optional(),
   codeEdges: z.array(FlowCodeEdgeSchema).optional(),
+  branches: z.array(FlowBranchSchema).optional(),
 })
 
 // ── Team ─────────────────────────────────────────────────────────────────────

@@ -287,6 +287,21 @@ FlowCodeEdgeSchema = {
 }
 ```
 
+**Branches** — alternative outcomes a caller can get, anchored in code:
+
+```typescript
+branches?: Array<{
+  id: string            // unique within the flow
+  at: string            // code unit where the alternative happens
+  when: string          // condition — "the request is no longer pending"
+  outcome: string       // what the caller gets — "422 Unprocessable Entity, nothing updated"
+  status?: number       // HTTP status when there is one (100–599)
+  evidence: { literal: string }  // appears in the `at` unit's file, comments stripped
+}>
+```
+
+The literal is copied from the pinned source — an error message, a raise/render line, or the guard call that produces the outcome — and 🔀 verifies it is present in the `at` unit's file at the pinned commit. When the code that decides the outcome lives in a file the flow does not yet name, add that file as a code unit first. The macro order of a flow is its `steps` array; the code order is its `codeEdges` array, authored in call order. The sequence view draws each branch after the message entering its `at` unit.
+
 ### 7.3 Domain rules (registry)
 
 Cross-flow business rules live in `packages/data/src/rules.ts`
@@ -331,6 +346,7 @@ FlowInfraEdgeSchema = { from, to, label?, crud? }
 | 🚩 flag refs | `pnpm discover` | flag literals present in unit sources |
 | 🧯 failure layer | `pnpm discover` | DLQ facts match serverless/Terraform wiring; waivers not stale; unannotated async edges listed |
 | 🔐 auth context | `pnpm discover` | gates in source, authorizers declared in config |
+| 🔀 flow branches | `pnpm discover` | every branch literal appears in its `at` unit's comment-stripped source |
 | docs-gen gate | `pnpm check` / CI | generated inventory sections match the dataset (`pnpm docs:gen` on drift) |
 
 ---
