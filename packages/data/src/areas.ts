@@ -30,8 +30,22 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('svc-bff-planning', 'backend', '**'),
       loc('svc-events', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'planning-page-load', why: "What the planning screen loads and in which order" },
+      { flowId: 'shift-creation', why: "The core write and the shift callback group it fires" },
+      { flowId: 'shift-update', why: "How edits propagate to counters and replicas" },
+      { flowId: 'shift-publication', why: "How employees get notified of their planning" },
+      { flowId: 'week-copy', why: "Bulk creation and its sync/async split" },
+      { flowId: 'planning-period-lock', why: "How a period is locked against edits" }
+    ],
+    glossary: [
+      {"term": "Shift", "definition": "A scheduled block of work for one employee on one poste in one shop; also carries absences (an absence is a shift with an absence type).", "anchor": {"repo": "skello-app", "path": "app/models/shift.rb", "symbol": "Shift"}},
+      {"term": "Poste", "definition": "A position (role) in a shop that shifts are planned on — the colour-coded rows of the planning.", "anchor": {"repo": "skello-app", "path": "app/models/poste.rb", "symbol": "Poste"}},
+      {"term": "Planning template", "definition": "A reusable day or week of template shifts a manager applies to a planning.", "anchor": {"repo": "skello-app", "path": "app/models/planning_template.rb", "symbol": "PlanningTemplate"}},
+      {"term": "Planning event", "definition": "A shop-level calendar event shown on the planning (opening, inventory, promotion).", "anchor": {"repo": "skello-app", "path": "app/models/event.rb", "symbol": "Event"}},
+      {"term": "Popular shift", "definition": "A frequently used shift time-slot per poste, offered as a shortcut when creating shifts.", "anchor": {"repo": "skello-app", "path": "app/models/popular_shift.rb", "symbol": "PopularShift"}},
+      {"term": "Weekly option", "definition": "Per-shop, per-week planning state — publication and period lock — with its publication history.", "anchor": {"repo": "skello-app", "path": "app/models/weekly_option.rb", "symbol": "WeeklyOption"}}
+    ],
   },
   {
     id: 'automatic-scheduling',
@@ -45,8 +59,14 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
         'app/services/automatic_planning_rules/**', 'app/models/automatic_planning_*.rb'),
       loc('svc-automatic-scheduling', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'auto-planning-generation', why: "An automatic scheduling run end to end" },
+      { flowId: 'shift-replacement-search', why: "How replacements are found for an uncovered shift" }
+    ],
+    glossary: [
+      {"term": "Automatic planning rule", "definition": "A shop-level constraint the automatic scheduler applies when generating a planning.", "anchor": {"repo": "skello-app", "path": "app/models/automatic_planning_rule.rb", "symbol": "AutomaticPlanningRule"}},
+      {"term": "Competency", "definition": "An employee's ability to work a given poste, used by the scheduler to assign shifts.", "anchor": {"repo": "skello-app", "path": "app/models/automatic_planning_competency.rb", "symbol": "AutomaticPlanningCompetency"}}
+    ],
   },
   {
     id: 'workload-forecasting',
@@ -62,8 +82,15 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('svc-pos', 'backend', '**'),
       loc('svc-intelligence', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'workload-plan-consultation', why: "How the workload plan is read" },
+      { flowId: 'workload-plan-creation', why: "How the forecast is computed" },
+      { flowId: 'pos-revenue-ingestion', why: "Where the revenue behind the forecast comes from" }
+    ],
+    glossary: [
+      {"term": "Week planning prevision", "definition": "The forecast staffing need of a shop week, computed from a template or from revenue.", "anchor": {"repo": "skello-app", "path": "app/models/week_planning_prevision.rb", "symbol": "WeekPlanningPrevision"}},
+      {"term": "Predicted shift", "definition": "A shift suggested by the forecast for a poste, ahead of real scheduling.", "anchor": {"repo": "skello-app", "path": "app/models/predicted_shift.rb", "symbol": "PredictedShift"}}
+    ],
   },
   {
     id: 'time-attendance',
@@ -80,8 +107,17 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('skello-punchclock', 'tablet', '**'),
       loc('svc-punch', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'employee-clock-in', why: "The offline-first tablet clock-in path" },
+      { flowId: 'mobile-clock-in', why: "Clock-in from the mobile app" },
+      { flowId: 'badging-review', why: "How badgings meet shifts for validation" },
+      { flowId: 'punchclock-device-setup', why: "How a tablet is registered to a shop" }
+    ],
+    glossary: [
+      {"term": "Badging", "definition": "A clock-in/clock-out record of an employee, matched against planned shifts for validation.", "anchor": {"repo": "skello-app", "path": "app/models/badging.rb", "symbol": "Badging"}},
+      {"term": "Punch clock device", "definition": "A registered tablet running the punch-clock app for one shop.", "anchor": {"repo": "skello-app", "path": "app/models/punch_clock_device.rb", "symbol": "PunchClockDevice"}},
+      {"term": "Punch clock setting", "definition": "A shop-level option of the time clock (rounding, breaks, photo, PIN rules).", "anchor": {"repo": "skello-app", "path": "app/models/punch_clock_setting.rb", "symbol": "PunchClockSetting"}}
+    ],
   },
   {
     id: 'leave-requests',
@@ -99,8 +135,18 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
         'src/screens/Requests/**', 'src/screens/LeaveRequests/**', 'src/modules/leaveRequests/**', 'src/modules/requests/**'),
       loc('svc-requests', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'leave-request-lifecycle', why: "A leave request from submission to decision" },
+      { flowId: 'leave-request-approval', why: "How approval writes absences into the planning" },
+      { flowId: 'leave-request-cancellation', why: "What cancelling an approved leave undoes" },
+      { flowId: 'availability-submission', why: "How employees declare availabilities" }
+    ],
+    glossary: [
+      {"term": "Leave request", "definition": "An employee's request for an absence over a period, approved or refused by a manager.", "anchor": {"repo": "skello-app", "path": "app/models/leave_request.rb", "symbol": "LeaveRequest"}},
+      {"term": "Availability", "definition": "An employee's declared availability or unavailability for a slot, optionally submitted for approval.", "anchor": {"repo": "skello-app", "path": "app/models/availability.rb", "symbol": "Availability"}},
+      {"term": "Shift swap", "definition": "A request to hand a shift from one employee to another, with optional manager approval.", "anchor": {"repo": "skello-app", "path": "app/models/shift_swap.rb", "symbol": "ShiftSwap"}},
+      {"term": "Absence config", "definition": "A shop's configuration of which absence types exist and how they count.", "anchor": {"repo": "skello-app", "path": "app/models/shop_absence_config.rb", "symbol": "ShopAbsenceConfig"}}
+    ],
   },
   {
     id: 'employees-hr',
@@ -120,8 +166,19 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('svc-employees', 'backend', '**'),
       loc('svc-hris', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'employee-onboarding', why: "How an employee is created and invited" },
+      { flowId: 'contract-amendment', why: "How a contract changes over time" },
+      { flowId: 'employee-hris-sync', why: "How employees are pulled from HRIS tools" },
+      { flowId: 'employee-archival', why: "What archiving an employee touches" }
+    ],
+    glossary: [
+      {"term": "User", "definition": "A person with a Skello account — employee, manager or administrator.", "anchor": {"repo": "skello-app", "path": "app/models/user.rb", "symbol": "User"}},
+      {"term": "Membership", "definition": "The link between a user and a shop, carrying the user's default poste there.", "anchor": {"repo": "skello-app", "path": "app/models/membership.rb", "symbol": "Membership"}},
+      {"term": "Contract", "definition": "An employee's employment contract — type, hours, wage — with its amendments and bonuses.", "anchor": {"repo": "skello-app", "path": "app/models/contract.rb", "symbol": "Contract"}},
+      {"term": "Contract amendment", "definition": "A dated change to a contract (hours, schedule, wage).", "anchor": {"repo": "skello-app", "path": "app/models/contract_amendment.rb", "symbol": "ContractAmendment"}},
+      {"term": "DPAE deposit", "definition": "The pre-hiring declaration of a contract sent to URSSAF, with its deposit status.", "anchor": {"repo": "skello-app", "path": "app/models/dpae_deposit.rb", "symbol": "DpaeDeposit"}}
+    ],
   },
   {
     id: 'counters-labour-law',
@@ -142,7 +199,14 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('svc-trackers', 'backend', '**'),
     ],
     readingPath: [],
-    glossary: [],
+    glossary: [
+      {"term": "Paid leaves counter", "definition": "An employee's acquired and taken paid-leave balance.", "anchor": {"repo": "skello-app", "path": "app/models/paid_leaves_counter.rb", "symbol": "PaidLeavesCounter"}},
+      {"term": "RCR counter", "definition": "An employee's compensatory rest (repos compensateur de remplacement) balance.", "anchor": {"repo": "skello-app", "path": "app/models/rcr_counter.rb", "symbol": "RcrCounter"}},
+      {"term": "Convention", "definition": "The collective agreement a shop applies — overtime, night, Sunday majoration slices and alerts.", "anchor": {"repo": "skello-app", "path": "app/models/convention.rb", "symbol": "Convention"}},
+      {"term": "Shop labour law", "definition": "A shop's labour-law settings derived from its convention and country.", "anchor": {"repo": "skello-app", "path": "app/models/shop_labour_law.rb", "symbol": "ShopLabourLaw"}},
+      {"term": "Annualisation", "definition": "A shop's annualised working-time configuration.", "anchor": {"repo": "skello-app", "path": "app/models/shop_annualization_config.rb", "symbol": "ShopAnnualizationConfig"}},
+      {"term": "Alert", "definition": "A labour-law alert rule (rest, max hours, breaks) raised on the planning.", "anchor": {"repo": "skello-app", "path": "app/models/alert.rb", "symbol": "Alert"}}
+    ],
   },
   {
     id: 'documents-esignature',
@@ -159,8 +223,15 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('svc-documents-v2', 'backend', '**'),
       loc('svc-documents-esignature', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'document-generation-esignature', why: "Generating a document and sending it for signature" },
+      { flowId: 'document-share', why: "How documents are shared with employees" },
+      { flowId: 'payslip-dispatch', why: "How payslips are split and distributed" }
+    ],
+    glossary: [
+      {"term": "Text document", "definition": "A document generated for an employee from a template, optionally sent for e-signature.", "anchor": {"repo": "skello-app", "path": "app/models/text_document.rb", "symbol": "TextDocument"}},
+      {"term": "Document template", "definition": "An organisation's template with variables used to generate documents.", "anchor": {"repo": "skello-app", "path": "app/models/text_document_template.rb", "symbol": "TextDocumentTemplate"}}
+    ],
   },
   {
     id: 'payroll-reports',
@@ -176,8 +247,14 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('svc-payroll', 'backend', '**'),
       loc('svc-reports', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'payroll-export', why: "How payroll data leaves Skello" },
+      { flowId: 'planning-report-export', why: "How the payroll report is exported to Excel" }
+    ],
+    glossary: [
+      {"term": "Prime", "definition": "A bonus attached to a contract for a period, exported with payroll.", "anchor": {"repo": "skello-app", "path": "app/models/prime.rb", "symbol": "Prime"}},
+      {"term": "Report comment", "definition": "A manager's per-contract comment on the payroll report.", "anchor": {"repo": "skello-app", "path": "app/models/report_comment.rb", "symbol": "ReportComment"}}
+    ],
   },
   {
     id: 'analytics',
@@ -195,8 +272,14 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('svc-kpis-v2', 'backend', '**'),
       loc('svc-bff', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'analytics-dashboard-load', why: "What the analytics dashboard loads" },
+      { flowId: 'bff-dashboard-load', why: "The KPI aggregation behind the home dashboard" }
+    ],
+    glossary: [
+      {"term": "Labor cost", "definition": "A shop's labour-cost data used by dashboards.", "anchor": {"repo": "skello-app", "path": "app/models/labor_cost.rb", "symbol": "LaborCost"}},
+      {"term": "Planning hours data", "definition": "Aggregated planned hours per employee and period, feeding dashboards and counters.", "anchor": {"repo": "skello-app", "path": "app/models/planning_hours_data.rb", "symbol": "PlanningHoursData"}}
+    ],
   },
   {
     id: 'missions',
@@ -210,8 +293,12 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('skello-mobile', 'mobile', 'src/modules/missions/**'),
       loc('svc-shops', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'mission-management', why: "Creating and assigning missions" }
+    ],
+    glossary: [
+      {"term": "Mission", "definition": "A task or assignment given to employees, stored by svc-shops.", "anchor": {"repo": "svc-shops", "path": "src/Entity/MissionEntity.ts", "symbol": "MissionEntitySchema"}}
+    ],
   },
   {
     id: 'hiring',
@@ -224,7 +311,9 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('skello-app', 'monolith', 'app/services/join/**'),
     ],
     readingPath: [],
-    glossary: [],
+    glossary: [
+      {"term": "JOIN company", "definition": "The JOIN applicant-tracking account provisioned for a Skello organisation.", "anchor": {"repo": "svc-hiring", "path": "src/Entity/JoinCompanyStatusEntity.ts", "symbol": "createJoinCompanyStatusEntity"}}
+    ],
   },
   {
     id: 'org-admin',
@@ -248,8 +337,17 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('superadmin', 'superadmin', 'src/pages/Organisation*/**', 'src/pages/Shop*/**', 'src/pages/User*/**', 'src/pages/AccountCreation/**'),
       loc('svc-modularisation', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'org-onboarding', why: "How an organisation and its first shop are created" },
+      { flowId: 'mobile-app-bootstrap', why: "How the mobile app loads user, shop and config context" }
+    ],
+    glossary: [
+      {"term": "Organisation", "definition": "A customer account grouping shops, teams, licenses and billing.", "anchor": {"repo": "skello-app", "path": "app/models/organisation.rb", "symbol": "Organisation"}},
+      {"term": "Shop", "definition": "An establishment where employees work and plannings are made.", "anchor": {"repo": "skello-app", "path": "app/models/shop.rb", "symbol": "Shop"}},
+      {"term": "Cluster node", "definition": "A node of the organisation's hierarchy grouping shops for multi-site management.", "anchor": {"repo": "skello-app", "path": "app/models/cluster_node.rb", "symbol": "ClusterNode"}},
+      {"term": "Team", "definition": "A group of employees inside a shop, with its own schedules.", "anchor": {"repo": "skello-app", "path": "app/models/team.rb", "symbol": "Team"}},
+      {"term": "License", "definition": "A permission profile (manager, employee, admin…) assigned to users across the organisation.", "anchor": {"repo": "skello-app", "path": "app/models/license.rb", "symbol": "License"}}
+    ],
   },
   {
     id: 'billing',
@@ -269,8 +367,16 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('svc-billing-automation', 'backend', '**'),
       loc('svc-enrollment', 'backend', '**'),
     ],
-    readingPath: [],
-    glossary: [],
+    readingPath: [
+      { flowId: 'self-serve-signup', why: "A prospect signing up on their own" },
+      { flowId: 'subscription-upgrade', why: "Moving to a higher pack" },
+      { flowId: 'assistant-freemium-credits', why: "How assistant credits are checked and spent" }
+    ],
+    glossary: [
+      {"term": "Billing info", "definition": "A shop or organisation's payment details (SEPA, card) and charges.", "anchor": {"repo": "skello-app", "path": "app/models/billing_info.rb", "symbol": "BillingInfo"}},
+      {"term": "Pack offer", "definition": "A commercial bundle of Skello features a customer subscribes to.", "anchor": {"repo": "skello-app", "path": "app/models/pack_offer.rb", "symbol": "PackOffer"}},
+      {"term": "Prospect", "definition": "A sales lead going through signup and onboarding steps before becoming a customer.", "anchor": {"repo": "skello-app", "path": "app/models/prospect.rb", "symbol": "Prospect"}}
+    ],
   },
   {
     id: 'auth-identity',
