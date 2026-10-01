@@ -45,7 +45,7 @@ const PATH_FRAGMENT_RE = /\b(GET|POST|PUT|PATCH|DELETE)\s+(\/[^\s,—()]+)/g
 
 export interface CodeLayerFinding {
   flow: string
-  kind: 'missing-code-path' | 'unreferenced-callee' | 'unknown-code-edge-endpoint' | 'unknown-unit-service'
+  kind: 'missing-code-path' | 'unreferenced-callee' | 'unknown-code-edge-endpoint' | 'unknown-unit-service' | 'controller-without-route'
   detail: string
 }
 
@@ -66,7 +66,9 @@ function calleeToken(label: string): string | null {
   return tokens.reduce((a, b) => (b.length > a.length ? b : a))
 }
 
-export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): CodeLayerCheckResult {
+const ABSTRACT_CONTROLLER = /(^|\/)(base|application)_controller\.rb$/
+
+export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string, controllerFiles?: Set<string>): CodeLayerCheckResult {
   const serviceNames = new Set(map.services.map(s => s.name))
   const result: CodeLayerCheckResult = {
     findings: [], flowsWithCodeLayer: 0, pathsVerified: 0, edgesVerified: 0, skippedRepos: [],
@@ -101,6 +103,9 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string): Cod
         continue
       }
       if (!unit.path) continue
+      if (controllerFiles && unit.service === 'skello-app' && unit.kind === 'controller' && !controllerFiles.has(unit.path) && !ABSTRACT_CONTROLLER.test(unit.path)) {
+        result.findings.push({ flow: flow.id, kind: 'controller-without-route', detail: `codeUnit ${unit.id}: ${unit.path} serves no route in config/routes.rb` })
+      }
       if (!fs.existsSync(path.join(repoBase, unit.service))) {
         skipped.add(unit.service)
         continue

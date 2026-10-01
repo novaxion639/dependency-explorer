@@ -16,7 +16,7 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "DELETE /v3/shifts/:id — delete shift"
+      "action": "DELETE /v3/api/plannings/shifts/:id — delete shift"
     },
     {
       "from": "skello-app",
@@ -70,7 +70,7 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "cu-del-controller",
-      "label": "DELETE /v3/shifts/:id",
+      "label": "DELETE /v3/api/plannings/shifts/:id",
       "mode": "sync"
     },
     {

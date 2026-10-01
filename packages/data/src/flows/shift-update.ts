@@ -16,7 +16,7 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "PATCH /v3/shifts/:id — update shift"
+      "action": "PATCH /v3/api/plannings/shifts — update shift"
     }
   ],
   "codeUnits": [
@@ -89,7 +89,7 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "cu-upd-controller",
-      "label": "PATCH /v3/shifts/:id",
+      "label": "PATCH /v3/api/plannings/shifts",
       "mode": "sync"
     },
     {

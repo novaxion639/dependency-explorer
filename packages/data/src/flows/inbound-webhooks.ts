@@ -15,7 +15,7 @@ const inbound_webhooks: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app (webhooks)",
       "to": "skello-app",
-      "action": "POST /v3/api/webhooks/shops/{cancel,link_coach} (Salesforce SOAP) · POST /v3/api/webhooks/demo_requests (Zapier)"
+      "action": "POST /v3/api/webhooks/shops/cancel · POST /v3/api/webhooks/shops/link_coach (Salesforce SOAP) · POST /v3/api/webhooks/demo_requests (Zapier)"
     }
   ],
   "codeUnits": [

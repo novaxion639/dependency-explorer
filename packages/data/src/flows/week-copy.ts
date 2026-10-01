@@ -16,7 +16,7 @@ const week_copy: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "POST /v3/shifts — duplicate_from_previous_week_or_day (weeks_checked[])"
+      "action": "POST /v3/api/plannings/shifts/duplicate_from_previous_week_or_day — duplicate_from_previous_week_or_day (weeks_checked[])"
     }
   ],
   "codeUnits": [

@@ -1,4 +1,4 @@
-import type { ConnectivityMap } from '@dependency-explorer/data'
+import type { ConnectivityMap, MonolithRoute } from '@dependency-explorer/data'
 import type { UrlState } from '../hooks/useUrlState'
 import { edgeKey } from '../hooks/useUrlState'
 import { buildFlagRegistry } from './flagRegistry'
@@ -26,7 +26,7 @@ const TYPE_ORDER: Record<SearchResultType, number> = {
 // reset explicitly so the landing state never mixes with whatever was open.
 const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null, area: null, term: null, blast: false, detail: null }
 
-export function buildSearchIndex(map: ConnectivityMap): SearchEntry[] {
+export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] = []): SearchEntry[] {
   const entries: SearchEntry[] = []
 
   for (const svc of map.services) {
@@ -82,12 +82,12 @@ export function buildSearchIndex(map: ConnectivityMap): SearchEntry[] {
   }
 
   // Reverse code→flows index — derived from codeUnits[].path, zero authored data
-  for (const entry of buildFileIndex(map).values()) {
+  for (const entry of buildFileIndex(map, routes).values()) {
     entries.push({
       type: 'file',
       label: entry.path,
-      sublabel: `${entry.service} · touched by ${entry.flows.length} flow${entry.flows.length === 1 ? '' : 's'}`,
-      haystack: entry.flows.map(f => `${f.id} ${f.name}`).join(' '),
+      sublabel: `${entry.service} · touched by ${entry.flows.length} flow${entry.flows.length === 1 ? '' : 's'}${entry.routes.length ? ` · serves ${entry.routes.length} route${entry.routes.length === 1 ? '' : 's'}` : ''}`,
+      haystack: [...entry.flows.map(f => `${f.id} ${f.name}`), ...entry.routes].join(' '),
       patch: { ...CLOSE_OVERLAYS, file: `${entry.service}/${entry.path}` },
     })
   }

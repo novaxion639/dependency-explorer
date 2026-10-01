@@ -208,6 +208,7 @@ function pickTeamId(wildcardOwners: string[]): string | undefined {
 
 function run(): Report {
   const repos = findRepos()
+  const railsRoutes = extractRailsRoutes(REPO_BASE)
   const report: Report = {
     pinned: PIN ? { repos: PIN.pinned, skipped: PIN.skipped } : null,
     scannedRepos: repos,
@@ -228,7 +229,7 @@ function run(): Report {
     sdkUsage: [],
     sdkRegistryStats: null,
     flowCheck: checkFlows(connectivityMap),
-    codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE),
+    codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE, railsRoutes ? new Set(railsRoutes.routes.map(r => r.controllerFile)) : undefined),
     ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),
     areaCheck: checkAreas({
       areas: connectivityMap.areas ?? [],
@@ -594,7 +595,7 @@ function run(): Report {
   }
 
   // ── Monolith inbound surface (informational) ───────────────────────────────
-  const routes = extractRailsRoutes(REPO_BASE)
+  const routes = railsRoutes
   if (routes) {
     const bySegment = new Map<string, number>()
     for (const route of routes.routes) {

@@ -31,7 +31,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "sfn-dataFetcher",
       "to": "skello-app (data)",
-      "action": "GET /v3/api/plannings/svc_automatic_scheduling/users — users, contracts, memberships, teams, licenses (from PostgreSQL)"
+      "action": "GET /v3/api/automatic_scheduling/users — users, contracts, memberships, teams, licenses (from PostgreSQL)"
     },
     {
       "from": "sfn-dataFetcher",

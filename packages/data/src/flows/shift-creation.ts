@@ -15,12 +15,12 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "GET /v3/plannings — load planning context (employees, shops)"
+      "action": "GET /v3/api/plannings/shifts — load planning context (employees, shops)"
     },
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "POST /v3/shifts — create new shift (sync response with created shift)"
+      "action": "POST /v3/api/plannings/shifts — create new shift (sync response with created shift)"
     },
     {
       "from": "skello-app",
@@ -114,7 +114,7 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "cu-shifts-controller",
-      "label": "POST /v3/shifts",
+      "label": "POST /v3/api/plannings/shifts",
       "mode": "sync"
     },
     {

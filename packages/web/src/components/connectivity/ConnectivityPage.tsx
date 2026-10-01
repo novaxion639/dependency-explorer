@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { connectivityMap } from '@dependency-explorer/data'
+import { connectivityMap, monolithRoutes } from '@dependency-explorer/data'
 import { computeBlastRadius } from '../../utils/blastRadius'
 import { buildSearchIndex } from '../../utils/searchIndex'
 import { useUrlState, edgeKey, EDGE_SEP } from '../../hooks/useUrlState'
@@ -22,9 +22,9 @@ import { buildFileIndex } from '../../utils/fileIndex'
 import { CLAMP_TWO_LINES } from '../../utils/clamp'
 
 const map = connectivityMap
-const searchIndex = buildSearchIndex(map)
+const searchIndex = buildSearchIndex(map, monolithRoutes)
 const flagRegistry = buildFlagRegistry(map)
-const fileIndex = buildFileIndex(map)
+const fileIndex = buildFileIndex(map, monolithRoutes)
 const areaById = new Map((map.areas ?? []).map(a => [a.id, a]))
 
 // Strip URL params that don't resolve against the dataset, so a stale shared
@@ -341,6 +341,7 @@ export function ConnectivityPage() {
         <FileModal
           entry={fileIndex.get(url.file)!}
           onSelectFlow={flow => patch({ flow: flow.id, detail: 'code', file: null })}
+          onOpenRoute={id => patch({ file: null, s: 'skello-app', view: 'services', drawer: 'skello-app', ep: id })}
           onClose={() => patch({ file: null })}
         />
       )}

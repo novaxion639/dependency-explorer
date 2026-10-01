@@ -19,7 +19,7 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "POST /v3/shifts — create shift(s) with an absence type"
+      "action": "POST /v3/api/plannings/shifts — create shift(s) with an absence type"
     },
     {
       "from": "skello-app",
@@ -97,7 +97,7 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "cu-abs-controller",
-      "label": "POST /v3/shifts (absence type)",
+      "label": "POST /v3/api/plannings/shifts (absence type)",
       "mode": "sync"
     },
     {

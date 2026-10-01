@@ -18,7 +18,7 @@ const org_onboarding: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "POST/PATCH /v3/api/onboarding/organisations (+ prospects current/update) — org provisioning"
+      "action": "POST /v3/api/onboarding/organisations · PATCH /v3/api/onboarding/organisations/:id (+ prospects current/update) — org provisioning"
     },
     {
       "from": "skello-app-front",
@@ -51,7 +51,7 @@ const org_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "client",
       "label": "createOrganisation (onboarding store)",
       "path": "apps/vue-app/src/shared/store/modules/onboarding.js",
-      "description": "POST/PATCH /v3/api/onboarding/organisations + prospect reads/updates"
+      "description": "POST /v3/api/onboarding/organisations · PATCH /v3/api/onboarding/organisations/:id + prospect reads/updates"
     },
     {
       "id": "cu-oo-admin-onb",

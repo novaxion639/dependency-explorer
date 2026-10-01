@@ -7,10 +7,11 @@ import type { FileIndexEntry } from '../../utils/fileIndex'
 interface Props {
   entry: FileIndexEntry
   onSelectFlow: (flow: ServiceFlow) => void
+  onOpenRoute: (id: string) => void
   onClose: () => void
 }
 
-export function FileModal({ entry, onSelectFlow, onClose }: Props) {
+export function FileModal({ entry, onSelectFlow, onOpenRoute, onClose }: Props) {
   return (
     <>
       {/* Backdrop */}
@@ -59,7 +60,7 @@ export function FileModal({ entry, onSelectFlow, onClose }: Props) {
             </div>
             <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
               <span style={{ color: '#818cf8' }}>{entry.service}</span>
-              {' · '}{entry.labels.join(' · ')}
+              {entry.labels.length > 0 && <>{' · '}{entry.labels.join(' · ')}</>}
               {' · '}traversed by {entry.flows.length} flow{entry.flows.length === 1 ? '' : 's'}
             </div>
           </div>
@@ -101,6 +102,18 @@ export function FileModal({ entry, onSelectFlow, onClose }: Props) {
               <div style={{ fontSize: 10, color: '#4f6ef7', marginTop: 6 }}>View code detail →</div>
             </div>
           ))}
+          {entry.routes.length > 0 && (
+            <section aria-label="Routes served by this file" style={{ margin: '4px 18px 0' }}>
+              <h3 style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>Routes served by this file ({entry.routes.length})</h3>
+              <ul style={{ listStyle: 'none', fontSize: 11 }}>
+                {entry.routes.map(id => (
+                  <li key={id}>
+                    <button type="button" onClick={() => onOpenRoute(id)} style={{ background: 'transparent', border: 'none', padding: '2px 0', color: '#10b981', cursor: 'pointer', fontFamily: 'monospace', textAlign: 'left' }}>{id}</button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       </div>
     </>
