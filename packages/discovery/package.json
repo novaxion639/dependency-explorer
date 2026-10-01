@@ -7,12 +7,14 @@
     "discover": "tsx src/discover.ts",
     "discover:json": "tsx src/discover.ts --json",
     "discover:apply": "tsx src/discover.ts --apply",
+    "discover:baseline": "tsx src/discover.ts --pinned --write-baseline",
     "discover:aws:fetch": "tsx src/aws-fetch.ts",
     "discover:scaffold": "tsx src/scaffold.ts",
     "docs:gen": "tsx src/docs-gen-cli.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "discover:trace": "tsx src/trace.ts"
+    "discover:trace": "tsx src/trace.ts",
+    "repo-list": "tsx src/repo-list.ts"
   },
   "dependencies": {
     "@dependency-explorer/data": "workspace:*",

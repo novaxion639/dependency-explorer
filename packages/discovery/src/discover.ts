@@ -43,12 +43,29 @@ import { checkContractRefs } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
+import { pinRepos, type PinnedRepo, type PinSkip } from './pinned'
+import { findingKeys, diffBaseline, readBaseline, writeBaseline } from './baseline'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const REPO_BASE = path.resolve(__dirname, '../../../../')
+const SOURCE_BASE = path.resolve(__dirname, '../../../../')
+const PINNED_MODE = process.argv.includes('--pinned')
+const PINNED_BASE = path.resolve(__dirname, '../../../.pinned')
+
+function scanTargets(base: string): string[] {
+  return fs.readdirSync(base, { withFileTypes: true })
+    .filter(e => e.isDirectory() && (e.name.startsWith('svc-') || e.name.endsWith('-tf') || ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock', 'skello-libs-ts'].includes(e.name)))
+    .map(e => e.name)
+    .sort()
+}
+
+const PIN = PINNED_MODE ? pinRepos(scanTargets(SOURCE_BASE), SOURCE_BASE, PINNED_BASE) : null
+const REPO_BASE = PIN ? PINNED_BASE : SOURCE_BASE
 const OVERLAY_PATH = path.resolve(__dirname, '../../data/src/generated/discovered.json')
 
 const JSON_MODE = process.argv.includes('--json')
+const BASELINE_PATH = path.resolve(__dirname, '../baseline.json')
+const BASELINE_MODE = process.argv.includes('--write-baseline')
+const FAIL_ON_NEW = process.argv.includes('--fail-on-new')
 const APPLY_MODE = process.argv.includes('--apply')
 // --aws [dir]: diff a read-only AWS snapshot (see aws-fetch.ts) against the map.
 // The dir resolves against the cwd, then the workspace root; without a value,
@@ -119,6 +136,7 @@ interface AwsClientUsage {
 }
 
 interface Report {
+  pinned: { repos: PinnedRepo[]; skipped: PinSkip[] } | null
   scannedRepos: string[]
   /** connection key → accumulated evidence strings */
   connectionEvidence: Record<string, string[]>
@@ -190,6 +208,7 @@ function pickTeamId(wildcardOwners: string[]): string | undefined {
 function run(): Report {
   const repos = findRepos()
   const report: Report = {
+    pinned: PIN ? { repos: PIN.pinned, skipped: PIN.skipped } : null,
     scannedRepos: repos,
     connectionEvidence: {},
     candidates: [],
@@ -658,6 +677,15 @@ function printMarkdown(r: Report) {
   }
 
   console.log('# Discovery Report')
+  if (r.pinned) {
+    console.log(`\n## 📌 Pinned to production branches (${r.pinned.repos.length} repos)\n`)
+    console.log(r.pinned.repos.map(p => `- ${p.repo} @ ${p.branch} ${p.sha.slice(0, 12)}`).join('\n'))
+    if (r.pinned.skipped.length) {
+      console.log(`\nSkipped:\n${r.pinned.skipped.map(s => `- ${s.repo} — ${s.reason}`).join('\n')}`)
+    }
+  } else {
+    console.log('\n> unpinned — local working trees (run with --pinned for production branches)\n')
+  }
   console.log(`\nScanned ${r.scannedRepos.length} repos in ${REPO_BASE}`)
 
   const verified = Object.entries(r.connectionEvidence)
@@ -987,6 +1015,16 @@ function printMarkdown(r: Report) {
 
   const epVerified = Object.keys(r.endpointStamps).length
   const epTotal = r.endpointChecks.reduce((n, c) => n + c.total, 0)
+  const keys = findingKeys({ ...r })
+  const delta = diffBaseline(keys, readBaseline(BASELINE_PATH))
+  console.log(`\n## 🧾 Baseline — ${delta.added.length} new · ${delta.resolved.length} resolved · ${delta.carried} carried\n`)
+  if (delta.added.length) {
+    console.log(`New:\n${delta.added.map(k => `- ${k}`).join('\n')}`)
+  }
+  if (delta.resolved.length) {
+    console.log(`\nResolved:\n${delta.resolved.map(k => `- ${k}`).join('\n')}`)
+  }
+
   console.log(`\n## Summary\n`)
   console.log(`| connections verified | endpoint stamps | candidates | stale | unverifiable | unknown targets |`)
   console.log(`|---|---|---|---|---|---|`)
@@ -1003,4 +1041,11 @@ if (JSON_MODE) {
 }
 if (APPLY_MODE) {
   writeOverlay(report)
+}
+if (BASELINE_MODE) {
+  writeBaseline(BASELINE_PATH, findingKeys({ ...report }), PIN ? PIN.pinned.map(p => p.repo) : report.scannedRepos)
+  console.log(`\nBaseline written: ${path.relative(process.cwd(), BASELINE_PATH)}`)
+}
+if (FAIL_ON_NEW && diffBaseline(findingKeys({ ...report }), readBaseline(BASELINE_PATH)).added.length) {
+  process.exitCode = 1
 }
