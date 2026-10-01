@@ -7,13 +7,16 @@ import type { UrlState } from '../../hooks/useUrlState'
 import { SearchModal } from '../SearchModal'
 import { ServiceSidebar } from './ServiceSidebar'
 import { ConnectivityGraph } from './ConnectivityGraph'
-import { DomainGraph } from './DomainGraph'
 import { FlowsPanel } from './FlowsPanel'
 import { FlowListModal } from './FlowListModal'
 import { FlowGraphModal } from './FlowGraphModal'
 import { FlagModal } from './FlagModal'
 import { FileModal } from './FileModal'
 import { OwnershipPage } from '../ownership/OwnershipPage'
+import { AreasHome } from '../areas/AreasHome'
+import { AreaPage } from '../areas/AreaPage'
+import { SystemContext } from '../areas/SystemContext'
+import { NotFoundBanner } from '../areas/NotFoundBanner'
 import { buildFlagRegistry } from '../../utils/flagRegistry'
 import { buildFileIndex } from '../../utils/fileIndex'
 
@@ -21,20 +24,35 @@ const map = connectivityMap
 const searchIndex = buildSearchIndex(map)
 const flagRegistry = buildFlagRegistry(map)
 const fileIndex = buildFileIndex(map)
+const areaById = new Map((map.areas ?? []).map(a => [a.id, a]))
 
 // Strip URL params that don't resolve against the dataset, so a stale shared
-// link (renamed service, retired flow) degrades gracefully instead of
-// rendering a broken view.
+// link (renamed service, retired flow) degrades to the nearest valid view; the
+// first unresolved area/term/flow/service is surfaced as a not-found banner.
 function validateUrlState(st: UrlState): UrlState {
   const serviceNames = new Set(map.services.map(s => s.name))
   const next = { ...st }
-  if (next.s && !serviceNames.has(next.s)) next.s = null
+  let notFound: UrlState['notFound'] = null
+  if (next.s && !serviceNames.has(next.s)) {
+    notFound = { param: 's', value: next.s }
+    next.s = null
+  }
+  if (next.area && !areaById.has(next.area)) {
+    notFound = notFound ?? { param: 'area', value: next.area }
+    next.area = null
+  }
+  if (next.term && !areaById.get(next.area ?? '')?.glossary.some(g => g.term === next.term)) {
+    notFound = notFound ?? { param: 'term', value: next.term }
+    next.term = null
+  }
+  if (next.flow && !map.flows.some(f => f.id === next.flow)) {
+    notFound = notFound ?? { param: 'flow', value: next.flow }
+    next.flow = null
+  }
   if (next.team && !(map.teams ?? []).some(t => t.id === next.team)) next.team = null
-  if (next.domain && !(map.domains ?? []).some(d => d.id === next.domain)) next.domain = null
   if (next.flows && !serviceNames.has(next.flows)) next.flows = null
   if (next.flag && !flagRegistry.has(next.flag)) next.flag = null
   if (next.file && !fileIndex.has(next.file)) next.file = null
-  if (next.flow && !(map.flows ?? []).some(f => f.id === next.flow)) next.flow = null
   if (!next.flow) next.detail = null
   if (next.drawer && !serviceNames.has(next.drawer)) next.drawer = null
   if (next.edge) {
@@ -48,6 +66,7 @@ function validateUrlState(st: UrlState): UrlState {
     if (!drawerSvc?.endpoints.some(e => e.id === next.ep)) next.ep = null
   }
   if (!next.s) next.blast = false
+  next.notFound = notFound
   return next
 }
 
@@ -108,13 +127,10 @@ export function ConnectivityPage() {
       <ServiceSidebar
         services={map.services}
         teams={map.teams}
-        domains={map.domains}
         selected={selectedService}
         onSelect={selectService}
         search={sidebarSearch}
         onSearch={setSidebarSearch}
-        domainFilter={url.domain}
-        onDomainFilter={d => patch({ domain: d })}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -123,7 +139,7 @@ export function ConnectivityPage() {
           padding: '6px 16px', background: '#1a1d27', borderBottom: '1px solid #2e3250',
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
-          {(['services', 'domains', 'teams'] as const).map(mode => (
+          {(['areas', 'context', 'services', 'teams'] as const).map(mode => (
             <button
               key={mode}
               onClick={() => patch({ view: mode })}
@@ -134,7 +150,7 @@ export function ConnectivityPage() {
                 color: viewMode === mode ? '#fff' : '#64748b',
               }}
             >
-              {mode === 'services' ? 'Service View' : mode === 'domains' ? 'Domain View' : 'Ownership'}
+              {VIEW_LABEL[mode]}
             </button>
           ))}
           <button
@@ -157,6 +173,8 @@ export function ConnectivityPage() {
           </button>
           <CopyPermalinkButton />
         </div>
+
+        {url.notFound && <NotFoundBanner notFound={url.notFound} onDismiss={() => patch({ notFound: null })} />}
 
         {/* Info bar when a service is selected */}
         {selected && viewMode === 'services' && (
@@ -228,7 +246,21 @@ export function ConnectivityPage() {
           </div>
         )}
 
-        {viewMode === 'services' ? (
+        {viewMode === 'areas' && url.area ? (
+          <AreaPage
+            map={map}
+            areaId={url.area}
+            term={url.term}
+            onBack={() => patch({ area: null, term: null })}
+            onOpenFlow={id => patch({ flow: id })}
+            onOpenArea={id => patch({ area: id, term: null })}
+            onSelectService={selectService}
+          />
+        ) : viewMode === 'areas' ? (
+          <AreasHome map={map} onOpenArea={id => patch({ area: id, term: null })} onOpenContext={() => patch({ view: 'context' })} />
+        ) : viewMode === 'context' ? (
+          <SystemContext map={map} onSelectService={selectService} onOpenArea={id => patch({ view: 'areas', area: id, term: null })} />
+        ) : viewMode === 'services' ? (
           <ConnectivityGraph
             map={map}
             selectedService={selectedService}
@@ -241,17 +273,13 @@ export function ConnectivityPage() {
             onDrawerSelect={name => patch({ drawer: name, ep: null })}
             highlightEndpointId={url.ep}
           />
-        ) : viewMode === 'domains' ? (
-          <DomainGraph
-            map={map}
-            onSelectDomain={domainId => patch({ domain: domainId, view: 'services' })}
-          />
         ) : (
           <OwnershipPage
             map={map}
             focusedTeam={url.team}
             onFocusTeam={team => patch({ team }, { push: true })}
             onSelectService={selectService}
+            onOpenArea={id => patch({ view: 'areas', area: id, term: null })}
           />
         )}
 
@@ -285,6 +313,7 @@ export function ConnectivityPage() {
           detail={url.detail === 'code'}
           onDetailChange={d => patch({ detail: d ? 'code' : null })}
           onOpenFlow={flowId => patch({ flow: flowId, detail: null }, { push: true })}
+          onOpenArea={id => patch({ view: 'areas', area: id, term: null, flow: null, flows: null, detail: null })}
           onBack={() => patch({ flow: null, detail: null })}
           onClose={() => patch({ flow: null, flows: null, detail: null })}
         />
@@ -322,6 +351,8 @@ export function ConnectivityPage() {
     </div>
   )
 }
+
+const VIEW_LABEL = { areas: 'Areas', context: 'System context', services: 'Service View', teams: 'Ownership' } as const
 
 function CopyPermalinkButton() {
   const [copied, setCopied] = useState(false)

@@ -422,19 +422,6 @@ export const ExternalSystemSchema = z.object({
   })).min(1),
 })
 
-// ── Domain (bounded context) ─────────────────────────────────────────────────
-
-export const DomainSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
-  color: z.string(),
-  serviceNames: z.array(z.string()),
-  dataEntities: z.array(z.string()).optional(),
-  publishedEvents: z.array(z.string()).optional(),
-  consumedEvents: z.array(z.string()).optional(),
-})
-
 // ── Discovered overlay ────────────────────────────────────────────────────────
 // Output of `pnpm discover --apply`: machine-verified facts merged into the
 // manual dataset at load time (ADR-0004). Only contains facts about entities
@@ -481,7 +468,6 @@ export const ConnectivityMapSchema = z.object({
   connections: z.array(ServiceConnectionSchema),
   flows: z.array(ServiceFlowSchema),
   teams: z.array(TeamSchema).optional(),
-  domains: z.array(DomainSchema).optional(),
   rules: z.array(DomainRuleSchema).optional(),
   areas: z.array(ProductAreaSchema).optional(),
   externals: z.array(ExternalSystemSchema).optional(),
@@ -521,7 +507,6 @@ export type Platform = z.infer<typeof PlatformSchema>
 export type DomainRuleDivergence = z.infer<typeof DomainRuleDivergenceSchema>
 export type DomainRule = z.infer<typeof DomainRuleSchema>
 export type Team = z.infer<typeof TeamSchema>
-export type Domain = z.infer<typeof DomainSchema>
 export type CodeLocation = z.infer<typeof CodeLocationSchema>
 export type GlossaryTerm = z.infer<typeof GlossaryTermSchema>
 export type ReadingPathEntry = z.infer<typeof ReadingPathEntrySchema>
