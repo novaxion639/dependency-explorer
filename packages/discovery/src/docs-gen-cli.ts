@@ -9,7 +9,7 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const docsDir = path.resolve(here, '..', '..', '..', 'docs')
 
 const targets: Array<{ file: string; name: string; section: string }> = [
-  { file: 'flow-inventory.md', name: 'flows-by-domain', section: renderFlowInventorySection(connectivityMap) },
+  { file: 'flow-inventory.md', name: 'flows-by-area', section: renderFlowInventorySection(connectivityMap) },
   { file: 'planning-actions-coverage.md', name: 'planning-flows', section: renderPlanningCoverageSection(connectivityMap) },
 ]
 

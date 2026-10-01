@@ -1,9 +1,9 @@
 import type { ConnectivityMap } from '@dependency-explorer/schema'
-import { getFlowDomains } from '@dependency-explorer/data'
+import { getFlowAreas } from '@dependency-explorer/data'
 
 /**
  * Generated sections of the inventory docs — rendered from the dataset so
- * flow counts and per-domain attribution structurally cannot go stale. The
+ * flow counts and per-area attribution structurally cannot go stale. The
  * generator owns ONLY the text between its markers; analysis prose around
  * them stays hand-authored (the action-level taxonomy in
  * planning-actions-coverage has no schema representation and never will be
@@ -17,42 +17,44 @@ export const MARKERS = {
 }
 
 export function renderFlowInventorySection(map: ConnectivityMap): string {
-  const domains = map.domains ?? []
-  const byDomain = new Map<string, string[]>(domains.map(d => [d.id, []]))
+  const productAreas = (map.areas ?? []).filter(a => a.kind === 'product')
+  const byArea = new Map<string, string[]>(productAreas.map(a => [a.id, []]))
+  const platformOwned: string[] = []
   for (const flow of map.flows) {
-    for (const d of getFlowDomains(flow, domains)) {
-      byDomain.get(d.id)!.push(flow.id)
+    const bucket = byArea.get(flow.primaryArea ?? '')
+    if (bucket) {
+      bucket.push(flow.id)
+    } else {
+      platformOwned.push(flow.id)
     }
   }
-  const rows = domains
-    .map(d => ({ d, flows: byDomain.get(d.id)! }))
+  const rows = productAreas
+    .map(area => ({ area, flows: byArea.get(area.id) ?? [] }))
     .sort((a, b) => b.flows.length - a.flows.length)
-  const zero = rows.filter(r => r.flows.length === 0)
-
-  const lines = [
-    `**${map.flows.length} modelled flows** across ${map.services.length} services — every flow carries a code layer and a trigger.`,
+  const empty = rows.filter(r => r.flows.length === 0)
+  return [
+    `**${map.flows.length} modelled flows** across ${map.services.length} services — every flow carries a code layer, a trigger and a primary area.`,
     '',
-    '| Domain | Flows | Ids |',
+    '| Product area | Flows | Ids |',
     '|---|---|---|',
-    ...rows.map(({ d, flows }) =>
-      `| ${d.name} | ${flows.length} | ${flows.length ? flows.map(f => `\`${f}\``).join(' ') : '—'} |`),
+    ...rows.map(({ area, flows }) =>
+      `| ${area.name} | ${flows.length} | ${flows.length ? flows.map(f => `\`${f}\``).join(' ') : '—'} |`),
     '',
-    zero.length
-      ? `Domains with zero flows: ${zero.map(r => r.d.name).join(', ')}.`
-      : 'Every domain has at least one modelled flow.',
-  ]
-  return lines.join('\n')
+    empty.length
+      ? `Product areas with no flow yet: ${empty.map(r => r.area.name).join(', ')}.`
+      : 'Every product area has at least one modelled flow.',
+    ...(platformOwned.length
+      ? ['', `Flows owned by a platform capability: ${platformOwned.map(f => `\`${f}\``).join(' ')}.`]
+      : []),
+  ].join('\n')
 }
 
 export function renderPlanningCoverageSection(map: ConnectivityMap): string {
-  // The planning surface has no domain of its own (it spans scheduling +
-  // the monolith core) — the derivable stat is which of THIS DOC's ✅ flow
-  // ids still exist in the dataset, so a renamed/retired flow goes stale
-  // loudly instead of silently.
-  const scheduling = map.flows.filter(f => getFlowDomains(f, map.domains ?? []).some(d => d.id === 'scheduling'))
+  const areas = map.areas ?? []
+  const planning = map.flows.filter(f => getFlowAreas(f, areas).some(a => a.id === 'planning'))
   return [
-    `**The dependency graph models ${map.flows.length} flows** — ${scheduling.length} touch the scheduling domain: `
-      + scheduling.map(f => `\`${f.id}\``).join(' '),
+    `**The dependency graph models ${map.flows.length} flows** — ${planning.length} touch the planning area: `
+      + planning.map(f => `\`${f.id}\``).join(' '),
     '',
     '_The action-level table below is hand-maintained — sub-flow UI actions have no schema representation. Every ✅ flow id it cites is checked against the dataset by the docs-gen test._',
   ].join('\n')

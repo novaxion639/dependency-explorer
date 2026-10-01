@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
 import { connectivityMap } from './index'
+import { getFlowAreas } from './areas-derive'
 import discoveredJson from './generated/discovered.json'
 
-const { services, connections, flows, teams, domains, rules } = connectivityMap
+const { services, connections, flows, teams, domains, rules, areas, externals } = connectivityMap
 
 const serviceNames = new Set(services.map(s => s.name))
 const teamIds = new Set((teams ?? []).map(t => t.id))
@@ -284,6 +285,95 @@ describe('domains', () => {
     const covered = new Set((domains ?? []).flatMap(d => d.serviceNames))
     for (const svc of services) {
       expect(covered.has(svc.name), `service ${svc.name} belongs to no domain`).toBe(true)
+    }
+  })
+})
+
+describe('product areas', () => {
+  const list = areas ?? []
+  const areaById = new Map(list.map(a => [a.id, a]))
+  const flowIds = new Set(flows.map(f => f.id))
+
+  it('exist and have unique ids', () => {
+    expect(list.filter(a => a.kind === 'product').length).toBe(14)
+    expect(areaById.size).toBe(list.length)
+  })
+
+  it('give every product area at least one code location', () => {
+    for (const area of list.filter(a => a.kind === 'product')) {
+      expect(area.codeLocations.length, `${area.id} has no code location`).toBeGreaterThan(0)
+    }
+  })
+
+  it('point code locations at existing services with supported wildcards only', () => {
+    for (const area of list) {
+      for (const loc of area.codeLocations) {
+        expect(serviceNames.has(loc.repo), `${area.id} → unknown repo ${loc.repo}`).toBe(true)
+        for (const glob of loc.globs) {
+          expect(/[{}[\]!]/.test(glob), `${area.id}: unsupported glob syntax in ${glob}`).toBe(false)
+        }
+      }
+    }
+  })
+
+  it('keep glossary terms unique within an area', () => {
+    for (const area of list) {
+      const terms = area.glossary.map(g => g.term.toLowerCase())
+      expect(new Set(terms).size, `${area.id} repeats a glossary term`).toBe(terms.length)
+    }
+  })
+
+  it('resolve reading-path entries to flows, once per area', () => {
+    for (const area of list) {
+      const ids = area.readingPath.map(r => r.flowId)
+      expect(new Set(ids).size, `${area.id} repeats a reading-path flow`).toBe(ids.length)
+      for (const id of ids) {
+        expect(flowIds.has(id), `${area.id} → unknown flow ${id}`).toBe(true)
+      }
+    }
+  })
+
+  it('resolve owners to teams', () => {
+    for (const area of list) {
+      for (const owner of area.owners ?? []) {
+        expect(teamIds.has(owner), `${area.id} → unknown team ${owner}`).toBe(true)
+      }
+    }
+  })
+
+  it('give every flow a primaryArea among its derived areas', () => {
+    for (const flow of flows) {
+      const derived = getFlowAreas(flow, list).map(a => a.id)
+      const unitPaths = (flow.codeUnits ?? []).map(u => `${u.service}:${u.path ?? '-'}`).join(', ')
+      expect(flow.primaryArea, `flow ${flow.id} has no primaryArea`).toBeTruthy()
+      expect(areaById.has(flow.primaryArea ?? ''), `flow ${flow.id} → unknown area ${flow.primaryArea}`).toBe(true)
+      expect(derived, `flow ${flow.id}: primaryArea ${flow.primaryArea} not derived — unit paths: ${unitPaths}`).toContain(flow.primaryArea)
+    }
+  })
+
+  it('use a product area as primaryArea whenever the flow touches one', () => {
+    for (const flow of flows) {
+      const derived = getFlowAreas(flow, list)
+      if (derived.some(a => a.kind === 'product')) {
+        expect(areaById.get(flow.primaryArea ?? '')?.kind, `flow ${flow.id} primaryArea must be a product area`).toBe('product')
+      }
+    }
+  })
+})
+
+describe('external systems', () => {
+  const list = externals ?? []
+
+  it('exist and have unique ids', () => {
+    expect(list.length).toBeGreaterThan(0)
+    expect(new Set(list.map(e => e.id)).size).toBe(list.length)
+  })
+
+  it('are used by existing services', () => {
+    for (const ext of list) {
+      for (const use of ext.usedBy) {
+        expect(serviceNames.has(use.service), `${ext.id} → unknown service ${use.service}`).toBe(true)
+      }
     }
   })
 })

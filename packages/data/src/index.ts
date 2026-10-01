@@ -4,6 +4,8 @@ import connections from './connections'
 import teams from './teams'
 import domains from './domains'
 import rules from './rules'
+import externals from './externals'
+import areas from './areas'
 import discoveredJson from './generated/discovered.json'
 
 import svc_events from './services/svc-events'
@@ -231,7 +233,12 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   teams,
   domains,
   rules,
+  areas,
+  externals,
 })
 
 export * from '@dependency-explorer/schema'
 export { getFlowDomains } from './flow-domains'
+export { globToRegExp } from './glob'
+export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, getCrossAreaEdges } from './areas-derive'
+export type { CrossAreaEdge } from './areas-derive'

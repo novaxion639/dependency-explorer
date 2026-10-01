@@ -8,6 +8,7 @@ const staff_register_export: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Staff Register Export",
   "description": "A system admin downloads the legal staff register (registre du personnel). FULLY SYNCHRONOUS — no background job: the controller builds intern/employee Contract scopes (users filtered by user_extended_infos.in_staff_register, shops by the STAFF_REGISTER feature), maps contract columns, and blocks on svc-documents-v2's POST /documents/print (template StaffRegisters, xlsx); the short-lived S3 download URL comes back via the Location redirect header (follow_redirects: false) and the front downloads it. Spanish shops add the RUP column. Payloads over 1MB detour through S3 first under the SVC_DOCUMENTS_V2_PRINT_S3_FALLBACK dev flag. A legacy GenerateDocumentsService path exists in the exporter but the live path is print_in_svc_v2.",
   "trigger": { "actor": "manager", "role": "system_admin + can_download_staff_register" },
+  "primaryArea": "employees-hr",
   "links": [
     { "to": "payslip-dispatch", "kind": "domain-related", "note": "same svc-documents-v2 generation service, different template and trigger" }
   ],

@@ -8,22 +8,30 @@ in [planning-actions-coverage.md](planning-actions-coverage.md).
 
 ## Current coverage (generated)
 
-<!-- GENERATED:flows-by-domain BEGIN — run `pnpm docs:gen`, do not edit inside -->
-**48 modelled flows** across 37 services — every flow carries a code layer and a trigger.
+<!-- GENERATED:flows-by-area BEGIN — run `pnpm docs:gen`, do not edit inside -->
+**48 modelled flows** across 37 services — every flow carries a code layer, a trigger and a primary area.
 
-| Domain | Flows | Ids |
+| Product area | Flows | Ids |
 |---|---|---|
-| Core | 46 | `assistant-chat` `analytics-dashboard-load` `availability-submission` `badging-review` `employee-clock-in` `mobile-clock-in` `mobile-app-bootstrap` `mobile-planning-management` `mobile-shift-swap-request` `mobile-documents-payslips` `punchclock-device-setup` `self-serve-signup` `subscription-upgrade` `employee-onboarding` `payroll-export` `leave-request-lifecycle` `document-generation-esignature` `auto-planning-generation` `bff-dashboard-load` `shift-creation` `shift-deletion` `shift-update` `shift-publication` `leave-request-cancellation` `workload-plan-consultation` `leave-request-approval` `workload-plan-creation` `shift-replacement-search` `planning-page-load` `week-copy` `planning-report-export` `planning-period-lock` `absence-creation` `shift-bulk-erase` `shift-swap` `planning-event-management` `planning-template` `contract-amendment` `employee-archival` `staff-register-export` `inbound-webhooks` `assistant-freemium-credits` `pos-revenue-ingestion` `document-share` `mission-management` `org-onboarding` |
-| Communications | 18 | `payslip-dispatch` `mobile-app-bootstrap` `self-serve-signup` `subscription-upgrade` `employee-onboarding` `payroll-export` `leave-request-lifecycle` `document-generation-esignature` `shift-creation` `shift-publication` `leave-request-approval` `planning-period-lock` `absence-creation` `shift-bulk-erase` `shift-swap` `contract-amendment` `employee-archival` `document-share` |
-| Human Resources | 16 | `assistant-chat` `payslip-dispatch` `mobile-documents-payslips` `employee-onboarding` `payroll-export` `leave-request-lifecycle` `document-generation-esignature` `employee-hris-sync` `shift-deletion` `leave-request-cancellation` `leave-request-approval` `shift-bulk-erase` `contract-amendment` `staff-register-export` `document-share` `mission-management` |
-| Platform | 9 | `payslip-dispatch` `mobile-app-bootstrap` `punchclock-device-setup` `subscription-upgrade` `bff-dashboard-load` `shift-publication` `workload-plan-consultation` `employee-archival` `mission-management` |
-| Intelligence | 8 | `assistant-chat` `payslip-dispatch` `bff-dashboard-load` `workload-plan-consultation` `planning-report-export` `assistant-freemium-credits` `pos-revenue-ingestion` `org-onboarding` |
-| Scheduling | 7 | `assistant-chat` `auto-planning-generation` `workload-plan-consultation` `workload-plan-creation` `shift-replacement-search` `planning-page-load` `pos-revenue-ingestion` |
-| Time & Attendance | 6 | `badging-review` `employee-clock-in` `mobile-clock-in` `punchclock-device-setup` `employee-archival` `pos-revenue-ingestion` |
-| Billing | 5 | `assistant-chat` `self-serve-signup` `subscription-upgrade` `assistant-freemium-credits` `org-onboarding` |
+| Planning | 13 | `mobile-planning-management` `shift-creation` `shift-deletion` `shift-update` `shift-publication` `planning-page-load` `week-copy` `planning-period-lock` `absence-creation` `shift-bulk-erase` `shift-swap` `planning-event-management` `planning-template` |
+| Leave & requests | 5 | `availability-submission` `mobile-shift-swap-request` `leave-request-lifecycle` `leave-request-cancellation` `leave-request-approval` |
+| Employees & HR file | 5 | `employee-onboarding` `employee-hris-sync` `contract-amendment` `employee-archival` `staff-register-export` |
+| Time & attendance | 4 | `badging-review` `employee-clock-in` `mobile-clock-in` `punchclock-device-setup` |
+| Documents & e-signature | 4 | `payslip-dispatch` `mobile-documents-payslips` `document-generation-esignature` `document-share` |
+| Billing & subscription | 4 | `self-serve-signup` `subscription-upgrade` `inbound-webhooks` `assistant-freemium-credits` |
+| Workload & forecasting | 3 | `workload-plan-consultation` `workload-plan-creation` `pos-revenue-ingestion` |
+| Automatic scheduling | 2 | `auto-planning-generation` `shift-replacement-search` |
+| Payroll & reports | 2 | `payroll-export` `planning-report-export` |
+| Analytics & dashboards | 2 | `analytics-dashboard-load` `bff-dashboard-load` |
+| Organisation & shop admin | 2 | `mobile-app-bootstrap` `org-onboarding` |
+| Missions | 1 | `mission-management` |
+| Counters & labour law | 0 | — |
+| Hiring | 0 | — |
 
-Every domain has at least one modelled flow.
-<!-- GENERATED:flows-by-domain END -->
+Product areas with no flow yet: Counters & labour law, Hiring.
+
+Flows owned by a platform capability: `assistant-chat`.
+<!-- GENERATED:flows-by-area END -->
 
 ---
 

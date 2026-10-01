@@ -13,6 +13,7 @@ const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Workload Plan Consultation",
   "description": "A planner opens the workload forecasting view. The front queries svc-workload-plan directly (both generations ship: the V1 client reads the DynamoDB-backed store, the V2 client the MongoDB one — dual-store migration in flight). On the V2 path, WorkloadPlanManagerV2#get loads the plans and rules from Mongo, fetches the shop from svc-search's shared raw-shop collections, and — when rules reference metrics — pulls predictive KPIs from svc-kpis-v2 to generate dynamic staffing rules (degrades gracefully when the KPI service is unavailable). (Previously routed through svc-bff-planning, decommissioned.)",
   "trigger": {"actor": "manager"},
+  "primaryArea": "workload-forecasting",
   "steps": [
     {
       "from": "skello-app-front",

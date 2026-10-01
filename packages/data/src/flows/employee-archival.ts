@@ -8,6 +8,7 @@ const employee_archival: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Employee Archival",
   "description": "A manager archives an employee. Soft-delete: users.archived_at/archived_by_id/archive_note are set — and the EMAIL IS NULLIFIED when the effective date is in the past (PII scrub; companion jobs remove_emails_from_archived_users / add_archived_to_user_email carry the email lifecycle). Synchronously hard-deletes pending future ShiftSwaps, pending future LeaveRequests and future-year HolidaySettings. Async fan-out: ArchiveShiftsJob backs up to 500 future shifts (ArchivedUserShiftsBackup, transactional) then unassigns work shifts where the shop allows unassigned or destroys them, deletes future PlanningHoursData and recomputes; availabilities destroyed once archived_at passes; paid-leave counters recalculated; Intercom flagged; activity logged to svc-events via SQS. The replica ripple rides the skelloapp-bus CDC: svc-users updates its user/email/license replicas on archivedAt change, svc-punch updates UserCache + every replicated punch user row (this is what revokes punch/mobile badge eligibility — no dedicated permission-recalc job exists), svc-search upserts the raw employee doc's archivedAt.",
   "trigger": { "actor": "manager", "role": "can_archive_and_restore_users over a managed employee" },
+  "primaryArea": "employees-hr",
   "links": [
     { "to": "employee-onboarding", "kind": "domain-related", "note": "the lifecycle inverse — V3::Users::UnarchiveService is the in-repo mirror of this flow" }
   ],

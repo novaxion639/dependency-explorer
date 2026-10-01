@@ -13,6 +13,7 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Workload Plan Creation",
   "description": "A planner saves a workload forecast. The V2 surface (WorkloadPlanV2Controller#deleteAndUpsert) batch-replaces the plan rows in the service's MongoDB; the V1 surface (WorkloadPlanController#upsertAction) still writes the DynamoDB store, whose table stream drives the dynamo→mongo replication job — the migration's write side. No KPI call happens here (corrected 2026-07-11: the svc-kpis-v2 calibration belongs to the consultation path's dynamic rule generation).",
   "trigger": {"actor": "manager"},
+  "primaryArea": "workload-forecasting",
   "steps": [
     {
       "from": "skello-app-front",

@@ -8,6 +8,7 @@ const assistant_freemium_credits: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Assistant Freemium Credits",
   "description": "Every assistant chat turn passes a credit gate. Check-before: ChatSessionManager.discuss synchronously reads the balance (GET credit-balance) before enqueuing the turn — refusing with TooManyRequestsHttpError('Not enough credits') only when used EXCEEDS limit, so the last credit tolerates one overshoot. Decrement-after: once the LLM turn completes in the SQS consumer, useCredit fires best-effort — errors are LOGGED, NOT retried (a code-noted credit-loss risk), and no idempotency guards the decrement against SQS redelivery double-counting. The billing side stores one DynamoDB row per (organisation, feature 'ai_agent', period YYYY-MM): NO refill cron exists — a fresh month lazily creates a zero-used row on first access. Limits are plan-derived (freemium = 5 × admin_count, paid 1000, no-access 0) and re-raise on upgrade only when the org already hit its cap.",
   "trigger": { "actor": "manager", "role": "assistant user (SystemAdminPermissions on discuss)" },
+  "primaryArea": "billing",
   "links": [
     { "to": "assistant-chat", "kind": "continuation", "note": "the gate wraps assistant-chat's LLM turn — check before the enqueue, decrement after the turn" }
   ],

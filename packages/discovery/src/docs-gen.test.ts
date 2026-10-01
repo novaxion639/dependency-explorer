@@ -11,7 +11,7 @@ const docsDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..',
 
 describe('generated inventory docs', () => {
   const cases = [
-    { file: 'flow-inventory.md', name: 'flows-by-domain', render: renderFlowInventorySection },
+    { file: 'flow-inventory.md', name: 'flows-by-area', render: renderFlowInventorySection },
     { file: 'planning-actions-coverage.md', name: 'planning-flows', render: renderPlanningCoverageSection },
   ] as const
 
@@ -23,6 +23,13 @@ describe('generated inventory docs', () => {
       expect(committed).toBe(c.render(connectivityMap).trim())
     })
   }
+
+  it('groups the inventory by primary product area', () => {
+    const section = renderFlowInventorySection(connectivityMap)
+    expect(section).toContain('| Product area | Flows | Ids |')
+    expect(section).toContain('| Planning |')
+    expect(section).not.toContain('Core')
+  })
 
   it('every ✅ flow id cited in planning-actions-coverage.md exists in the dataset', () => {
     const content = fs.readFileSync(path.join(docsDir, 'planning-actions-coverage.md'), 'utf-8')

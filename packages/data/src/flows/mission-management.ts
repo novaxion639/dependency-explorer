@@ -8,6 +8,7 @@ const mission_management: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Mission Management",
   "description": "A manager runs temp-work missions. CRUD lives ENTIRELY in svc-shops (MissionController → MissionManager → its own Mongo `missions` collection) — the monolith's missions controller only exports the xlsx report (shifts from its Postgres, mission name fetched back from svc-shops) and purges missions on shop teardown (Shops::PurgeShopMissionsJob). The details view's 'additional infos' fan out across three services: svc-shops reads the shop timezone from svc-search's shared rawShop collection (hard dependency — missing timezone throws) and the mission's shifts from the shared shifts collection, computes planned/worked/ongoing hours in-memory against now-in-shop-timezone, and asks svc-employees for active-contract wages to flag the first employee missing hourly_wage_with_costs (null/0 counts as missing). The KPIs tab reads svc-kpis-v2 separately. Bulk CSV import batches at 100; the xlsx export batches at 500.",
   "trigger": { "actor": "manager", "role": "can_read_missions / can_download_mission_report (monolith) · MissionAction permissions (svc-shops); shop gated by is_missions_enabled" },
+  "primaryArea": "missions",
   "steps": [
     {
       "from": "skello-app-front",
