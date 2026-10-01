@@ -410,4 +410,23 @@ describe('discovered overlay', () => {
       expect(endpointKeys.has(key), `overlay stamps unknown endpoint ${key}`).toBe(true)
     }
   })
+
+  it('only records area facts for declared areas, globs and services', () => {
+    const areaById = new Map((areas ?? []).map(a => [a.id, a]))
+    for (const [areaId, files] of Object.entries(overlay.areaFiles ?? {})) {
+      const area = areaById.get(areaId)
+      expect(area, `overlay area ${areaId} is not declared`).toBeDefined()
+      const declared = new Set((area?.codeLocations ?? []).flatMap(l => l.globs.map(g => `${l.repo}:${g}`)))
+      for (const key of Object.keys(files)) {
+        expect(declared.has(key), `${areaId}: overlay glob ${key} is not declared`).toBe(true)
+      }
+    }
+    for (const repo of Object.keys(overlay.areaCoverage ?? {})) {
+      expect(serviceNames.has(repo), `coverage for unknown service ${repo}`).toBe(true)
+    }
+  })
+
+  it('records area facts once areas exist', () => {
+    expect(Object.keys(overlay.areaFiles ?? {}).length).toBe((areas ?? []).length)
+  })
 })
