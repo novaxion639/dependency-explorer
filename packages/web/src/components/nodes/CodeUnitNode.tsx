@@ -1,5 +1,6 @@
 import { Handle, Position } from '@xyflow/react'
 import type { FlowCodeUnit } from '@dependency-explorer/data'
+import { CLAMP_TWO_LINES } from '../../utils/clamp'
 
 export const CODE_UNIT_KIND_META: Record<FlowCodeUnit['kind'], { label: string; color: string }> = {
   'controller':     { label: 'CTRL', color: '#3b82f6' },
@@ -77,8 +78,7 @@ export function CodeUnitNode({ data }: { data: CodeUnitNodeData }) {
         )}
         {unit.description && (
           <div style={{
-            fontSize: 9, color: '#64748b', marginTop: 3, lineHeight: 1.35,
-            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            fontSize: 9, color: '#64748b', marginTop: 3, lineHeight: 1.35, ...CLAMP_TWO_LINES,
           }}>
             {unit.description}
           </div>

@@ -19,6 +19,7 @@ import { SystemContext } from '../areas/SystemContext'
 import { NotFoundBanner } from '../areas/NotFoundBanner'
 import { buildFlagRegistry } from '../../utils/flagRegistry'
 import { buildFileIndex } from '../../utils/fileIndex'
+import { CLAMP_TWO_LINES } from '../../utils/clamp'
 
 const map = connectivityMap
 const searchIndex = buildSearchIndex(map)
@@ -74,13 +75,17 @@ export function ConnectivityPage() {
   const [url, patch] = useUrlState(validateUrlState)
   const [sidebarSearch, setSidebarSearch] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const selectedService = url.s
   const viewMode = url.view
   const showBlastRadius = url.blast
 
   const selectService = useCallback(
-    (name: string) => patch({ s: name, view: 'services', edge: null, drawer: null, ep: null }),
+    (name: string) => {
+      setSidebarOpen(false)
+      patch({ s: name, view: 'services', edge: null, drawer: null, ep: null })
+    },
     [patch],
   )
 
@@ -131,14 +136,17 @@ export function ConnectivityPage() {
         onSelect={selectService}
         search={sidebarSearch}
         onSearch={setSidebarSearch}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {/* View toggle */}
-        <div style={{
+        <div className="toolbar" style={{
           padding: '6px 16px', background: '#1a1d27', borderBottom: '1px solid #2e3250',
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
+          <button type="button" className="mobile-only" onClick={() => setSidebarOpen(true)} aria-label="Open services menu" style={{ background: 'transparent', border: '1px solid #2e3250', color: '#94a3b8', borderRadius: 5, padding: '2px 8px', cursor: 'pointer' }}>☰</button>
           {(['areas', 'context', 'services', 'teams'] as const).map(mode => (
             <button
               key={mode}
@@ -193,7 +201,7 @@ export function ConnectivityPage() {
                   {selectedTeam.name}
                 </span>
               )}
-              <span style={{ fontSize: 12, color: '#64748b', marginLeft: 8 }}>{selected.description}</span>
+              <span title={selected.description} style={{ fontSize: 12, color: '#64748b', marginTop: 2, ...CLAMP_TWO_LINES }}>{selected.description}</span>
               {selectedTeam?.slackChannel && (
                 <span style={{ fontSize: 11, color: '#4b5563', marginLeft: 8 }}>
                   {selectedTeam.slackChannel}

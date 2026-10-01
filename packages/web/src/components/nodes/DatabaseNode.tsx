@@ -1,5 +1,6 @@
 import { Handle, Position } from '@xyflow/react'
 import type { DatabaseType } from '@dependency-explorer/data'
+import { CLAMP_TWO_LINES } from '../../utils/clamp'
 
 export const DB_COLORS: Record<DatabaseType, { color: string; label: string; icon: string }> = {
   postgresql:    { color: '#336791', label: 'PostgreSQL',    icon: '🐘' },
@@ -85,7 +86,7 @@ export function DatabaseNode({ data }: any) {
         )}
         {/* Description */}
         {description && (
-          <div style={{ fontSize: 10, color: '#64748b', marginTop: 4, lineHeight: 1.4, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+          <div title={description} style={{ fontSize: 10, color: '#64748b', marginTop: 4, lineHeight: 1.4, whiteSpace: 'normal', wordBreak: 'break-word', ...CLAMP_TWO_LINES }}>
             {description}
           </div>
         )}
