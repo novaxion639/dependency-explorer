@@ -14,7 +14,7 @@ const planning_event_management: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "POST / PATCH / DELETE /v3/api/plannings/events — manage grid events; GET index merges events + holidays + birthdays"
+      "action": "POST /v3/api/plannings/events · PATCH /v3/api/plannings/events/:id · DELETE /v3/api/plannings/events/:id — manage grid events; GET index merges events + holidays + birthdays"
     }
   ],
   "codeUnits": [

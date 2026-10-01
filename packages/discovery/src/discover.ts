@@ -32,7 +32,7 @@ import { extractServerless, type ServerlessFacts } from './extractors/serverless
 import { extractAwsClients, type AwsUsageFact, type AwsUsageKind } from './extractors/aws-clients'
 import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extractors/aws-live'
 import { extractTerraform, type TerraformFacts } from './extractors/terraform'
-import { extractRailsRoutes } from './extractors/rails-routes'
+import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders } from './extractors/queue-senders'
 import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, checkPiiRefs, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult, type PiiCheckResult } from './flow-check'
@@ -61,6 +61,7 @@ function scanTargets(base: string): string[] {
 const PIN = PINNED_MODE ? pinRepos(scanTargets(SOURCE_BASE), SOURCE_BASE, PINNED_BASE) : null
 const REPO_BASE = PIN ? PINNED_BASE : SOURCE_BASE
 const OVERLAY_PATH = path.resolve(__dirname, '../../data/src/generated/discovered.json')
+const MONOLITH_ROUTES_PATH = path.resolve(__dirname, '../../data/src/generated/monolith-routes.json')
 
 const JSON_MODE = process.argv.includes('--json')
 const BASELINE_PATH = path.resolve(__dirname, '../baseline.json')
@@ -151,7 +152,7 @@ interface Report {
   awsClientUsage: AwsClientUsage[]
   terraform: Array<{ tfRepo: string; service: string; inMap: boolean; facts: TerraformFacts }>
   frontendServices: Array<{ service: string; inMap: boolean; evidence: string }>
-  monolithSurface: { totalRoutes: number; resourceDeclarations: number; topSegments: Array<[string, number]> } | null
+  monolithSurface: { totalRoutes: number; unparsed: string[]; topSegments: Array<[string, number]> } | null
   /** SDK dependencies whose imports are type-only or absent — weak evidence, likely not runtime calls */
   weakSdkEvidence: Array<{ from: string; to: string; pkg: string; usage: string }>
   /** call-site verification of SDK connections against the skello-libs-ts registry */
@@ -207,6 +208,7 @@ function pickTeamId(wildcardOwners: string[]): string | undefined {
 
 function run(): Report {
   const repos = findRepos()
+  const railsRoutes = extractRailsRoutes(REPO_BASE)
   const report: Report = {
     pinned: PIN ? { repos: PIN.pinned, skipped: PIN.skipped } : null,
     scannedRepos: repos,
@@ -227,7 +229,7 @@ function run(): Report {
     sdkUsage: [],
     sdkRegistryStats: null,
     flowCheck: checkFlows(connectivityMap),
-    codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE),
+    codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE, railsRoutes ? new Set(railsRoutes.routes.map(r => r.controllerFile)) : undefined),
     ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),
     areaCheck: checkAreas({
       areas: connectivityMap.areas ?? [],
@@ -593,12 +595,17 @@ function run(): Report {
   }
 
   // ── Monolith inbound surface (informational) ───────────────────────────────
-  const routes = extractRailsRoutes(REPO_BASE)
+  const routes = railsRoutes
   if (routes) {
+    const bySegment = new Map<string, number>()
+    for (const route of routes.routes) {
+      const seg = route.path.split('/')[1] ?? ''
+      bySegment.set(seg, (bySegment.get(seg) ?? 0) + 1)
+    }
     report.monolithSurface = {
       totalRoutes: routes.routes.length,
-      resourceDeclarations: routes.resourceDeclarations,
-      topSegments: Object.entries(routes.byTopSegment).sort((a, b) => b[1] - a[1]).slice(0, 12),
+      unparsed: routes.unparsed,
+      topSegments: [...bySegment].sort((a, b) => b[1] - a[1]).slice(0, 12),
     }
   }
 
@@ -666,6 +673,19 @@ function writeOverlay(report: Report) {
   fs.writeFileSync(OVERLAY_PATH, JSON.stringify(overlay, null, 2) + '\n')
   console.log(`\nOverlay written: ${path.relative(process.cwd(), OVERLAY_PATH)}`)
   console.log(`  ${Object.keys(overlay.services).length} services enriched, ${Object.keys(overlay.connections).length} connections verified, ${Object.keys(overlay.endpoints ?? {}).length} endpoints verified`)
+
+  const routes = extractRailsRoutes(REPO_BASE)?.routes
+  if (routes) {
+    const byId = new Map<string, RailsRoute>()
+    for (const r of routes) {
+      if (!byId.has(`${r.verb} ${r.path}`)) {
+        byId.set(`${r.verb} ${r.path}`, r)
+      }
+    }
+    const surface = [...byId.values()].sort((a, b) => a.path.localeCompare(b.path) || a.verb.localeCompare(b.verb))
+    fs.writeFileSync(MONOLITH_ROUTES_PATH, JSON.stringify(surface, null, 2) + '\n')
+    console.log(`  ${surface.length} monolith routes written: ${path.relative(process.cwd(), MONOLITH_ROUTES_PATH)}`)
+  }
 }
 
 // ── Report ────────────────────────────────────────────────────────────────────
@@ -832,8 +852,11 @@ function printMarkdown(r: Report) {
 
   if (r.monolithSurface) {
     console.log(`\n## 📥 Monolith inbound surface (informational)\n`)
-    console.log(`${r.monolithSurface.totalRoutes} explicit routes + ${r.monolithSurface.resourceDeclarations} resource declarations. Top segments:`)
+    console.log(`${r.monolithSurface.totalRoutes} routes resolved to controller#action, ${r.monolithSurface.unparsed.length} lines unparsed. Top segments:`)
     console.log(r.monolithSurface.topSegments.map(([seg, n]) => `- /${seg} (${n})`).join('\n'))
+    if (r.monolithSurface.unparsed.length) {
+      console.log(`\nUnparsed:\n${r.monolithSurface.unparsed.map(l => `- \`${l}\``).join('\n')}`)
+    }
   }
 
   section('🩻 Weak SDK evidence — type-only or unused imports (likely NOT runtime calls)',

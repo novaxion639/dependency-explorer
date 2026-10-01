@@ -1,0 +1,5343 @@
+[
+  {
+    "verb": "GET",
+    "path": "/",
+    "controller": "v3/pages",
+    "action": "home",
+    "controllerFile": "app/controllers/v3/pages_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/:id/shops_turnover",
+    "controller": "notifications",
+    "action": "get_turnovers",
+    "controllerFile": "app/controllers/notifications_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/api/v1/availabilities/:id",
+    "controller": "api/v1/availabilities",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v1/availabilities_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/api/v1/availabilities/:id",
+    "controller": "api/v1/availabilities",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v1/availabilities_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v1/requests/sent",
+    "controller": "api/v1/requests",
+    "action": "sent",
+    "controllerFile": "app/controllers/api/v1/requests_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v1/shifts/:id",
+    "controller": "api/v1/shifts",
+    "action": "show",
+    "controllerFile": "app/controllers/api/v1/shifts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/api/v1/users/device_tokens",
+    "controller": "api/v1/users",
+    "action": "user_device_tokens",
+    "controllerFile": "app/controllers/api/v1/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v1/users/me",
+    "controller": "api/v1/users",
+    "action": "me",
+    "controllerFile": "app/controllers/api/v1/users_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/api/v1/users/sign_in",
+    "controller": "api/v1/registrations",
+    "action": "sign_in",
+    "controllerFile": "app/controllers/api/v1/registrations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/api/v2/availabilities/availabilities",
+    "controller": "api/v2/availabilities/availabilities",
+    "action": "create",
+    "controllerFile": "app/controllers/api/v2/availabilities/availabilities_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/availabilities/availabilities/:id/edit",
+    "controller": "api/v2/availabilities/availabilities",
+    "action": "edit",
+    "controllerFile": "app/controllers/api/v2/availabilities/availabilities_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/availabilities/availabilities/new",
+    "controller": "api/v2/availabilities/availabilities",
+    "action": "new",
+    "controllerFile": "app/controllers/api/v2/availabilities/availabilities_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/availabilities/history_availabilities",
+    "controller": "api/v2/availabilities/history_availabilities",
+    "action": "index",
+    "controllerFile": "app/controllers/api/v2/availabilities/history_availabilities_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/availabilities/pending_availabilities",
+    "controller": "api/v2/availabilities/pending_availabilities",
+    "action": "index",
+    "controllerFile": "app/controllers/api/v2/availabilities/pending_availabilities_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/leave_requests/leave_requests",
+    "controller": "api/v2/leave_requests/leave_requests",
+    "action": "index",
+    "controllerFile": "app/controllers/api/v2/leave_requests/leave_requests_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/api/v2/leave_requests/leave_requests",
+    "controller": "api/v2/leave_requests/leave_requests",
+    "action": "create",
+    "controllerFile": "app/controllers/api/v2/leave_requests/leave_requests_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/api/v2/leave_requests/leave_requests/leave_requests_dashboard",
+    "controller": "api/v2/leave_requests/leave_requests",
+    "action": "leave_requests_dashboard",
+    "controllerFile": "app/controllers/api/v2/leave_requests/leave_requests_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/leave_requests/leave_requests/new",
+    "controller": "api/v2/leave_requests/leave_requests",
+    "action": "new",
+    "controllerFile": "app/controllers/api/v2/leave_requests/leave_requests_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/api/v2/password_from_forgotten",
+    "controller": "api/v2/users",
+    "action": "update_password_from_forgotten",
+    "controllerFile": "app/controllers/api/v2/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/personal_shifts",
+    "controller": "api/v2/personal_shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/api/v2/personal_shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/profile",
+    "controller": "api/v2/users",
+    "action": "profile",
+    "controllerFile": "app/controllers/api/v2/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/api/v2/received_leave_requests/:id",
+    "controller": "api/v2/received_leave_requests",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/received_leave_requests_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/api/v2/received_leave_requests/:id",
+    "controller": "api/v2/received_leave_requests",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/received_leave_requests_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/shift_swaps",
+    "controller": "api/v2/shift_swaps",
+    "action": "index",
+    "controllerFile": "app/controllers/api/v2/shift_swaps_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/api/v2/shift_swaps/:id",
+    "controller": "api/v2/shift_swaps",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/shift_swaps_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/api/v2/shift_swaps/:id",
+    "controller": "api/v2/shift_swaps",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/shift_swaps_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/shift_swaps/:id/edit",
+    "controller": "api/v2/shift_swaps",
+    "action": "edit",
+    "controllerFile": "app/controllers/api/v2/shift_swaps_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/shifts",
+    "controller": "api/v2/shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/api/v2/shifts_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/api/v2/shifts/:id",
+    "controller": "api/v2/shifts",
+    "action": "destroy",
+    "controllerFile": "app/controllers/api/v2/shifts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/api/v2/shifts/:id",
+    "controller": "api/v2/shifts",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/shifts_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/api/v2/shifts/:id",
+    "controller": "api/v2/shifts",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/shifts/:id/edit",
+    "controller": "api/v2/shifts",
+    "action": "edit",
+    "controllerFile": "app/controllers/api/v2/shifts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/api/v2/shifts/:shift_id/shift_swaps",
+    "controller": "api/v2/shift_swaps",
+    "action": "create",
+    "controllerFile": "app/controllers/api/v2/shift_swaps_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/shifts/:shift_id/shift_swaps/new",
+    "controller": "api/v2/shift_swaps",
+    "action": "new",
+    "controllerFile": "app/controllers/api/v2/shift_swaps_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/api/v2/shops/:shop_id/shifts",
+    "controller": "api/v2/shifts",
+    "action": "create",
+    "controllerFile": "app/controllers/api/v2/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/api/v2/shops/:shop_id/shifts/new",
+    "controller": "api/v2/shifts",
+    "action": "new",
+    "controllerFile": "app/controllers/api/v2/shifts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/api/v2/users/:id",
+    "controller": "api/v2/users",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/users_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/api/v2/users/:id",
+    "controller": "api/v2/users",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/users_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/api/v2/users/check_reset_token_validity",
+    "controller": "api/v2/users",
+    "action": "check_reset_token_validity",
+    "controllerFile": "app/controllers/api/v2/users_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/api/v2/users/forgot_password",
+    "controller": "api/v2/users",
+    "action": "forgot_password",
+    "controllerFile": "app/controllers/api/v2/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/api/v2/users/profiles/:id",
+    "controller": "api/v2/users/profiles",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/users/profiles_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/api/v2/users/profiles/:id",
+    "controller": "api/v2/users/profiles",
+    "action": "update",
+    "controllerFile": "app/controllers/api/v2/users/profiles_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/api/v2/weekly_options/:weekly_option_id/change_lock_status",
+    "controller": "api/v2/weekly_options",
+    "action": "change_lock_status",
+    "controllerFile": "app/controllers/api/v2/weekly_options_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/day_plannings/:day_planning_id/pdf",
+    "controller": "day_plannings",
+    "action": "pdf",
+    "controllerFile": "app/controllers/day_plannings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/employee/profile_update",
+    "controller": "employee/users",
+    "action": "profile_update",
+    "controllerFile": "app/controllers/employee/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/employees_over_hours",
+    "controller": "notifications",
+    "action": "get_employees_over_hours",
+    "controllerFile": "app/controllers/notifications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/get_docs_ending",
+    "controller": "notifications",
+    "action": "get_docs_ending",
+    "controllerFile": "app/controllers/notifications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/get_trials_ending",
+    "controller": "notifications",
+    "action": "get_trials_ending",
+    "controllerFile": "app/controllers/notifications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/get_users_arrived_archived",
+    "controller": "notifications",
+    "action": "get_users_arrived_archived",
+    "controllerFile": "app/controllers/notifications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/health",
+    "controller": "health",
+    "action": "app_health",
+    "controllerFile": "app/controllers/health_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/health-ec2",
+    "controller": "health",
+    "action": "server_health",
+    "controllerFile": "app/controllers/health_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/infos_absences_chart",
+    "controller": "notifications",
+    "action": "infos_absences_chart",
+    "controllerFile": "app/controllers/notifications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/infos_productivity_chart",
+    "controller": "notifications",
+    "action": "infos_productivity_chart",
+    "controllerFile": "app/controllers/notifications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/labor_cost",
+    "controller": "labor_costs",
+    "action": "show",
+    "controllerFile": "app/controllers/labor_costs_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/labor_cost",
+    "controller": "labor_costs",
+    "action": "update",
+    "controllerFile": "app/controllers/labor_costs_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/labor_cost",
+    "controller": "labor_costs",
+    "action": "update",
+    "controllerFile": "app/controllers/labor_costs_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/leave_requests",
+    "controller": "leave_requests",
+    "action": "index",
+    "controllerFile": "app/controllers/leave_requests_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/leave_requests",
+    "controller": "leave_requests",
+    "action": "create",
+    "controllerFile": "app/controllers/leave_requests_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/leave_requests/:id",
+    "controller": "leave_requests",
+    "action": "destroy",
+    "controllerFile": "app/controllers/leave_requests_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/leave_requests/:id",
+    "controller": "leave_requests",
+    "action": "update",
+    "controllerFile": "app/controllers/leave_requests_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/leave_requests/:id",
+    "controller": "leave_requests",
+    "action": "update",
+    "controllerFile": "app/controllers/leave_requests_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/microservices/kpis/batch_reload",
+    "controller": "microservices/kpis/socket",
+    "action": "batch_reload",
+    "controllerFile": "app/controllers/microservices/kpis/socket_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/microservices/kpis/reload",
+    "controller": "microservices/kpis/socket",
+    "action": "reload",
+    "controllerFile": "app/controllers/microservices/kpis/socket_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/month_plannings/:month_planning_id/pdf",
+    "controller": "month_plannings",
+    "action": "pdf",
+    "controllerFile": "app/controllers/month_plannings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/opti/v1/planning_templates/:id",
+    "controller": "opti/v1/planning_templates",
+    "action": "show",
+    "controllerFile": "app/controllers/opti/v1/planning_templates_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/opti/v1/shops/:shop_id/opti_structures",
+    "controller": "opti/v1/opti_structures",
+    "action": "show",
+    "controllerFile": "app/controllers/opti/v1/opti_structures_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/opti/v1/shops/:shop_id/opti_structures",
+    "controller": "opti/v1/opti_structures",
+    "action": "update",
+    "controllerFile": "app/controllers/opti/v1/opti_structures_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/opti/v1/shops/:shop_id/opti_structures",
+    "controller": "opti/v1/opti_structures",
+    "action": "update",
+    "controllerFile": "app/controllers/opti/v1/opti_structures_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/opti/v1/shops/:shop_id/opti_structures/opti_structure_check",
+    "controller": "opti/v1/opti_structures",
+    "action": "opti_structure_check",
+    "controllerFile": "app/controllers/opti/v1/opti_structures_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/paid_leaves_counters",
+    "controller": "paid_leaves_counters",
+    "action": "show",
+    "controllerFile": "app/controllers/paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/paid_leaves_counters",
+    "controller": "paid_leaves_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/paid_leaves_counters",
+    "controller": "paid_leaves_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/plannings/month_totals",
+    "controller": "plannings/month_totals",
+    "action": "index",
+    "controllerFile": "app/controllers/plannings/month_totals_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/poste_plannings/:poste_planning_id/pdf",
+    "controller": "poste_plannings",
+    "action": "pdf",
+    "controllerFile": "app/controllers/poste_plannings_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/primes",
+    "controller": "primes",
+    "action": "create",
+    "controllerFile": "app/controllers/primes_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/bff/kpis",
+    "controller": "private/svc_bff/kpis",
+    "action": "create",
+    "controllerFile": "app/controllers/private/svc_bff/kpis_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/bff/planning/v4/postes",
+    "controller": "private/svc_bff/planning_v4/postes",
+    "action": "index",
+    "controllerFile": "app/controllers/private/svc_bff/planning_v4/postes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/billing/organisations/:id/features/:feature",
+    "controller": "private/svc_billing/organisations",
+    "action": "show_feature",
+    "controllerFile": "app/controllers/private/svc_billing/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/documents/employees/managers",
+    "controller": "private/svc_documents/employees",
+    "action": "managers",
+    "controllerFile": "app/controllers/private/svc_documents/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/documents/shops/:id/organisation",
+    "controller": "private/svc_documents/shops",
+    "action": "organisation",
+    "controllerFile": "app/controllers/private/svc_documents/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/documents/shops/:id/signature_context",
+    "controller": "private/svc_documents/shops",
+    "action": "signature_context",
+    "controllerFile": "app/controllers/private/svc_documents/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/employees/:id/annualization/catchup",
+    "controller": "private/svc_employees/annualization_contract_history",
+    "action": "catchup",
+    "controllerFile": "app/controllers/private/svc_employees/annualization_contract_history_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/employees/document_variables",
+    "controller": "private/svc_employees/employee_document_variables",
+    "action": "document_variables",
+    "controllerFile": "app/controllers/private/svc_employees/employee_document_variables_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/employees/employees",
+    "controller": "private/svc_employees/employees",
+    "action": "show",
+    "controllerFile": "app/controllers/private/svc_employees/employees_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/private/employees/employees",
+    "controller": "private/svc_employees/employees",
+    "action": "update",
+    "controllerFile": "app/controllers/private/svc_employees/employees_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/employees/employees",
+    "controller": "private/svc_employees/employees",
+    "action": "create",
+    "controllerFile": "app/controllers/private/svc_employees/employees_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/private/employees/employees",
+    "controller": "private/svc_employees/employees",
+    "action": "update",
+    "controllerFile": "app/controllers/private/svc_employees/employees_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/private/employees/employees/:id",
+    "controller": "private/svc_employees/employees",
+    "action": "replace",
+    "controllerFile": "app/controllers/private/svc_employees/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/employees/shops_and_employees",
+    "controller": "private/svc_employees/shops_and_employees",
+    "action": "index",
+    "controllerFile": "app/controllers/private/svc_employees/shops_and_employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/hiring/users/:user_id/hiring_qualification",
+    "controller": "private/svc_hiring/hiring_qualifications",
+    "action": "show",
+    "controllerFile": "app/controllers/private/svc_hiring/hiring_qualifications_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/private/intercom-bot/shops/:id",
+    "controller": "private/svc_intercom_bot/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/private/svc_intercom_bot/shops_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/private/intercom-bot/shops/:id",
+    "controller": "private/svc_intercom_bot/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/private/svc_intercom_bot/shops_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/organisations/:organisation_id/access_keys",
+    "controller": "private/access_keys",
+    "action": "create",
+    "controllerFile": "app/controllers/private/access_keys_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/payroll/organisations/:organisation_id/evps",
+    "controller": "private/svc_payroll/evps",
+    "action": "index",
+    "controllerFile": "app/controllers/private/svc_payroll/evps_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/payroll/sync-runs/:sync_run_id/export-payroll",
+    "controller": "private/svc_payroll/sync_runs/export_payroll",
+    "action": "create",
+    "controllerFile": "app/controllers/private/svc_payroll/sync_runs/export_payroll_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/private/planning_hours_data",
+    "controller": "private/planning_hours_data",
+    "action": "destroy",
+    "controllerFile": "app/controllers/private/planning_hours_data_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/planning_hours_data",
+    "controller": "private/planning_hours_data",
+    "action": "show",
+    "controllerFile": "app/controllers/private/planning_hours_data_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/private/planning_hours_data",
+    "controller": "private/planning_hours_data",
+    "action": "update",
+    "controllerFile": "app/controllers/private/planning_hours_data_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/planning_hours_data",
+    "controller": "private/planning_hours_data",
+    "action": "create",
+    "controllerFile": "app/controllers/private/planning_hours_data_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/private/planning_hours_data",
+    "controller": "private/planning_hours_data",
+    "action": "update",
+    "controllerFile": "app/controllers/private/planning_hours_data_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/planning_hours_data/edit",
+    "controller": "private/planning_hours_data",
+    "action": "edit",
+    "controllerFile": "app/controllers/private/planning_hours_data_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/planning_hours_data/export_phd",
+    "controller": "private/planning_hours_data",
+    "action": "export_phd",
+    "controllerFile": "app/controllers/private/planning_hours_data_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/planning_hours_data/new",
+    "controller": "private/planning_hours_data",
+    "action": "new",
+    "controllerFile": "app/controllers/private/planning_hours_data_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/private/pos/kpis",
+    "controller": "private/pos/kpis",
+    "action": "update",
+    "controllerFile": "app/controllers/private/pos/kpis_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/private/pos/kpis",
+    "controller": "private/pos/kpis",
+    "action": "update",
+    "controllerFile": "app/controllers/private/pos/kpis_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/private/punch",
+    "controller": "private/punches",
+    "action": "destroy",
+    "controllerFile": "app/controllers/private/punches_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/punch",
+    "controller": "private/punches",
+    "action": "show",
+    "controllerFile": "app/controllers/private/punches_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/private/punch",
+    "controller": "private/punches",
+    "action": "update",
+    "controllerFile": "app/controllers/private/punches_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/punch",
+    "controller": "private/punches",
+    "action": "create",
+    "controllerFile": "app/controllers/private/punches_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/private/punch",
+    "controller": "private/punches",
+    "action": "update",
+    "controllerFile": "app/controllers/private/punches_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/punch/edit",
+    "controller": "private/punches",
+    "action": "edit",
+    "controllerFile": "app/controllers/private/punches_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/punch/new",
+    "controller": "private/punches",
+    "action": "new",
+    "controllerFile": "app/controllers/private/punches_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/punch/trigger_lateness_sms_job",
+    "controller": "private/punches",
+    "action": "trigger_lateness_sms_job",
+    "controllerFile": "app/controllers/private/punches_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/reports/trigger_automated_pam_export",
+    "controller": "private/svc_reports/automated_pam",
+    "action": "trigger_automated_pam_export",
+    "controllerFile": "app/controllers/private/svc_reports/automated_pam_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/requests/last_creator/:user_id",
+    "controller": "private/svc_requests/shifts",
+    "action": "last_creator",
+    "controllerFile": "app/controllers/private/svc_requests/shifts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/requests/shifts",
+    "controller": "private/svc_requests/shifts",
+    "action": "create",
+    "controllerFile": "app/controllers/private/svc_requests/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/requests/users/organisation_ids",
+    "controller": "private/svc_requests/users",
+    "action": "organisation_ids",
+    "controllerFile": "app/controllers/private/svc_requests/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/shops/organisations/:id/config",
+    "controller": "private/svc_shops/organisations",
+    "action": "show_config",
+    "controllerFile": "app/controllers/private/svc_shops/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/shops/organisations/:id/document_variables",
+    "controller": "private/svc_shops/organisations",
+    "action": "document_variables",
+    "controllerFile": "app/controllers/private/svc_shops/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/shops/shops",
+    "controller": "private/svc_shops/shops",
+    "action": "index",
+    "controllerFile": "app/controllers/private/svc_shops/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/shops/shops/:id",
+    "controller": "private/svc_shops/shops",
+    "action": "show",
+    "controllerFile": "app/controllers/private/svc_shops/shops_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/private/shops/shops/document_variables",
+    "controller": "private/svc_shops/shops",
+    "action": "document_variables",
+    "controllerFile": "app/controllers/private/svc_shops/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/svc_users/managed_users/:user_id",
+    "controller": "private/svc_users/managed_users",
+    "action": "show",
+    "controllerFile": "app/controllers/private/svc_users/managed_users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/svc_users/payloads",
+    "controller": "private/svc_users/payloads",
+    "action": "show",
+    "controllerFile": "app/controllers/private/svc_users/payloads_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/svc_users/payslips_managed_users/:user_id",
+    "controller": "private/svc_users/payslips_managed_users",
+    "action": "show",
+    "controllerFile": "app/controllers/private/svc_users/payslips_managed_users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/workload_plan/shifts",
+    "controller": "private/svc_workload_plan/shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/private/svc_workload_plan/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/public_api/v1/absences",
+    "controller": "public_api/v1/absences",
+    "action": "index",
+    "controllerFile": "app/controllers/public_api/v1/absences_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/public_api/v1/amendments",
+    "controller": "public_api/v1/amendments",
+    "action": "create",
+    "controllerFile": "app/controllers/public_api/v1/amendments_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/public_api/v1/evp",
+    "controller": "public_api/v1/evp",
+    "action": "index",
+    "controllerFile": "app/controllers/public_api/v1/evp_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/public_api/v1/users",
+    "controller": "public_api/v1/users",
+    "action": "create",
+    "controllerFile": "app/controllers/public_api/v1/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/public_api/v1/users/:id",
+    "controller": "public_api/v1/users",
+    "action": "update",
+    "controllerFile": "app/controllers/public_api/v1/users_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/public_api/v1/users/:id",
+    "controller": "public_api/v1/users",
+    "action": "update",
+    "controllerFile": "app/controllers/public_api/v1/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/public/kpis",
+    "controller": "public/kpis",
+    "action": "index",
+    "controllerFile": "app/controllers/public/kpis_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/public/v1/kpis",
+    "controller": "public/kpis/v1/kpis",
+    "action": "index",
+    "controllerFile": "app/controllers/public/kpis/v1/kpis_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/public/v1/organisations",
+    "controller": "public/onboarding/v1/organisations",
+    "action": "create",
+    "controllerFile": "app/controllers/public/onboarding/v1/organisations_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/public/v1/organisations/:organisation_id",
+    "controller": "public/onboarding/v1/organisations",
+    "action": "update",
+    "controllerFile": "app/controllers/public/onboarding/v1/organisations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/public/v1/shops",
+    "controller": "public/onboarding/v1/shops",
+    "action": "create",
+    "controllerFile": "app/controllers/public/onboarding/v1/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/public/v1/shops/:organisation_id",
+    "controller": "public/onboarding/v1/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/public/onboarding/v1/shops_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/public/v1/users",
+    "controller": "public/onboarding/v1/users",
+    "action": "create",
+    "controllerFile": "app/controllers/public/onboarding/v1/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/public/v1/users/:prospect_id/activate",
+    "controller": "public/onboarding/v1/users",
+    "action": "activate",
+    "controllerFile": "app/controllers/public/onboarding/v1/users_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/report_comments",
+    "controller": "report_comments",
+    "action": "create",
+    "controllerFile": "app/controllers/report_comments_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/report_comments/:id",
+    "controller": "report_comments",
+    "action": "update",
+    "controllerFile": "app/controllers/report_comments_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/report_comments/:id",
+    "controller": "report_comments",
+    "action": "update",
+    "controllerFile": "app/controllers/report_comments_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/saas/api/day_rates_counters",
+    "controller": "saas/api/day_rates_counters",
+    "action": "show",
+    "controllerFile": "app/controllers/saas/api/day_rates_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/saas/api/day_rates_counters",
+    "controller": "saas/api/day_rates_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/saas/api/day_rates_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/saas/api/day_rates_counters",
+    "controller": "saas/api/day_rates_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/saas/api/day_rates_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/saas/api/planning_hours_datas",
+    "controller": "saas/api/planning_hours_datas",
+    "action": "show",
+    "controllerFile": "app/controllers/saas/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/saas/api/planning_hours_datas",
+    "controller": "saas/api/planning_hours_datas",
+    "action": "update",
+    "controllerFile": "app/controllers/saas/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/saas/api/planning_hours_datas",
+    "controller": "saas/api/planning_hours_datas",
+    "action": "update",
+    "controllerFile": "app/controllers/saas/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/saas/api/rcr_counters",
+    "controller": "saas/api/rcr_counters",
+    "action": "show",
+    "controllerFile": "app/controllers/saas/api/rcr_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/saas/api/rcr_counters",
+    "controller": "saas/api/rcr_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/saas/api/rcr_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/saas/api/rcr_counters",
+    "controller": "saas/api/rcr_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/saas/api/rcr_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/saas/api/shops/:id/edit",
+    "controller": "saas/api/shops",
+    "action": "edit",
+    "controllerFile": "app/controllers/saas/api/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/shops/:shop_id/export_options",
+    "controller": "shops",
+    "action": "export_options",
+    "controllerFile": "app/controllers/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/shops/:shop_id/managers",
+    "controller": "managers",
+    "action": "index",
+    "controllerFile": "app/controllers/managers_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/shops/:shop_id/users",
+    "controller": "users",
+    "action": "index",
+    "controllerFile": "app/controllers/users_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/shops/:shop_id/users",
+    "controller": "users",
+    "action": "create",
+    "controllerFile": "app/controllers/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/shops/:shop_id/users_history/:users_history_id/print",
+    "controller": "users_history",
+    "action": "print",
+    "controllerFile": "app/controllers/users_history_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/shops/:shop_id/users/:id",
+    "controller": "users",
+    "action": "show",
+    "controllerFile": "app/controllers/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/shops/:shop_id/users/:id",
+    "controller": "users",
+    "action": "update",
+    "controllerFile": "app/controllers/users_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/shops/:shop_id/users/:id",
+    "controller": "users",
+    "action": "update",
+    "controllerFile": "app/controllers/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/shops/:shop_id/users/new",
+    "controller": "users",
+    "action": "new",
+    "controllerFile": "app/controllers/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/*",
+    "controller": "super_admin/pages",
+    "action": "home",
+    "controllerFile": "app/controllers/super_admin/pages_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/automatic_plannings",
+    "controller": "super_admin/api/automatic_plannings",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/automatic_plannings_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/automatic_plannings",
+    "controller": "super_admin/api/automatic_plannings",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/automatic_plannings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/badgings",
+    "controller": "super_admin/api/badgings",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/badgings_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/badgings",
+    "controller": "super_admin/api/badgings",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/badgings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/billing_automation/shops/:id",
+    "controller": "super_admin/api/billing_automation/shops",
+    "action": "show",
+    "controllerFile": "app/controllers/super_admin/api/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/billing_automation/shops/:id",
+    "controller": "super_admin/api/billing_automation/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/billing_automation/shops/shops_synchronization",
+    "controller": "super_admin/api/billing_automation/shops",
+    "action": "shops_synchronization",
+    "controllerFile": "app/controllers/super_admin/api/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/bulk_shops",
+    "controller": "super_admin/api/bulk_shops",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/bulk_shops_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/bulk_shops",
+    "controller": "super_admin/api/bulk_shops",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/bulk_shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/cluster_nodes",
+    "controller": "super_admin/api/cluster_nodes",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/cluster_nodes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/config",
+    "controller": "super_admin/api/config",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/config_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/esignatures",
+    "controller": "super_admin/api/esignatures",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/esignatures_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/esignatures",
+    "controller": "super_admin/api/esignatures",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/esignatures_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/feature_flags",
+    "controller": "super_admin/api/feature_flags/feature_flags",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/feature_flags/feature_flags_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/feature_flags",
+    "controller": "super_admin/api/feature_flags/feature_flags",
+    "action": "create",
+    "controllerFile": "app/controllers/super_admin/api/feature_flags/feature_flags_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/feature_flags_dev",
+    "controller": "super_admin/api/feature_flags/feature_flags_dev",
+    "action": "create",
+    "controllerFile": "app/controllers/super_admin/api/feature_flags/feature_flags_dev_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/super_admin/api/feature_flags_dev/:id",
+    "controller": "super_admin/api/feature_flags/feature_flags_dev",
+    "action": "destroy",
+    "controllerFile": "app/controllers/super_admin/api/feature_flags/feature_flags_dev_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/feature_flags_dev/:id",
+    "controller": "super_admin/api/feature_flags/feature_flags_dev",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/feature_flags/feature_flags_dev_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/feature_flags_dev/:id",
+    "controller": "super_admin/api/feature_flags/feature_flags_dev",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/feature_flags/feature_flags_dev_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/super_admin/api/feature_flags/:id",
+    "controller": "super_admin/api/feature_flags/feature_flags",
+    "action": "destroy",
+    "controllerFile": "app/controllers/super_admin/api/feature_flags/feature_flags_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/feature_flags/:id",
+    "controller": "super_admin/api/feature_flags/feature_flags",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/feature_flags/feature_flags_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/feature_flags/:id",
+    "controller": "super_admin/api/feature_flags/feature_flags",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/feature_flags/feature_flags_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/fetch_filters",
+    "controller": "super_admin/api/map_shops",
+    "action": "fetch_filters",
+    "controllerFile": "app/controllers/super_admin/api/map_shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/integrations/absences/:id",
+    "controller": "super_admin/api/integrations/absences",
+    "action": "show",
+    "controllerFile": "app/controllers/super_admin/api/integrations/absences_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/integrations/automatic_jobs",
+    "controller": "super_admin/api/integrations/automatic_jobs",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/integrations/automatic_jobs_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/integrations/automatic_jobs/manual_launch",
+    "controller": "super_admin/api/integrations/automatic_jobs",
+    "action": "manual_launch",
+    "controllerFile": "app/controllers/super_admin/api/integrations/automatic_jobs_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/integrations/basic_data/:id",
+    "controller": "super_admin/api/integrations/basic_data",
+    "action": "show",
+    "controllerFile": "app/controllers/super_admin/api/integrations/basic_data_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/integrations/evps/:id",
+    "controller": "super_admin/api/integrations/evps",
+    "action": "show",
+    "controllerFile": "app/controllers/super_admin/api/integrations/evps_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/integrations/hris_integration_keys/:id",
+    "controller": "super_admin/api/integrations/hris_integration_keys",
+    "action": "show",
+    "controllerFile": "app/controllers/super_admin/api/integrations/hris_integration_keys_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/integrations/integration_replication",
+    "controller": "super_admin/api/integrations/integration_replications",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/integrations/integration_replications_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/integrations/integration_replication",
+    "controller": "super_admin/api/integrations/integration_replications",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/integrations/integration_replications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/integrations/integrations",
+    "controller": "super_admin/api/integrations/integrations",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/integrations/integrations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/integrations/integrations",
+    "controller": "super_admin/api/integrations/integrations",
+    "action": "create",
+    "controllerFile": "app/controllers/super_admin/api/integrations/integrations_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/super_admin/api/integrations/integrations/:id",
+    "controller": "super_admin/api/integrations/integrations",
+    "action": "destroy",
+    "controllerFile": "app/controllers/super_admin/api/integrations/integrations_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/integrations/integrations/:id",
+    "controller": "super_admin/api/integrations/integrations",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/integrations/integrations_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/integrations/integrations/:id",
+    "controller": "super_admin/api/integrations/integrations",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/integrations/integrations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/integrations/integrations/download_hris_files",
+    "controller": "super_admin/api/integrations/integrations",
+    "action": "download_hris_files",
+    "controllerFile": "app/controllers/super_admin/api/integrations/integrations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/integrations/integrations/run_integration_job",
+    "controller": "super_admin/api/integrations/integrations",
+    "action": "run_integration_job",
+    "controllerFile": "app/controllers/super_admin/api/integrations/integrations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/invitations",
+    "controller": "super_admin/api/invitations",
+    "action": "create",
+    "controllerFile": "app/controllers/super_admin/api/invitations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/invoices/exports",
+    "controller": "super_admin/api/invoices/exports",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/invoices/exports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/mails/deliver",
+    "controller": "super_admin/api/mails",
+    "action": "deliver",
+    "controllerFile": "app/controllers/super_admin/api/mails_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/map_shops",
+    "controller": "super_admin/api/map_shops",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/map_shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations",
+    "controller": "super_admin/api/organisations",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/organisations",
+    "controller": "super_admin/api/organisations",
+    "action": "create",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/super_admin/api/organisations/:id",
+    "controller": "super_admin/api/organisations",
+    "action": "destroy",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/:id",
+    "controller": "super_admin/api/organisations",
+    "action": "show",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/organisations/:id",
+    "controller": "super_admin/api/organisations",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/organisations/:id",
+    "controller": "super_admin/api/organisations",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/:id/contacts",
+    "controller": "super_admin/api/organisations",
+    "action": "contacts",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/organisations/:id/contacts",
+    "controller": "super_admin/api/organisations",
+    "action": "update_contacts",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/:id/edit",
+    "controller": "super_admin/api/organisations",
+    "action": "edit",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/organisations/:organisation_id/access_keys",
+    "controller": "super_admin/api/organisations/access_keys",
+    "action": "create",
+    "controllerFile": "app/controllers/super_admin/api/organisations/access_keys_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/:organisation_id/annualization_configs",
+    "controller": "super_admin/api/organisations/annualization_configs",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/organisations/annualization_configs_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/:organisation_id/applications",
+    "controller": "super_admin/api/organisations/applications",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/organisations/applications_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/super_admin/api/organisations/:organisation_id/applications/:id",
+    "controller": "super_admin/api/organisations/applications",
+    "action": "destroy",
+    "controllerFile": "app/controllers/super_admin/api/organisations/applications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/:organisation_id/licenses",
+    "controller": "super_admin/api/organisations/licenses",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/organisations/licenses_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/organisations/:organisation_id/licenses/:id",
+    "controller": "super_admin/api/organisations/licenses",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/organisations/licenses_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/organisations/:organisation_id/licenses/:id",
+    "controller": "super_admin/api/organisations/licenses",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/organisations/licenses_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/:organisation_id/shops",
+    "controller": "super_admin/api/shops",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/:organisation_id/shops/:shop_id/features_states",
+    "controller": "super_admin/api/organisations/shops/features_states",
+    "action": "get_option_features_states",
+    "controllerFile": "app/controllers/super_admin/api/organisations/shops/features_states_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/organisations/:organisation_id/shops/:shop_id/features_states",
+    "controller": "super_admin/api/organisations/shops/features_states",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/organisations/shops/features_states_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/home_organisations",
+    "controller": "super_admin/api/organisations",
+    "action": "home_organisations",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/organisations/migrate_to_billing_new_process",
+    "controller": "super_admin/api/organisations",
+    "action": "migrate_to_billing_new_process",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/organisations/new",
+    "controller": "super_admin/api/organisations",
+    "action": "new",
+    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/pay_exporters",
+    "controller": "super_admin/api/pay_exporters",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/pay_exporters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/pay_exporters",
+    "controller": "super_admin/api/pay_exporters",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/pay_exporters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/pins",
+    "controller": "super_admin/api/pins",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/pins_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/pins",
+    "controller": "super_admin/api/pins",
+    "action": "create",
+    "controllerFile": "app/controllers/super_admin/api/pins_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/pins",
+    "controller": "super_admin/api/pins",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/pins_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/prospects",
+    "controller": "super_admin/api/prospects",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/prospects_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/prospects/:id",
+    "controller": "super_admin/api/prospects",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/prospects_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/prospects/:id",
+    "controller": "super_admin/api/prospects",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/prospects_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/search",
+    "controller": "super_admin/api/search",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/search_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/send_invoice_again",
+    "controller": "super_admin/api/stripe_invoices",
+    "action": "send_invoice_again",
+    "controllerFile": "app/controllers/super_admin/api/stripe_invoices_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/sessions",
+    "controller": "super_admin/api/sessions",
+    "action": "create",
+    "controllerFile": "app/controllers/super_admin/api/sessions_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/super_admin/api/sessions/sign_out",
+    "controller": "super_admin/api/sessions",
+    "action": "destroy",
+    "controllerFile": "app/controllers/super_admin/api/sessions_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/shifts_histories",
+    "controller": "super_admin/api/shifts_histories",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/shifts_histories_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/shop_extended_infos/:id",
+    "controller": "super_admin/api/shop_extended_infos",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/shop_extended_infos_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/shop_extended_infos/:id",
+    "controller": "super_admin/api/shop_extended_infos",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/shop_extended_infos_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/shops",
+    "controller": "super_admin/api/shops",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/shops_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/super_admin/api/shops/:id",
+    "controller": "super_admin/api/shops",
+    "action": "destroy",
+    "controllerFile": "app/controllers/super_admin/api/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/shops/:id",
+    "controller": "super_admin/api/shops",
+    "action": "show",
+    "controllerFile": "app/controllers/super_admin/api/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/shops/:id",
+    "controller": "super_admin/api/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/shops_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/shops/:id",
+    "controller": "super_admin/api/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/shops_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/shops/:id/migrate",
+    "controller": "super_admin/api/shops",
+    "action": "migrate",
+    "controllerFile": "app/controllers/super_admin/api/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/shops/:shop_id/imports/users/upsert",
+    "controller": "super_admin/api/imports/users",
+    "action": "upsert",
+    "controllerFile": "app/controllers/super_admin/api/imports/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/shops/get_pack_offer_names",
+    "controller": "super_admin/api/shops",
+    "action": "get_pack_offer_names",
+    "controllerFile": "app/controllers/super_admin/api/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/shops/predefined_values",
+    "controller": "super_admin/api/shops",
+    "action": "predefined_values",
+    "controllerFile": "app/controllers/super_admin/api/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/stripe_charges",
+    "controller": "super_admin/api/stripe_charges",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/stripe_charges_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/stripe_charges",
+    "controller": "super_admin/api/stripe_charges",
+    "action": "create",
+    "controllerFile": "app/controllers/super_admin/api/stripe_charges_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/stripe_charges/:id",
+    "controller": "super_admin/api/stripe_charges",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/stripe_charges_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/super_admin/api/stripe_charges/:id",
+    "controller": "super_admin/api/stripe_charges",
+    "action": "update",
+    "controllerFile": "app/controllers/super_admin/api/stripe_charges_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/stripe_charges/kinds",
+    "controller": "super_admin/api/stripe_charges",
+    "action": "kinds",
+    "controllerFile": "app/controllers/super_admin/api/stripe_charges_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/super_admin/api/stripe_charges/undispute_last",
+    "controller": "super_admin/api/stripe_charges",
+    "action": "undispute_last",
+    "controllerFile": "app/controllers/super_admin/api/stripe_charges_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/stripe_charges/zones",
+    "controller": "super_admin/api/stripe_charges",
+    "action": "zones",
+    "controllerFile": "app/controllers/super_admin/api/stripe_charges_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/stripe_invoices/:id",
+    "controller": "super_admin/api/stripe_invoices",
+    "action": "show",
+    "controllerFile": "app/controllers/super_admin/api/stripe_invoices_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/user_import_template",
+    "controller": "super_admin/api/user_import_template",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/user_import_template_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/users",
+    "controller": "super_admin/api/users",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/super_admin/api/users/:id",
+    "controller": "super_admin/api/users",
+    "action": "destroy",
+    "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/users/:id",
+    "controller": "super_admin/api/users",
+    "action": "show",
+    "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/users/:id/delete_email",
+    "controller": "super_admin/api/users",
+    "action": "delete_email",
+    "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/users/:id/demote_super_admin",
+    "controller": "super_admin/api/users",
+    "action": "demote_super_admin",
+    "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/users/:user_id/action_history_items",
+    "controller": "super_admin/api/action_history_items",
+    "action": "index",
+    "controllerFile": "app/controllers/super_admin/api/action_history_items_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/users/administrators",
+    "controller": "super_admin/api/users",
+    "action": "administrators",
+    "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/users/bulk",
+    "controller": "super_admin/api/users",
+    "action": "bulk",
+    "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/super_admin/api/users/super_admin",
+    "controller": "super_admin/api/users",
+    "action": "super_admin",
+    "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/unemployment_report/shops",
+    "controller": "unemployment_report/reports",
+    "action": "multiple_shops",
+    "controllerFile": "app/controllers/unemployment_report/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/unemployment_report/shops/:shop_id",
+    "controller": "unemployment_report/reports",
+    "action": "single_shop",
+    "controllerFile": "app/controllers/unemployment_report/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/unfinished_profiles",
+    "controller": "notifications",
+    "action": "get_unfinished_profiles",
+    "controllerFile": "app/controllers/notifications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/users/:user_id/feeds/ics/:feed_url",
+    "controller": "ics_feeds",
+    "action": "show",
+    "controllerFile": "app/controllers/ics_feeds_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/users/*page",
+    "controller": "v3/pages",
+    "action": "home",
+    "controllerFile": "app/controllers/v3/pages_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/users/availabilities",
+    "controller": "users/availabilities",
+    "action": "index",
+    "controllerFile": "app/controllers/users/availabilities_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v1/jwt_token",
+    "controller": "v3/jwt_token",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/jwt_token_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v1/login",
+    "controller": "v3/login",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v1/refresh_token",
+    "controller": "v3/login",
+    "action": "refresh_token",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v1/refresh_token",
+    "controller": "v3/login",
+    "action": "refresh_token",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/*path",
+    "controller": "v3/pages",
+    "action": "home",
+    "controllerFile": "app/controllers/v3/pages_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/absences",
+    "controller": "v3/api/absences",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/absences_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/absences/:id",
+    "controller": "v3/api/absences",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/absences_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/absences/:id",
+    "controller": "v3/api/absences",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/absences_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/absences/duration_preview",
+    "controller": "v3/api/absences",
+    "action": "duration_preview",
+    "controllerFile": "app/controllers/v3/api/absences_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/absences/update_counter_status",
+    "controller": "v3/api/absences",
+    "action": "update_counter_status",
+    "controllerFile": "app/controllers/v3/api/absences_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/absences/update_indemnification_types",
+    "controller": "v3/api/absences",
+    "action": "update_indemnification_types",
+    "controllerFile": "app/controllers/v3/api/absences_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/amendments",
+    "controller": "v3/api/contract_amendments",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/contract_amendments_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/automatic_planning/competencies",
+    "controller": "v3/api/automatic_planning/competencies",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/competencies_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/automatic_planning/competencies",
+    "controller": "v3/api/automatic_planning/competencies",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/competencies_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/automatic_planning/competencies",
+    "controller": "v3/api/automatic_planning/competencies",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/competencies_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/automatic_planning/config",
+    "controller": "v3/api/automatic_planning/config",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/config_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/automatic_planning/prediction_model_status",
+    "controller": "v3/api/automatic_planning/prediction_model_status",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/prediction_model_status_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/automatic_scheduling/shifts",
+    "controller": "v3/api/automatic_scheduling/shifts",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/automatic_scheduling/shifts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/automatic_scheduling/shifts",
+    "controller": "v3/api/automatic_scheduling/shifts",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/automatic_scheduling/shifts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/automatic_scheduling/shifts/:id/dismiss_alert",
+    "controller": "v3/api/automatic_scheduling/shift_alerts",
+    "action": "dismiss",
+    "controllerFile": "app/controllers/v3/api/automatic_scheduling/shift_alerts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/automatic_scheduling/shifts/undo",
+    "controller": "v3/api/automatic_scheduling/shifts",
+    "action": "undo",
+    "controllerFile": "app/controllers/v3/api/automatic_scheduling/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/automatic_scheduling/shop",
+    "controller": "v3/api/automatic_scheduling/shops",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/automatic_scheduling/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/automatic_scheduling/users",
+    "controller": "v3/api/automatic_scheduling/users",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/automatic_scheduling/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/availabilities",
+    "controller": "v3/api/availabilities",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/availabilities_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/availabilities",
+    "controller": "v3/api/availabilities",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/availabilities_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/availabilities/:id",
+    "controller": "v3/api/availabilities",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/availabilities_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/badgings/day_badgings",
+    "controller": "v3/api/badgings/day_badgings",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/badgings/day_badgings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/badgings/day_badgings/history",
+    "controller": "v3/api/badgings/day_badgings",
+    "action": "history",
+    "controllerFile": "app/controllers/v3/api/badgings/day_badgings_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/badgings/download_badgings",
+    "controller": "v3/api/badgings/download_badgings",
+    "action": "download",
+    "controllerFile": "app/controllers/v3/api/badgings/download_badgings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/badgings/matched_badgings",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/badgings/matched_badgings",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/badgings/matched_badgings/:id",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/badgings/matched_badgings/:id",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/badgings/matched_badgings/:id",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/badgings/matched_badgings/:id",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/badgings/matched_badgings/:id/edit",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "edit",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/badgings/matched_badgings/arrival_departure_settings",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "arrival_departure_settings",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/badgings/matched_badgings/bulk_update",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "bulk_update",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/badgings/matched_badgings/new",
+    "controller": "v3/api/badgings/matched_badgings",
+    "action": "new",
+    "controllerFile": "app/controllers/v3/api/badgings/matched_badgings_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/billing_automation/organisations",
+    "controller": "v3/api/billing_automation/organisations",
+    "action": "upsert",
+    "controllerFile": "app/controllers/v3/api/billing_automation/organisations_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/billing_automation/organisations/:id",
+    "controller": "v3/api/billing_automation/organisations",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/billing_automation/organisations_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/billing_automation/organisations/:id",
+    "controller": "v3/api/billing_automation/organisations",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/billing_automation/organisations_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/billing_automation/organisations/:id",
+    "controller": "v3/api/billing_automation/organisations",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/billing_automation/organisations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/billing_automation/organisations/:id/cancel_free_trial",
+    "controller": "v3/api/billing_automation/organisations",
+    "action": "cancel_free_trial",
+    "controllerFile": "app/controllers/v3/api/billing_automation/organisations_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/billing_automation/organisations/upsert",
+    "controller": "v3/api/billing_automation/organisations",
+    "action": "upsert",
+    "controllerFile": "app/controllers/v3/api/billing_automation/organisations_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/billing_automation/shops/:id",
+    "controller": "v3/api/billing_automation/shops",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/billing_automation/shops/:id",
+    "controller": "v3/api/billing_automation/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/billing_automation/shops/:id",
+    "controller": "v3/api/billing_automation/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/billing_automation/shops/bulk_get_packname_and_features_states",
+    "controller": "v3/api/billing_automation/shops",
+    "action": "bulk_get_packname_and_features_states",
+    "controllerFile": "app/controllers/v3/api/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/billing_automation/shops/bulk_update_shop_features_states",
+    "controller": "v3/api/billing_automation/shops",
+    "action": "bulk_update_shop_features_states",
+    "controllerFile": "app/controllers/v3/api/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/billing_automation/shops/bulk_upsert",
+    "controller": "v3/api/billing_automation/shops",
+    "action": "bulk_upsert",
+    "controllerFile": "app/controllers/v3/api/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/billing_automation/users",
+    "controller": "v3/api/billing_automation/users",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/billing_automation/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/billing_automation/users/email_validation",
+    "controller": "v3/api/billing_automation/users",
+    "action": "email_validation",
+    "controllerFile": "app/controllers/v3/api/billing_automation/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/billing_infos",
+    "controller": "v3/api/billing_infos",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/billing_infos_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/billing_infos",
+    "controller": "v3/api/billing_infos",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/billing_infos_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/billing_infos",
+    "controller": "v3/api/billing_infos",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/billing_infos_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/billing_infos",
+    "controller": "v3/api/billing_infos",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/billing_infos_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/bulk_planning_hours_datas/adjust_trackers",
+    "controller": "v3/api/bulk_planning_hours_datas",
+    "action": "adjust_trackers",
+    "controllerFile": "app/controllers/v3/api/bulk_planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/bulk_planning_hours_datas/reset_trackers",
+    "controller": "v3/api/bulk_planning_hours_datas",
+    "action": "reset_trackers",
+    "controllerFile": "app/controllers/v3/api/bulk_planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/bulk_rcr_counters/reset_trackers",
+    "controller": "v3/api/bulk_rcr_counters",
+    "action": "reset_trackers",
+    "controllerFile": "app/controllers/v3/api/bulk_rcr_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/cluster_nodes",
+    "controller": "v3/api/cluster_nodes",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/cluster_nodes_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/cluster_nodes",
+    "controller": "v3/api/cluster_nodes",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/cluster_nodes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/cluster_nodes/:id",
+    "controller": "v3/api/cluster_nodes",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/cluster_nodes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/cluster_nodes/:id/shops",
+    "controller": "v3/api/cluster_nodes",
+    "action": "shops",
+    "controllerFile": "app/controllers/v3/api/cluster_nodes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/cluster_nodes/first_shop_node",
+    "controller": "v3/api/cluster_nodes",
+    "action": "first_shop_node",
+    "controllerFile": "app/controllers/v3/api/cluster_nodes_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/cluster_tree",
+    "controller": "v3/api/cluster_trees",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/cluster_trees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/cluster_tree",
+    "controller": "v3/api/cluster_trees",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/cluster_trees_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/cluster_tree",
+    "controller": "v3/api/cluster_trees",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/cluster_trees_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/cluster_tree",
+    "controller": "v3/api/cluster_trees",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/cluster_trees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/cluster_tree/children_list",
+    "controller": "v3/api/cluster_trees",
+    "action": "children_list",
+    "controllerFile": "app/controllers/v3/api/cluster_trees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/cluster_tree/move",
+    "controller": "v3/api/cluster_trees",
+    "action": "move",
+    "controllerFile": "app/controllers/v3/api/cluster_trees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/cluster_tree/move_and_destroy",
+    "controller": "v3/api/cluster_trees",
+    "action": "move_and_destroy",
+    "controllerFile": "app/controllers/v3/api/cluster_trees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/config",
+    "controller": "v3/api/config",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/config_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/contracts",
+    "controller": "v3/api/contracts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/contracts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/contracts/contract_hours",
+    "controller": "v3/api/contracts",
+    "action": "contract_hours",
+    "controllerFile": "app/controllers/v3/api/contracts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/current_license",
+    "controller": "v3/api/current_license",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/current_license_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/current_organisation",
+    "controller": "v3/api/current_organisation",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/current_organisation_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/current_organisation",
+    "controller": "v3/api/current_organisation",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/current_organisation_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/current_organisation",
+    "controller": "v3/api/current_organisation",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/current_organisation_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/current_shop",
+    "controller": "v3/api/current_shop",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/current_shop_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/current_shop",
+    "controller": "v3/api/current_shop",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/current_shop_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/current_user",
+    "controller": "v3/api/current_user",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/current_user_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/current_user",
+    "controller": "v3/api/current_user",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/current_user_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/current_user",
+    "controller": "v3/api/current_user",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/current_user_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/current_user/hr",
+    "controller": "v3/api/current_user",
+    "action": "hr_profile",
+    "controllerFile": "app/controllers/v3/api/current_user_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/current_user/profile",
+    "controller": "v3/api/current_user/profile",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/current_user/profile_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/current_user/profile",
+    "controller": "v3/api/current_user/profile",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/current_user/profile_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/current_user/profile/update_last_sign_in_at",
+    "controller": "v3/api/current_user/profile",
+    "action": "update_last_sign_in_at",
+    "controllerFile": "app/controllers/v3/api/current_user/profile_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/current_user/retrieve_jwt_tokens",
+    "controller": "v3/api/current_user",
+    "action": "retrieve_jwt_tokens",
+    "controllerFile": "app/controllers/v3/api/current_user_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/current_user/user_licenses",
+    "controller": "v3/api/current_user",
+    "action": "user_licenses",
+    "controllerFile": "app/controllers/v3/api/current_user_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/dashboards",
+    "controller": "v3/api/dashboards",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/dashboards_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/dashboards/view_all_access",
+    "controller": "v3/api/dashboards",
+    "action": "view_all_access",
+    "controllerFile": "app/controllers/v3/api/dashboards_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/dpae_deposits",
+    "controller": "v3/api/dpae_deposits",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/dpae_deposits_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/dpae_deposits/:contract_id",
+    "controller": "v3/api/dpae_deposits",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/dpae_deposits_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/dpae_deposits/:dpae_deposit_id",
+    "controller": "v3/api/dpae_deposits",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/dpae_deposits_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/dpae_deposits/:dpae_deposit_id",
+    "controller": "v3/api/dpae_deposits",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/dpae_deposits_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/email_validation",
+    "controller": "v3/api/users",
+    "action": "email_validation",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/employees",
+    "controller": "v3/api/employees",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/employees",
+    "controller": "v3/api/employees",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/employees/:employee_id/shops/:shop_id/shifts",
+    "controller": "v3/api/employees/shifts",
+    "action": "shop_shifts",
+    "controllerFile": "app/controllers/v3/api/employees/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/employees/:employee_id/shops/shifts",
+    "controller": "v3/api/employees/shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/employees/shifts_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/employees/:id",
+    "controller": "v3/api/employees",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/employees/:id",
+    "controller": "v3/api/employees",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/employees/:id",
+    "controller": "v3/api/employees",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/employees/:id",
+    "controller": "v3/api/employees",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/employees/:id/edit",
+    "controller": "v3/api/employees",
+    "action": "edit",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/employees/bulk_touch",
+    "controller": "v3/api/employees",
+    "action": "bulk_touch",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/employees/documents_employees",
+    "controller": "v3/api/employees",
+    "action": "documents_employees",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/employees/managers",
+    "controller": "v3/api/employees",
+    "action": "managers",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/employees/new",
+    "controller": "v3/api/employees",
+    "action": "new",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/employees/payslips_managees",
+    "controller": "v3/api/employees",
+    "action": "payslips_managees",
+    "controllerFile": "app/controllers/v3/api/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/feature_flags",
+    "controller": "v3/api/feature_flags",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/feature_flags_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/features",
+    "controller": "v3/api/features",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/features_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/holidays",
+    "controller": "v3/api/holidays",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/holidays_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/integrations/lightspeed",
+    "controller": "v3/api/integrations/lightspeed",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/integrations/lightspeed_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/integrations/lightspeed",
+    "controller": "v3/api/integrations/lightspeed",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/integrations/lightspeed_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/integrations/lightspeed",
+    "controller": "v3/api/integrations/lightspeed",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/integrations/lightspeed_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/integrations/lightspeed/authenticate_callback",
+    "controller": "v3/api/integrations/lightspeed",
+    "action": "authenticate_callback",
+    "controllerFile": "app/controllers/v3/api/integrations/lightspeed_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/integrations/lightspeed/authorize_url",
+    "controller": "v3/api/integrations/lightspeed",
+    "action": "authorize_url",
+    "controllerFile": "app/controllers/v3/api/integrations/lightspeed_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/integrations/lightspeed/lightspeed_shops",
+    "controller": "v3/api/integrations/lightspeed",
+    "action": "lightspeed_shops",
+    "controllerFile": "app/controllers/v3/api/integrations/lightspeed_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/integrations/zelty",
+    "controller": "v3/api/integrations/zelty",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/integrations/zelty_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/integrations/zelty",
+    "controller": "v3/api/integrations/zelty",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/integrations/zelty_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/integrations/zelty",
+    "controller": "v3/api/integrations/zelty",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/integrations/zelty_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/integrations/zelty/fetch_zelty_shops",
+    "controller": "v3/api/integrations/zelty",
+    "action": "fetch_zelty_shops",
+    "controllerFile": "app/controllers/v3/api/integrations/zelty_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/labour_laws/upsert_shop",
+    "controller": "v3/api/labour_laws",
+    "action": "upsert_shop",
+    "controllerFile": "app/controllers/v3/api/labour_laws_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/leave_requests",
+    "controller": "v3/api/leave_requests",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/leave_requests_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/leave_requests",
+    "controller": "v3/api/leave_requests",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/leave_requests_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/leave_requests/:id",
+    "controller": "v3/api/leave_requests",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/leave_requests_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/leave_requests/managed_users",
+    "controller": "v3/api/leave_requests",
+    "action": "managed_users",
+    "controllerFile": "app/controllers/v3/api/leave_requests_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/licenses",
+    "controller": "v3/api/licenses",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/licenses_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/licenses/:id",
+    "controller": "v3/api/licenses",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/licenses_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/licenses/:id",
+    "controller": "v3/api/licenses",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/licenses_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/mailing",
+    "controller": "v3/api/mailing",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/mailing",
+    "controller": "v3/api/mailing",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/mailing",
+    "controller": "v3/api/mailing",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/mailing",
+    "controller": "v3/api/mailing",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/mailing",
+    "controller": "v3/api/mailing",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/mailing/edit",
+    "controller": "v3/api/mailing",
+    "action": "edit",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/mailing/leave_request_created",
+    "controller": "v3/api/mailing",
+    "action": "leave_request_created",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/mailing/leave_request_updated",
+    "controller": "v3/api/mailing",
+    "action": "leave_request_updated",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/mailing/new",
+    "controller": "v3/api/mailing",
+    "action": "new",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/mailing/send_email",
+    "controller": "v3/api/mailing",
+    "action": "send_email",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/mailing/send_raw_email",
+    "controller": "v3/api/mailing",
+    "action": "send_raw_email",
+    "controllerFile": "app/controllers/v3/api/mailing_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/me/organisations",
+    "controller": "v3/api/me/organisations",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/me/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/memberships",
+    "controller": "v3/api/memberships",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/memberships_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/memberships",
+    "controller": "v3/api/memberships",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/memberships_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/memberships/:id",
+    "controller": "v3/api/memberships",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/memberships_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/memberships/:id",
+    "controller": "v3/api/memberships",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/memberships_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/memberships/:id",
+    "controller": "v3/api/memberships",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/memberships_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/missions/:id/export_report",
+    "controller": "v3/api/missions",
+    "action": "export_report",
+    "controllerFile": "app/controllers/v3/api/missions_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/mobile/banners",
+    "controller": "v3/api/mobile/banners",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/mobile/banners_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/mobile/config",
+    "controller": "v3/api/mobile/config",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/mobile/config_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/notifications/count",
+    "controller": "v3/api/notifications",
+    "action": "count",
+    "controllerFile": "app/controllers/v3/api/notifications_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/notifications/mark_as_read",
+    "controller": "v3/api/notifications",
+    "action": "mark_as_read",
+    "controllerFile": "app/controllers/v3/api/notifications_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/onboarding/organisations",
+    "controller": "v3/api/onboarding/organisations",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/onboarding/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/onboarding/organisations/:id",
+    "controller": "v3/api/onboarding/organisations",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/onboarding/organisations_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/onboarding/organisations/:id",
+    "controller": "v3/api/onboarding/organisations",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/onboarding/organisations_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/onboarding/organisations/:id",
+    "controller": "v3/api/onboarding/organisations",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/onboarding/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/organisation_credentials",
+    "controller": "v3/api/organisation_credentials",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/organisation_credentials_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/organisation_credentials",
+    "controller": "v3/api/organisation_credentials",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/organisation_credentials_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/organisation_credentials/:name",
+    "controller": "v3/api/organisation_credentials",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/organisation_credentials_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/organisation_credentials/:name",
+    "controller": "v3/api/organisation_credentials",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/organisation_credentials_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/organisation_credentials/:name",
+    "controller": "v3/api/organisation_credentials",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/organisation_credentials_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/organisations/:organisation_id/applications",
+    "controller": "v3/api/organisations/applications",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/organisations/applications_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/organisations/:organisation_id/applications",
+    "controller": "v3/api/organisations/applications",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/organisations/applications_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/organisations/:organisation_id/applications/:id",
+    "controller": "v3/api/organisations/applications",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/organisations/applications_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/organisations/:organisation_id/applications/:id",
+    "controller": "v3/api/organisations/applications",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/organisations/applications_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/paid_leaves_counters",
+    "controller": "v3/api/paid_leaves_counters",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/paid_leaves_counters",
+    "controller": "v3/api/paid_leaves_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/paid_leaves_counters",
+    "controller": "v3/api/paid_leaves_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/paid_leaves_counters/bulk_get_plc_by_month",
+    "controller": "v3/api/paid_leaves_counters",
+    "action": "bulk_get_plc_by_month",
+    "controllerFile": "app/controllers/v3/api/paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/paid_leaves_counters/plc_periods_summary",
+    "controller": "v3/api/paid_leaves_counters",
+    "action": "plc_periods_summary",
+    "controllerFile": "app/controllers/v3/api/paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/paid_leaves_counters/upcoming_paid_leave",
+    "controller": "v3/api/paid_leaves_counters",
+    "action": "upcoming_paid_leave",
+    "controllerFile": "app/controllers/v3/api/paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/pending_requests",
+    "controller": "v3/api/pending_requests",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/pending_requests_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/planning_hours_datas",
+    "controller": "v3/api/planning_hours_datas",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/planning_hours_datas",
+    "controller": "v3/api/planning_hours_datas",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/planning_hours_datas",
+    "controller": "v3/api/planning_hours_datas",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/planning_hours_datas",
+    "controller": "v3/api/planning_hours_datas",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/planning_hours_datas",
+    "controller": "v3/api/planning_hours_datas",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/planning_hours_datas/edit",
+    "controller": "v3/api/planning_hours_datas",
+    "action": "edit",
+    "controllerFile": "app/controllers/v3/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/planning_hours_datas/new",
+    "controller": "v3/api/planning_hours_datas",
+    "action": "new",
+    "controllerFile": "app/controllers/v3/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/planning_hours_datas/user_planning_hours",
+    "controller": "v3/api/planning_hours_datas",
+    "action": "user_planning_hours",
+    "controllerFile": "app/controllers/v3/api/planning_hours_datas_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/availabilities",
+    "controller": "v3/api/plannings/availabilities",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/availabilities_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/plannings/conflicts",
+    "controller": "v3/api/plannings/conflicts",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/plannings/conflicts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/conflicts",
+    "controller": "v3/api/plannings/conflicts",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/plannings/conflicts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/conflicts",
+    "controller": "v3/api/plannings/conflicts",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/conflicts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/conflicts",
+    "controller": "v3/api/plannings/conflicts",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/plannings/conflicts_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/plannings/conflicts",
+    "controller": "v3/api/plannings/conflicts",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/conflicts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/conflicts/edit",
+    "controller": "v3/api/plannings/conflicts",
+    "action": "edit",
+    "controllerFile": "app/controllers/v3/api/plannings/conflicts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/conflicts/new",
+    "controller": "v3/api/plannings/conflicts",
+    "action": "new",
+    "controllerFile": "app/controllers/v3/api/plannings/conflicts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/conflicts/previous_planning_conflicts",
+    "controller": "v3/api/plannings/conflicts",
+    "action": "previous_planning_conflicts",
+    "controllerFile": "app/controllers/v3/api/plannings/conflicts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/conflicts/template_conflicts",
+    "controller": "v3/api/plannings/conflicts",
+    "action": "template_conflicts",
+    "controllerFile": "app/controllers/v3/api/plannings/conflicts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/day_rate_counters",
+    "controller": "v3/api/plannings/day_rate_counters",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/day_rate_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/day_rate_total",
+    "controller": "v3/api/plannings/day_rate_total",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/day_rate_total_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/employees",
+    "controller": "v3/api/plannings/employees",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/events",
+    "controller": "v3/api/plannings/events",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/events_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/events",
+    "controller": "v3/api/plannings/events",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/plannings/events_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/plannings/events/:id",
+    "controller": "v3/api/plannings/events",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/plannings/events_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/events/:id",
+    "controller": "v3/api/plannings/events",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/events_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/plannings/events/:id",
+    "controller": "v3/api/plannings/events",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/events_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/events/birthdays",
+    "controller": "v3/api/plannings/events",
+    "action": "birthdays",
+    "controllerFile": "app/controllers/v3/api/plannings/events_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/events/holidays",
+    "controller": "v3/api/plannings/events",
+    "action": "holidays",
+    "controllerFile": "app/controllers/v3/api/plannings/events_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/filter/absences",
+    "controller": "v3/api/plannings/filter/absences",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/filter/absences_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/filter/employees",
+    "controller": "v3/api/plannings/filter/employees",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/filter/employees_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/filter/positions",
+    "controller": "v3/api/plannings/filter/positions",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/filter/positions_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/filter/teams",
+    "controller": "v3/api/plannings/filter/teams",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/filter/teams_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/kpis",
+    "controller": "v3/api/plannings/kpis",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/kpis_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/kpis",
+    "controller": "v3/api/plannings/kpis",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/kpis_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/plannings/kpis",
+    "controller": "v3/api/plannings/kpis",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/kpis_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/kpis/annualization_data",
+    "controller": "v3/api/plannings/kpis",
+    "action": "annualization_data",
+    "controllerFile": "app/controllers/v3/api/plannings/kpis_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/kpis/duplicate",
+    "controller": "v3/api/plannings/kpis",
+    "action": "duplicate",
+    "controllerFile": "app/controllers/v3/api/plannings/kpis_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/kpis/export",
+    "controller": "v3/api/plannings/kpis",
+    "action": "export",
+    "controllerFile": "app/controllers/v3/api/plannings/kpis_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/popular_shifts",
+    "controller": "v3/api/plannings/popular_shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/popular_shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/position_groups",
+    "controller": "v3/api/plannings/position_groups",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/position_groups_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/positions",
+    "controller": "v3/api/plannings/positions",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/positions_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/postes",
+    "controller": "v3/api/plannings/postes",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/postes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/postes/by_ids",
+    "controller": "v3/api/plannings/postes",
+    "action": "by_ids",
+    "controllerFile": "app/controllers/v3/api/plannings/postes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/shift_users",
+    "controller": "v3/api/plannings/shift_users",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/shift_users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/shifts",
+    "controller": "v3/api/plannings/shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/shifts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/shifts",
+    "controller": "v3/api/plannings/shifts",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/shifts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/shifts",
+    "controller": "v3/api/plannings/shifts",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/plannings/shifts_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/plannings/shifts/:id",
+    "controller": "v3/api/plannings/shifts",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/plannings/shifts_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/plannings/shifts/bulk_delete",
+    "controller": "v3/api/plannings/shifts",
+    "action": "bulk_delete",
+    "controllerFile": "app/controllers/v3/api/plannings/shifts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/shifts/duplicate_from_previous_week_or_day",
+    "controller": "v3/api/plannings/shifts",
+    "action": "duplicate_from_previous_week_or_day",
+    "controllerFile": "app/controllers/v3/api/plannings/shifts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/shifts/recurrent",
+    "controller": "v3/api/plannings/shifts",
+    "action": "recurrent",
+    "controllerFile": "app/controllers/v3/api/plannings/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/shifts/weekly_rests",
+    "controller": "v3/api/plannings/shifts",
+    "action": "weekly_rests",
+    "controllerFile": "app/controllers/v3/api/plannings/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/shop/planning_config",
+    "controller": "v3/api/plannings/shop/planning_configs",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/plannings/shop/planning_configs_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/shop/planning_config",
+    "controller": "v3/api/plannings/shop/planning_configs",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/shop/planning_configs_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/plannings/shop/planning_config",
+    "controller": "v3/api/plannings/shop/planning_configs",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/shop/planning_configs_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/templates",
+    "controller": "v3/api/plannings/templates",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/templates_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/templates",
+    "controller": "v3/api/plannings/templates",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/plannings/templates_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/plannings/templates/:id",
+    "controller": "v3/api/plannings/templates",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/plannings/templates_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/plannings/templates/:id/apply",
+    "controller": "v3/api/plannings/templates",
+    "action": "apply",
+    "controllerFile": "app/controllers/v3/api/plannings/templates_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/user_kpis_settings",
+    "controller": "v3/api/plannings/user_kpis_settings",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/plannings/user_kpis_settings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/user_kpis_settings",
+    "controller": "v3/api/plannings/user_kpis_settings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/user_kpis_settings_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/plannings/user_kpis_settings",
+    "controller": "v3/api/plannings/user_kpis_settings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/user_kpis_settings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/user/planning_config",
+    "controller": "v3/api/plannings/user/planning_configs",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/plannings/user/planning_configs_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/user/planning_config",
+    "controller": "v3/api/plannings/user/planning_configs",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/user/planning_configs_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/plannings/user/planning_config",
+    "controller": "v3/api/plannings/user/planning_configs",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/user/planning_configs_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/users",
+    "controller": "v3/api/plannings/users",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/plannings/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/plannings/users/:id",
+    "controller": "v3/api/plannings/users",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/plannings/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/users/sort_users",
+    "controller": "v3/api/plannings/users",
+    "action": "sort_users",
+    "controllerFile": "app/controllers/v3/api/plannings/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/plannings/week_planning_prevision",
+    "controller": "v3/api/plannings/week_planning_previsions",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/week_planning_previsions_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/plannings/week_planning_prevision",
+    "controller": "v3/api/plannings/week_planning_previsions",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/plannings/week_planning_previsions_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/platform_alerts",
+    "controller": "v3/api/platform_alerts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/platform_alerts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/postes",
+    "controller": "v3/api/postes",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/postes_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/postes/bulk_update",
+    "controller": "v3/api/postes",
+    "action": "bulk_update",
+    "controllerFile": "app/controllers/v3/api/postes_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/postes/sort",
+    "controller": "v3/api/postes",
+    "action": "sort",
+    "controllerFile": "app/controllers/v3/api/postes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/primes",
+    "controller": "v3/api/primes",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/primes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/primes/:contract_id",
+    "controller": "v3/api/primes",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/primes_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/primes/:id",
+    "controller": "v3/api/primes",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/primes_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/prospects/:client_id",
+    "controller": "v3/api/prospects",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/prospects_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/prospects/:token",
+    "controller": "v3/api/prospects",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/prospects_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/prospects/current",
+    "controller": "v3/api/prospects",
+    "action": "current",
+    "controllerFile": "app/controllers/v3/api/prospects_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/rcr_counters",
+    "controller": "v3/api/rcr_counters",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/rcr_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/rcr_counters/bulk_edit",
+    "controller": "v3/api/rcr_counters",
+    "action": "bulk_edit",
+    "controllerFile": "app/controllers/v3/api/rcr_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/rcr_counters/compensation_infos",
+    "controller": "v3/api/rcr_counters",
+    "action": "compensation_infos",
+    "controllerFile": "app/controllers/v3/api/rcr_counters_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/rcr/:user_id",
+    "controller": "v3/api/rcr",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/rcr_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/reports",
+    "controller": "v3/api/reports",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/reports",
+    "controller": "v3/api/reports",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/reports",
+    "controller": "v3/api/reports",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports",
+    "controller": "v3/api/reports",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/reports",
+    "controller": "v3/api/reports",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/reports/edit",
+    "controller": "v3/api/reports",
+    "action": "edit",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/excel_report",
+    "controller": "v3/api/reports",
+    "action": "excel_report",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/export_custom_integration",
+    "controller": "v3/api/reports",
+    "action": "export_custom_integration",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/export_global_integration",
+    "controller": "v3/api/reports",
+    "action": "export_global_integration",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/reports/new",
+    "controller": "v3/api/reports",
+    "action": "new",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/reports/permanent_locked_period",
+    "controller": "v3/api/reports",
+    "action": "permanent_locked_period",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/reports/saas_report",
+    "controller": "v3/api/reports",
+    "action": "saas_report",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/reports/saas_report_annualization",
+    "controller": "v3/api/reports",
+    "action": "saas_report_annualization",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/reports/saas_report_trackers",
+    "controller": "v3/api/reports",
+    "action": "saas_report_trackers",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/reports/saas_report_users",
+    "controller": "v3/api/reports",
+    "action": "saas_report_users",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/send_grouped_integrations",
+    "controller": "v3/api/reports",
+    "action": "send_grouped_integrations",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/send_grouped_report",
+    "controller": "v3/api/reports",
+    "action": "send_grouped_report",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/send_shop_integration",
+    "controller": "v3/api/reports",
+    "action": "send_shop_integration",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/send_shop_report",
+    "controller": "v3/api/reports",
+    "action": "send_shop_report",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/send_shops_integrations",
+    "controller": "v3/api/reports",
+    "action": "send_shops_integrations",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/send_shops_reports",
+    "controller": "v3/api/reports",
+    "action": "send_shops_reports",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/reports/toggle_permanent_locked_period",
+    "controller": "v3/api/reports",
+    "action": "toggle_permanent_locked_period",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/reports/week_breakdown",
+    "controller": "v3/api/reports",
+    "action": "week_breakdown",
+    "controllerFile": "app/controllers/v3/api/reports_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/request_esignatures/bulk_create",
+    "controller": "v3/api/request_esignatures",
+    "action": "bulk_create",
+    "controllerFile": "app/controllers/v3/api/request_esignatures_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/request_esignatures/trigger_document_esignature",
+    "controller": "v3/api/request_esignatures",
+    "action": "trigger_document_esignature",
+    "controllerFile": "app/controllers/v3/api/request_esignatures_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/self_serve/activate_account",
+    "controller": "v3/api/self_serve",
+    "action": "activate_account",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/self_serve/confirm_subscription",
+    "controller": "v3/api/self_serve",
+    "action": "confirm_subscription",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/self_serve/create",
+    "controller": "v3/api/self_serve",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/self_serve/create_shop_and_organisation",
+    "controller": "v3/api/self_serve",
+    "action": "create_shop_and_organisation",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/self_serve/notify_salesforce",
+    "controller": "v3/api/self_serve",
+    "action": "notify_salesforce",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/self_serve/prices",
+    "controller": "v3/api/self_serve",
+    "action": "prices",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/self_serve/tax_rates",
+    "controller": "v3/api/self_serve",
+    "action": "tax_rates",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/sepa/update_stripe_iban",
+    "controller": "v3/api/sepa",
+    "action": "update_stripe_iban",
+    "controllerFile": "app/controllers/v3/api/sepa_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shifts",
+    "controller": "v3/api/v0/shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/v0/shifts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shifts/:shift_id/comments/_append",
+    "controller": "v3/api/v1/comments",
+    "action": "_append",
+    "controllerFile": "app/controllers/v3/api/v1/comments_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shifts/:shift_id/tasks",
+    "controller": "v3/api/v1/tasks",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/v1/tasks_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shifts/:shift_id/tasks/:id/_label",
+    "controller": "v3/api/v1/tasks",
+    "action": "_label",
+    "controllerFile": "app/controllers/v3/api/v1/tasks_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shifts/:shift_id/tasks/:id/_status",
+    "controller": "v3/api/v1/tasks",
+    "action": "_status",
+    "controllerFile": "app/controllers/v3/api/v1/tasks_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops",
+    "controller": "v3/api/shops",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops",
+    "controller": "v3/api/shops",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:id",
+    "controller": "v3/api/shops",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:id",
+    "controller": "v3/api/shops",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:id",
+    "controller": "v3/api/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:id",
+    "controller": "v3/api/shops",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:id/edit",
+    "controller": "v3/api/shops",
+    "action": "edit",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:id/show_extended",
+    "controller": "v3/api/shops",
+    "action": "show_extended",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/alerts",
+    "controller": "v3/api/shops/alerts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/shops/alerts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/alerts/:id",
+    "controller": "v3/api/shops/alerts",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/alerts_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/alerts/:id",
+    "controller": "v3/api/shops/alerts",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/alerts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/automatic_planning/assignments/assign",
+    "controller": "v3/api/automatic_planning/assignments",
+    "action": "assign",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/assignments_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/automatic_planning/assignments/error",
+    "controller": "v3/api/automatic_planning/assignments",
+    "action": "error",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/assignments_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/automatic_planning/assignments/prepare_assignment",
+    "controller": "v3/api/automatic_planning/assignments",
+    "action": "prepare_assignment",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/assignments_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/automatic_planning/rules",
+    "controller": "v3/api/automatic_planning/rules",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/rules_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/automatic_planning/rules",
+    "controller": "v3/api/automatic_planning/rules",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/rules_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/automatic_planning/rules",
+    "controller": "v3/api/automatic_planning/rules",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/rules_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/automatic_planning/rules/:id/toggle_active",
+    "controller": "v3/api/automatic_planning/rules",
+    "action": "toggle_active",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/rules_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/automatic_planning/rules/:id/toggle_optional_value",
+    "controller": "v3/api/automatic_planning/rules",
+    "action": "toggle_optional_value",
+    "controllerFile": "app/controllers/v3/api/automatic_planning/rules_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/convention",
+    "controller": "v3/api/shops/conventions",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/shops/conventions_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/convention",
+    "controller": "v3/api/shops/conventions",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/conventions_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/convention",
+    "controller": "v3/api/shops/conventions",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/conventions_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/convention/update_report_rules",
+    "controller": "v3/api/shops/conventions",
+    "action": "update_report_rules",
+    "controllerFile": "app/controllers/v3/api/shops/conventions_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/holiday_settings",
+    "controller": "v3/api/shops/holiday_settings",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/shops/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/holiday_settings",
+    "controller": "v3/api/shops/holiday_settings",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/shops/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:shop_id/holiday_settings/:id",
+    "controller": "v3/api/shops/holiday_settings",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/shops/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/holiday_settings/:id",
+    "controller": "v3/api/shops/holiday_settings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/holiday_settings/:id",
+    "controller": "v3/api/shops/holiday_settings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/holiday_settings/bulk_create",
+    "controller": "v3/api/shops/holiday_settings",
+    "action": "bulk_create",
+    "controllerFile": "app/controllers/v3/api/shops/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:shop_id/holiday_settings/delete_all",
+    "controller": "v3/api/shops/holiday_settings",
+    "action": "delete_all",
+    "controllerFile": "app/controllers/v3/api/shops/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/holiday_settings/user_changes",
+    "controller": "v3/api/shops/holiday_settings",
+    "action": "user_changes",
+    "controllerFile": "app/controllers/v3/api/shops/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/initial_counters",
+    "controller": "v3/api/shops/initial_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/initial_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/initial_counters",
+    "controller": "v3/api/shops/initial_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/initial_counters_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:shop_id/initial_paid_leaves_counters",
+    "controller": "v3/api/shops/initial_paid_leaves_counters",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/shops/initial_paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/initial_paid_leaves_counters",
+    "controller": "v3/api/shops/initial_paid_leaves_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/initial_paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/initial_paid_leaves_counters",
+    "controller": "v3/api/shops/initial_paid_leaves_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/initial_paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/initial_rcr_counters",
+    "controller": "v3/api/shops/initial_rcr_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/initial_rcr_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/initial_rcr_counters",
+    "controller": "v3/api/shops/initial_rcr_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/initial_rcr_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/lateness_inclusion",
+    "controller": "v3/api/shops/lateness_inclusion",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/lateness_inclusion_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/lateness_inclusion",
+    "controller": "v3/api/shops/lateness_inclusion",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/lateness_inclusion_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:shop_id/meal_rule",
+    "controller": "v3/api/shops/meal_rules",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/shops/meal_rules_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/meal_rule",
+    "controller": "v3/api/shops/meal_rules",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/shops/meal_rules_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/meal_rule",
+    "controller": "v3/api/shops/meal_rules",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/meal_rules_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/meal_rule",
+    "controller": "v3/api/shops/meal_rules",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/shops/meal_rules_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/meal_rule",
+    "controller": "v3/api/shops/meal_rules",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/meal_rules_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/pause_compensation",
+    "controller": "v3/api/shops/pause_compensation",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/pause_compensation_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/pause_compensation",
+    "controller": "v3/api/shops/pause_compensation",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/pause_compensation_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/planning_templates",
+    "controller": "v3/api/planning_templates",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/planning_templates_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/postes",
+    "controller": "v3/api/shops/postes",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/shops/postes_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/postes",
+    "controller": "v3/api/shops/postes",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/shops/postes_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/postes/_bulk_create",
+    "controller": "v3/api/shops/postes",
+    "action": "_bulk_create",
+    "controllerFile": "app/controllers/v3/api/shops/postes_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:shop_id/postes/:id",
+    "controller": "v3/api/shops/postes",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/shops/postes_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/postes/:id",
+    "controller": "v3/api/shops/postes",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/postes_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/postes/:id",
+    "controller": "v3/api/shops/postes",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/postes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/postes/last_user_poste_by_creation_date",
+    "controller": "v3/api/shops/postes",
+    "action": "last_user_poste_by_creation_date",
+    "controllerFile": "app/controllers/v3/api/shops/postes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/postes/last_user_shop_poste",
+    "controller": "v3/api/shops/postes",
+    "action": "last_user_shop_poste",
+    "controllerFile": "app/controllers/v3/api/shops/postes_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/postes/postes_suggestions",
+    "controller": "v3/api/shops/postes",
+    "action": "postes_suggestions",
+    "controllerFile": "app/controllers/v3/api/shops/postes_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:shop_id/shop_absence_config",
+    "controller": "v3/api/shops/shop_absence_configs",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/shops/shop_absence_configs_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/shop_absence_config",
+    "controller": "v3/api/shops/shop_absence_configs",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/shops/shop_absence_configs_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/shop_absence_config",
+    "controller": "v3/api/shops/shop_absence_configs",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/shop_absence_configs_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/shop_absence_config",
+    "controller": "v3/api/shops/shop_absence_configs",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/shop_absence_configs_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:shop_id/shop_annualization_config",
+    "controller": "v3/api/shops/shop_annualization_configs",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/shops/shop_annualization_configs_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/shop_annualization_config",
+    "controller": "v3/api/shops/shop_annualization_configs",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/shops/shop_annualization_configs_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/shop_annualization_config",
+    "controller": "v3/api/shops/shop_annualization_configs",
+    "action": "upsert",
+    "controllerFile": "app/controllers/v3/api/shops/shop_annualization_configs_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/shop_annualization_config",
+    "controller": "v3/api/shops/shop_annualization_configs",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/shops/shop_annualization_configs_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/text_document_templates",
+    "controller": "v3/api/shops/text_document_templates",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/shops/text_document_templates_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/text_document_templates",
+    "controller": "v3/api/shops/text_document_templates",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/shops/text_document_templates_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:shop_id/text_document_templates/:id",
+    "controller": "v3/api/shops/text_document_templates",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/shops/text_document_templates_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/text_document_templates/:id",
+    "controller": "v3/api/shops/text_document_templates",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/text_document_templates_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/text_document_templates/:id",
+    "controller": "v3/api/shops/text_document_templates",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/text_document_templates_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/text_document_templates/:id/variables_values",
+    "controller": "v3/api/shops/text_document_templates",
+    "action": "variables_values",
+    "controllerFile": "app/controllers/v3/api/shops/text_document_templates_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/text_document_templates/templates_with_employee_variables",
+    "controller": "v3/api/shops/text_document_templates",
+    "action": "templates_with_employee_variables",
+    "controllerFile": "app/controllers/v3/api/shops/text_document_templates_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/third_parties",
+    "controller": "v3/api/shops/third_parties",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/shops/third_parties_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/third_parties",
+    "controller": "v3/api/shops/third_parties",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/shops/third_parties_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/shops/:shop_id/third_parties/:id",
+    "controller": "v3/api/shops/third_parties",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/shops/third_parties_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/third_parties/:id",
+    "controller": "v3/api/shops/third_parties",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/third_parties_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/third_parties/:id",
+    "controller": "v3/api/shops/third_parties",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/third_parties_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/all_organisation_shops",
+    "controller": "v3/api/shops",
+    "action": "all_organisation_shops",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/shops/reset_shops_counters",
+    "controller": "v3/api/shops",
+    "action": "reset_shops_counters",
+    "controllerFile": "app/controllers/v3/api/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/staff_registers",
+    "controller": "v3/api/staff_registers",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/staff_registers_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/team_schedules",
+    "controller": "v3/api/team_schedules",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/team_schedules_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/team_schedules",
+    "controller": "v3/api/team_schedules",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/team_schedules_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/team_schedules/:id",
+    "controller": "v3/api/team_schedules",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/team_schedules_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/team_schedules/:id",
+    "controller": "v3/api/team_schedules",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/team_schedules_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/team_schedules/:id",
+    "controller": "v3/api/team_schedules",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/team_schedules_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/team_schedules/:id/disable",
+    "controller": "v3/api/team_schedules",
+    "action": "disable",
+    "controllerFile": "app/controllers/v3/api/team_schedules_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/team_schedules/:id/update_team_employees",
+    "controller": "v3/api/team_schedules",
+    "action": "update_team_employees",
+    "controllerFile": "app/controllers/v3/api/team_schedules_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/teams",
+    "controller": "v3/api/teams",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/teams_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/teams",
+    "controller": "v3/api/teams",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/teams_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/teams/:id",
+    "controller": "v3/api/teams",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/teams_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/teams/:id",
+    "controller": "v3/api/teams",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/teams_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/teams/:id",
+    "controller": "v3/api/teams",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/teams_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/teams/user_ids",
+    "controller": "v3/api/teams",
+    "action": "user_ids",
+    "controllerFile": "app/controllers/v3/api/teams_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/upsells",
+    "controller": "v3/api/upsells",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/upsells_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/upsells",
+    "controller": "v3/api/upsells",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/upsells_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/upsells",
+    "controller": "v3/api/upsells",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/upsells_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/upsells",
+    "controller": "v3/api/upsells",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/upsells_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/upsells",
+    "controller": "v3/api/upsells",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/upsells_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/upsells/edit",
+    "controller": "v3/api/upsells",
+    "action": "edit",
+    "controllerFile": "app/controllers/v3/api/upsells_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/upsells/new",
+    "controller": "v3/api/upsells",
+    "action": "new",
+    "controllerFile": "app/controllers/v3/api/upsells_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/upsells/request_demo",
+    "controller": "v3/api/upsells",
+    "action": "request_demo",
+    "controllerFile": "app/controllers/v3/api/upsells_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users",
+    "controller": "v3/api/users",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users",
+    "controller": "v3/api/users",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:id",
+    "controller": "v3/api/users",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:id/archive",
+    "controller": "v3/api/users",
+    "action": "archive",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:id/holidays_counter",
+    "controller": "v3/api/users",
+    "action": "holidays_counter",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users/:id/invite",
+    "controller": "v3/api/users",
+    "action": "invite",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users/:id/reset_activation_code",
+    "controller": "v3/api/registrations",
+    "action": "reset_activation_code",
+    "controllerFile": "app/controllers/v3/api/registrations_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:id/reset_pin",
+    "controller": "v3/api/users",
+    "action": "reset_pin",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:id/self_serve/activate_by_qa",
+    "controller": "v3/api/self_serve",
+    "action": "activate_by_qa",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users/:id/self_serve/reset_activation_code",
+    "controller": "v3/api/self_serve",
+    "action": "reset_activation_code",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:id/self_serve/update_email",
+    "controller": "v3/api/self_serve",
+    "action": "update_email",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users/:id/self_serve/validate_code",
+    "controller": "v3/api/self_serve",
+    "action": "validate_code",
+    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:id/send_pin",
+    "controller": "v3/api/users",
+    "action": "send_pin",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:id/unarchive",
+    "controller": "v3/api/users",
+    "action": "unarchive",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:id/validate",
+    "controller": "v3/api/registrations",
+    "action": "activate",
+    "controllerFile": "app/controllers/v3/api/registrations_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users/:token",
+    "controller": "v3/api/registrations",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/registrations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:user_id/availabilities",
+    "controller": "v3/api/users/availabilities",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/users/availabilities_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:user_id/availabilities/bulk_update",
+    "controller": "v3/api/users/availabilities",
+    "action": "bulk_update",
+    "controllerFile": "app/controllers/v3/api/users/availabilities_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:user_id/contracts",
+    "controller": "v3/api/users/contracts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users/:user_id/contracts",
+    "controller": "v3/api/users/contracts",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:user_id/contracts/:contract_id/amendments",
+    "controller": "v3/api/users/contracts/amendments",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/users/contracts/amendments_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users/:user_id/contracts/:contract_id/amendments",
+    "controller": "v3/api/users/contracts/amendments",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/users/contracts/amendments_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/users/:user_id/contracts/:contract_id/amendments/:id",
+    "controller": "v3/api/users/contracts/amendments",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/users/contracts/amendments_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:user_id/contracts/:contract_id/amendments/bulk_update",
+    "controller": "v3/api/users/contracts/amendments",
+    "action": "bulk_update",
+    "controllerFile": "app/controllers/v3/api/users/contracts/amendments_controller.rb"
+  },
+  {
+    "verb": "DELETE",
+    "path": "/v3/api/users/:user_id/contracts/:id",
+    "controller": "v3/api/users/contracts",
+    "action": "destroy",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:user_id/contracts/:id",
+    "controller": "v3/api/users/contracts",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:user_id/contracts/:id",
+    "controller": "v3/api/users/contracts",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/users/:user_id/contracts/:id",
+    "controller": "v3/api/users/contracts",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users/:user_id/contracts/:id/duplicate",
+    "controller": "v3/api/users/contracts",
+    "action": "duplicate",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/users/:user_id/contracts/:id/version_contract",
+    "controller": "v3/api/users/contracts",
+    "action": "version_contract",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:user_id/contracts/current",
+    "controller": "v3/api/users/contracts",
+    "action": "current",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:user_id/contracts/in_period",
+    "controller": "v3/api/users/contracts",
+    "action": "in_period",
+    "controllerFile": "app/controllers/v3/api/users/contracts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:user_id/holiday_settings",
+    "controller": "v3/api/users/holiday_settings",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/users/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:user_id/holiday_settings/:id",
+    "controller": "v3/api/users/holiday_settings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/users/:user_id/holiday_settings/:id",
+    "controller": "v3/api/users/holiday_settings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/holiday_settings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:user_id/hr",
+    "controller": "v3/api/users/hr",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/hr_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:user_id/initial_counters",
+    "controller": "v3/api/users/initial_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/initial_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/users/:user_id/initial_counters",
+    "controller": "v3/api/users/initial_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/initial_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:user_id/initial_paid_leaves_counters",
+    "controller": "v3/api/users/initial_paid_leaves_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/initial_paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/users/:user_id/initial_paid_leaves_counters",
+    "controller": "v3/api/users/initial_paid_leaves_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/initial_paid_leaves_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:user_id/initial_rcr_counters",
+    "controller": "v3/api/users/initial_rcr_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/initial_rcr_counters_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/users/:user_id/initial_rcr_counters",
+    "controller": "v3/api/users/initial_rcr_counters",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/initial_rcr_counters_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/:user_id/personal_info",
+    "controller": "v3/api/users/personal_info",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/users/personal_info_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/:user_id/shifts",
+    "controller": "v3/api/users/shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/users/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/administrators",
+    "controller": "v3/api/users",
+    "action": "administrators",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/annualization_yearly_total",
+    "controller": "v3/api/users",
+    "action": "annualization_yearly_total",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/birthdays",
+    "controller": "v3/api/users",
+    "action": "birthdays",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/users/bulk_update_annualization_data",
+    "controller": "v3/api/users",
+    "action": "bulk_update_annualization_data",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/display_names",
+    "controller": "v3/api/users",
+    "action": "display_names",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/employee_decrypted_data",
+    "controller": "v3/api/users",
+    "action": "employee_decrypted_data",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/hours_counters_reinitialization_users",
+    "controller": "v3/api/users",
+    "action": "hours_counters_reinitialization_users",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/hours_counters_users",
+    "controller": "v3/api/users",
+    "action": "hours_counters_users",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/missing_attributes_for_payroll",
+    "controller": "v3/api/users",
+    "action": "missing_attributes_for_payroll",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/paid_leaves_counters_users",
+    "controller": "v3/api/users",
+    "action": "paid_leaves_counters_users",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/planners",
+    "controller": "v3/api/users",
+    "action": "planners",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/self_or_managed_by",
+    "controller": "v3/api/users",
+    "action": "self_or_managed_by",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/shop_employees",
+    "controller": "v3/api/users",
+    "action": "shop_employees",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/users/shop_teammates",
+    "controller": "v3/api/users",
+    "action": "shop_teammates",
+    "controllerFile": "app/controllers/v3/api/users_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/v0/billing_automation/shops/bulk_upsert",
+    "controller": "v3/api/v0/billing_automation/shops",
+    "action": "bulk_upsert",
+    "controllerFile": "app/controllers/v3/api/v0/billing_automation/shops_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/v0/shifts",
+    "controller": "v3/api/v0/shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/v0/shifts_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/v1/shifts",
+    "controller": "v3/api/v1/shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/v3/api/v1/shifts_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/v1/shifts/:shift_id/comments/_append",
+    "controller": "v3/api/v1/comments",
+    "action": "_append",
+    "controllerFile": "app/controllers/v3/api/v1/comments_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/v1/shifts/:shift_id/tasks",
+    "controller": "v3/api/v1/tasks",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/v1/tasks_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/v1/shifts/:shift_id/tasks/:id/_label",
+    "controller": "v3/api/v1/tasks",
+    "action": "_label",
+    "controllerFile": "app/controllers/v3/api/v1/tasks_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/v1/shifts/:shift_id/tasks/:id/_status",
+    "controller": "v3/api/v1/tasks",
+    "action": "_status",
+    "controllerFile": "app/controllers/v3/api/v1/tasks_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/webhooks/demo_requests",
+    "controller": "v3/api/webhooks/demo_requests",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/webhooks/demo_requests_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/webhooks/shops/cancel",
+    "controller": "v3/api/webhooks/salesforce",
+    "action": "cancel_shop",
+    "controllerFile": "app/controllers/v3/api/webhooks/salesforce_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/webhooks/shops/link_coach",
+    "controller": "v3/api/webhooks/salesforce",
+    "action": "link_coach",
+    "controllerFile": "app/controllers/v3/api/webhooks/salesforce_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/weekly_options",
+    "controller": "v3/api/weekly_options",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/weekly_options_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/weekly_options",
+    "controller": "v3/api/weekly_options",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/weekly_options_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/weekly_options",
+    "controller": "v3/api/weekly_options",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/weekly_options_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/weekly_options/deactivate_alert",
+    "controller": "v3/api/weekly_options",
+    "action": "deactivate_alert",
+    "controllerFile": "app/controllers/v3/api/weekly_options_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/weekly_options/list",
+    "controller": "v3/api/weekly_options",
+    "action": "list",
+    "controllerFile": "app/controllers/v3/api/weekly_options_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/weekly_options/publish_planning",
+    "controller": "v3/api/weekly_options",
+    "action": "publish_planning",
+    "controllerFile": "app/controllers/v3/api/weekly_options_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/weekly_options/unlock_request",
+    "controller": "v3/api/weekly_options",
+    "action": "unlock_request",
+    "controllerFile": "app/controllers/v3/api/weekly_options_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/api/weekly_options/validate_period",
+    "controller": "v3/api/weekly_options",
+    "action": "validate_period",
+    "controllerFile": "app/controllers/v3/api/weekly_options_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/weekly_options/validate_unlocked_days",
+    "controller": "v3/api/weekly_options",
+    "action": "validate_unlocked_days",
+    "controllerFile": "app/controllers/v3/api/weekly_options_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/home_url",
+    "controller": "v3/pages",
+    "action": "home_url",
+    "controllerFile": "app/controllers/v3/pages_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/jwt_token",
+    "controller": "v3/jwt_token",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/jwt_token_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/login",
+    "controller": "v3/login",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/login/change_password",
+    "controller": "v3/login",
+    "action": "change_password",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/login/impersonate",
+    "controller": "v3/login",
+    "action": "impersonate",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/login/impersonate",
+    "controller": "v3/login",
+    "action": "impersonate",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/login/login_time_clock",
+    "controller": "v3/login",
+    "action": "login_time_clock",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/login/refresh_time_clock_token",
+    "controller": "v3/login",
+    "action": "refresh_time_clock_token",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/login/refresh_token",
+    "controller": "v3/login",
+    "action": "refresh_token",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/v3/login/refresh_token",
+    "controller": "v3/login",
+    "action": "refresh_token",
+    "controllerFile": "app/controllers/v3/login_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/users/sessions/stateless_token(/:purpose)",
+    "controller": "v3/sessions",
+    "action": "stateless_token",
+    "controllerFile": "app/controllers/v3/sessions_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/week_plannings/:week_planning_id/attendance_sheets",
+    "controller": "attendance_sheets",
+    "action": "index",
+    "controllerFile": "app/controllers/attendance_sheets_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/week_plannings/:week_planning_id/pdf",
+    "controller": "week_plannings",
+    "action": "pdf",
+    "controllerFile": "app/controllers/week_plannings_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/zapier/synchronized_shop",
+    "controller": "lists",
+    "action": "salesforce_synchronized_shops_list",
+    "controllerFile": "app/controllers/lists_controller.rb"
+  }
+]

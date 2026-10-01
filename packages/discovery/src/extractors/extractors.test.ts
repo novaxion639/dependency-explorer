@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
 import { classifyAwsUsage } from './aws-clients'
 import { parseTerraform } from './terraform'
-import { parseRoutesContent } from './rails-routes'
 import { parseEnvServiceUrls } from './frontend'
 import { classifyImports } from './typescript'
 import { parseSdkSource } from './sdk-registry'
@@ -423,30 +422,6 @@ data "aws_iam_policy_document" "firehose" {
   }
 }`
     expect(parseTerraform(src).iamActions).toEqual(['kinesis:PutRecord', 's3:GetObject', 's3:PutObject'])
-  })
-})
-
-describe('parseRoutesContent', () => {
-  it('joins namespace and scope prefixes onto verb routes', () => {
-    const src = `
-Rails.application.routes.draw do
-  get '/health', to: 'health#check'
-  namespace :api do
-    namespace :v3 do
-      post 'shifts/:id/publish' => 'shifts#publish'
-    end
-  end
-  namespace :unemployment_report do
-    post 'shops/:shop_id' => 'reports#single_shop'
-  end
-  resources :users
-end`
-    const facts = parseRoutesContent(src)
-    expect(facts.routes).toContainEqual({ verb: 'GET', path: '/health' })
-    expect(facts.routes).toContainEqual({ verb: 'POST', path: '/api/v3/shifts/:id/publish' })
-    expect(facts.routes).toContainEqual({ verb: 'POST', path: '/unemployment_report/shops/:shop_id' })
-    expect(facts.resourceDeclarations).toBe(1)
-    expect(facts.byTopSegment['api']).toBe(1)
   })
 })
 

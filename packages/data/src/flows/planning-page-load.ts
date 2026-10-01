@@ -11,7 +11,7 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "skello-app",
-      "action": "GET /v3/plannings — fetch planning context (shifts + employees + contracts for shop + week)",
+      "action": "GET /v3/api/plannings/shifts — fetch planning context (shifts + employees + contracts for shop + week)",
       "phase": "initial paint"
     },
     {

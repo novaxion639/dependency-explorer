@@ -77,6 +77,15 @@ export const ServiceEndpointSchema = z.object({
   provenance: ProvenanceSchema.optional(),
 })
 
+export const MonolithRouteSchema = z.object({
+  verb: HttpMethodSchema,
+  path: z.string().startsWith('/'),
+  controller: z.string(),
+  action: z.string(),
+  controllerFile: z.string(),
+})
+export type MonolithRoute = z.infer<typeof MonolithRouteSchema>
+
 // ── Service ───────────────────────────────────────────────────────────────────
 
 export const ServiceDatabaseSchema = z.object({

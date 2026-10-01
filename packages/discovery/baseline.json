@@ -99,6 +99,7 @@
     "candidates||svc-punch→svc-documents-v2|",
     "candidates||svc-skello-assistant→svc-employees|",
     "candidates||svc-workload-plan→svc-websockets-v2|",
+    "codeLayerCheck|controller-without-route|document-generation-esignature|codeUnit cu-des-docs-controller: app/controllers/v3/api/users/documents_controller.rb serves no route in config/routes.rb",
     "codeLayerCheck|missing-code-path|document-generation-esignature|codeUnit cu-des-docs-controller (V3::Api::Users::DocumentsController): skello-app/app/controllers/v3/api/users/documents_controller.rb does not exist",
     "codeLayerCheck|missing-code-path|document-generation-esignature|codeUnit cu-des-generate (Esignatures::AttendanceSheets::GenerateService): skello-app/app/services/esignatures/attendance_sheets/generate_service.rb does not exist",
     "codeLayerCheck|missing-code-path|document-generation-esignature|codeUnit cu-des-yousign (Esignatures::YousignRequestEsignatureService): skello-app/app/services/esignatures/yousign_request_esignature_service.rb does not exist",
