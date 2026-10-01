@@ -13,7 +13,8 @@
     "docs:gen": "tsx src/docs-gen-cli.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "discover:trace": "tsx src/trace.ts"
+    "discover:trace": "tsx src/trace.ts",
+    "repo-list": "tsx src/repo-list.ts"
   },
   "dependencies": {
     "@dependency-explorer/data": "workspace:*",

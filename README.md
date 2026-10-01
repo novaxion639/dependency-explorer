@@ -58,11 +58,18 @@ pnpm typecheck       # typecheck all packages
 pnpm test            # data integrity + discovery mapping suites
 pnpm discover        # scan sibling Skello repos → classified drift report
 pnpm discover:apply  # same + regenerate the discovered overlay (provenance stamps)
+pnpm discover -- --pinned   # same, against each repo's production branch (master; main for *-tf) as detached worktrees in .pinned/
+pnpm discover:baseline      # pinned run + rewrite packages/discovery/baseline.json (accepted findings and scanned repo set)
+pnpm discover -- --pinned --fail-on-new   # exit 1 when a finding is not in the baseline
 pnpm discover -- --aws [dir]   # + 🛰 live AWS snapshot diff (defaults to the latest snapshot)
 pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (~215 calls, MFA'd session required)
 pnpm docs:gen        # rewrite the generated sections of the inventory docs (CI fails on drift)
 pnpm check           # everything CI runs
 ```
+
+### Nightly discovery
+
+`.github/workflows/discovery-nightly.yml` runs every night at 03:00 UTC and on manual dispatch. It clones every repo `pnpm --filter @dependency-explorer/discovery repo-list` prints (the baseline's scanned set plus every dataset service and its `-tf` repo) at its production branch with the `DISCOVERY_READ_TOKEN` repository secret (org read access), then runs `pnpm discover -- --pinned --fail-on-new`. The report is the job summary and the `discovery-report` artifact. The job is red when a finding is new against `packages/discovery/baseline.json`; it opens no pull requests. Accepting drift is a reviewed commit of `pnpm discover:baseline`. Without the secret the job fails at its first step with `secret DISCOVERY_READ_TOKEN not configured`.
 
 ## Contributing data
 

@@ -44,14 +44,23 @@ export function diffBaseline(current: string[], baseline: string[]) {
   }
 }
 
-export function readBaseline(file: string): string[] {
+function readField(file: string, field: 'keys' | 'repos'): string[] {
   if (!fs.existsSync(file)) {
     return []
   }
   const parsed: unknown = JSON.parse(fs.readFileSync(file, 'utf-8'))
-  return isRecord(parsed) && Array.isArray(parsed.keys) ? parsed.keys.filter((k): k is string => typeof k === 'string') : []
+  const value = isRecord(parsed) ? parsed[field] : undefined
+  return Array.isArray(value) ? value.filter((k): k is string => typeof k === 'string') : []
 }
 
-export function writeBaseline(file: string, keys: string[]): void {
-  fs.writeFileSync(file, JSON.stringify({ keys }, null, 2) + '\n')
+export function readBaseline(file: string): string[] {
+  return readField(file, 'keys')
+}
+
+export function readBaselineRepos(file: string): string[] {
+  return readField(file, 'repos')
+}
+
+export function writeBaseline(file: string, keys: string[], repos: string[]): void {
+  fs.writeFileSync(file, JSON.stringify({ repos: [...repos].sort(), keys }, null, 2) + '\n')
 }

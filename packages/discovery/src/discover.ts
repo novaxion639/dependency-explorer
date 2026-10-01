@@ -1043,7 +1043,7 @@ if (APPLY_MODE) {
   writeOverlay(report)
 }
 if (BASELINE_MODE) {
-  writeBaseline(BASELINE_PATH, findingKeys({ ...report }))
+  writeBaseline(BASELINE_PATH, findingKeys({ ...report }), PIN ? PIN.pinned.map(p => p.repo) : report.scannedRepos)
   console.log(`\nBaseline written: ${path.relative(process.cwd(), BASELINE_PATH)}`)
 }
 if (FAIL_ON_NEW && diffBaseline(findingKeys({ ...report }), readBaseline(BASELINE_PATH)).added.length) {
