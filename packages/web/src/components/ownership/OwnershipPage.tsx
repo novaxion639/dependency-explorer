@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import type { CSSProperties } from 'react'
 import type { ConnectivityMap, ConnectivityService, Team } from '@dependency-explorer/data'
+import { getServiceLane } from '@dependency-explorer/data'
+import { AreaChip } from '../areas/AreaChip'
 
 /**
  * Ownership view — per-team service ownership resolved from CODEOWNERS.
@@ -16,11 +18,13 @@ export function OwnershipPage({
   focusedTeam,
   onFocusTeam,
   onSelectService,
+  onOpenArea,
 }: {
   map: ConnectivityMap
   focusedTeam: string | null
   onFocusTeam: (id: string | null) => void
   onSelectService: (name: string) => void
+  onOpenArea: (id: string) => void
 }) {
   const teams = map.teams ?? []
 
@@ -77,6 +81,7 @@ export function OwnershipPage({
             map={map}
             onBack={() => onFocusTeam(null)}
             onSelectService={onSelectService}
+            onOpenArea={onOpenArea}
           />
         ) : (
           <>
@@ -193,21 +198,34 @@ function TeamCard({
   )
 }
 
+function OwnedAreas({ map, teamId, onOpenArea }: { map: ConnectivityMap; teamId: string; onOpenArea: (id: string) => void }) {
+  const owned = (map.areas ?? []).filter(a => (a.owners ?? []).includes(teamId))
+  return (
+    <section aria-label="Owned areas" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', margin: '10px 0' }}>
+      <span style={{ fontSize: 11, color: '#64748b' }}>Areas:</span>
+      {owned.length
+        ? owned.map(a => <AreaChip key={a.id} area={a} onClick={() => onOpenArea(a.id)} />)
+        : <span style={{ fontSize: 11, color: '#64748b' }}>none assigned yet</span>}
+    </section>
+  )
+}
+
 function TeamDetail({
   team,
   services,
   map,
   onBack,
   onSelectService,
+  onOpenArea,
 }: {
   team: Team
   services: ConnectivityService[]
   map: ConnectivityMap
   onBack: () => void
   onSelectService: (name: string) => void
+  onOpenArea: (id: string) => void
 }) {
-  const domainOf = (name: string) =>
-    (map.domains ?? []).find(d => d.serviceNames.includes(name))
+  const laneOf = (name: string) => getServiceLane(name, map.areas ?? [])
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -242,6 +260,8 @@ function TeamDetail({
         )}
       </div>
 
+      <OwnedAreas map={map} teamId={team.id} onOpenArea={onOpenArea} />
+
       {services.length === 0 ? (
         <p style={{ fontSize: 12, color: '#64748b', marginTop: 16 }}>
           No service resolves to this team from CODEOWNERS. A repository's wildcard line naming{' '}
@@ -253,7 +273,7 @@ function TeamDetail({
           {services.map(svc => {
             const outCount = map.connections.filter(c => c.from === svc.name).length
             const inCount = map.connections.filter(c => c.to === svc.name).length
-            const domain = domainOf(svc.name)
+            const lane = laneOf(svc.name)
             return (
               <div
                 key={svc.name}
@@ -269,11 +289,7 @@ function TeamDetail({
                   <span style={{ fontSize: 10, color: '#64748b', padding: '1px 6px', borderRadius: 3, background: '#2e3250' }}>
                     {svc.type}
                   </span>
-                  {domain && (
-                    <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 3, background: `${domain.color}22`, color: domain.color }}>
-                      {domain.name}
-                    </span>
-                  )}
+                  {lane && <AreaChip area={lane} />}
                   {svc.provenance?.source === 'discovered' && (
                     <span
                       title={svc.provenance.evidence}

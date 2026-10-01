@@ -4,7 +4,7 @@ import { connectivityMap } from './index'
 import { getFlowAreas } from './areas-derive'
 import discoveredJson from './generated/discovered.json'
 
-const { services, connections, flows, teams, domains, rules, areas, externals } = connectivityMap
+const { services, connections, flows, teams, rules, areas, externals } = connectivityMap
 
 const serviceNames = new Set(services.map(s => s.name))
 const teamIds = new Set((teams ?? []).map(t => t.id))
@@ -263,28 +263,6 @@ describe('failure layer', () => {
           expect.fail(`${flow.id}: edge "${edge.from} → ${edge.to}" claims both a dlq and dlqAbsent`)
         }
       }
-    }
-  })
-})
-
-describe('domains', () => {
-  it('have unique ids', () => {
-    const ids = (domains ?? []).map(d => d.id)
-    expect(new Set(ids).size).toBe(ids.length)
-  })
-
-  it('only reference existing services', () => {
-    for (const domain of domains ?? []) {
-      for (const name of domain.serviceNames) {
-        expect(serviceNames.has(name), `domain ${domain.id} → unknown service ${name}`).toBe(true)
-      }
-    }
-  })
-
-  it('cover every service in at least one domain', () => {
-    const covered = new Set((domains ?? []).flatMap(d => d.serviceNames))
-    for (const svc of services) {
-      expect(covered.has(svc.name), `service ${svc.name} belongs to no domain`).toBe(true)
     }
   })
 })

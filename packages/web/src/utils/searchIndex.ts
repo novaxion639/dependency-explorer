@@ -4,7 +4,7 @@ import { edgeKey } from '../hooks/useUrlState'
 import { buildFlagRegistry } from './flagRegistry'
 import { buildFileIndex } from './fileIndex'
 
-export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'domain' | 'team' | 'infra' | 'flag' | 'file'
+export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' | 'term' | 'external' | 'team' | 'infra' | 'flag' | 'file'
 
 export interface SearchEntry {
   type: SearchResultType
@@ -19,12 +19,12 @@ export interface SearchEntry {
 }
 
 const TYPE_ORDER: Record<SearchResultType, number> = {
-  service: 0, endpoint: 1, connection: 2, flow: 3, domain: 4, team: 5, infra: 6, flag: 7, file: 8,
+  service: 0, endpoint: 1, connection: 2, flow: 3, area: 4, term: 5, external: 6, team: 7, infra: 8, flag: 9, file: 10,
 }
 
 // Choosing a result fully describes the target view: modal/popup params are
 // reset explicitly so the landing state never mixes with whatever was open.
-const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null }
+const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null, area: null, term: null }
 
 export function buildSearchIndex(map: ConnectivityMap): SearchEntry[] {
   const entries: SearchEntry[] = []
@@ -103,13 +103,32 @@ export function buildSearchIndex(map: ConnectivityMap): SearchEntry[] {
     })
   }
 
-  for (const domain of map.domains ?? []) {
+  for (const area of map.areas ?? []) {
     entries.push({
-      type: 'domain',
-      label: domain.name,
-      sublabel: `domain · ${domain.serviceNames.length} services`,
-      haystack: domain.serviceNames.join(' '),
-      patch: { ...CLOSE_OVERLAYS, view: 'services', domain: domain.id },
+      type: 'area',
+      label: area.name,
+      sublabel: `${area.kind === 'product' ? 'product area' : 'platform capability'} · ${area.description}`,
+      haystack: `${area.id} ${area.codeLocations.map(l => `${l.repo} ${l.globs.join(' ')}`).join(' ')}`,
+      patch: { ...CLOSE_OVERLAYS, view: 'areas', area: area.id, s: null },
+    })
+    for (const g of area.glossary) {
+      entries.push({
+        type: 'term',
+        label: g.term,
+        sublabel: `${area.name} · glossary`,
+        haystack: `${g.definition} ${g.anchor?.symbol ?? ''}`,
+        patch: { ...CLOSE_OVERLAYS, view: 'areas', area: area.id, term: g.term, s: null },
+      })
+    }
+  }
+
+  for (const ext of map.externals ?? []) {
+    entries.push({
+      type: 'external',
+      label: ext.name,
+      sublabel: `external · ${ext.category}`,
+      haystack: `${ext.description} ${ext.usedBy.map(u => u.service).join(' ')}`,
+      patch: { ...CLOSE_OVERLAYS, view: 'context', s: null },
     })
   }
 

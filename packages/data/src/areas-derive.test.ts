@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { ProductAreaSchema, ServiceFlowSchema, ExternalSystemSchema, ConnectivityMapSchema } from '@dependency-explorer/schema'
-import { getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, areasForFile, getCrossAreaEdges } from './areas-derive'
+import { getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, areasForFile, getCrossAreaEdges, buildContextLanes } from './areas-derive'
 
 const planning = ProductAreaSchema.parse({
   id: 'planning', name: 'Planning', description: 'd', kind: 'product', color: '#6366f1',
@@ -67,6 +67,14 @@ describe('area derivation', () => {
     expect(getAreaExternals(timeAttendance, [yousign])).toEqual([])
   })
 
+  it('never attributes a shared host repo\'s externals to an area that only claims part of it', () => {
+    const stripe = ExternalSystemSchema.parse({
+      id: 'stripe', name: 'Stripe', description: 'd', category: 'payment',
+      usedBy: [{ service: 'skello-app', evidence: { kind: 'gem', literal: 'stripe' } }],
+    })
+    expect(getAreaExternals(planning, [stripe])).toEqual([])
+  })
+
   it('aggregates connections crossing into other areas', () => {
     const map = ConnectivityMapSchema.parse({
       services: [], flows: [], areas,
@@ -78,5 +86,25 @@ describe('area derivation', () => {
     expect(getCrossAreaEdges(planning, map)).toEqual([
       { service: 'svc-shifts', otherArea: 'time-attendance', direction: 'out', count: 2 },
     ])
+  })
+})
+
+describe('buildContextLanes', () => {
+  it('splits services into clients, monolith, area lanes and stores', () => {
+    const map = ConnectivityMapSchema.parse({
+      connections: [], flows: [], areas,
+      services: [
+        { name: 'skello-app-front', type: 'vue-frontend', description: 'd', endpoints: [] },
+        { name: 'skello-app', type: 'rails-monolith', description: 'd', endpoints: [], databases: [{ type: 'postgresql', name: 'pg', description: 'd' }] },
+        { name: 'svc-shifts', type: 'typescript-microservice', description: 'd', endpoints: [], databases: [{ type: 'dynamodb', name: 't', description: 'd' }] },
+        { name: 'svc-users', type: 'typescript-microservice', description: 'd', endpoints: [] },
+      ],
+    })
+    const lanes = buildContextLanes(map)
+    expect(lanes.clients).toEqual(['skello-app-front'])
+    expect(lanes.monolith).toEqual(['skello-app'])
+    expect(lanes.lanes.map(l => [l.area.id, l.services])).toEqual([['planning', ['svc-shifts']]])
+    expect(lanes.unlaned).toEqual(['svc-users'])
+    expect(lanes.stores).toEqual(['postgresql', 'dynamodb'])
   })
 })

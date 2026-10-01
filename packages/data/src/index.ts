@@ -2,7 +2,6 @@ import { ConnectivityMapSchema, DiscoveredOverlaySchema } from '@dependency-expl
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import connections from './connections'
 import teams from './teams'
-import domains from './domains'
 import rules from './rules'
 import externals from './externals'
 import areas from './areas'
@@ -237,14 +236,12 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   org_onboarding,
   ],
   teams,
-  domains,
   rules,
   areas,
   externals,
 })
 
 export * from '@dependency-explorer/schema'
-export { getFlowDomains } from './flow-domains'
 export { globToRegExp } from './glob'
-export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, getCrossAreaEdges } from './areas-derive'
-export type { CrossAreaEdge } from './areas-derive'
+export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, getCrossAreaEdges, buildContextLanes } from './areas-derive'
+export type { CrossAreaEdge, ContextLanes } from './areas-derive'

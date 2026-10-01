@@ -8,7 +8,9 @@ const TYPE_META: Record<SearchResultType, { label: string; color: string }> = {
   endpoint: { label: 'endpoint', color: '#10b981' },
   connection: { label: 'connection', color: '#4f6ef7' },
   flow: { label: 'flow', color: '#e0761b' },
-  domain: { label: 'domain', color: '#8b5cf6' },
+  area: { label: 'area', color: '#8b5cf6' },
+  term: { label: 'term', color: '#14b8a6' },
+  external: { label: 'external', color: '#a78bfa' },
   team: { label: 'team', color: '#ec4899' },
   infra: { label: 'infra', color: '#f59e0b' },
   flag: { label: 'flag', color: '#a78bfa' },
@@ -132,8 +134,8 @@ export function SearchModal({ index, onNavigate, onClose }: Props) {
           {!query && (
             <div style={{ padding: '18px', fontSize: 12, color: '#3e4363', lineHeight: 1.7 }}>
               Type to search across {index.length.toLocaleString()} entries — services, endpoints,
-              connections, flows, domains, databases and queues.<br />
-              Examples: <Hint q="credit-balance" /> <Hint q="mergeShop" /> <Hint q="svc-users → skello-app" /> <Hint q="shift creation" />
+              connections, flows, areas, glossary terms, external systems, databases and queues.<br />
+              Examples: <Hint q="credit-balance" /> <Hint q="mergeShop" /> <Hint q="svc-users → skello-app" /> <Hint q="shift creation" /> <Hint q="poste" />
             </div>
           )}
         </div>

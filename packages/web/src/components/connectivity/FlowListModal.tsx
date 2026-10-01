@@ -1,5 +1,6 @@
 import type { ServiceFlow, ConnectivityMap } from '@dependency-explorer/data'
-import { getFlowDomains } from '@dependency-explorer/data'
+import { getFlowAreas } from '@dependency-explorer/data'
+import { AreaChip } from '../areas/AreaChip'
 import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const TYPE_COLOR: Record<string, string> = {
@@ -120,7 +121,7 @@ function FlowCard({ flow, serviceName, map, onSelect }: {
     if (!stepServices.includes(step.to))   stepServices.push(step.to)
   }
 
-  const flowDomains = getFlowDomains(flow, map.domains ?? [])
+  const flowAreas = getFlowAreas(flow, map.areas ?? [])
 
   return (
     <div
@@ -141,17 +142,9 @@ function FlowCard({ flow, serviceName, map, onSelect }: {
         <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{flow.description}</div>
       </div>
 
-      {/* Domain badges */}
-      {flowDomains.length > 0 && (
+      {flowAreas.length > 0 && (
         <div style={{ padding: '4px 14px 2px', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-          {flowDomains.map(d => (
-            <span key={d.id} style={{
-              fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 3,
-              background: d.color + '18', border: `1px solid ${d.color}33`, color: d.color,
-            }}>
-              {d.name}
-            </span>
-          ))}
+          {flowAreas.map(a => <AreaChip key={a.id} area={a} primary={a.id === flow.primaryArea} />)}
         </div>
       )}
 

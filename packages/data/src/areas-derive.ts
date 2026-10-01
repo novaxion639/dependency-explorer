@@ -1,4 +1,4 @@
-import type { CodeLocation, ConnectivityMap, ExternalSystem, ProductArea, ServiceFlow } from '@dependency-explorer/schema'
+import type { CodeLocation, ConnectivityMap, DatabaseType, ExternalSystem, ProductArea, ServiceFlow } from '@dependency-explorer/schema'
 import { globToRegExp } from './glob'
 
 const compiled = new Map<string, RegExp>()
@@ -42,13 +42,12 @@ export function getAreaServices(area: ProductArea): string[] {
   return [...new Set(area.codeLocations.map(l => l.repo))]
 }
 
-export function getAreaExternals(area: ProductArea, externals: ExternalSystem[]): ExternalSystem[] {
-  const services = new Set(getAreaServices(area))
-  return externals.filter(e => e.usedBy.some(u => services.has(u.service)))
-}
-
 function claimsWholeRepo(area: ProductArea, service: string): boolean {
   return area.codeLocations.some(l => l.repo === service && l.globs.includes('**'))
+}
+
+export function getAreaExternals(area: ProductArea, externals: ExternalSystem[]): ExternalSystem[] {
+  return externals.filter(e => e.usedBy.some(u => claimsWholeRepo(area, u.service)))
 }
 
 export function getServiceLane(service: string, areas: ProductArea[]): ProductArea | undefined {
@@ -85,4 +84,43 @@ export function getCrossAreaEdges(area: ProductArea, map: ConnectivityMap): Cros
     }
   }
   return [...counts.values()]
+}
+
+const CLIENT_TYPES = new Set(['vue-frontend', 'react-native'])
+
+export interface ContextLanes {
+  clients: string[]
+  monolith: string[]
+  lanes: Array<{ area: ProductArea; services: string[] }>
+  unlaned: string[]
+  stores: DatabaseType[]
+  externals: ExternalSystem[]
+}
+
+export function buildContextLanes(map: ConnectivityMap): ContextLanes {
+  const areas = map.areas ?? []
+  const clients = map.services.filter(s => CLIENT_TYPES.has(s.type) || s.name === 'superadmin').map(s => s.name)
+  const monolith = map.services.filter(s => s.type === 'rails-monolith').map(s => s.name)
+  const hosted = new Set([...clients, ...monolith])
+  const byArea = new Map<string, string[]>()
+  const unlaned: string[] = []
+  for (const svc of map.services) {
+    if (hosted.has(svc.name)) {
+      continue
+    }
+    const lane = getServiceLane(svc.name, areas)
+    if (lane) {
+      byArea.set(lane.id, [...(byArea.get(lane.id) ?? []), svc.name])
+    } else {
+      unlaned.push(svc.name)
+    }
+  }
+  return {
+    clients,
+    monolith,
+    lanes: areas.filter(a => byArea.has(a.id)).map(area => ({ area, services: byArea.get(area.id) ?? [] })),
+    unlaned,
+    stores: [...new Set(map.services.flatMap(s => (s.databases ?? []).map(d => d.type)))],
+    externals: map.externals ?? [],
+  }
 }

@@ -14,6 +14,8 @@ import {
 import '@xyflow/react/dist/style.css'
 
 import type { ServiceFlow, ConnectivityMap, FlowInfraNode, DomainRule, FlowCodeUnit, Platform } from '@dependency-explorer/data'
+import { getFlowAreas } from '@dependency-explorer/data'
+import { AreaChip } from '../areas/AreaChip'
 import { buildFlowGraph } from '../../utils/buildFlowGraph'
 import { buildFlowCodeGraph } from '../../utils/buildFlowCodeGraph'
 import { ServiceNode } from '../nodes/ServiceNode'
@@ -36,6 +38,7 @@ interface Props {
   onDetailChange: (detail: boolean) => void
   /** Navigate to a linked flow (composition links) */
   onOpenFlow: (flowId: string) => void
+  onOpenArea: (areaId: string) => void
   onBack: () => void
   onClose: () => void
 }
@@ -47,7 +50,7 @@ const LINK_KIND_META: Record<string, { label: string; color: string }> = {
   'domain-related': { label: 'related', color: '#64748b' },
 }
 
-function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onBack, onClose }: Props) {
+function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onOpenArea, onBack, onClose }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<ReturnType<typeof buildFlowGraph>['edges'][number]>([])
@@ -144,6 +147,9 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onBack, onCl
                 👤 {flow.trigger.actor}{flow.trigger.role ? ` · ${flow.trigger.role}` : ''}
               </span>
             )}
+            {getFlowAreas(flow, map.areas ?? []).map(a => (
+              <AreaChip key={a.id} area={a} primary={a.id === flow.primaryArea} onClick={() => onOpenArea(a.id)} />
+            ))}
           </div>
 
           <button

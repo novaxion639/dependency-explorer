@@ -1,4 +1,6 @@
-import type { ServiceFlow, ConnectivityMap, Domain } from '@dependency-explorer/data'
+import type { ServiceFlow, ConnectivityMap } from '@dependency-explorer/data'
+import { getFlowAreas } from '@dependency-explorer/data'
+import { AreaChip } from '../areas/AreaChip'
 import { DB_COLORS } from '../nodes/DatabaseNode'
 
 const TYPE_COLOR: Record<string, string> = {
@@ -7,15 +9,6 @@ const TYPE_COLOR: Record<string, string> = {
   'rails-monolith': '#cc342d',
   'vue-frontend': '#42b883',
   'react-native': '#61dafb',
-}
-
-function getFlowDomains(flow: ServiceFlow, domains: Domain[]): Domain[] {
-  const serviceNames = new Set<string>()
-  for (const step of flow.steps) {
-    serviceNames.add(step.from)
-    serviceNames.add(step.to)
-  }
-  return domains.filter(d => d.serviceNames.some(s => serviceNames.has(s)))
 }
 
 interface Props {
@@ -74,7 +67,7 @@ function FlowCard({ flow, selectedService, map, onSelectService, onOpen }: {
     if (!stepServices.includes(step.to)) stepServices.push(step.to)
   }
 
-  const flowDomains = getFlowDomains(flow, map.domains ?? [])
+  const flowAreas = getFlowAreas(flow, map.areas ?? [])
 
   return (
     <div
@@ -100,17 +93,9 @@ function FlowCard({ flow, selectedService, map, onSelectService, onOpen }: {
         <div style={{ fontSize: 10, color: '#64748b', marginBottom: 6, lineHeight: 1.4 }}>{flow.description}</div>
       )}
 
-      {/* Domain badges */}
-      {flowDomains.length > 0 && (
+      {flowAreas.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
-          {flowDomains.map(d => (
-            <span key={d.id} style={{
-              fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 3,
-              background: d.color + '18', border: `1px solid ${d.color}33`, color: d.color,
-            }}>
-              {d.name}
-            </span>
-          ))}
+          {flowAreas.map(a => <AreaChip key={a.id} area={a} primary={a.id === flow.primaryArea} />)}
         </div>
       )}
 
