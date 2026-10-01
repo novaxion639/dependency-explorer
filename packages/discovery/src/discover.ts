@@ -45,6 +45,7 @@ import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
 import { pinRepos, buildGraphs, type PinnedRepo, type PinSkip } from './pinned'
 import { checkCodeGrades, type Grade, type GradeFinding } from './code-grades'
+import { checkBranches } from './branch-check'
 import { findingKeys, diffBaseline, readBaseline, writeBaseline } from './baseline'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -165,6 +166,7 @@ interface Report {
   sdkRegistryStats: { packages: number; methods: number } | null
   flowCheck: FlowCheckResult
   codeLayerCheck: CodeLayerCheckResult
+  branchCheck: ReturnType<typeof checkBranches>
   codeGrades: { findings: GradeFinding[]; grades: Record<string, Grade>; distribution: Record<Grade, number>; backlog: string[] } | null
   ruleCheck: RuleCheckResult
   areaCheck: AreaCheckResult
@@ -236,6 +238,7 @@ function run(): Report {
     sdkRegistryStats: null,
     flowCheck: checkFlows(connectivityMap),
     codeGrades: PIN ? checkCodeGrades(connectivityMap, REPO_BASE, repo => PIN.pinned.find(p => p.repo === repo)?.sha ?? null) : null,
+    branchCheck: checkBranches(connectivityMap, REPO_BASE),
     codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE, railsRoutes ? new Set(railsRoutes.routes.map(r => r.controllerFile)) : undefined),
     ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),
     areaCheck: checkAreas({
@@ -924,6 +927,14 @@ function printMarkdown(r: Report) {
     if (cg.backlog.length) {
       console.log(`\nText-only evidence (review backlog, ${cg.backlog.length}):\n${cg.backlog.map(b => `- ${b}`).join('\n')}`)
     }
+  }
+
+  const bc = r.branchCheck
+  console.log(`\n## 🔀 Flow branches (${bc.findings.length} findings)\n`)
+  console.log(`${bc.verified} branch literal(s) verified in comment-stripped unit sources.`
+    + (bc.skippedRepos.length ? ` Skipped (repo not checked out): ${bc.skippedRepos.join(', ')}.` : ''))
+  if (bc.findings.length) {
+    console.log(bc.findings.map(f => `- [${f.kind}] **${f.subject}**: ${f.detail}`).join('\n'))
   }
 
   const rc = r.ruleCheck

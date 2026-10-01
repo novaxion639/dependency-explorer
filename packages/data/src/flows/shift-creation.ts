@@ -222,6 +222,32 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
       "mode": "async-event"
     }
   ],
+  "branches": [
+    {
+      "id": "period-locked",
+      "at": "cu-create-service",
+      "when": "the shift's day is locked on the planning (WeeklyOption lock flags)",
+      "outcome": "403 Forbidden (Skello::IllegalOperation), transaction rolled back",
+      "status": 403,
+      "evidence": { "literal": "validate_operation_allowed_for_day(shift_start_at, 'create')" }
+    },
+    {
+      "id": "duplicate-id",
+      "at": "cu-create-service",
+      "when": "a shift with the client-generated id already exists",
+      "outcome": "422 Unprocessable Entity (Skello::InvalidParams), transaction rolled back",
+      "status": 422,
+      "evidence": { "literal": "shift_id_already_exist" }
+    },
+    {
+      "id": "invalid-work-shift",
+      "at": "cu-create-service",
+      "when": "work-shift params fail validation (times, pause, poste)",
+      "outcome": "422 Unprocessable Entity (Skello::InvalidParams), transaction rolled back",
+      "status": 422,
+      "evidence": { "literal": "validate_work_shift_params(shift_params)" }
+    }
+  ],
   "infraNodes": [
     {
       "id": "pg-skello-shifts",

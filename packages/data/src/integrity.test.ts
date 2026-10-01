@@ -431,3 +431,20 @@ describe('code-edge grades', () => {
     }
   })
 })
+describe('flow branches', () => {
+  it('anchor to a code unit of the same flow, with unique ids', () => {
+    for (const flow of flows) {
+      const units = new Set((flow.codeUnits ?? []).map(u => u.id))
+      const ids = (flow.branches ?? []).map(b => b.id)
+      expect(new Set(ids).size, `${flow.id} repeats a branch id`).toBe(ids.length)
+      for (const b of flow.branches ?? []) {
+        expect(units.has(b.at), `${flow.id}: branch ${b.id} anchors to unknown unit ${b.at}`).toBe(true)
+      }
+    }
+  })
+  it('exist on the backfilled flows', () => {
+    for (const id of ['leave-request-approval', 'shift-creation']) {
+      expect(flows.find(f => f.id === id)?.branches?.length, `${id} has no branches`).toBeGreaterThan(0)
+    }
+  })
+})

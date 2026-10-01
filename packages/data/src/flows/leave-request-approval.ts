@@ -40,6 +40,14 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
   ],
   "codeUnits": [
     {
+      "id": "cu-lra-mono-shifts",
+      "service": "skello-app",
+      "kind": "controller",
+      "label": "Private::SvcRequests::ShiftsController#create",
+      "path": "app/controllers/private/svc_requests/shifts_controller.rb",
+      "description": "Creates the absence shifts under a pg advisory lock (Persisters::LeaveRequestAbsenceCreator); answers 409 when the lock is held, 200 with dropped_absences when some days were invalid, 204 otherwise"
+    },
+    {
       "id": "cu-lra-front-client",
       "service": "skello-app-front",
       "kind": "service",
@@ -235,8 +243,48 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "cu-lra-skello-mgr",
       "to": "skello-app",
-      "label": "POST /private/shifts (absence shifts)",
+      "label": "POST /private/requests/shifts (absence shifts)",
       "mode": "sync"
+    },
+    {
+      "from": "skello-app",
+      "to": "cu-lra-mono-shifts",
+      "label": "Private::SvcRequests::ShiftsController#create",
+      "mode": "sync"
+    }
+  ],
+  "branches": [
+    {
+      "id": "not-pending",
+      "at": "cu-lra-manager",
+      "when": "the request is no longer pending (already accepted or refused)",
+      "outcome": "422 Unprocessable Entity, nothing updated",
+      "status": 422,
+      "evidence": { "literal": "'Request is processed'" }
+    },
+    {
+      "id": "archived-employee",
+      "at": "cu-lra-manager",
+      "when": "accepting for an employee archived before the leave starts or ends",
+      "outcome": "422 Unprocessable Entity, nothing updated",
+      "status": 422,
+      "evidence": { "literal": "'Employee is archived'" }
+    },
+    {
+      "id": "lock-held",
+      "at": "cu-lra-mono-shifts",
+      "when": "a concurrent delivery of the same leave request holds the advisory lock (BR-15280)",
+      "outcome": "409 Conflict, no absence shifts written by this delivery",
+      "status": 409,
+      "evidence": { "literal": "return render_conflict unless lock_acquired" }
+    },
+    {
+      "id": "dropped-absences",
+      "at": "cu-lra-mono-shifts",
+      "when": "some absence shifts are invalid and dropped",
+      "outcome": "200 with dropped_absences — valid shifts persisted, svc-requests logs the missing days",
+      "status": 200,
+      "evidence": { "literal": "dropped_absences: creator.dropped_absences" }
     }
   ],
   "infraNodes": [
