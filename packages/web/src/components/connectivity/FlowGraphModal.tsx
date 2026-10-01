@@ -23,6 +23,7 @@ import type { DatabaseType } from '@dependency-explorer/data'
 import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
 import { ExportPngButton } from '../ExportPngButton'
+import { CodeUnitDetailPanel } from './CodeUnitDetailPanel'
 
 const nodeTypes = { serviceNode: ServiceNode, databaseNode: DatabaseNode, codeUnitNode: CodeUnitNode, codeGroupNode: CodeGroupNode }
 const edgeTypes = { connectivityEdge: ConnectivityEdge, floatingDbEdge: FloatingDbEdge }
@@ -57,6 +58,8 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onBack, onCl
 
   // Domain rules referenced by this flow's steps/units → chips + card panel
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null)
+  // Code-detail node click → unit detail panel
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null)
   const ruleById = useMemo(
     () => new Map((map.rules ?? []).map(r => [r.id, r])),
     [map.rules],
@@ -91,6 +94,7 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onBack, onCl
     const { nodes: n, edges: e } = showCode ? buildFlowCodeGraph(flow, map) : buildFlowGraph(flow, map)
     setNodes(n)
     setEdges(e)
+    setSelectedUnitId(null)
     setTimeout(() => fitView({ padding: 0.18, duration: 400 }), 60)
   }, [flow, map, showCode, setNodes, setEdges, fitView])
 
@@ -309,6 +313,12 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onBack, onCl
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeClick={(_, node) => {
+            if (showCode && node.type === 'codeUnitNode') {
+              setSelectedRuleId(null)
+              setSelectedUnitId(prev => (prev === node.id ? null : node.id))
+            }
+          }}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
@@ -343,6 +353,21 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onBack, onCl
         {selectedRule && (
           <RuleCard rule={selectedRule} unitById={unitById} onClose={() => setSelectedRuleId(null)} />
         )}
+
+        {/* Code-unit detail panel (code view, node click) */}
+        {showCode && !selectedRule && selectedUnitId && (() => {
+          const unit = (flow.codeUnits ?? []).find(u => u.id === selectedUnitId)
+          return unit ? (
+            <CodeUnitDetailPanel
+              unit={unit}
+              flow={flow}
+              map={map}
+              onOpenRule={ruleId => { setSelectedUnitId(null); setSelectedRuleId(ruleId) }}
+              onOpenFlow={flowId => { setSelectedUnitId(null); onOpenFlow(flowId) }}
+              onClose={() => setSelectedUnitId(null)}
+            />
+          ) : null
+        })()}
       </div>
     </div>
   )
