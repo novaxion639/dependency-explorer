@@ -11,6 +11,7 @@ const week_copy: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Week Copy",
   "description": "A manager copies shifts from a previous week (or day) into target weeks. Timeout-dodging split: the FIRST 5 weeks are duplicated synchronously in the request; any remaining weeks are re-enqueued as one Sidekiq job per week running the same service. Each copied shift is a real Shift.create — the creation callback group (cache, staleness, paid leaves, predicted shifts) fires per shift. A FeatureClick row records the product usage. (Corrected 2026-06-12: no svc-shifts call, no event emission, no notification, no DLQ exist in this path.)",
   "trigger": {"actor": "manager", "role": "planner"},
+  "primaryArea": "planning",
   "steps": [
     {
       "from": "skello-app-front",

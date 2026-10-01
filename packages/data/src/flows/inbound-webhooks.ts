@@ -10,6 +10,7 @@ const inbound_webhooks: ServiceFlow = ServiceFlowSchema.parse({
   "name": "Inbound Webhooks (Salesforce & Zapier)",
   "description": "Third parties POST into the monolith's v3/api/webhooks namespace — the platform's only webhook surface (INBOUND; no outbound webhook subscription/delivery system exists in deployed code). Salesforce sends SOAP/XML notifications to cancel a shop or link a coach: token-authenticated against ENV SALESFORCE_TOKEN, parsed synchronously, Shop updated, fixed <Ack>true</Ack> XML returned. Zapier posts demo-form requests: Bearer-authenticated against ENV ZAPIER_DEMO_TOKEN, a User email lookup returns the account status. Both controllers inherit ActionController::Base directly (outside the app's session auth) and are fully synchronous — no jobs enqueued.",
   "trigger": { "actor": "system", "role": "Salesforce (SOAP notifications) / Zapier (demo form)" },
+  "primaryArea": "billing",
   "steps": [
     {
       "from": "skello-app (webhooks)",

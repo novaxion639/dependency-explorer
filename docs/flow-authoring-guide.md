@@ -225,6 +225,7 @@ disk) — CI gates only self-contained integrity.
 ServiceFlowSchema = {
   id, name, description,
   trigger: { actor, role? },        // who initiates — PRESENCE ENFORCED by integrity tests
+  primaryArea,                      // owning product area — must be among the derived areas (§7.4)
   links: [{ to, kind, note? }],     // flow-to-flow: continuation | writes-back-to |
                                     // same-journey | domain-related. One direction authored,
                                     // reverse derived. Integrity: ids resolve, no self/double links
@@ -292,18 +293,34 @@ tablet`), `sourcePaths` (existence checked, 📐) and `sourceHashes` (sha256
 stamps — a drifted source flags the rule "needs re-review" with the
 re-stamp hash printed). Stamp completeness is integrity-enforced.
 
-### 7.4 Infra nodes/edges
+### 7.4 Product areas and external systems (registries)
+
+Every flow declares `primaryArea` — the product area that owns it. The full set of areas a flow
+belongs to is derived from its code units: each unit's `service` + `path` is matched against
+every area's `codeLocations` globs (`packages/data/src/areas.ts`). The integrity suite requires
+`primaryArea` to be one of those derived areas, and to be a `product` area whenever the flow
+touches one; a flow whose code lives only in a platform capability takes that capability.
+
+When the suite reports `primaryArea … not derived`, the failure lists every unit path: add the
+narrowest glob covering the owning unit to that area. Globs support `*` (one segment), `**`
+(any depth) and `?` — list alternatives as separate globs.
+
+External systems live in `packages/data/src/externals.ts`; each `usedBy` entry carries a
+literal (env var, gem, npm package or host) that the 🗺 discovery section finds in the
+service repo.
+
+### 7.5 Infra nodes/edges
 
 ```typescript
 FlowInfraNodeSchema = { id, type: DatabaseTypeSchema, label, description? }
 FlowInfraEdgeSchema = { from, to, label?, crud? }
 ```
 
-### 7.5 Which check answers to what
+### 7.6 Which check answers to what
 
 | Check | Where it runs | What it proves |
 |---|---|---|
-| integrity tests | `pnpm check` / CI | ids unique, every ref resolves, trigger present, stamps complete, field invariants |
+| integrity tests | `pnpm check` / CI | ids unique, every ref resolves, trigger and primaryArea present, stamps complete, field invariants |
 | 🫀 code layers | `pnpm discover` | unit paths exist, callees referenced from caller sources |
 | 📐 domain rules | `pnpm discover` | rule sources exist + staleness hashes match |
 | 🚩 flag refs | `pnpm discover` | flag literals present in unit sources |

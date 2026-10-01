@@ -5,6 +5,7 @@ import teams from './teams'
 import domains from './domains'
 import rules from './rules'
 import externals from './externals'
+import areas from './areas'
 import discoveredJson from './generated/discovered.json'
 
 import svc_events from './services/svc-events'
@@ -232,6 +233,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   teams,
   domains,
   rules,
+  areas,
   externals,
 })
 
