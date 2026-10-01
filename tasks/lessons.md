@@ -41,3 +41,24 @@
   overlay and report the drift separately.
 - **Repo-level evidence can't be attributed to a partial owner** — an area claiming part of a
   shared host must not inherit the host's externals; attribute only wholly-claimed repos.
+
+## Verified Paths phase (2026-10-01)
+
+- **Restore a negative control with the reverse swap, never `git checkout --`** — checkout also
+  reverts every uncommitted edit in that file; swap the fabricated string back (or restore a
+  backup copy) and confirm the real edits are still there.
+- **A ground-truth fixture beats a hand-written fixture** — the Rails parser passed its 7 DSL
+  cases and still missed 552/795 router triples (`%i[]`, multi-line options, `if` blocks,
+  canonical actions in member scopes); only the `rails routes --expanded` dump exposed them.
+- **A substring "reference" check over-credits** — `content.includes('Shift')` passed because
+  `V3::Shifts::DestroyService` contains it; word-bounded, comment-stripped evidence or a call
+  graph is the minimum for a ✓.
+- **Barrel imports need the graph's import edges plus a name match** — a barrel re-exports
+  every client, so reachability alone credits all of them; require the caller to name the callee.
+- **A skipped pin must leave nothing readable** — a leftover worktree under `.pinned/` is read
+  as if pinned; remove it on failure and refuse to grade any repo without a pinned head.
+- **A hidden browser pane renders React Flow nodes but no edges** — verify edge badges and SVG
+  views with `react-dom/server` render tests instead of the pane.
+- **zsh reads `$VAR:c…` as a modifier** — write `"${SHA}:config/routes.rb"` with braces.
+- **Plan code is not exempt from the code rules** — plan snippets carried `as` casts; check
+  every transcribed block against the rules before committing it.
