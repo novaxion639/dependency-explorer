@@ -43,9 +43,22 @@ import { checkContractRefs } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
+import { pinRepos, type PinnedRepo, type PinSkip } from './pinned'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const REPO_BASE = path.resolve(__dirname, '../../../../')
+const SOURCE_BASE = path.resolve(__dirname, '../../../../')
+const PINNED_MODE = process.argv.includes('--pinned')
+const PINNED_BASE = path.resolve(__dirname, '../../../.pinned')
+
+function scanTargets(base: string): string[] {
+  return fs.readdirSync(base, { withFileTypes: true })
+    .filter(e => e.isDirectory() && (e.name.startsWith('svc-') || e.name.endsWith('-tf') || ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock', 'skello-libs-ts'].includes(e.name)))
+    .map(e => e.name)
+    .sort()
+}
+
+const PIN = PINNED_MODE ? pinRepos(scanTargets(SOURCE_BASE), SOURCE_BASE, PINNED_BASE) : null
+const REPO_BASE = PIN ? PINNED_BASE : SOURCE_BASE
 const OVERLAY_PATH = path.resolve(__dirname, '../../data/src/generated/discovered.json')
 
 const JSON_MODE = process.argv.includes('--json')
@@ -119,6 +132,7 @@ interface AwsClientUsage {
 }
 
 interface Report {
+  pinned: { repos: PinnedRepo[]; skipped: PinSkip[] } | null
   scannedRepos: string[]
   /** connection key → accumulated evidence strings */
   connectionEvidence: Record<string, string[]>
@@ -190,6 +204,7 @@ function pickTeamId(wildcardOwners: string[]): string | undefined {
 function run(): Report {
   const repos = findRepos()
   const report: Report = {
+    pinned: PIN ? { repos: PIN.pinned, skipped: PIN.skipped } : null,
     scannedRepos: repos,
     connectionEvidence: {},
     candidates: [],
@@ -658,6 +673,15 @@ function printMarkdown(r: Report) {
   }
 
   console.log('# Discovery Report')
+  if (r.pinned) {
+    console.log(`\n## 📌 Pinned to production branches (${r.pinned.repos.length} repos)\n`)
+    console.log(r.pinned.repos.map(p => `- ${p.repo} @ ${p.branch} ${p.sha.slice(0, 12)}`).join('\n'))
+    if (r.pinned.skipped.length) {
+      console.log(`\nSkipped:\n${r.pinned.skipped.map(s => `- ${s.repo} — ${s.reason}`).join('\n')}`)
+    }
+  } else {
+    console.log('\n> unpinned — local working trees (run with --pinned for production branches)\n')
+  }
   console.log(`\nScanned ${r.scannedRepos.length} repos in ${REPO_BASE}`)
 
   const verified = Object.entries(r.connectionEvidence)

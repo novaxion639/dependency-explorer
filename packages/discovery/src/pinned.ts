@@ -15,7 +15,9 @@ export function productionBranch(repo: string): 'master' | 'main' {
 }
 
 function errorText(e: unknown): string {
-  return e instanceof Error ? e.message.split('\n')[0] ?? e.message : String(e)
+  const stderr = e instanceof Error && 'stderr' in e ? String(e.stderr).trim() : ''
+  const text = stderr || (e instanceof Error ? e.message : String(e))
+  return text.split('\n')[0] ?? text
 }
 
 export function pinRepos(repos: string[], sourceBase: string, pinnedBase: string, git: GitRunner = defaultGit): { pinned: PinnedRepo[]; skipped: PinSkip[] } {

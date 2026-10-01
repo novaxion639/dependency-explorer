@@ -50,6 +50,7 @@ describe('pinRepos', () => {
     expect(byRepo.get('svc-c-tf')?.branch).toBe('main')
     expect(byRepo.get('svc-a')?.sha).toMatch(/^[0-9a-f]{40}$/)
     expect(skipped.map(s => s.repo).sort()).toEqual(['svc-d', 'svc-missing'])
+    expect(skipped.find(s => s.repo === 'svc-d')?.reason).toMatch(/origin\/master: .*couldn't find remote ref master/)
     expect(fs.readFileSync(path.join(root, 'src', 'svc-a', 'file.txt'), 'utf-8')).toBe('wip')
   })
 
