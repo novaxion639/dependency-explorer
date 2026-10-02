@@ -1,0 +1,3618 @@
+{
+  "resources": [
+    {
+      "id": "ddb:skello-dynamodb",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "skello-dynamodb",
+      "evidence": [
+        "dataset:skello-app"
+      ]
+    },
+    {
+      "id": "ddb:svcBff",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcBff",
+      "evidence": [
+        "dataset:svc-bff"
+      ]
+    },
+    {
+      "id": "ddb:svcBillingAutomation",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcBillingAutomation",
+      "evidence": [
+        "dataset:svc-billing-automation"
+      ]
+    },
+    {
+      "id": "ddb:svcCommunicationsV2",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcCommunicationsV2",
+      "evidence": [
+        "dataset:svc-communications-v2"
+      ]
+    },
+    {
+      "id": "ddb:svcDocumentsEsignature",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcDocumentsEsignature",
+      "evidence": [
+        "dataset:svc-documents-esignature"
+      ]
+    },
+    {
+      "id": "ddb:svcDocumentsV2",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcDocumentsV2",
+      "evidence": [
+        "dataset:svc-documents-v2"
+      ]
+    },
+    {
+      "id": "ddb:svcEmployees",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcEmployees",
+      "evidence": [
+        "dataset:svc-employees"
+      ]
+    },
+    {
+      "id": "ddb:svcEnrollment",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcEnrollment",
+      "evidence": [
+        "dataset:svc-enrollment"
+      ]
+    },
+    {
+      "id": "ddb:svcEvents",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcEvents",
+      "evidence": [
+        "dataset:svc-events"
+      ]
+    },
+    {
+      "id": "ddb:svcFeatureFlags",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcFeatureFlags",
+      "evidence": [
+        "dataset:svc-feature-flags"
+      ]
+    },
+    {
+      "id": "ddb:svcHiring",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcHiring",
+      "evidence": [
+        "dataset:svc-hiring"
+      ]
+    },
+    {
+      "id": "ddb:svcHris",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcHris",
+      "evidence": [
+        "dataset:svc-hris"
+      ]
+    },
+    {
+      "id": "ddb:svcIntelligence",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcIntelligence",
+      "evidence": [
+        "dataset:svc-intelligence"
+      ]
+    },
+    {
+      "id": "ddb:svcLabourLaws",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcLabourLaws",
+      "evidence": [
+        "dataset:svc-labour-laws"
+      ]
+    },
+    {
+      "id": "ddb:svcModularisation",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcModularisation",
+      "evidence": [
+        "dataset:svc-modularisation"
+      ]
+    },
+    {
+      "id": "ddb:svcPayroll",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcPayroll",
+      "evidence": [
+        "dataset:svc-payroll"
+      ]
+    },
+    {
+      "id": "ddb:svcPos",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcPos",
+      "evidence": [
+        "dataset:svc-pos"
+      ]
+    },
+    {
+      "id": "ddb:svcPunch",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcPunch",
+      "evidence": [
+        "dataset:svc-punch"
+      ]
+    },
+    {
+      "id": "ddb:svcReports",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcReports",
+      "evidence": [
+        "dataset:svc-reports"
+      ]
+    },
+    {
+      "id": "ddb:svcUsers",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcUsers",
+      "evidence": [
+        "dataset:svc-users"
+      ]
+    },
+    {
+      "id": "ddb:svcWebsocketsV2",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcWebsocketsV2",
+      "evidence": [
+        "dataset:svc-websockets-v2"
+      ]
+    },
+    {
+      "id": "ddb:workloadPlan",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "workloadPlan",
+      "evidence": [
+        "dataset:svc-workload-plan"
+      ]
+    },
+    {
+      "id": "kinesis:bus-temp",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "bus-temp",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:fullload",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "fullload",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2-tf:terraform",
+        "svc-requests-tf:terraform",
+        "svc-requests:serverless"
+      ]
+    },
+    {
+      "id": "kinesis:lower",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "lower",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform",
+        "svc-search-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:skelloapp-bus",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "skelloapp-bus",
+      "owner": "skello-app",
+      "evidence": [
+        "dataset:svc-kpis",
+        "skello-app-tf:terraform",
+        "svc-automatic-scheduling:serverless",
+        "svc-documents-v2:serverless",
+        "svc-employees:serverless",
+        "svc-hiring:serverless",
+        "svc-kpis-v2:serverless",
+        "svc-kpis:serverless",
+        "svc-pos:serverless",
+        "svc-punch:serverless",
+        "svc-requests:serverless",
+        "svc-search:serverless",
+        "svc-trackers:serverless",
+        "svc-users:serverless",
+        "svc-workload-plan:serverless"
+      ]
+    },
+    {
+      "id": "kinesis:skelloapp-bus-fullload-svcusers",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "skelloapp-bus-fullload-svcusers",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:skelloapp-svcpunch-fullload",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "skelloapp-svcpunch-fullload",
+      "evidence": [
+        "svc-punch:serverless"
+      ]
+    },
+    {
+      "id": "kinesis:skelloapp-svcreports-fullload",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "skelloapp-svcreports-fullload",
+      "evidence": [
+        "svc-reports:serverless"
+      ]
+    },
+    {
+      "id": "kinesis:skelloapp-svcsearch-fullload",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "skelloapp-svcsearch-fullload",
+      "evidence": [
+        "svc-search:serverless"
+      ]
+    },
+    {
+      "id": "kinesis:svc-employees-stream",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svc-employees-stream",
+      "evidence": [
+        "dataset:svc-employees"
+      ]
+    },
+    {
+      "id": "mongo:automatic_scheduling_jobs",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "automatic_scheduling_jobs",
+      "evidence": [
+        "dataset:svc-automatic-scheduling"
+      ]
+    },
+    {
+      "id": "mongo:svc-employees",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-employees",
+      "evidence": [
+        "dataset:svc-employees"
+      ]
+    },
+    {
+      "id": "mongo:svc-intelligence",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-intelligence",
+      "evidence": [
+        "dataset:svc-intelligence"
+      ]
+    },
+    {
+      "id": "mongo:svc-kpis-v2",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-kpis-v2",
+      "evidence": [
+        "dataset:svc-kpis-v2"
+      ]
+    },
+    {
+      "id": "mongo:svc-search",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-search",
+      "evidence": [
+        "dataset:svc-bff-planning",
+        "dataset:svc-search"
+      ]
+    },
+    {
+      "id": "mongo:svc-shifts",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-shifts",
+      "evidence": [
+        "dataset:svc-shifts"
+      ]
+    },
+    {
+      "id": "mongo:svc-shops",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-shops",
+      "evidence": [
+        "dataset:svc-shops"
+      ]
+    },
+    {
+      "id": "mongo:svc-skello-assistant",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-skello-assistant",
+      "evidence": [
+        "dataset:svc-skello-assistant"
+      ]
+    },
+    {
+      "id": "mongo:svc-trackers",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-trackers",
+      "evidence": [
+        "dataset:svc-trackers"
+      ]
+    },
+    {
+      "id": "mongo:svc-workload-plan",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-workload-plan",
+      "evidence": [
+        "dataset:svc-workload-plan"
+      ]
+    },
+    {
+      "id": "pg:skello_production",
+      "kind": "database",
+      "store": "postgresql",
+      "name": "skello_production",
+      "owner": "skello-app",
+      "evidence": [
+        "dataset:skello-app",
+        "skello-app:db/schema.rb"
+      ]
+    },
+    {
+      "id": "pg:skello_production.action_history_items",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "action_history_items",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/action_history_item.rb",
+        "className": "ActionHistoryItem"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.alerts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "alerts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/alert.rb",
+        "className": "Alert"
+      },
+      "related": [
+        "pg:skello_production.conventions",
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.api_keys",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "api_keys",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/api_key.rb",
+        "className": "ApiKey"
+      },
+      "related": []
+    },
+    {
+      "id": "pg:skello_production.archived_user_shifts_backups",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "archived_user_shifts_backups",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/archived_user_shifts_backup.rb",
+        "className": "ArchivedUserShiftsBackup"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.automatic_planning_competencies",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "automatic_planning_competencies",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/automatic_planning_competency.rb",
+        "className": "AutomaticPlanningCompetency"
+      },
+      "related": [
+        "pg:skello_production.postes",
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.automatic_planning_rules",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "automatic_planning_rules",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/automatic_planning_rule.rb",
+        "className": "AutomaticPlanningRule"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.availabilities",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "availabilities",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/availability.rb",
+        "className": "Availability"
+      },
+      "related": [
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.badging_histories",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "badging_histories",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ]
+    },
+    {
+      "id": "pg:skello_production.badging_punches_backups",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "badging_punches_backups",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ]
+    },
+    {
+      "id": "pg:skello_production.badging_shifts_backups",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "badging_shifts_backups",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ]
+    },
+    {
+      "id": "pg:skello_production.badgings",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "badgings",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/badging.rb",
+        "className": "Badging"
+      },
+      "related": []
+    },
+    {
+      "id": "pg:skello_production.billing_infos",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "billing_infos",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/billing_info.rb",
+        "className": "BillingInfo"
+      },
+      "related": [
+        "pg:skello_production.organisations",
+        "pg:skello_production.shops",
+        "pg:skello_production.stripe_charges"
+      ]
+    },
+    {
+      "id": "pg:skello_production.cached_contracts_timelines",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "cached_contracts_timelines",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/cached_contracts_timeline.rb",
+        "className": "CachedContractsTimeline"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.cancellation_modifications",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "cancellation_modifications",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/cancellation_modification.rb",
+        "className": "CancellationModification"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.cluster_nodes",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "cluster_nodes",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/cluster_node.rb",
+        "className": "ClusterNode"
+      },
+      "related": [
+        "pg:skello_production.organisations",
+        "pg:skello_production.platform_alerts",
+        "pg:skello_production.shops",
+        "pg:skello_production.user_licenses"
+      ]
+    },
+    {
+      "id": "pg:skello_production.complementary_hours_maj_slices",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "complementary_hours_maj_slices",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/complementary_hours_maj_slice.rb",
+        "className": "ComplementaryHoursMajSlice"
+      },
+      "related": [
+        "pg:skello_production.conventions"
+      ]
+    },
+    {
+      "id": "pg:skello_production.contract_amendments",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "contract_amendments",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/contract_amendment.rb",
+        "className": "ContractAmendment"
+      },
+      "related": [
+        "pg:skello_production.contracts",
+        "pg:skello_production.team_schedules",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.contract_types",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "contract_types",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/contract_type.rb",
+        "className": "ContractType"
+      },
+      "related": []
+    },
+    {
+      "id": "pg:skello_production.contracts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "contracts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/contract.rb",
+        "className": "Contract"
+      },
+      "related": [
+        "pg:skello_production.contract_amendments",
+        "pg:skello_production.contract_types",
+        "pg:skello_production.dpae_deposits",
+        "pg:skello_production.organisations",
+        "pg:skello_production.primes",
+        "pg:skello_production.report_comments",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.conventions",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "conventions",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/convention.rb",
+        "className": "Convention"
+      },
+      "related": [
+        "pg:skello_production.alerts",
+        "pg:skello_production.complementary_hours_maj_slices",
+        "pg:skello_production.night_hours_maj_slices",
+        "pg:skello_production.over_hours_maj_slices",
+        "pg:skello_production.shops",
+        "pg:skello_production.sunday_hours_maj_slices"
+      ]
+    },
+    {
+      "id": "pg:skello_production.day_rates_counters",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "day_rates_counters",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/day_rates_counter.rb",
+        "className": "DayRatesCounter"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.dpae_deposits",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "dpae_deposits",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/dpae_deposit.rb",
+        "className": "DpaeDeposit"
+      },
+      "related": [
+        "pg:skello_production.contracts",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.events",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "events",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/event.rb",
+        "className": "Event"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.feature_clicks",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "feature_clicks",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/feature_click.rb",
+        "className": "FeatureClick"
+      },
+      "related": [
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.global_integrations",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "global_integrations",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/global_integration.rb",
+        "className": "GlobalIntegration"
+      },
+      "related": [
+        "pg:skello_production.organisations",
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.holiday_settings",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "holiday_settings",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/holiday_setting.rb",
+        "className": "HolidaySetting"
+      },
+      "related": []
+    },
+    {
+      "id": "pg:skello_production.ics_feeds",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "ics_feeds",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/ics_feed.rb",
+        "className": "IcsFeed"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.labor_costs",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "labor_costs",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/labor_cost.rb",
+        "className": "LaborCost"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.leave_requests",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "leave_requests",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/leave_request.rb",
+        "className": "LeaveRequest"
+      },
+      "related": [
+        "pg:skello_production.postes",
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.licenses",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "licenses",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/license.rb",
+        "className": "License"
+      },
+      "related": [
+        "pg:skello_production.organisations",
+        "pg:skello_production.user_licenses",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.lists",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "lists",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/list.rb",
+        "className": "List"
+      },
+      "related": []
+    },
+    {
+      "id": "pg:skello_production.meal_addition_triggers",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "meal_addition_triggers",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/meal_addition_trigger.rb",
+        "className": "MealAdditionTrigger"
+      },
+      "related": [
+        "pg:skello_production.meal_rules"
+      ]
+    },
+    {
+      "id": "pg:skello_production.meal_rules",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "meal_rules",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/meal_rule.rb",
+        "className": "MealRule"
+      },
+      "related": [
+        "pg:skello_production.meal_addition_triggers",
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.memberships",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "memberships",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/membership.rb",
+        "className": "Membership"
+      },
+      "related": [
+        "pg:skello_production.postes",
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.mobile_reset_password_tokens",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "mobile_reset_password_tokens",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/mobile_reset_password_token.rb",
+        "className": "MobileResetPasswordToken"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.night_hours_maj_slices",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "night_hours_maj_slices",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/night_hours_maj_slice.rb",
+        "className": "NightHoursMajSlice"
+      },
+      "related": [
+        "pg:skello_production.conventions"
+      ]
+    },
+    {
+      "id": "pg:skello_production.notifications",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "notifications",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/notification.rb",
+        "className": "Notification"
+      },
+      "related": [
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.opti_structures",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "opti_structures",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/opti_structure.rb",
+        "className": "OptiStructure"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.organisation_applications",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "organisation_applications",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/organisation_application.rb",
+        "className": "OrganisationApplication"
+      },
+      "related": [
+        "pg:skello_production.organisations"
+      ]
+    },
+    {
+      "id": "pg:skello_production.organisation_credentials",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "organisation_credentials",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/organisation_credential.rb",
+        "className": "OrganisationCredential"
+      },
+      "related": [
+        "pg:skello_production.organisations"
+      ]
+    },
+    {
+      "id": "pg:skello_production.organisations",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "organisations",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/organisation.rb",
+        "className": "Organisation"
+      },
+      "related": [
+        "pg:skello_production.billing_infos",
+        "pg:skello_production.cluster_nodes",
+        "pg:skello_production.global_integrations",
+        "pg:skello_production.licenses",
+        "pg:skello_production.memberships",
+        "pg:skello_production.organisation_applications",
+        "pg:skello_production.organisation_credentials",
+        "pg:skello_production.postes",
+        "pg:skello_production.primes",
+        "pg:skello_production.prospects",
+        "pg:skello_production.shops",
+        "pg:skello_production.stripe_charges",
+        "pg:skello_production.teams",
+        "pg:skello_production.text_document_templates",
+        "pg:skello_production.user_licenses",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.over_hours_maj_slices",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "over_hours_maj_slices",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/over_hours_maj_slice.rb",
+        "className": "OverHoursMajSlice"
+      },
+      "related": [
+        "pg:skello_production.conventions"
+      ]
+    },
+    {
+      "id": "pg:skello_production.paid_leaves_counters",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "paid_leaves_counters",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/paid_leaves_counter.rb",
+        "className": "PaidLeavesCounter"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.pg_search_documents",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "pg_search_documents",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/pg_search_document.rb",
+        "className": "PgSearchDocument"
+      },
+      "related": []
+    },
+    {
+      "id": "pg:skello_production.planning_backups",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "planning_backups",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/planning_backup.rb",
+        "className": "PlanningBackup"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.planning_hours_data",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "planning_hours_data",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/planning_hours_data.rb",
+        "className": "PlanningHoursData"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.planning_template_shifts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "planning_template_shifts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/planning_template_shift.rb",
+        "className": "PlanningTemplateShift"
+      },
+      "related": [
+        "pg:skello_production.planning_templates",
+        "pg:skello_production.postes",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.planning_templates",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "planning_templates",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/planning_template.rb",
+        "className": "PlanningTemplate"
+      },
+      "related": [
+        "pg:skello_production.planning_template_shifts",
+        "pg:skello_production.shops",
+        "pg:skello_production.week_planning_previsions"
+      ]
+    },
+    {
+      "id": "pg:skello_production.platform_alerts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "platform_alerts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/platform_alert.rb",
+        "className": "PlatformAlert"
+      },
+      "related": [
+        "pg:skello_production.cluster_nodes"
+      ]
+    },
+    {
+      "id": "pg:skello_production.popular_shifts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "popular_shifts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/popular_shift.rb",
+        "className": "PopularShift"
+      },
+      "related": [
+        "pg:skello_production.postes",
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.postes",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "postes",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/poste.rb",
+        "className": "Poste"
+      },
+      "related": [
+        "pg:skello_production.automatic_planning_competencies",
+        "pg:skello_production.leave_requests",
+        "pg:skello_production.memberships",
+        "pg:skello_production.planning_template_shifts",
+        "pg:skello_production.predicted_shifts",
+        "pg:skello_production.shifts",
+        "pg:skello_production.shops",
+        "pg:skello_production.users",
+        "pg:skello_production.week_planning_prevision_postes"
+      ]
+    },
+    {
+      "id": "pg:skello_production.postes_weekly_options",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "postes_weekly_options",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ]
+    },
+    {
+      "id": "pg:skello_production.predicted_shifts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "predicted_shifts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/predicted_shift.rb",
+        "className": "PredictedShift"
+      },
+      "related": [
+        "pg:skello_production.postes",
+        "pg:skello_production.shifts",
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.primes",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "primes",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/prime.rb",
+        "className": "Prime"
+      },
+      "related": [
+        "pg:skello_production.contracts",
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.prospects",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "prospects",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/prospect.rb",
+        "className": "Prospect"
+      },
+      "related": [
+        "pg:skello_production.organisations",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.punch_clock_devices",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "punch_clock_devices",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/punch_clock_device.rb",
+        "className": "PunchClockDevice"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.punch_clock_settings",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "punch_clock_settings",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/punch_clock_setting.rb",
+        "className": "PunchClockSetting"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.rcr_counters",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "rcr_counters",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/rcr_counter.rb",
+        "className": "RcrCounter"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.report_comments",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "report_comments",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/report_comment.rb",
+        "className": "ReportComment"
+      },
+      "related": [
+        "pg:skello_production.contracts"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shift_replacements",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shift_replacements",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shift_replacement.rb",
+        "className": "ShiftReplacement"
+      },
+      "related": [
+        "pg:skello_production.shifts",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shift_swaps",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shift_swaps",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shift_swap.rb",
+        "className": "ShiftSwap"
+      },
+      "related": [
+        "pg:skello_production.shifts",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shifts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shifts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shift.rb",
+        "className": "Shift"
+      },
+      "related": [
+        "pg:skello_production.badgings",
+        "pg:skello_production.planning_hours_data",
+        "pg:skello_production.postes",
+        "pg:skello_production.predicted_shifts",
+        "pg:skello_production.shift_replacements",
+        "pg:skello_production.shift_swaps",
+        "pg:skello_production.shops",
+        "pg:skello_production.teams",
+        "pg:skello_production.third_parties",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shifts_histories",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shifts_histories",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shifts_history.rb",
+        "className": "ShiftsHistory"
+      },
+      "related": [
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shop_absence_configs",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shop_absence_configs",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shop_absence_config.rb",
+        "className": "ShopAbsenceConfig"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shop_annualization_configs",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shop_annualization_configs",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shop_annualization_config.rb",
+        "className": "ShopAnnualizationConfig"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shop_extended_infos",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shop_extended_infos",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shop_extended_info.rb",
+        "className": "ShopExtendedInfo"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shop_labour_laws",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shop_labour_laws",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shop_labour_law.rb",
+        "className": "ShopLabourLaw"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shop_planning_configs",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shop_planning_configs",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shop_planning_config.rb",
+        "className": "ShopPlanningConfig"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shops",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shops",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shop.rb",
+        "className": "Shop"
+      },
+      "related": [
+        "pg:skello_production.alerts",
+        "pg:skello_production.automatic_planning_rules",
+        "pg:skello_production.availabilities",
+        "pg:skello_production.badgings",
+        "pg:skello_production.billing_infos",
+        "pg:skello_production.cancellation_modifications",
+        "pg:skello_production.cluster_nodes",
+        "pg:skello_production.conventions",
+        "pg:skello_production.events",
+        "pg:skello_production.feature_clicks",
+        "pg:skello_production.global_integrations",
+        "pg:skello_production.holiday_settings",
+        "pg:skello_production.labor_costs",
+        "pg:skello_production.leave_requests",
+        "pg:skello_production.meal_rules",
+        "pg:skello_production.memberships",
+        "pg:skello_production.notifications",
+        "pg:skello_production.opti_structures",
+        "pg:skello_production.organisations",
+        "pg:skello_production.planning_backups",
+        "pg:skello_production.planning_templates",
+        "pg:skello_production.popular_shifts",
+        "pg:skello_production.postes",
+        "pg:skello_production.primes",
+        "pg:skello_production.punch_clock_devices",
+        "pg:skello_production.punch_clock_settings",
+        "pg:skello_production.shifts",
+        "pg:skello_production.shifts_histories",
+        "pg:skello_production.shop_absence_configs",
+        "pg:skello_production.shop_annualization_configs",
+        "pg:skello_production.shop_extended_infos",
+        "pg:skello_production.shop_labour_laws",
+        "pg:skello_production.shop_planning_configs",
+        "pg:skello_production.stripe_sources",
+        "pg:skello_production.team_memberships",
+        "pg:skello_production.teams",
+        "pg:skello_production.third_parties",
+        "pg:skello_production.users",
+        "pg:skello_production.week_planning_previsions",
+        "pg:skello_production.weekly_options"
+      ]
+    },
+    {
+      "id": "pg:skello_production.stripe_charges",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "stripe_charges",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/stripe_charge.rb",
+        "className": "StripeCharge"
+      },
+      "related": [
+        "pg:skello_production.billing_infos",
+        "pg:skello_production.stripe_invoices"
+      ]
+    },
+    {
+      "id": "pg:skello_production.stripe_invoices",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "stripe_invoices",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/stripe_invoice.rb",
+        "className": "StripeInvoice"
+      },
+      "related": [
+        "pg:skello_production.stripe_charges"
+      ]
+    },
+    {
+      "id": "pg:skello_production.stripe_sources",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "stripe_sources",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/stripe_source.rb",
+        "className": "StripeSource"
+      },
+      "related": [
+        "pg:skello_production.organisations",
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.sunday_hours_maj_slices",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "sunday_hours_maj_slices",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/sunday_hours_maj_slice.rb",
+        "className": "SundayHoursMajSlice"
+      },
+      "related": [
+        "pg:skello_production.conventions"
+      ]
+    },
+    {
+      "id": "pg:skello_production.team_memberships",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "team_memberships",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/team_membership.rb",
+        "className": "TeamMembership"
+      },
+      "related": [
+        "pg:skello_production.teams",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.team_schedules",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "team_schedules",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/team_schedule.rb",
+        "className": "TeamSchedule"
+      },
+      "related": [
+        "pg:skello_production.contract_amendments",
+        "pg:skello_production.teams"
+      ]
+    },
+    {
+      "id": "pg:skello_production.teams",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "teams",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/team.rb",
+        "className": "Team"
+      },
+      "related": [
+        "pg:skello_production.shifts",
+        "pg:skello_production.shops",
+        "pg:skello_production.team_memberships",
+        "pg:skello_production.team_schedules",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.text_document_templates",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "text_document_templates",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/text_document_template.rb",
+        "className": "TextDocumentTemplate"
+      },
+      "related": [
+        "pg:skello_production.organisations",
+        "pg:skello_production.text_documents",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.text_documents",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "text_documents",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/text_document.rb",
+        "className": "TextDocument"
+      },
+      "related": [
+        "pg:skello_production.organisations",
+        "pg:skello_production.text_document_templates",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.third_parties",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "third_parties",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/third_party.rb",
+        "className": "ThirdParty"
+      },
+      "related": [
+        "pg:skello_production.shifts",
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.user_driving_licences",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "user_driving_licences",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/user_driving_licence.rb",
+        "className": "UserDrivingLicence"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.user_emergency_contacts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "user_emergency_contacts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/user_emergency_contact.rb",
+        "className": "UserEmergencyContact"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.user_extended_infos",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "user_extended_infos",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/user_extended_info.rb",
+        "className": "UserExtendedInfo"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.user_licenses",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "user_licenses",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/user_license.rb",
+        "className": "UserLicense"
+      },
+      "related": [
+        "pg:skello_production.cluster_nodes",
+        "pg:skello_production.licenses",
+        "pg:skello_production.organisations",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.user_planning_configs",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "user_planning_configs",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/user_planning_config.rb",
+        "className": "UserPlanningConfig"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.user_recurrent_shifts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "user_recurrent_shifts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/user_recurrent_shift.rb",
+        "className": "UserRecurrentShift"
+      },
+      "related": [
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.users",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "users",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/user.rb",
+        "className": "User"
+      },
+      "related": [
+        "pg:skello_production.action_history_items",
+        "pg:skello_production.automatic_planning_competencies",
+        "pg:skello_production.availabilities",
+        "pg:skello_production.badgings",
+        "pg:skello_production.cached_contracts_timelines",
+        "pg:skello_production.cluster_nodes",
+        "pg:skello_production.contracts",
+        "pg:skello_production.feature_clicks",
+        "pg:skello_production.holiday_settings",
+        "pg:skello_production.ics_feeds",
+        "pg:skello_production.leave_requests",
+        "pg:skello_production.licenses",
+        "pg:skello_production.memberships",
+        "pg:skello_production.mobile_reset_password_tokens",
+        "pg:skello_production.notifications",
+        "pg:skello_production.organisations",
+        "pg:skello_production.paid_leaves_counters",
+        "pg:skello_production.planning_hours_data",
+        "pg:skello_production.planning_template_shifts",
+        "pg:skello_production.postes",
+        "pg:skello_production.predicted_shifts",
+        "pg:skello_production.prospects",
+        "pg:skello_production.rcr_counters",
+        "pg:skello_production.shift_replacements",
+        "pg:skello_production.shift_swaps",
+        "pg:skello_production.shifts",
+        "pg:skello_production.shifts_histories",
+        "pg:skello_production.shops",
+        "pg:skello_production.team_memberships",
+        "pg:skello_production.teams",
+        "pg:skello_production.text_document_templates",
+        "pg:skello_production.text_documents",
+        "pg:skello_production.user_driving_licences",
+        "pg:skello_production.user_emergency_contacts",
+        "pg:skello_production.user_extended_infos",
+        "pg:skello_production.user_licenses",
+        "pg:skello_production.user_planning_configs",
+        "pg:skello_production.user_recurrent_shifts",
+        "pg:skello_production.weekly_option_publications"
+      ]
+    },
+    {
+      "id": "pg:skello_production.week_planning_prevision_postes",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "week_planning_prevision_postes",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/week_planning_prevision_poste.rb",
+        "className": "WeekPlanningPrevisionPoste"
+      },
+      "related": [
+        "pg:skello_production.postes",
+        "pg:skello_production.week_planning_previsions"
+      ]
+    },
+    {
+      "id": "pg:skello_production.week_planning_previsions",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "week_planning_previsions",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/week_planning_prevision.rb",
+        "className": "WeekPlanningPrevision"
+      },
+      "related": [
+        "pg:skello_production.planning_templates",
+        "pg:skello_production.shops",
+        "pg:skello_production.week_planning_prevision_postes"
+      ]
+    },
+    {
+      "id": "pg:skello_production.weekly_option_publications",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "weekly_option_publications",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/weekly_option_publication.rb",
+        "className": "WeeklyOptionPublication"
+      },
+      "related": [
+        "pg:skello_production.users",
+        "pg:skello_production.weekly_options"
+      ]
+    },
+    {
+      "id": "pg:skello_production.weekly_options",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "weekly_options",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/weekly_option.rb",
+        "className": "WeeklyOption"
+      },
+      "related": [
+        "pg:skello_production.postes",
+        "pg:skello_production.shops",
+        "pg:skello_production.weekly_option_publications"
+      ]
+    },
+    {
+      "id": "pg:svc_requests",
+      "kind": "database",
+      "store": "postgresql",
+      "name": "svc_requests",
+      "evidence": [
+        "dataset:svc-requests"
+      ]
+    },
+    {
+      "id": "pg:svc-kpis",
+      "kind": "database",
+      "store": "postgresql",
+      "name": "svc-kpis",
+      "evidence": [
+        "dataset:svc-kpis"
+      ]
+    },
+    {
+      "id": "redis:skello-redis",
+      "kind": "database",
+      "store": "redis",
+      "name": "skello-redis",
+      "evidence": [
+        "dataset:skello-app"
+      ]
+    },
+    {
+      "id": "s3:skello-app.images",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "skello-app.images",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:skello-app.public-assets",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "skello-app.public-assets",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:skello-app.public-assets-crr",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "skello-app.public-assets-crr",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:skello-app.temporary-assets",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "skello-app.temporary-assets",
+      "owner": "skello-app",
+      "evidence": [
+        "dataset:svc-documents-v2",
+        "skello-app-tf:terraform",
+        "svc-reports:serverless"
+      ]
+    },
+    {
+      "id": "s3:skello-assets",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "skello-assets",
+      "evidence": [
+        "dataset:skello-app"
+      ]
+    },
+    {
+      "id": "s3:sstCodesBucket",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "sstCodesBucket",
+      "evidence": [
+        "dataset:svc-employees"
+      ]
+    },
+    {
+      "id": "s3:static-crr-skello.io",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "static-crr-skello.io",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:static-skello.io",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "static-skello.io",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:svc-automatic-scheduling-sfn-ctx",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-automatic-scheduling-sfn-ctx",
+      "evidence": [
+        "dataset:svc-automatic-scheduling"
+      ]
+    },
+    {
+      "id": "s3:svc-billing-automation",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-billing-automation",
+      "evidence": [
+        "dataset:svc-billing-automation"
+      ]
+    },
+    {
+      "id": "s3:svc-communications-v2.attachments",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-communications-v2.attachments",
+      "evidence": [
+        "dataset:svc-communications-v2"
+      ]
+    },
+    {
+      "id": "s3:svc-documents-v2",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-documents-v2",
+      "evidence": [
+        "dataset:svc-documents-v2"
+      ]
+    },
+    {
+      "id": "s3:svc-enrollment.conventions",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-enrollment.conventions",
+      "evidence": [
+        "dataset:svc-enrollment"
+      ]
+    },
+    {
+      "id": "s3:svc-esignature",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-esignature",
+      "evidence": [
+        "dataset:svc-documents-esignature"
+      ]
+    },
+    {
+      "id": "s3:svc-events",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-events",
+      "evidence": [
+        "dataset:svc-events"
+      ]
+    },
+    {
+      "id": "s3:svc-hris",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-hris",
+      "evidence": [
+        "dataset:svc-hris"
+      ]
+    },
+    {
+      "id": "s3:svc-intelligence",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-intelligence",
+      "evidence": [
+        "dataset:svc-intelligence"
+      ]
+    },
+    {
+      "id": "s3:svc-payroll-evp-data",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-payroll-evp-data",
+      "evidence": [
+        "dataset:svc-payroll"
+      ]
+    },
+    {
+      "id": "s3:svc-search",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-search",
+      "evidence": [
+        "dataset:svc-search"
+      ]
+    },
+    {
+      "id": "sns:activityPredictionSettingsChanged",
+      "kind": "topic",
+      "store": "sns",
+      "name": "activityPredictionSettingsChanged",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sns:dailyTransactionsAggregated",
+      "kind": "topic",
+      "store": "sns",
+      "name": "dailyTransactionsAggregated",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sns:dispatch",
+      "kind": "topic",
+      "store": "sns",
+      "name": "dispatch",
+      "owner": "svc-requests",
+      "evidence": [
+        "svc-requests:serverless"
+      ]
+    },
+    {
+      "id": "sns:mobilePermissions",
+      "kind": "topic",
+      "store": "sns",
+      "name": "mobilePermissions",
+      "owner": "svc-punch",
+      "evidence": [
+        "svc-punch:serverless"
+      ]
+    },
+    {
+      "id": "sns:shopLabourLawChanged",
+      "kind": "topic",
+      "store": "sns",
+      "name": "shopLabourLawChanged",
+      "owner": "svc-labour-laws",
+      "evidence": [
+        "svc-labour-laws:serverless"
+      ]
+    },
+    {
+      "id": "sns:shopLabourLawRequest",
+      "kind": "topic",
+      "store": "sns",
+      "name": "shopLabourLawRequest",
+      "owner": "svc-labour-laws",
+      "evidence": [
+        "svc-labour-laws:serverless"
+      ]
+    },
+    {
+      "id": "sns:skelloApp-affiliationShopChange",
+      "kind": "topic",
+      "store": "sns",
+      "name": "skelloApp-affiliationShopChange",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sns:skelloApp-mergeShop",
+      "kind": "topic",
+      "store": "sns",
+      "name": "skelloApp-mergeShop",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sns:skelloApp-migrateShopOrganisation",
+      "kind": "topic",
+      "store": "sns",
+      "name": "skelloApp-migrateShopOrganisation",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sns:SnsTrackerComputation",
+      "kind": "topic",
+      "store": "sns",
+      "name": "SnsTrackerComputation",
+      "owner": "svc-trackers",
+      "evidence": [
+        "svc-trackers:serverless"
+      ]
+    },
+    {
+      "id": "sns:svc-billing-automation-sns",
+      "kind": "topic",
+      "store": "sns",
+      "name": "svc-billing-automation-sns",
+      "evidence": [
+        "dataset:svc-billing-automation"
+      ]
+    },
+    {
+      "id": "sns:svc-requests-sns",
+      "kind": "topic",
+      "store": "sns",
+      "name": "svc-requests-sns",
+      "evidence": [
+        "dataset:svc-requests"
+      ]
+    },
+    {
+      "id": "sqs:activityPredictionSettings",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "activityPredictionSettings",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:activityPredictionSettings-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "activityPredictionSettings-dlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:addEmailToComputeUserCredentials",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "addEmailToComputeUserCredentials",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:addEmailToComputeUserCredentialsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "addEmailToComputeUserCredentialsDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:aggregatePlannedPositionRecoverySqs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "aggregatePlannedPositionRecoverySqs",
+      "owner": "svc-workload-plan",
+      "evidence": [
+        "svc-workload-plan:serverless"
+      ]
+    },
+    {
+      "id": "sqs:aggregationEvent.fifo",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "aggregationEvent.fifo",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:aggregationEventDlq.fifo",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "aggregationEventDlq.fifo",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:autoAssignMetrics",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "autoAssignMetrics",
+      "owner": "svc-automatic-scheduling",
+      "evidence": [
+        "dataset:svc-automatic-scheduling"
+      ]
+    },
+    {
+      "id": "sqs:availableLabourLawStreamJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "availableLabourLawStreamJobDlq",
+      "owner": "svc-labour-laws",
+      "evidence": [
+        "svc-labour-laws:serverless"
+      ]
+    },
+    {
+      "id": "sqs:cancelSignatureOnDocumentDeletedCdcJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "cancelSignatureOnDocumentDeletedCdcJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:computeIndexesJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "computeIndexesJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:computeIndexesSqsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "computeIndexesSqsDlq",
+      "owner": "svc-bitly-v2",
+      "evidence": [
+        "svc-bitly-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:computeUserCredentials",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "computeUserCredentials",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:computeUserCredentialsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "computeUserCredentialsDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:createShifts",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "createShifts",
+      "owner": "svc-requests",
+      "evidence": [
+        "svc-requests:serverless"
+      ]
+    },
+    {
+      "id": "sqs:dailyKpisIngest",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "dailyKpisIngest",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:dailyKpisIngest-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "dailyKpisIngest-dlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:decodeAndPublishRequestJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "decodeAndPublishRequestJobDlq",
+      "owner": "svc-requests",
+      "evidence": [
+        "svc-requests:serverless"
+      ]
+    },
+    {
+      "id": "sqs:deleteFilesJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "deleteFilesJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:deletePositionAssociatedDataRecoverySqs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "deletePositionAssociatedDataRecoverySqs",
+      "owner": "svc-workload-plan",
+      "evidence": [
+        "svc-workload-plan:serverless"
+      ]
+    },
+    {
+      "id": "sqs:documentsCdcJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "documentsCdcJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:documentsToFirehoseJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "documentsToFirehoseJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:forgotPasswordEmailJob",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "forgotPasswordEmailJob",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:forgotPasswordEmailJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "forgotPasswordEmailJobDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:fullLoadCatchUp-fifo",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "fullLoadCatchUp-fifo",
+      "owner": "svc-kpis",
+      "evidence": [
+        "svc-kpis:serverless"
+      ]
+    },
+    {
+      "id": "sqs:fullLoadCatchUpDlq-fifo",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "fullLoadCatchUpDlq-fifo",
+      "owner": "svc-kpis",
+      "evidence": [
+        "svc-kpis:serverless"
+      ]
+    },
+    {
+      "id": "sqs:fullLoadComputeUserCredentials",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "fullLoadComputeUserCredentials",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:fullLoadComputeUserCredentialsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "fullLoadComputeUserCredentialsDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:fullLoadPunchPermissions",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "fullLoadPunchPermissions",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:fullLoadPunchPermissionsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "fullLoadPunchPermissionsDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:handleEmployeeOperations",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "handleEmployeeOperations",
+      "owner": "svc-search",
+      "evidence": [
+        "svc-search:serverless"
+      ]
+    },
+    {
+      "id": "sqs:handleShiftsFullLoad",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "handleShiftsFullLoad",
+      "owner": "svc-search",
+      "evidence": [
+        "svc-search:serverless"
+      ]
+    },
+    {
+      "id": "sqs:handleShopFeatureStateChangeRecoverySqs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "handleShopFeatureStateChangeRecoverySqs",
+      "owner": "svc-workload-plan",
+      "evidence": [
+        "svc-workload-plan:serverless"
+      ]
+    },
+    {
+      "id": "sqs:integrationDispatcherDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "integrationDispatcherDlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:kpisBulkUpsert",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "kpisBulkUpsert",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:kpisBulkUpsert-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "kpisBulkUpsert-dlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:kpisCleanup",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "kpisCleanup",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:kpisCleanup-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "kpisCleanup-dlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:mergeShop",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "mergeShop",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:mergeShop-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "mergeShop-dlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:mergeShopSqs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "mergeShopSqs",
+      "owner": "svc-workload-plan",
+      "evidence": [
+        "svc-workload-plan:serverless"
+      ]
+    },
+    {
+      "id": "sqs:mergeShopSqsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "mergeShopSqsDlq",
+      "owner": "svc-workload-plan",
+      "evidence": [
+        "svc-workload-plan:serverless"
+      ]
+    },
+    {
+      "id": "sqs:notifyEmployeeJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "notifyEmployeeJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:notifyManagerJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "notifyManagerJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:pingShopIdAndDateDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "pingShopIdAndDateDlq",
+      "owner": "svc-websockets",
+      "evidence": [
+        "websocket-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:pingTypeAndUuid",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "pingTypeAndUuid",
+      "owner": "svc-websockets",
+      "evidence": [
+        "websocket-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:pingTypeAndUuidDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "pingTypeAndUuidDlq",
+      "owner": "svc-websockets",
+      "evidence": [
+        "websocket-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:plannedPositionSynchronizerSqs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "plannedPositionSynchronizerSqs",
+      "owner": "svc-workload-plan",
+      "evidence": [
+        "svc-workload-plan:serverless"
+      ]
+    },
+    {
+      "id": "sqs:plannedPositionSynchronizerSqsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "plannedPositionSynchronizerSqsDlq",
+      "owner": "svc-workload-plan",
+      "evidence": [
+        "svc-workload-plan:serverless"
+      ]
+    },
+    {
+      "id": "sqs:planningAlerts",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "planningAlerts",
+      "owner": "svc-bff",
+      "evidence": [
+        "svc-bff:serverless"
+      ]
+    },
+    {
+      "id": "sqs:planningAlertsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "planningAlertsDlq",
+      "owner": "svc-bff",
+      "evidence": [
+        "svc-bff:serverless"
+      ]
+    },
+    {
+      "id": "sqs:posDailyTransactionsAggregated",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "posDailyTransactionsAggregated",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:posDailyTransactionsAggregated-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "posDailyTransactionsAggregated-dlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:PostDynamoDBStreamEventJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "PostDynamoDBStreamEventJobDlq",
+      "owner": "svc-events",
+      "evidence": [
+        "svc-events:serverless"
+      ]
+    },
+    {
+      "id": "sqs:predictedShiftsFullLoad",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "predictedShiftsFullLoad",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:predictedShiftsFullLoad-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "predictedShiftsFullLoad-dlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:predictedShiftsFullLoad-rows-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "predictedShiftsFullLoad-rows-dlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:puma-documentsV2-workflow",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "puma-documentsV2-workflow",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:puma-documentsV2-workflow-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "puma-documentsV2-workflow-dlq",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:puma-eSignature",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "puma-eSignature",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:puma-eSignature-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "puma-eSignature-dlq",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:punchMobilePermissions",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "punchMobilePermissions",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:punchMobilePermissionsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "punchMobilePermissionsDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:purgeShiftsQueue",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "purgeShiftsQueue",
+      "owner": "svc-search",
+      "evidence": [
+        "svc-search:serverless"
+      ]
+    },
+    {
+      "id": "sqs:purgeShiftsQueueDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "purgeShiftsQueueDlq",
+      "owner": "svc-search",
+      "evidence": [
+        "svc-search:serverless"
+      ]
+    },
+    {
+      "id": "sqs:pushAggregationEventJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "pushAggregationEventJobDlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:reprocessSkelloAppDataQueue",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "reprocessSkelloAppDataQueue",
+      "owner": "svc-search",
+      "evidence": [
+        "svc-search:serverless"
+      ]
+    },
+    {
+      "id": "sqs:reprocessSkelloAppDataQueueDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "reprocessSkelloAppDataQueueDlq",
+      "owner": "svc-search",
+      "evidence": [
+        "svc-search:serverless"
+      ]
+    },
+    {
+      "id": "sqs:send-skello-app-to-rds-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "send-skello-app-to-rds-dlq",
+      "owner": "svc-kpis",
+      "evidence": [
+        "svc-kpis:serverless"
+      ]
+    },
+    {
+      "id": "sqs:sendToDatalakeJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "sendToDatalakeJobDlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:shiftsEmployeeReplacementsMetrics",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "shiftsEmployeeReplacementsMetrics",
+      "owner": "svc-automatic-scheduling",
+      "evidence": [
+        "dataset:svc-automatic-scheduling"
+      ]
+    },
+    {
+      "id": "sqs:shopHoursChangeRecoverySqs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "shopHoursChangeRecoverySqs",
+      "owner": "svc-workload-plan",
+      "evidence": [
+        "svc-workload-plan:serverless"
+      ]
+    },
+    {
+      "id": "sqs:shopLabourLawRequestQueue",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "shopLabourLawRequestQueue",
+      "owner": "svc-labour-laws",
+      "evidence": [
+        "svc-labour-laws:serverless"
+      ]
+    },
+    {
+      "id": "sqs:shopLabourLawRequestQueueDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "shopLabourLawRequestQueueDlq",
+      "owner": "svc-labour-laws",
+      "evidence": [
+        "svc-labour-laws:serverless"
+      ]
+    },
+    {
+      "id": "sqs:shopLabourLawStreamJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "shopLabourLawStreamJobDlq",
+      "owner": "svc-labour-laws",
+      "evidence": [
+        "svc-labour-laws:serverless"
+      ]
+    },
+    {
+      "id": "sqs:skello-sqs-events",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "skello-sqs-events",
+      "evidence": [
+        "dataset:skello-app"
+      ]
+    },
+    {
+      "id": "sqs:skelloAppEmployeeJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "skelloAppEmployeeJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:skelloAppGlobalIntegrationJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "skelloAppGlobalIntegrationJobDlq",
+      "owner": "svc-reports",
+      "evidence": [
+        "svc-reports:serverless"
+      ]
+    },
+    {
+      "id": "sqs:skelloappkinesisweeklyoptionsfullloaddlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "skelloappkinesisweeklyoptionsfullloaddlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:skelloAppShopJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "skelloAppShopJobDlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:splitInPagesJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "splitInPagesJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:SqsCreateShiftsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "SqsCreateShiftsDlq",
+      "owner": "svc-requests",
+      "evidence": [
+        "svc-requests:serverless"
+      ]
+    },
+    {
+      "id": "sqs:svc-documents-v2-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svc-documents-v2-dlq",
+      "evidence": [
+        "dataset:svc-documents-v2"
+      ]
+    },
+    {
+      "id": "sqs:svc-employees-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svc-employees-dlq",
+      "evidence": [
+        "dataset:svc-employees"
+      ]
+    },
+    {
+      "id": "sqs:svc-employees/full-load",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "full-load",
+      "owner": "svc-employees",
+      "evidence": [
+        "svc-employees:serverless",
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:svc-employees/full-load-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "full-load-dlq",
+      "owner": "svc-employees",
+      "evidence": [
+        "svc-employees:serverless",
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:svc-esignature-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svc-esignature-dlq",
+      "evidence": [
+        "dataset:svc-documents-esignature"
+      ]
+    },
+    {
+      "id": "sqs:svc-hris-sync-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svc-hris-sync-dlq",
+      "evidence": [
+        "dataset:svc-hris"
+      ]
+    },
+    {
+      "id": "sqs:svc-hris/triggerFirehoseStreamSqsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "triggerFirehoseStreamSqsDlq",
+      "owner": "svc-hris",
+      "evidence": [
+        "svc-hris:serverless",
+        "svc-reports:serverless"
+      ]
+    },
+    {
+      "id": "sqs:svc-intelligence-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svc-intelligence-dlq",
+      "evidence": [
+        "dataset:svc-intelligence"
+      ]
+    },
+    {
+      "id": "sqs:svc-pos/full-load",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "full-load",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-employees:serverless",
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:svc-pos/full-load-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "full-load-dlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-employees:serverless",
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:svc-punch-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svc-punch-dlq",
+      "evidence": [
+        "dataset:svc-punch"
+      ]
+    },
+    {
+      "id": "sqs:svc-reports/triggerFirehoseStreamSqsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "triggerFirehoseStreamSqsDlq",
+      "owner": "svc-reports",
+      "evidence": [
+        "svc-hris:serverless",
+        "svc-reports:serverless"
+      ]
+    },
+    {
+      "id": "sqs:svc-search-index-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svc-search-index-dlq",
+      "evidence": [
+        "dataset:svc-search"
+      ]
+    },
+    {
+      "id": "sqs:svc-workload-plan-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svc-workload-plan-dlq",
+      "evidence": [
+        "dataset:svc-workload-plan"
+      ]
+    },
+    {
+      "id": "sqs:sync-membership-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "sync-membership-dlq",
+      "owner": "svc-feature-flags",
+      "evidence": [
+        "svc-feature-flags:serverless"
+      ]
+    },
+    {
+      "id": "sqs:sync-shop-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "sync-shop-dlq",
+      "owner": "svc-feature-flags",
+      "evidence": [
+        "svc-feature-flags:serverless"
+      ]
+    },
+    {
+      "id": "sqs:sync-user-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "sync-user-dlq",
+      "owner": "svc-feature-flags",
+      "evidence": [
+        "svc-feature-flags:serverless"
+      ]
+    },
+    {
+      "id": "sqs:syncEsignatureToSignatureCdcJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "syncEsignatureToSignatureCdcJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:syncSignatureFolderJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "syncSignatureFolderJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:syncSkelloAppJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "syncSkelloAppJobDlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:toData",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "toData",
+      "owner": "svc-requests",
+      "evidence": [
+        "svc-requests:serverless"
+      ]
+    },
+    {
+      "id": "sqs:toDataDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "toDataDlq",
+      "owner": "svc-requests",
+      "evidence": [
+        "svc-requests:serverless"
+      ]
+    },
+    {
+      "id": "sqs:toggleFeaturesSqs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "toggleFeaturesSqs",
+      "owner": "svc-billing-automation",
+      "evidence": [
+        "svc-billing-automation:serverless"
+      ]
+    },
+    {
+      "id": "sqs:toggleFeaturesSqsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "toggleFeaturesSqsDlq",
+      "owner": "svc-billing-automation",
+      "evidence": [
+        "svc-billing-automation:serverless"
+      ]
+    },
+    {
+      "id": "sqs:trackerComputationRouterDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "trackerComputationRouterDlq",
+      "owner": "svc-trackers",
+      "evidence": [
+        "svc-trackers:serverless"
+      ]
+    },
+    {
+      "id": "sqs:triggerActivityPredictionSettingsSNSJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "triggerActivityPredictionSettingsSNSJobDlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:triggerShopLabourLawSNSJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "triggerShopLabourLawSNSJobDlq",
+      "owner": "svc-labour-laws",
+      "evidence": [
+        "svc-labour-laws:serverless"
+      ]
+    },
+    {
+      "id": "sqs:truncateUserEntities",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "truncateUserEntities",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:truncateUserEntitiesDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "truncateUserEntitiesDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:updateEmployeePunchMobilePermissionDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "updateEmployeePunchMobilePermissionDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:updateMaxWeeklyAverageHoursJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "updateMaxWeeklyAverageHoursJobDlq",
+      "owner": "svc-labour-laws",
+      "evidence": [
+        "svc-labour-laws:serverless"
+      ]
+    },
+    {
+      "id": "sqs:updateMaxWeeklyAverageHoursJobQueue",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "updateMaxWeeklyAverageHoursJobQueue",
+      "owner": "svc-labour-laws",
+      "evidence": [
+        "svc-labour-laws:serverless"
+      ]
+    },
+    {
+      "id": "sqs:updateUserFromSkelloAppDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "updateUserFromSkelloAppDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:userCredentialsToDataLakeDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "userCredentialsToDataLakeDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:userKpisSettingsCdc-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "userKpisSettingsCdc-dlq",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:usersToDataLakeDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "usersToDataLakeDlq",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users:serverless"
+      ]
+    },
+    {
+      "id": "sqs:websocket-genericMessage",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "websocket-genericMessage",
+      "evidence": [
+        "dataset:svc-websockets"
+      ]
+    },
+    {
+      "id": "sqs:websocket-pingTypeAndUuid",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "websocket-pingTypeAndUuid",
+      "evidence": [
+        "dataset:svc-websockets"
+      ]
+    },
+    {
+      "id": "sqs:websocket-topicMessage",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "websocket-topicMessage",
+      "owner": "svc-websockets-v2",
+      "evidence": [
+        "dataset:svc-websockets-v2",
+        "svc-websockets-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:websocket-topicMessageDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "websocket-topicMessageDlq",
+      "owner": "svc-websockets-v2",
+      "evidence": [
+        "svc-websockets-v2:serverless"
+      ]
+    }
+  ],
+  "relations": []
+}

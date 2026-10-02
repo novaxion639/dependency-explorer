@@ -31,7 +31,7 @@ function list(line: string, key: string): Set<string> | null {
   return new Set((m[1] ?? m[2] ?? m[3] ?? '').split(/[\s,]+/).map(s => s.replace(/^:|['"]/g, '')).filter(Boolean))
 }
 
-function pluralize(word: string): string {
+export function pluralize(word: string): string {
   if (/data$|s$/.test(word)) {
     return word
   }
@@ -41,7 +41,7 @@ function pluralize(word: string): string {
   return /(ch|sh|x|z)$/.test(word) ? `${word}es` : `${word}s`
 }
 
-function singularize(word: string): string {
+export function singularize(word: string): string {
   if (word.endsWith('ies')) {
     return `${word.slice(0, -3)}y`
   }

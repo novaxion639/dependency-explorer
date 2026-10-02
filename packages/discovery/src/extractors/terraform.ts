@@ -55,6 +55,8 @@ const OWNED_TF_TYPES = new Set([
   'aws_rds_cluster',
   'aws_db_instance',
   'mongodbatlas_cluster',
+  'aws_sqs_queue',
+  'aws_sns_topic',
 ])
 
 const IAM_ACTION_RE = /"((?:dynamodb|s3|kinesis|firehose):[A-Za-z*][A-Za-z*]*)"/g

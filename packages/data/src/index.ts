@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ConnectivityMapSchema, DiscoveredOverlaySchema, MonolithRouteSchema } from '@dependency-explorer/schema'
+import { ConnectivityMapSchema, DiscoveredOverlaySchema, MonolithRouteSchema, ResourceSurfaceSchema } from '@dependency-explorer/schema'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import connections from './connections'
 import teams from './teams'
@@ -8,6 +8,7 @@ import externals from './externals'
 import areas from './areas'
 import discoveredJson from './generated/discovered.json'
 import monolithRoutesJson from './generated/monolith-routes.json'
+import resourcesJson from './generated/resources.json'
 import { monolithEndpoints } from './monolith-endpoints'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 
@@ -105,6 +106,7 @@ import org_onboarding from './flows/org-onboarding'
 
 const overlay = DiscoveredOverlaySchema.parse(discoveredJson)
 export const monolithRoutes = z.array(MonolithRouteSchema).parse(monolithRoutesJson)
+export const resourceSurface = ResourceSurfaceSchema.parse(resourcesJson)
 const verifiedOn = overlay.generatedAt.slice(0, 10)
 
 export const codeEdgeGrades = overlay.codeEdgeGrades ?? {}
@@ -249,5 +251,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
 
 export * from '@dependency-explorer/schema'
 export { globToRegExp } from './glob'
+export { resourceNotes, type ResourceNote } from './resource-notes'
+export { normalizeResourceName } from './resource-names'
 export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, getCrossAreaEdges, buildContextLanes } from './areas-derive'
 export type { CrossAreaEdge, ContextLanes } from './areas-derive'

@@ -22,8 +22,8 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { connectivityMap } from '@dependency-explorer/data'
-import type { DiscoveredOverlay } from '@dependency-explorer/schema'
+import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
+import type { DiscoveredOverlay, Resource } from '@dependency-explorer/schema'
 import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService, tfRepoToService } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
@@ -46,6 +46,9 @@ import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
 import { pinRepos, buildGraphs, applyModeError, type PinnedRepo, type PinSkip } from './pinned'
 import { checkCodeGrades, type Grade, type GradeFinding } from './code-grades'
 import { checkBranches } from './branch-check'
+import { extractRailsSchema } from './extractors/rails-schema'
+import { buildRegistry } from './resource-registry'
+import { checkResources, type ResourceFinding } from './resource-check'
 import { findingKeys, diffBaseline, readBaseline, writeBaseline } from './baseline'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -73,6 +76,7 @@ if (PIN) {
 const REPO_BASE = PIN ? PINNED_BASE : SOURCE_BASE
 const OVERLAY_PATH = path.resolve(__dirname, '../../data/src/generated/discovered.json')
 const MONOLITH_ROUTES_PATH = path.resolve(__dirname, '../../data/src/generated/monolith-routes.json')
+const RESOURCES_PATH = path.resolve(__dirname, '../../data/src/generated/resources.json')
 
 const JSON_MODE = process.argv.includes('--json')
 const BASELINE_PATH = path.resolve(__dirname, '../baseline.json')
@@ -172,6 +176,8 @@ interface Report {
   flowCheck: FlowCheckResult
   codeLayerCheck: CodeLayerCheckResult
   branchCheck: ReturnType<typeof checkBranches>
+  resourceCheck: { findings: ResourceFinding[]; modelLess: string[]; datasetOnly: number; total: number; byKind: Record<string, number> } | null
+  liveResources: Resource[]
   codeGrades: { findings: GradeFinding[]; grades: Record<string, Grade>; distribution: Record<Grade, number>; backlog: string[] } | null
   ruleCheck: RuleCheckResult
   areaCheck: AreaCheckResult
@@ -224,6 +230,8 @@ function run(): Report {
   const railsRoutes = extractRailsRoutes(REPO_BASE)
   const report: Report = {
     pinned: PIN ? { repos: PIN.pinned, skipped: PIN.skipped } : null,
+    resourceCheck: null,
+    liveResources: [],
     scannedRepos: repos,
     connectionEvidence: {},
     candidates: [],
@@ -662,6 +670,22 @@ function run(): Report {
       ),
     })
   }
+
+  // ── Resource registry (🗄) ─────────────────────────────────────────────────
+  const railsSchema = extractRailsSchema(REPO_BASE)
+  const live = buildRegistry({
+    monolith: railsSchema,
+    serverless: serverlessByRepo,
+    terraform: report.terraform.filter(t => t.inMap).map(t => ({ service: t.service, tfRepo: t.tfRepo, facts: t.facts })),
+    services: connectivityMap.services,
+  })
+  report.liveResources = live
+  const resourceFacts = checkResources(resourceSurface.resources, live, railsSchema?.models ?? [], railsSchema?.tables ?? [])
+  const byKind: Record<string, number> = {}
+  for (const x of live) {
+    byKind[x.kind] = (byKind[x.kind] ?? 0) + 1
+  }
+  report.resourceCheck = { ...resourceFacts, total: live.length, byKind }
   return report
 }
 
@@ -702,6 +726,8 @@ function writeOverlay(report: Report) {
     fs.writeFileSync(MONOLITH_ROUTES_PATH, JSON.stringify(surface, null, 2) + '\n')
     console.log(`  ${surface.length} monolith routes written: ${path.relative(process.cwd(), MONOLITH_ROUTES_PATH)}`)
   }
+  fs.writeFileSync(RESOURCES_PATH, JSON.stringify({ resources: report.liveResources, relations: [] }, null, 2) + '\n')
+  console.log(`  ${report.liveResources.length} resources written: ${path.relative(process.cwd(), RESOURCES_PATH)}`)
 }
 
 // ── Report ────────────────────────────────────────────────────────────────────
@@ -940,6 +966,16 @@ function printMarkdown(r: Report) {
     + (bc.skippedRepos.length ? ` Skipped (repo not checked out): ${bc.skippedRepos.join(', ')}.` : ''))
   if (bc.findings.length) {
     console.log(bc.findings.map(f => `- [${f.kind}] **${f.subject}**: ${f.detail}`).join('\n'))
+  }
+
+  const rs = r.resourceCheck
+  if (rs) {
+    console.log(`\n## 🗄 Resources (${rs.findings.length} findings)\n`)
+    console.log(`${rs.total} resources — ${Object.entries(rs.byKind).map(([k, n]) => `${n} ${k}`).join(' · ')}; ${rs.datasetOnly} known from the dataset only.`)
+    console.log(`Model-less tables: ${rs.modelLess.length ? rs.modelLess.join(', ') : '_none_'}`)
+    if (rs.findings.length) {
+      console.log(rs.findings.map(f => `- [${f.kind}] **${f.subject}**: ${f.detail}`).join('\n'))
+    }
   }
 
   const rc = r.ruleCheck

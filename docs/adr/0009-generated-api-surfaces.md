@@ -12,6 +12,7 @@ The monolith exposes 763 routes (`bin/rails routes` at master). An authored endp
 2. Meaning is human-owned. Descriptions and use cases live in `packages/data/src/services/skello-app.endpoint-notes.ts`, keyed by endpoint id. Integrity rejects a note keyed to a route that does not exist.
 3. Flows, connections and all narrative remain human-adopted. ADR-0007 §1 holds for every other entity.
 4. The parser is held to the router: a `bin/rails routes --expanded` dump at a recorded commit is a test fixture, and the parser reproduces at least 98 % of its `verb + path + controller#action` triples.
+5. The resource registry (`packages/data/src/generated/resources.json`) is a generated entity set: monolith tables from `db/schema.rb` with their ActiveRecord models, queues, topics, streams and buckets from serverless and Terraform declarations, and microservice stores from `service.databases`. Human notes live in `packages/data/src/resource-notes.ts`, keyed by resource id; the 🗄 discovery section reports drift between the committed registry and the pinned extraction.
 
 ## Consequences
 

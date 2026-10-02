@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
-import { connectivityMap, monolithRoutes, codeEdgeGrades } from './index'
+import { connectivityMap, monolithRoutes, codeEdgeGrades, resourceSurface } from './index'
+import { resourceNotes } from './resource-notes'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { getFlowAreas } from './areas-derive'
 import discoveredJson from './generated/discovered.json'
@@ -445,6 +446,33 @@ describe('flow branches', () => {
   it('exist on the backfilled flows', () => {
     for (const id of ['leave-request-approval', 'shift-creation']) {
       expect(flows.find(f => f.id === id)?.branches?.length, `${id} has no branches`).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe('resource surface', () => {
+  const ids = resourceSurface.resources.map(r => r.id)
+  it('has unique ids', () => {
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+  it('relations and related tables point at known resources', () => {
+    const known = new Set(ids)
+    for (const rel of resourceSurface.relations) {
+      expect(known.has(rel.resource), `relation on unknown ${rel.resource}`).toBe(true)
+      if (rel.target) {
+        expect(known.has(rel.target), `relation target unknown ${rel.target}`).toBe(true)
+      }
+    }
+    for (const r of resourceSurface.resources) {
+      for (const t of r.related ?? []) {
+        expect(known.has(t), `${r.id} relates to unknown ${t}`).toBe(true)
+      }
+    }
+  })
+  it('only annotates resources that exist', () => {
+    const known = new Set(ids)
+    for (const id of Object.keys(resourceNotes)) {
+      expect(known.has(id), `note for unknown resource ${id}`).toBe(true)
     }
   })
 })
