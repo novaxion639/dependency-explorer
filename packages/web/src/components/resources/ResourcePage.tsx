@@ -1,5 +1,6 @@
 import type { ResourceRelation } from '@dependency-explorer/data'
 import { allResourceRelations, connectivityMap, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
+import { evidenceHref } from '../../utils/evidenceLink'
 
 const GRADE_BADGE: Record<ResourceRelation['grade'], { symbol: string; color: string; title: string }> = {
   code: { symbol: '✓', color: '#10b981', title: 'call site at the pinned commit' },
@@ -29,12 +30,16 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
   }
   const { resource, byService, flows, dlq, counts } = impact
   const note = resourceNotes[id]
+  const tables = resource.kind === 'database' ? resourceSurface.resources.filter(r => r.id.startsWith(`${id}.`)) : []
   return (
     <main style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
       <header style={{ marginBottom: 12 }}>
         <h1 style={{ fontSize: 18, color: '#e2e8f0' }}>{resource.name}</h1>
         <p style={{ fontSize: 11, color: '#64748b' }}>
-          {resource.kind} · {resource.store}{resource.owner ? <> · owned by <button type="button" onClick={() => onSelectService(resource.owner ?? '')} style={{ background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', padding: 0 }}>{resource.owner}</button></> : null} · evidence {resource.evidence.join(', ')}
+          {resource.kind} · {resource.store}{resource.owner ? <> · owned by <button type="button" onClick={() => onSelectService(resource.owner ?? '')} style={{ background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', padding: 0 }}>{resource.owner}</button></> : null} · evidence {resource.evidence.map((e, i) => {
+            const href = evidenceHref(e, resourceSurface.pins)
+            return <span key={e}>{i > 0 && ', '}{href ? <a href={href} target="_blank" rel="noreferrer" style={{ color: '#818cf8' }}>{e}</a> : e}</span>
+          })}
         </p>
         {note?.description && <p style={{ fontSize: 12, color: '#cbd5e1', marginTop: 6 }}>{note.description}</p>}
         <p style={{ fontSize: 13, color: '#e2e8f0', marginTop: 8 }}>{counts.services} services · {counts.files} files · {counts.flows} flows</p>
@@ -80,6 +85,12 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
         <section aria-label="Related tables" style={{ marginTop: 14 }}>
           <h2 style={{ fontSize: 12, color: '#94a3b8' }}>Related tables</h2>
           {(resource.related ?? []).map(t => <button key={t} type="button" onClick={() => onOpenResource(t)} style={{ margin: '4px 6px 0 0', fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid #2e3250', background: 'transparent', color: '#cbd5e1', cursor: 'pointer' }}>{t.split('.').pop()}</button>)}
+        </section>
+      )}
+      {tables.length > 0 && (
+        <section aria-label="Tables" style={{ marginTop: 14 }}>
+          <h2 style={{ fontSize: 12, color: '#94a3b8' }}>Tables ({tables.length})</h2>
+          {tables.map(t => <button key={t.id} type="button" onClick={() => onOpenResource(t.id)} style={{ margin: '4px 6px 0 0', fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid #2e3250', background: 'transparent', color: '#cbd5e1', cursor: 'pointer' }}>{t.name}</button>)}
         </section>
       )}
       {flows.length > 0 && (

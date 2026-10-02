@@ -1,5 +1,8 @@
+import { useContext } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import type { DatabaseType } from '@dependency-explorer/data'
+import { resourceSurface } from '@dependency-explorer/data'
+import { ResourceOpenContext } from './resourceOpenContext'
 import { CLAMP_TWO_LINES } from '../../utils/clamp'
 
 export const DB_COLORS: Record<DatabaseType, { color: string; label: string; icon: string }> = {
@@ -29,13 +32,14 @@ export interface DatabaseNodeData {
   name: string
   description: string
   crud?: string[]
-  resource?: string
+  resources?: string[]
   [key: string]: unknown
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function DatabaseNode({ data }: any) {
-  const { dbType, name, description, crud } = data as DatabaseNodeData
+  const { dbType, name, description, crud, resources = [] } = data as DatabaseNodeData
+  const openResource = useContext(ResourceOpenContext)
   const meta = DB_COLORS[dbType as DatabaseType] ?? { color: '#64748b', label: dbType, icon: '💾' }
 
   return (
@@ -82,6 +86,13 @@ export function DatabaseNode({ data }: any) {
               }}>
                 {op}
               </span>
+            ))}
+          </div>
+        )}
+        {resources.length > 1 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
+            {resources.map(id => (
+              <button key={id} type="button" onClick={e => { e.stopPropagation(); openResource(id) }} style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, border: `1px solid ${meta.color}66`, background: 'transparent', color: '#cbd5e1', cursor: 'pointer' }}>{resourceSurface.resources.find(r => r.id === id)?.name ?? id}</button>
             ))}
           </div>
         )}

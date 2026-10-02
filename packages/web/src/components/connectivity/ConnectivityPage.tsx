@@ -19,6 +19,7 @@ import { SystemContext } from '../areas/SystemContext'
 import { NotFoundBanner } from '../areas/NotFoundBanner'
 import { ResourcePage } from '../resources/ResourcePage'
 import { ResourcesIndex } from '../resources/ResourcesIndex'
+import { ServiceStores } from '../resources/ServiceStores'
 import { ImpactPanel } from '../resources/ImpactPanel'
 import { buildFlagRegistry } from '../../utils/flagRegistry'
 import { buildFileIndex } from '../../utils/fileIndex'
@@ -238,6 +239,7 @@ export function ConnectivityPage() {
                 </span>
               )}
             </div>
+            <ServiceStores service={selected} onOpenResource={openResource} />
             <div style={{ display: 'flex', gap: 12, marginLeft: 'auto', flexWrap: 'wrap', alignItems: 'center' }}>
               <Pill label="calls" count={outCount} color="#4f6ef7" />
               <Pill label="called by" count={inCount} color="#818cf8" />

@@ -20,6 +20,7 @@ import { buildFlowGraph } from '../../utils/buildFlowGraph'
 import { buildFlowCodeGraph } from '../../utils/buildFlowCodeGraph'
 import { ServiceNode } from '../nodes/ServiceNode'
 import { DatabaseNode, DB_COLORS } from '../nodes/DatabaseNode'
+import { ResourceOpenContext, nodeResources } from '../nodes/resourceOpenContext'
 import { CodeUnitNode, CodeGroupNode } from '../nodes/CodeUnitNode'
 import type { DatabaseType } from '@dependency-explorer/data'
 import { ConnectivityEdge } from './ConnectivityEdge'
@@ -323,14 +324,15 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onOpenArea, 
         {showSequence && (
           <SequenceDiagram flow={flow} onSelectUnit={id => { setSelectedRuleId(null); setSelectedUnitId(prev => (prev === id ? null : id)) }} />
         )}
-        {!showSequence && <ReactFlow
+        {!showSequence && <ResourceOpenContext.Provider value={onOpenResource}><ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={(_, node) => {
-            if (node.type === 'databaseNode' && typeof node.data.resource === 'string') {
-              onOpenResource(node.data.resource)
+            const [first] = nodeResources(node.data)
+            if (node.type === 'databaseNode' && first) {
+              onOpenResource(first)
               return
             }
             if (showCode && node.type === 'codeUnitNode') {
@@ -363,7 +365,7 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onOpenArea, 
             }}
             maskColor="#0f111799"
           />
-        </ReactFlow>}
+        </ReactFlow></ResourceOpenContext.Provider>}
 
         {/* Step legend */}
         {!showSequence && <StepLegend flow={flow} ruleById={ruleById} onRuleClick={setSelectedRuleId} />}
