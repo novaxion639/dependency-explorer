@@ -568,6 +568,13 @@ describe('Terraform locals resolution', () => {
     expect(applyTerraformLocals('local.mongo_db_name', locals)).toBe('svc-documents-v2')
     expect(applyTerraformLocals('lower("${local.project}-${local.workspace}")', locals)).toBe('svcdocumentsv2-${local.workspace}')
   })
+  it('resolves a local whose value is a case call', () => {
+    const cased = parseTerraformLocals(`locals {
+  project_kebab_case   = "svc-intelligence"
+  textract_bucket_name = lower("\${local.project_kebab_case}-textract.\${local.region}")
+}`)
+    expect(applyTerraformLocals('local.textract_bucket_name', cased)).toBe('svc-intelligence-textract.${local.region}')
+  })
   it('never substitutes environment locals and terminates on cycles', () => {
     expect(applyTerraformLocals('svc-hris.${local.region}.${local.workspace}', locals)).toBe('svc-hris.${local.region}.${local.workspace}')
     expect(applyTerraformLocals('local.loop_a', locals)).toMatch(/\$\{local\.loop_[ab]\}/)

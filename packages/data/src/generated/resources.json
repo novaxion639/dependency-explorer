@@ -2877,6 +2877,26 @@
       ]
     },
     {
+      "id": "s3:svc-intelligence-rag",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-intelligence-rag",
+      "owner": "svc-intelligence",
+      "evidence": [
+        "svc-intelligence-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:svc-intelligence-textract",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-intelligence-textract",
+      "owner": "svc-intelligence",
+      "evidence": [
+        "svc-intelligence-tf:terraform"
+      ]
+    },
+    {
       "id": "s3:svc-kpis-v2.full-load",
       "kind": "bucket",
       "store": "s3",

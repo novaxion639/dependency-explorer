@@ -170,8 +170,8 @@ const CASE_CALL = /^(lower|upper)\(\s*(.*?)\s*\)$/
 export function parseTerraformLocals(content: string): Record<string, string> {
   const locals: Record<string, string> = {}
   for (const block of content.matchAll(/^locals\s*\{([\s\S]*?)^\}/gm)) {
-    for (const m of (block[1] ?? '').matchAll(/^ {2}(\w+)\s*=\s*(?:"([^"]*)"|local\.(\w+))\s*(?:#.*)?$/gm)) {
-      const value = m[2] ?? (m[3] ? `\${local.${m[3]}}` : undefined)
+    for (const m of (block[1] ?? '').matchAll(/^ {2}(\w+)\s*=\s*(?:"([^"]*)"|local\.(\w+)|((?:lower|upper)\([^\n]*\)))\s*(?:#.*)?$/gm)) {
+      const value = m[2] ?? (m[3] ? `\${local.${m[3]}}` : m[4])
       if (m[1] && value) {
         locals[m[1]] = value
       }
