@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
 import { classifyAwsUsage } from './aws-clients'
-import { parseTerraform, parseTerraformLocals, applyTerraformLocals, parseTerraformDataNames, parseTerraformLocalMaps, expandTerraformNames, parseTerraformSsmValues } from './terraform'
+import { parseTerraform, parseTerraformLocals, applyTerraformLocals, parseTerraformDataNames, parseTerraformLocalMaps, expandTerraformNames, parseTerraformSsmValues, resolveDmsSources } from './terraform'
 import { parseEnvServiceUrls } from './frontend'
 import { classifyImports } from './typescript'
 import { parseSdkSource } from './sdk-registry'
@@ -366,6 +366,17 @@ export class ShopEntity {}`
 })
 
 describe('parseTerraform', () => {
+  it('reads the stream behind a DMS Kinesis endpoint, index suffix included', () => {
+    const src = `resource "aws_dms_endpoint" "kinesis" {
+  endpoint_type = "target"
+  engine_name   = "kinesis"
+  kinesis_settings {
+    stream_arn = aws_kinesis_stream.svc_requests_full_load[0].arn
+  }
+}`
+    expect(parseTerraform(src).dmsEndpoints).toEqual([expect.objectContaining({ label: 'kinesis', streamLabel: 'svc_requests_full_load' })])
+  })
+
   it('mines MongoDB Atlas user roles', () => {
     const src = `resource "mongodbatlas_database_user" "user" {
   username = "svcshops"
@@ -603,5 +614,15 @@ describe('parseTerraformSsmValues', () => {
   value = local.project_kebab_case
 }`)
     expect(values).toEqual({ mongo_db_name: 'local.project_kebab_case' })
+  })
+})
+
+describe('resolveDmsSources', () => {
+  it('replaces a data endpoint source with its endpoint id', () => {
+    const data = parseTerraformDataNames(`data "aws_dms_endpoint" "aurora" {
+  endpoint_id = "skelloapp-database-aurora-\${local.workspace}"
+}`)
+    const tasks = [{ label: 't', source: 'data.aws_dms_endpoint.aurora.endpoint_arn' }, { label: 'u', source: 'aws_dms_endpoint.own.endpoint_arn' }]
+    expect(resolveDmsSources(tasks, data).map(t => t.source)).toEqual(['skelloapp-database-aurora-${local.workspace}', 'aws_dms_endpoint.own.endpoint_arn'])
   })
 })

@@ -39,6 +39,7 @@ export interface TfDmsEndpoint {
   endpointId?: string
   endpointType?: string
   engineName?: string
+  streamLabel?: string
 }
 
 export interface TfMongoRole {
@@ -133,11 +134,13 @@ export function parseTerraform(content: string): TerraformFacts {
         }
       }
     } else if (tfType === 'aws_dms_endpoint') {
+      const streamLabel = blockAt(content, m.index).match(/stream_arn\s*=\s*aws_kinesis_stream\.([\w-]+)/)?.[1]
       dmsEndpoints.push({
         label: label!,
         endpointId: attr(block, 'endpoint_id'),
         endpointType: attr(block, 'endpoint_type'),
         engineName: attr(block, 'engine_name'),
+        ...(streamLabel ? { streamLabel } : {}),
       })
     }
   }
@@ -203,12 +206,21 @@ export function applyTerraformLocals(value: string, locals: Record<string, strin
 export function parseTerraformDataNames(content: string): Record<string, string> {
   const names: Record<string, string> = {}
   for (const m of content.matchAll(/^data\s+"([a-z0-9_]+)"\s+"([\w-]+)"\s*\{/gm)) {
-    const name = topLevelAttr(blockAt(content, m.index), 'name')
+    const block = blockAt(content, m.index)
+    const name = topLevelAttr(block, 'name') ?? topLevelAttr(block, 'endpoint_id')
     if (m[1] && m[2] && name) {
       names[`${m[1]}.${m[2]}`] = name
     }
   }
   return names
+}
+
+export function resolveDmsSources(tasks: TfDmsTask[], dataNames: Record<string, string>): TfDmsTask[] {
+  return tasks.map(t => {
+    const label = t.source?.match(/^data\.aws_dms_endpoint\.([\w-]+)/)?.[1]
+    const endpointId = label ? dataNames[`aws_dms_endpoint.${label}`] : undefined
+    return endpointId ? { ...t, source: endpointId } : t
+  })
 }
 
 export function parseTerraformSsmValues(content: string): Record<string, string> {
@@ -284,6 +296,7 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
   const dataNames = Object.assign({}, ...contents.map(parseTerraformDataNames))
   const maps = Object.assign({}, ...contents.map(parseTerraformLocalMaps))
   merged.resources = expandTerraformNames(merged.resources, dataNames, maps)
+  merged.dmsTasks = resolveDmsSources(merged.dmsTasks, dataNames)
   merged.resources = merged.resources.map(r => ({
     ...r,
     ...(r.name ? { name: applyTerraformLocals(r.name, locals) } : {}),

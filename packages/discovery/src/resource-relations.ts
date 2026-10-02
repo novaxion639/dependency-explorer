@@ -154,3 +154,23 @@ export function atlasRelations(terraform: Array<{ service: string; facts: Terraf
   }
   return out
 }
+
+const MONOLITH_DMS_SOURCE = /skelloapp/
+
+export function dmsRelations(terraform: Array<{ service: string; facts: TerraformFacts }>, resources: Resource[]): ResourceRelation[] {
+  const out: ResourceRelation[] = []
+  for (const t of terraform) {
+    const streamByEndpoint = new Map(t.facts.dmsEndpoints.flatMap(e => (e.streamLabel ? [[e.label, e.streamLabel] as const] : [])))
+    const nameByLabel = new Map(t.facts.resources.filter(r => r.tfType === 'aws_kinesis_stream' && r.name).map(r => [r.label, normalizeResourceName(r.name ?? '', 'kinesis').name]))
+    for (const task of t.facts.dmsTasks) {
+      const endpoint = task.target?.match(/aws_dms_endpoint\.([\w-]+)/)?.[1]
+      const name = nameByLabel.get(streamByEndpoint.get(endpoint ?? '') ?? '')
+      const stream = resources.find(r => r.store === 'kinesis' && r.name === name && (!r.owner || r.owner === t.service))
+      const service = MONOLITH_DMS_SOURCE.test(task.source ?? '') ? 'skello-app' : t.service
+      if (stream && !out.some(r => r.resource === stream.id && r.service === service)) {
+        out.push({ resource: stream.id, relation: 'produces', service, grade: 'config' })
+      }
+    }
+  }
+  return out
+}

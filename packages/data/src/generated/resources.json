@@ -18321,6 +18321,72 @@
       "relation": "reads",
       "service": "svc-workload-plan",
       "grade": "config"
+    },
+    {
+      "resource": "kinesis:skelloapp-bus",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:skelloApp-bus-temp",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svc-documents-v2/fullload",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:skelloapp-svckpisv2-fullload",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svckpis-svckpisv2-user-kpis-settings-cdc",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:skelloapp-svcpunch-fullload",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:skelloapp-svcreports-fullload",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcRequests",
+      "relation": "produces",
+      "service": "svc-requests",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svc-requests/fullload",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:skelloapp-svcsearch-fullload",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:skelloapp-bus-fullload-svcusers",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
     }
   ],
   "pins": {
