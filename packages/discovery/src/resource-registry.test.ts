@@ -90,3 +90,35 @@ describe('buildRegistry Terraform streams', () => {
     expect(reg.map(r => `${r.id}:${r.kind}:${r.owner}`)).toEqual(['kinesis:dataLake:stream:svc-pos'])
   })
 })
+
+describe('buildRegistry owners', () => {
+  const tf = (service: string, name: string) => ({ service, tfRepo: `${service}-tf`, facts: { resources: [{ tfType: 'aws_kinesis_stream', label: 's', name }], dmsTasks: [], dmsEndpoints: [], iamActions: [] } })
+  it('gives each split resource only its own owner evidence plus unattributed evidence', () => {
+    const reg = buildRegistry({
+      monolith: null,
+      serverless: new Map([['svc-hris', sls({ streamConsumers: [{ stream: 'full-load', kind: 'kinesis', raw: 'arn:…' }] })]]),
+      terraform: [tf('svc-punch', 'full-load'), tf('svc-shops', 'full-load')],
+      services: [],
+    })
+    expect(reg.map(r => [r.id, r.evidence])).toEqual([
+      ['kinesis:svc-punch/full-load', ['svc-hris:serverless', 'svc-punch-tf:terraform']],
+      ['kinesis:svc-shops/full-load', ['svc-hris:serverless', 'svc-shops-tf:terraform']],
+    ])
+  })
+  it('credits a prefixed name to the service it names, not the repo declaring it', () => {
+    const reg = buildRegistry({
+      monolith: null,
+      serverless: new Map([
+        ['svc-events', sls({ queueNames: ['createActivityLogJob'] })],
+        ['svc-requests', sls({ queueNames: ['svcEvents-createActivityLogJob-${sls:stage}'] })],
+      ]),
+      terraform: [],
+      services: [],
+    })
+    expect(reg.map(r => `${r.id}:${r.owner}`)).toEqual(['sqs:createActivityLogJob:svc-events'])
+  })
+  it('keeps the declaring repo when the prefix is its project stem', () => {
+    const reg = buildRegistry({ monolith: null, serverless: new Map(), services: [], terraform: [tf('svc-documents-esignature', 'svcDocuments-full-load')] })
+    expect(reg.map(r => `${r.id}:${r.owner}`)).toEqual(['kinesis:full-load:svc-documents-esignature'])
+  })
+})

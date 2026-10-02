@@ -28,6 +28,7 @@ export function tableWriters(files: Array<{ file: string; source: string }>, mod
 
 export function tableRelations(resources: Resource[], models: RailsModel[], files: Array<{ file: string; source: string }>, graph: RepoGraph | null): ResourceRelation[] {
   const writers = tableWriters(files, models)
+  const scanned = new Set(files.map(f => f.file))
   const inbound = new Map<string, Set<string>>()
   for (const [from, tos] of graph?.fileEdges ?? new Map<string, Set<string>>()) {
     for (const to of tos) {
@@ -45,7 +46,7 @@ export function tableRelations(resources: Resource[], models: RailsModel[], file
       out.push({ resource: r.id, relation: 'writes', service: 'skello-app', file, grade: 'code' })
     }
     for (const file of [...(inbound.get(modelFile) ?? [])].sort()) {
-      if (!w.has(file) && file !== modelFile) {
+      if (scanned.has(file) && !w.has(file) && file !== modelFile) {
         out.push({ resource: r.id, relation: 'reads', service: 'skello-app', file, grade: 'code' })
       }
     }

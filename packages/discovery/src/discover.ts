@@ -177,7 +177,7 @@ interface Report {
   flowCheck: FlowCheckResult
   codeLayerCheck: CodeLayerCheckResult
   branchCheck: ReturnType<typeof checkBranches>
-  resourceCheck: { findings: ResourceFinding[]; modelLess: string[]; datasetOnly: number; total: number; byKind: Record<string, number> } | null
+  resourceCheck: { findings: ResourceFinding[]; modelLess: string[]; total: number; byKind: Record<string, number> } | null
   liveResources: Resource[]
   liveRelations: ResourceRelation[]
   codeGrades: { findings: GradeFinding[]; grades: Record<string, Grade>; distribution: Record<Grade, number>; backlog: string[] } | null
@@ -686,7 +686,7 @@ function run(): Report {
   const readSources = (repo: string, files: string[]) =>
     files.map(f => ({ file: path.relative(path.join(REPO_BASE, repo), f), source: fs.readFileSync(f, 'utf-8') }))
   const monolithFiles = railsSchema
-    ? readSources('skello-app', ['app', 'lib'].flatMap(dir => walkFiles(path.join(REPO_BASE, 'skello-app', dir))).filter(f => f.endsWith('.rb')))
+    ? readSources('skello-app', ['app', 'lib', 'config'].flatMap(dir => walkFiles(path.join(REPO_BASE, 'skello-app', dir))).filter(f => f.endsWith('.rb')))
     : []
   const graphFile = path.join(REPO_BASE, 'skello-app', 'graphify-out', 'graph.json')
   const monolithPin = PIN?.pinned.find(p => p.repo === 'skello-app')
@@ -995,7 +995,7 @@ function printMarkdown(r: Report) {
   const rs = r.resourceCheck
   if (rs) {
     console.log(`\n## 🗄 Resources (${rs.findings.length} findings)\n`)
-    console.log(`${rs.total} resources — ${Object.entries(rs.byKind).map(([k, n]) => `${n} ${k}`).join(' · ')}; ${rs.datasetOnly} known from the dataset only.`)
+    console.log(`${rs.total} resources — ${Object.entries(rs.byKind).map(([k, n]) => `${n} ${k}`).join(' · ')}.`)
     console.log(`Model-less tables: ${rs.modelLess.length ? rs.modelLess.join(', ') : '_none_'}`)
     const relCounts: Record<string, number> = {}
     for (const rel of r.liveRelations) {

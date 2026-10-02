@@ -332,16 +332,7 @@
       "name": "full-load",
       "owner": "svc-billing-automation",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-billing-automation-tf:terraform"
       ]
     },
     {
@@ -351,16 +342,7 @@
       "name": "full-load",
       "owner": "svc-communications-v2",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-communications-v2-tf:terraform"
       ]
     },
     {
@@ -370,16 +352,7 @@
       "name": "full-load",
       "owner": "svc-documents-esignature",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-documents-esignature-tf:terraform"
       ]
     },
     {
@@ -389,16 +362,7 @@
       "name": "full-load",
       "owner": "svc-documents-v2",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-documents-v2-tf:terraform"
       ]
     },
     {
@@ -408,10 +372,7 @@
       "name": "fullload",
       "owner": "svc-documents-v2",
       "evidence": [
-        "svc-documents-v2-tf:terraform",
-        "svc-requests-tf:terraform",
-        "svc-requests:serverless",
-        "svc-shops-tf:terraform"
+        "svc-documents-v2-tf:terraform"
       ]
     },
     {
@@ -430,9 +391,7 @@
       "name": "apiCounter",
       "owner": "svc-employees",
       "evidence": [
-        "svc-employees-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-shops-tf:terraform"
+        "svc-employees-tf:terraform"
       ]
     },
     {
@@ -442,16 +401,7 @@
       "name": "full-load",
       "owner": "svc-employees",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-employees-tf:terraform"
       ]
     },
     {
@@ -461,16 +411,7 @@
       "name": "full-load",
       "owner": "svc-hris",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-hris-tf:terraform"
       ]
     },
     {
@@ -480,16 +421,7 @@
       "name": "full-load",
       "owner": "svc-intelligence",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-intelligence-tf:terraform"
       ]
     },
     {
@@ -499,16 +431,7 @@
       "name": "full-load",
       "owner": "svc-pos",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-pos-tf:terraform"
       ]
     },
     {
@@ -518,9 +441,7 @@
       "name": "apiCounter",
       "owner": "svc-punch",
       "evidence": [
-        "svc-employees-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-shops-tf:terraform"
+        "svc-punch-tf:terraform"
       ]
     },
     {
@@ -530,16 +451,7 @@
       "name": "full-load",
       "owner": "svc-punch",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-punch-tf:terraform"
       ]
     },
     {
@@ -549,15 +461,6 @@
       "name": "full-load",
       "owner": "svc-reports",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
         "svc-reports-tf:terraform"
       ]
     },
@@ -568,10 +471,8 @@
       "name": "fullload",
       "owner": "svc-requests",
       "evidence": [
-        "svc-documents-v2-tf:terraform",
         "svc-requests-tf:terraform",
-        "svc-requests:serverless",
-        "svc-shops-tf:terraform"
+        "svc-requests:serverless"
       ]
     },
     {
@@ -581,8 +482,6 @@
       "name": "apiCounter",
       "owner": "svc-shops",
       "evidence": [
-        "svc-employees-tf:terraform",
-        "svc-punch-tf:terraform",
         "svc-shops-tf:terraform"
       ]
     },
@@ -593,9 +492,6 @@
       "name": "fullload",
       "owner": "svc-shops",
       "evidence": [
-        "svc-documents-v2-tf:terraform",
-        "svc-requests-tf:terraform",
-        "svc-requests:serverless",
         "svc-shops-tf:terraform"
       ]
     },
@@ -5210,8 +5106,7 @@
       "name": "handleShopFeatureStateChangeRecoverySqs",
       "owner": "svc-automatic-scheduling",
       "evidence": [
-        "svc-automatic-scheduling:serverless",
-        "svc-workload-plan:serverless"
+        "svc-automatic-scheduling:serverless"
       ]
     },
     {
@@ -5221,8 +5116,7 @@
       "name": "fullLoadTriggerDatalakeFirehoseStreamSqs",
       "owner": "svc-billing-automation",
       "evidence": [
-        "svc-billing-automation:serverless",
-        "svc-communications-v2:serverless"
+        "svc-billing-automation:serverless"
       ]
     },
     {
@@ -5232,7 +5126,6 @@
       "name": "fullLoadTriggerDatalakeFirehoseStreamSqs",
       "owner": "svc-communications-v2",
       "evidence": [
-        "svc-billing-automation:serverless",
         "svc-communications-v2:serverless"
       ]
     },
@@ -5261,8 +5154,7 @@
       "name": "full-load",
       "owner": "svc-employees",
       "evidence": [
-        "svc-employees:serverless",
-        "svc-pos:serverless"
+        "svc-employees:serverless"
       ]
     },
     {
@@ -5272,8 +5164,7 @@
       "name": "full-load-dlq",
       "owner": "svc-employees",
       "evidence": [
-        "svc-employees:serverless",
-        "svc-pos:serverless"
+        "svc-employees:serverless"
       ]
     },
     {
@@ -5301,8 +5192,7 @@
       "name": "triggerFirehoseStreamSqsDlq",
       "owner": "svc-hris",
       "evidence": [
-        "svc-hris:serverless",
-        "svc-reports:serverless"
+        "svc-hris:serverless"
       ]
     },
     {
@@ -5321,9 +5211,7 @@
       "name": "mergeShop",
       "owner": "svc-kpis-v2",
       "evidence": [
-        "svc-kpis-v2:serverless",
-        "svc-punch:serverless",
-        "svc-trackers:serverless"
+        "svc-kpis-v2:serverless"
       ]
     },
     {
@@ -5333,7 +5221,6 @@
       "name": "full-load",
       "owner": "svc-pos",
       "evidence": [
-        "svc-employees:serverless",
         "svc-pos:serverless"
       ]
     },
@@ -5344,7 +5231,6 @@
       "name": "full-load-dlq",
       "owner": "svc-pos",
       "evidence": [
-        "svc-employees:serverless",
         "svc-pos:serverless"
       ]
     },
@@ -5364,9 +5250,7 @@
       "name": "mergeShop",
       "owner": "svc-punch",
       "evidence": [
-        "svc-kpis-v2:serverless",
-        "svc-punch:serverless",
-        "svc-trackers:serverless"
+        "svc-punch:serverless"
       ]
     },
     {
@@ -5376,7 +5260,6 @@
       "name": "triggerFirehoseStreamSqsDlq",
       "owner": "svc-reports",
       "evidence": [
-        "svc-hris:serverless",
         "svc-reports:serverless"
       ]
     },
@@ -5396,8 +5279,6 @@
       "name": "mergeShop",
       "owner": "svc-trackers",
       "evidence": [
-        "svc-kpis-v2:serverless",
-        "svc-punch:serverless",
         "svc-trackers:serverless"
       ]
     },
@@ -5417,7 +5298,6 @@
       "name": "handleShopFeatureStateChangeRecoverySqs",
       "owner": "svc-workload-plan",
       "evidence": [
-        "svc-automatic-scheduling:serverless",
         "svc-workload-plan:serverless"
       ]
     },
@@ -6527,27 +6407,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.billing_infos",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.billing_infos",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.billing_infos",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/super_admin_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.cached_contracts_timelines",
       "relation": "writes",
       "service": "skello-app",
@@ -6786,20 +6645,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.cluster_nodes",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/models/cluster_node_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.cluster_nodes",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/models/cluster_node_visibility_equivalence_spec.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.complementary_hours_maj_slices",
       "relation": "writes",
       "service": "skello-app",
@@ -6979,69 +6824,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/v3/users/create_service.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contract_types",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contract_types",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contract_types",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/super_admin_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contract_types",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/utils/user_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contract_types",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/jobs/migration_jobs/add_functional_diversity_contract_types_job_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contract_types",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/jobs/migration_jobs/add_midi_contract_type_job_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contract_types",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/jobs/migration_jobs/migrate_belgian_contracts_job_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contract_types",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/jobs/migration_jobs/migrate_british_contracts_job_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contract_types",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/jobs/migration_jobs/migrate_swiss_contracts_job_spec.rb",
       "grade": "code"
     },
     {
@@ -7346,34 +7128,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.contracts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contracts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contracts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/utils/user_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.contracts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/skello_pay_exporter/cegid/il_ristorante/multicontracts/absences_exporter_spec.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.conventions",
       "relation": "writes",
       "service": "skello-app",
@@ -7535,20 +7289,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.conventions",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.conventions",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/super_admin_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.day_rates_counters",
       "relation": "writes",
       "service": "skello-app",
@@ -7602,13 +7342,6 @@
       "relation": "writes",
       "service": "skello-app",
       "file": "app/services/v3/contracts/update_service.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.dpae_deposits",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/migrate/20260410101958_backfill_dpae_done_on_dpae_deposits.rb",
       "grade": "code"
     },
     {
@@ -7770,20 +7503,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/super_admin/integrations/similar_integrations_updater.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.global_integrations",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/migrate/20220803074015_change_evp_output_and_absence_output_default_values.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.global_integrations",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/support/create_global_integration_helper.rb",
       "grade": "code"
     },
     {
@@ -8305,27 +8024,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.licenses",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.licenses",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/jobs/migration_jobs/exceptional_migrations/add_pto_tracker_permissions_job_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.licenses",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/v3/licenses/license_test_context.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.lists",
       "relation": "reads",
       "service": "skello-app",
@@ -8592,27 +8290,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.memberships",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.memberships",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.memberships",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/utils/user_creator.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.mobile_reset_password_tokens",
       "relation": "reads",
       "service": "skello-app",
@@ -8638,13 +8315,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/persisters/bulk_majoration_slices_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.night_hours_maj_slices",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/exporters/skello_pay_exporter/resolvers/custo/nights_number_min_three_hours_resolver_spec.rb",
       "grade": "code"
     },
     {
@@ -9148,13 +8818,6 @@
       "resource": "pg:skello_production.organisations",
       "relation": "reads",
       "service": "skello-app",
-      "file": "db/migrate/20221109154004_add_analytics_module_to_organisations.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.organisations",
-      "relation": "reads",
-      "service": "skello-app",
       "file": "lib/skello/access_key/jwt_encoder.rb",
       "grade": "code"
     },
@@ -9341,20 +9004,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.paid_leaves_counters",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/models/paid_leaves_counter_v1_v2_equivalence_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.paid_leaves_counters",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/paid_leaves_counters/paid_leaves_calculator_spec.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.pg_search_documents",
       "relation": "reads",
       "service": "skello-app",
@@ -9394,13 +9043,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/restore_shifts_from_planning_backup.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.planning_backups",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/jobs/migration_jobs/exceptional_migrations/restore_shifts_from_planning_backup_spec.rb",
       "grade": "code"
     },
     {
@@ -9639,20 +9281,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/v3/users/over_hours/compute_service.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.planning_hours_data",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/models/planning_hours_data_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.planning_hours_data",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/models/planning_hours_data_v1_v2_equivalence_spec.rb",
       "grade": "code"
     },
     {
@@ -10230,27 +9858,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.postes",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/migrate/20250701095856_set_default_color_on_postes.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.postes",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.postes",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/utils/planning_creator.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.predicted_shifts",
       "relation": "writes",
       "service": "skello-app",
@@ -10605,13 +10212,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/rcr_counters/structure_manager.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.rcr_counters",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/models/rcr_counter_v1_v2_equivalence_spec.rb",
       "grade": "code"
     },
     {
@@ -11735,76 +11335,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/utils/planning_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/exporters/skello_pay_exporter/microntel_exporter_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/exporters/skello_pay_exporter/zucchetti_exporter_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/jobs/migration_jobs/exceptional_migrations/restore_shifts_from_planning_backup_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/requests/v3/api/plannings/day_rate_endpoints_agreement_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/persisters/leave_request_absence_creator_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/v3/matched_badgings/day_update_service_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/v3/users/day_rate_counters/compute_service_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/v3/users/day_rate_counters/days_worked_calculator_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shifts",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/v3/users/day_rate_counters/periods_compute_service_spec.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.shifts_histories",
       "relation": "writes",
       "service": "skello-app",
@@ -11966,13 +11496,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.shop_extended_infos",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/migrate/20251209091001_add_external_code_to_shop_extended_infos.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.shop_labour_laws",
       "relation": "reads",
       "service": "skello-app",
@@ -12012,13 +11535,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/models/shop.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shop_planning_configs",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/migrate/20251125094643_add_clocked_break_hours_display_to_shop_planning_configs.rb",
       "grade": "code"
     },
     {
@@ -13765,48 +13281,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.shops",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/migrate/20220412141958_disallow_nil_in_paid_vacation_acquisition_number.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shops",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shops",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "lib/tasks/exceptional/zelty_data_retriever.rake",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shops",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/exporters/hours_counter/hr_exporter/grouped_export_column_width_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shops",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/exporters/skello_pay_exporter/zucchetti_exporter_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shops",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/skello_pay_exporter/sdworx/big_mamma_de_exporter_spec.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.stripe_charges",
       "relation": "writes",
       "service": "skello-app",
@@ -14038,13 +13512,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.stripe_invoices",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/jobs/invoices/invoice_sending_job_spec.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.stripe_sources",
       "relation": "writes",
       "service": "skello-app",
@@ -14185,20 +13652,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.team_memberships",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.team_memberships",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.team_schedules",
       "relation": "writes",
       "service": "skello-app",
@@ -14301,20 +13754,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/v3/user_licenses/update_service.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.teams",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.teams",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
       "grade": "code"
     },
     {
@@ -14479,34 +13918,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.user_extended_infos",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_extended_infos",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_extended_infos",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/super_admin_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_extended_infos",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/utils/user_creator.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.user_licenses",
       "relation": "writes",
       "service": "skello-app",
@@ -14633,34 +14044,6 @@
       "grade": "code"
     },
     {
-      "resource": "pg:skello_production.user_licenses",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_licenses",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_licenses",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/utils/user_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_licenses",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/models/concerns/users/user_manager_concern_spec.rb",
-      "grade": "code"
-    },
-    {
       "resource": "pg:skello_production.user_planning_configs",
       "relation": "writes",
       "service": "skello-app",
@@ -14700,34 +14083,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_planning_configs",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_planning_configs",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_planning_configs",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/super_admin_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.user_planning_configs",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/utils/user_creator.rb",
       "grade": "code"
     },
     {
@@ -16254,76 +15609,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "config/initializers/core_extensions/warden/strategies/json_web_token_auth.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/five_guys_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/network_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/super_admin_organisation_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "db/seeds/utils/user_creator.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "lib/tasks/exceptional/licenses.rake",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "lib/tasks/exceptional/paid_leaves_counter.rake",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/controllers/concerns/v3/api/error_handler_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/exporters/skello_pay_exporter/zucchetti_exporter_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/serializers/private/svc_employees/employee_with_shops_serializer_spec.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "spec/services/skello_pay_exporter/sdworx/big_mamma_de_exporter_spec.rb",
       "grade": "code"
     },
     {

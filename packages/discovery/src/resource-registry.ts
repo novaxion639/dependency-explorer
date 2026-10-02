@@ -27,7 +27,7 @@ function isResourceName(name: string): boolean {
   return RESOURCE_NAME.test(name) && !CONSTANT_IDENTIFIER.test(name.split('.').pop() ?? name) && !HCL_REFERENCE.test(name)
 }
 
-interface Draft { kind: Resource['kind']; store: Resource['store']; name: string; owners: Set<string>; evidence: Set<string>; model?: Resource['model']; related?: string[] }
+interface Draft { kind: Resource['kind']; store: Resource['store']; name: string; owners: Set<string>; evidence: Set<string>; ownerEvidence: Map<string, Set<string>>; model?: Resource['model']; related?: string[] }
 
 export function buildRegistry(inputs: RegistryInputs): Resource[] {
   const drafts = new Map<string, Draft>()
@@ -37,26 +37,28 @@ export function buildRegistry(inputs: RegistryInputs): Resource[] {
       return
     }
     const key = `${STORE_PREFIX[store] ?? store}:${name.toLowerCase()}`
-    const d = drafts.get(key) ?? { kind, store, name, owners: new Set<string>(), evidence: new Set<string>() }
+    const d = drafts.get(key) ?? { kind, store, name, owners: new Set<string>(), evidence: new Set<string>(), ownerEvidence: new Map<string, Set<string>>() }
     if (/^[a-z]/.test(name) && !/^[a-z]/.test(d.name)) {
       d.name = name
     }
-    const who = owner ?? ownerHint
+    const who = owner && (!ownerHint || owner.startsWith(ownerHint)) ? owner : ownerHint
     if (who) {
       d.owners.add(who)
+      d.ownerEvidence.set(who, (d.ownerEvidence.get(who) ?? new Set<string>()).add(evidence))
+    } else {
+      d.evidence.add(evidence)
     }
-    d.evidence.add(evidence)
     drafts.set(key, d)
   }
 
   if (inputs.monolith) {
     const tables = new Set(inputs.monolith.tables)
     const modelByTable = new Map(inputs.monolith.models.map(m => [m.table, m]))
-    drafts.set(`pg:${MONOLITH_DB}`, { kind: 'database', store: 'postgresql', name: MONOLITH_DB, owners: new Set(['skello-app']), evidence: new Set(['skello-app:db/schema.rb']) })
+    drafts.set(`pg:${MONOLITH_DB}`, { kind: 'database', store: 'postgresql', name: MONOLITH_DB, owners: new Set(['skello-app']), evidence: new Set(['skello-app:db/schema.rb']), ownerEvidence: new Map() })
     for (const table of inputs.monolith.tables) {
       const model = modelByTable.get(table)
       drafts.set(`pg:${MONOLITH_DB}.${table}`, {
-        kind: 'table', store: 'postgresql', name: table, owners: new Set(['skello-app']), evidence: new Set(['skello-app:db/schema.rb']),
+        kind: 'table', store: 'postgresql', name: table, owners: new Set(['skello-app']), evidence: new Set(['skello-app:db/schema.rb']), ownerEvidence: new Map(),
         ...(model ? { model: { file: model.file, className: model.className }, related: model.associations.filter(t => tables.has(t) && t !== table).map(t => `pg:${MONOLITH_DB}.${t}`) } : {}),
       })
     }
@@ -107,13 +109,15 @@ export function buildRegistry(inputs: RegistryInputs): Resource[] {
     const prefix = key.split(':')[0]
     const base = key.startsWith(`pg:${MONOLITH_DB}`) ? key : `${prefix}:${d.name}`
     for (const owner of split ? owners : [owners[0]]) {
+      const ownersShown = split && owner ? [owner] : owners
+      const evidence = new Set([...d.evidence, ...ownersShown.flatMap(o => [...(d.ownerEvidence.get(o) ?? [])])])
       out.push({
         id: split ? `${prefix}:${owner}/${d.name}` : base,
         kind: d.kind,
         store: d.store,
         name: d.name,
         ...(owner ? { owner } : {}),
-        evidence: [...d.evidence].sort(),
+        evidence: [...evidence].sort(),
         ...(d.model ? { model: d.model } : {}),
         ...(d.related ? { related: d.related } : {}),
       })
