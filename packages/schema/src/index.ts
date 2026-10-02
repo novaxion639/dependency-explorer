@@ -86,6 +86,38 @@ export const MonolithRouteSchema = z.object({
 })
 export type MonolithRoute = z.infer<typeof MonolithRouteSchema>
 
+export const ResourceKindSchema = z.enum(['table', 'queue', 'topic', 'stream', 'bucket', 'database'])
+
+export const ResourceSchema = z.object({
+  id: z.string(),
+  kind: ResourceKindSchema,
+  store: DatabaseTypeSchema,
+  name: z.string(),
+  owner: z.string().optional(),
+  evidence: z.array(z.string()),
+  model: z.object({ file: z.string(), className: z.string() }).optional(),
+  related: z.array(z.string()).optional(),
+})
+export type Resource = z.infer<typeof ResourceSchema>
+
+export const ResourceRelationKindSchema = z.enum(['writes', 'reads', 'produces', 'consumes', 'dead-letters-to'])
+export const RelationGradeSchema = z.enum(['code', 'config', 'flow'])
+
+export const ResourceRelationSchema = z.object({
+  resource: z.string(),
+  relation: ResourceRelationKindSchema,
+  service: z.string(),
+  file: z.string().optional(),
+  target: z.string().optional(),
+  grade: RelationGradeSchema,
+})
+export type ResourceRelation = z.infer<typeof ResourceRelationSchema>
+
+export const ResourceSurfaceSchema = z.object({
+  resources: z.array(ResourceSchema),
+  relations: z.array(ResourceRelationSchema),
+})
+
 // ── Service ───────────────────────────────────────────────────────────────────
 
 export const ServiceDatabaseSchema = z.object({
