@@ -125,12 +125,14 @@ const week_copy: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-week-copy",
       "type": "postgresql",
       "label": "skello_production — shifts, counters, feature_clicks",
+      "resources": ["pg:skello_production.shifts", "pg:skello_production.planning_hours_data", "pg:skello_production.rcr_counters", "pg:skello_production.paid_leaves_counters", "pg:skello_production.feature_clicks"],
       "description": "Bulk shift rows for each target week + counter tables + product-usage tracking"
     },
     {
       "id": "redis-skello-week-copy",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "Sidekiq broker for the per-week overflow jobs and the per-shift creation callback jobs"
     }
   ],

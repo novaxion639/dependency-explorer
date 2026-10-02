@@ -178,6 +178,7 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-absence",
       "type": "postgresql",
       "label": "skello_production — shifts",
+      "resources": ["pg:skello_production.shifts"],
       "description": "Absences are shift rows with an absence type; ShiftReplacement rows keep the displaced work shifts recoverable"
     }
   ],

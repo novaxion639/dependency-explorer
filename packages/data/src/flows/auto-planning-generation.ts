@@ -195,90 +195,105 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-jobs-trigger",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
+      "resources": ["mongo:automatic_scheduling_jobs"],
       "description": "Create job record (status: STARTED, websocketId: UUID)"
     },
     {
       "id": "mongo-svc-search",
       "type": "mongodb",
       "label": "svc-search DB (direct VPC)",
+      "resources": ["mongo:svc-search"],
       "description": "Direct MongoDB reads — shifts (unassigned + assigned) and rawPoste collections"
     },
     {
       "id": "mongo-jobs-dataFetcher",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
+      "resources": ["mongo:automatic_scheduling_jobs"],
       "description": "Update job status → DATA_FETCHING"
     },
     {
       "id": "sqs-ws-dataFetcher",
       "type": "sqs",
       "label": "websocket-topicMessage",
+      "resources": ["sqs:websocket-topicMessage"],
       "description": "Send DATA_FETCHING notification to frontend WebSocket channel"
     },
     {
       "id": "mongo-jobs-eligibility",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
+      "resources": ["mongo:automatic_scheduling_jobs"],
       "description": "Update job status → ELIGIBILITY_COMPLIANCE_CHECK"
     },
     {
       "id": "sqs-ws-eligibility",
       "type": "sqs",
       "label": "websocket-topicMessage",
+      "resources": ["sqs:websocket-topicMessage"],
       "description": "Send ELIGIBILITY_COMPLIANCE_CHECK (once per batch invocation)"
     },
     {
       "id": "mongo-jobs-aggregate",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
+      "resources": ["mongo:automatic_scheduling_jobs"],
       "description": "Update job status → ELIGIBILITY_AGGREGATION"
     },
     {
       "id": "sqs-ws-aggregate",
       "type": "sqs",
       "label": "websocket-topicMessage",
+      "resources": ["sqs:websocket-topicMessage"],
       "description": "Send ELIGIBILITY_AGGREGATION + OPTIMIZING (pre-sent for Python solver)"
     },
     {
       "id": "mongo-jobs-assignShifts",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
+      "resources": ["mongo:automatic_scheduling_jobs"],
       "description": "Update job status → ASSIGNING"
     },
     {
       "id": "sqs-ws-assignShifts",
       "type": "sqs",
       "label": "websocket-topicMessage",
+      "resources": ["sqs:websocket-topicMessage"],
       "description": "Send ASSIGNING notification to frontend WebSocket channel"
     },
     {
       "id": "mongo-jobs-finishJob",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
+      "resources": ["mongo:automatic_scheduling_jobs"],
       "description": "Update job status → FINISHED"
     },
     {
       "id": "sqs-ws-finishJob",
       "type": "sqs",
       "label": "websocket-topicMessage",
+      "resources": ["sqs:websocket-topicMessage"],
       "description": "Send FINISHED notification to frontend WebSocket channel"
     },
     {
       "id": "sqs-metrics",
       "type": "sqs",
       "label": "autoAssignMetrics",
+      "resources": ["sqs:autoAssignMetrics"],
       "description": "Job-completion metrics consumed by handleAutoAssignMetrics Lambda"
     },
     {
       "id": "pg-skello-read",
       "type": "postgresql",
       "label": "skello_production (RDS)",
+      "resources": ["pg:skello_production.shops", "pg:skello_production.teams", "pg:skello_production.postes", "pg:skello_production.contract_types", "pg:skello_production.users", "pg:skello_production.contracts", "pg:skello_production.memberships", "pg:skello_production.licenses", "pg:skello_production.contract_amendments"],
       "description": "Read shops, teams, postes, contract_types, users, contracts, memberships, licenses, amendments"
     },
     {
       "id": "pg-skello-write",
       "type": "postgresql",
       "label": "skello_production (RDS)",
+      "resources": ["pg:skello_production.shifts", "pg:skello_production.badgings", "pg:skello_production.shift_swaps", "pg:skello_production.shift_replacements"],
       "description": "Write shifts, badgings, shift_swaps, shift_replacements in a transaction"
     }
   ],

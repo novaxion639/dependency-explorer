@@ -62,6 +62,7 @@ const planning_event_management: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-planning-events",
       "type": "postgresql",
       "label": "skello_production — events",
+      "resources": ["pg:skello_production.events"],
       "description": "Planning grid events scoped by shop and date range"
     }
   ],

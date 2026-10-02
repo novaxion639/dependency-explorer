@@ -124,6 +124,7 @@ const availability_submission: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-availabilities",
       "type": "postgresql",
       "label": "skello_production — availabilities",
+      "resources": ["pg:skello_production.availabilities"],
       "description": "One-off and weekly-recurring availability slots, statused for the pending/review cycle"
     }
   ],

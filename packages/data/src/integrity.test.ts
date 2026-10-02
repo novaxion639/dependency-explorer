@@ -476,3 +476,20 @@ describe('resource surface', () => {
     }
   })
 })
+
+describe('flow infra nodes', () => {
+  const known = new Set(resourceSurface.resources.map(r => r.id))
+  it('resolve to registry resources, except on-device sqlite queues', () => {
+    for (const flow of flows) {
+      for (const node of flow.infraNodes ?? []) {
+        if (node.type === 'sqlite') {
+          continue
+        }
+        expect(node.resources?.length, `${flow.id}/${node.id} has no resources`).toBeGreaterThan(0)
+        for (const id of node.resources ?? []) {
+          expect(known.has(id), `${flow.id}/${node.id} → unknown ${id}`).toBe(true)
+        }
+      }
+    }
+  })
+})

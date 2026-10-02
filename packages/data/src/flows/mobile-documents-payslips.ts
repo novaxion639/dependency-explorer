@@ -94,6 +94,7 @@ const mobile_documents_payslips: ServiceFlow = ServiceFlowSchema.parse({
       "id": "s3-docs-v2-mobile",
       "type": "s3",
       "label": "svc-documents-v2.{env} bucket",
+      "resources": ["s3:svc-documents-v2"],
       "description": "Upload target — the phone PUTs directly to the presigned URL; the bucket's notification lambda (s3FileListenerJob) picks the object up service-side"
     }
   ],

@@ -104,6 +104,7 @@ const payroll_export: ServiceFlow = ServiceFlowSchema.parse({
       "id": "dynamo-payroll",
       "type": "dynamodb",
       "label": "svcPayroll-{env}",
+      "resources": ["ddb:svcPayroll"],
       "description": "Provider configs, template/company mappings, sync runs and per-run EVP results"
     }
   ],

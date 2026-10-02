@@ -182,6 +182,7 @@ const shift_bulk_erase: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-bulk-erase",
       "type": "postgresql",
       "label": "skello_production — shifts",
+      "resources": ["pg:skello_production.shifts"],
       "description": "Shift rows removed for the period; PredictedShift / ShiftSwap / ShiftReplacement rows purged"
     }
   ],

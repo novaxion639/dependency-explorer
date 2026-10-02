@@ -144,12 +144,12 @@ const pos_revenue_ingestion: ServiceFlow = ServiceFlowSchema.parse({
     { "from": "cu-pri-wp-mgr", "to": "svc-kpis-v2", "label": "fetchAllKpis (POST /kpis)", "mode": "sync", "contractRefs": ["POST /kpis"] }
   ],
   "infraNodes": [
-    { "id": "sqs-pos-integration", "type": "sqs", "label": "IntegrationJobQueue (+DLQ)", "description": "One message per active integration per cron firing" },
-    { "id": "sqs-pos-transaction", "type": "sqs", "label": "TransactionQueue (+DLQ)", "description": "Pulled provider transactions awaiting the Dynamo write" },
-    { "id": "sqs-pos-aggregation", "type": "sqs", "label": "AggregationEventFifoQueue (.fifo, +DLQ)", "description": "Ordered day-aggregation events" },
-    { "id": "dynamo-svc-pos", "type": "dynamodb", "label": "svc-pos single-table (+stream)", "description": "TRANSACTIONS/INTEGRATIONS/ORGANISATION_CONFIG — the stream feeds aggregation and datalake" },
-    { "id": "kinesis-pos-datalake", "type": "kinesis", "label": "svcPos-dataLake Firehose → S3", "description": "Analytics datalake delivery (svc-pos-tf)" },
-    { "id": "mongo-kpis-transactions", "type": "mongodb", "label": "svc-kpis-v2 `transactions` collection", "description": "Raw POS transaction data — read-only in svc-kpis-v2; hydration mechanism external (datalake ETL boundary)" }
+    { "id": "sqs-pos-integration", "type": "sqs", "label": "IntegrationJobQueue (+DLQ)", "resources": ["sqs:integrationJob", "sqs:integrationJobDlq"], "description": "One message per active integration per cron firing" },
+    { "id": "sqs-pos-transaction", "type": "sqs", "label": "TransactionQueue (+DLQ)", "resources": ["sqs:transaction", "sqs:transactionDlq"], "description": "Pulled provider transactions awaiting the Dynamo write" },
+    { "id": "sqs-pos-aggregation", "type": "sqs", "label": "AggregationEventFifoQueue (.fifo, +DLQ)", "resources": ["sqs:aggregationEvent.fifo", "sqs:aggregationEventDlq.fifo"], "description": "Ordered day-aggregation events" },
+    { "id": "dynamo-svc-pos", "type": "dynamodb", "label": "svc-pos single-table (+stream)", "resources": ["ddb:svcPos"], "description": "TRANSACTIONS/INTEGRATIONS/ORGANISATION_CONFIG — the stream feeds aggregation and datalake" },
+    { "id": "kinesis-pos-datalake", "type": "kinesis", "label": "svcPos-dataLake Firehose → S3", "resources": ["kinesis:dataLake"], "description": "Analytics datalake delivery (svc-pos-tf)" },
+    { "id": "mongo-kpis-transactions", "type": "mongodb", "label": "svc-kpis-v2 `transactions` collection", "resources": ["mongo:svc-kpis-v2"], "description": "Raw POS transaction data — read-only in svc-kpis-v2; hydration mechanism external (datalake ETL boundary)" }
   ],
   "infraEdges": [
     { "from": "svc-pos", "to": "dynamo-svc-pos", "label": "transaction writes", "crud": ["create"] },

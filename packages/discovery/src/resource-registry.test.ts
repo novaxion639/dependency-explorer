@@ -63,7 +63,7 @@ describe('buildRegistry noise rules', () => {
     monolith: null,
     serverless: new Map([
       ['svc-users', sls({
-        queueNames: ['addEmailToComputeUserCredentialsDlq', 'aggregationEvent-\\.fifo', 'SendDataToFirehose.QUEUE_NAME'],
+        queueNames: ['addEmailToComputeUserCredentialsDlq', 'aggregationEvent-\\.fifo', 'SendDataToFirehose.QUEUE_NAME', 'integrationJob-\\'],
         dlqWirings: [
           { queue: 'addEmailToComputeUserCredentials', dlq: 'AddEmailToComputeUserCredentialsDlq', retry: null, via: 'redrive' },
           { queue: null, dlq: 'AGGREGATE_PLANNED_POSITION_JOB_DLQ_QUEUE_NAME', retry: null, via: 'helper' },
@@ -80,6 +80,13 @@ describe('buildRegistry noise rules', () => {
     expect(ids.filter(id => id.toLowerCase() === 'sqs:addemailtocomputeusercredentialsdlq')).toEqual(['sqs:addEmailToComputeUserCredentialsDlq'])
   })
   it('drops expressions, constant identifiers and prose, and cleans escaped suffixes', () => {
-    expect(ids).toEqual(['sqs:addEmailToComputeUserCredentialsDlq', 'sqs:aggregationEvent.fifo'])
+    expect(ids).toEqual(['sqs:addEmailToComputeUserCredentialsDlq', 'sqs:aggregationEvent.fifo', 'sqs:integrationJob'])
+  })
+})
+
+describe('buildRegistry Terraform streams', () => {
+  it('registers Firehose delivery streams as kinesis streams', () => {
+    const reg = buildRegistry({ monolith: null, serverless: new Map(), services: [], terraform: [{ service: 'svc-pos', tfRepo: 'svc-pos-tf', facts: { resources: [{ tfType: 'aws_kinesis_firehose_delivery_stream', label: 'd', name: 'svcPos-dataLake-${local.workspace}' }], dmsTasks: [], dmsEndpoints: [], iamActions: [] } }] })
+    expect(reg.map(r => `${r.id}:${r.kind}:${r.owner}`)).toEqual(['kinesis:dataLake:stream:svc-pos'])
   })
 })

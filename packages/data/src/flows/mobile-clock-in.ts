@@ -178,12 +178,14 @@ const mobile_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "id": "dynamo-svc-punch",
       "type": "dynamodb",
       "label": "svcPunch-{env}",
+      "resources": ["ddb:svcPunch"],
       "description": "Single-table store: CLOCKINOUT, SETTING, HISTORY, replicated USER rows. ClockInOut items reference shop/user/timestamps ONLY — shift matching happens entirely in the monolith"
     },
     {
       "id": "redis-skello-lateness",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "Sidekiq broker for LatenessNotificationJob"
     }
   ],

@@ -133,6 +133,7 @@ const planning_period_lock: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-period-lock",
       "type": "postgresql",
       "label": "skello_production — weekly_options",
+      "resources": ["pg:skello_production.weekly_options"],
       "description": "Per-shop, per-monday validation levels — the lock state the shift services check before edits"
     }
   ],

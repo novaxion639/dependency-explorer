@@ -177,18 +177,21 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
       "id": "dynamo-employees",
       "type": "dynamodb",
       "label": "SvcEmployees ({env})",
+      "resources": ["ddb:svcEmployees"],
       "description": "Employee configs and sync state (employee master data lives in the monolith, fronted by private endpoints)"
     },
     {
       "id": "dynamo-hris",
       "type": "dynamodb",
       "label": "svcHris-{env}",
+      "resources": ["ddb:svcHris"],
       "description": "HRIS integration credentials, sync sessions, TTL'd sync errors"
     },
     {
       "id": "sqs-hris-upsert",
       "type": "sqs",
       "label": "employee upsert queue",
+      "resources": ["sqs:UpsertEmployeeQueue", "sqs:UpsertEmployeeDlqQueue"],
       "description": "svc-hris → svc-employees upsert channel (UpsertEmployeeFromHrisDto), with a DLQ feeding the sync-error trail"
     }
   ],

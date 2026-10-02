@@ -129,12 +129,14 @@ const assistant_freemium_credits: ServiceFlow = ServiceFlowSchema.parse({
       "id": "sqs-assistant-processchat",
       "type": "sqs",
       "label": "processChatSQS (+ processChatDLQ)",
+      "resources": ["sqs:processChatSQS", "sqs:processChatDLQ"],
       "description": "The turn queue between discuss and the LLM consumer"
     },
     {
       "id": "dynamo-billing-credits",
       "type": "dynamodb",
       "label": "svc-billing-automation single-table",
+      "resources": ["ddb:svcBillingAutomation"],
       "description": "PK ORGANISATION#{id}, SK CREDIT_BALANCE#PERIOD_{YYYY-MM}#FEATURE_{key} — used/limit; no refill cron, months lazily initialize"
     }
   ],

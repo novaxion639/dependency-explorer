@@ -116,12 +116,14 @@ const shift_publication: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-publication",
       "type": "postgresql",
       "label": "skello_production — weekly_option_publications, weekly_options",
+      "resources": ["pg:skello_production.weekly_option_publications", "pg:skello_production.weekly_options"],
       "description": "Per-user publication rows and the week's published state"
     },
     {
       "id": "redis-skello-publication",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "Sidekiq broker carrying PublishJob"
     }
   ],

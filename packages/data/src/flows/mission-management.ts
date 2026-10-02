@@ -164,8 +164,8 @@ const mission_management: ServiceFlow = ServiceFlowSchema.parse({
     { "from": "cu-mm-purge-job", "to": "svc-shops", "label": "purge_shop_missions", "mode": "sync", "crud": ["delete"] }
   ],
   "infraNodes": [
-    { "id": "mongo-shops-missions", "type": "mongodb", "label": "svc-shops `missions` collection", "description": "Mission entity storage (own DB)" },
-    { "id": "mongo-search-shared", "type": "mongodb", "label": "svc-search shared Mongo — shifts + rawShop", "description": "Read-only shared-database coupling (the existing verified svc-shops→svc-search edge)" }
+    { "id": "mongo-shops-missions", "type": "mongodb", "label": "svc-shops `missions` collection", "resources": ["mongo:svc-shops"], "description": "Mission entity storage (own DB)" },
+    { "id": "mongo-search-shared", "type": "mongodb", "label": "svc-search shared Mongo — shifts + rawShop", "resources": ["mongo:svc-search"], "description": "Read-only shared-database coupling (the existing verified svc-shops→svc-search edge)" }
   ],
   "infraEdges": [
     { "from": "svc-shops", "to": "mongo-shops-missions", "label": "mission CRUD", "crud": ["create", "read", "update", "delete"] },

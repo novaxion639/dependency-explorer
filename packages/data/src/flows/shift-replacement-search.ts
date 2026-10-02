@@ -29,18 +29,21 @@ const shift_replacement_search: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-svc-search",
       "type": "mongodb",
       "label": "svc-search DB (direct VPC)",
+      "resources": ["mongo:svc-search"],
       "description": "4 read queries: (1) shift by skelloId, (2) poste for shift, (3) assigned shifts for all candidate users in the week, (4) postes for those shifts — collections: shifts, rawPoste"
     },
     {
       "id": "pg-skello-read",
       "type": "postgresql",
       "label": "skello_production (RDS)",
+      "resources": ["pg:skello_production.shops", "pg:skello_production.alerts", "pg:skello_production.weekly_options", "pg:skello_production.users", "pg:skello_production.contracts", "pg:skello_production.dpae_deposits", "pg:skello_production.prospects", "pg:skello_production.shift_replacements"],
       "description": "Read shop, alerts config, weekly options, users, contracts, dpae_deposits, prospects, shift_replacements (for exclusion)"
     },
     {
       "id": "sqs-metrics",
       "type": "sqs",
       "label": "shiftsEmployeeReplacementsMetrics",
+      "resources": ["sqs:shiftsEmployeeReplacementsMetrics"],
       "description": "Replacement metrics report — consumed by handleSuggestionsMetrics Lambda (120s timeout) which POSTs to data platform ingestion API"
     }
   ],

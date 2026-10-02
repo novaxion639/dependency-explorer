@@ -168,12 +168,14 @@ const employee_archival: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-archival",
       "type": "postgresql",
       "label": "skello_production — users, shifts, availabilities, counters, archived_user_shifts_backup",
+      "resources": ["pg:skello_production.users", "pg:skello_production.shifts", "pg:skello_production.availabilities", "pg:skello_production.planning_hours_data", "pg:skello_production.rcr_counters", "pg:skello_production.paid_leaves_counters", "pg:skello_production.archived_user_shifts_backups"],
       "description": "Soft-deleted user + cascaded rows; the CDC bus replicates the users table outward"
     },
     {
       "id": "redis-skello-archival",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "Sidekiq broker for the archival job fan-out"
     }
   ],

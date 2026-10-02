@@ -265,12 +265,14 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-badging-review",
       "type": "postgresql",
       "label": "skello_production — shifts, badgings, counters",
+      "resources": ["pg:skello_production.shifts", "pg:skello_production.badgings"],
       "description": "Worked shifts created/updated from validated badgings + recomputed counter tables"
     },
     {
       "id": "redis-skello-badging-review",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "Sidekiq broker for the recalculation job and the per-shift creation callbacks"
     }
   ],

@@ -283,18 +283,21 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-requests",
       "type": "postgresql",
       "label": "svc-requests Aurora",
+      "resources": ["pg:svc_requests"],
       "description": "The service's own Postgres (TypeORM entities) — leave request rows"
     },
     {
       "id": "kinesis-requests-cdc",
       "type": "kinesis",
       "label": "svcRequests-{env}",
+      "resources": ["kinesis:svcRequests"],
       "description": "The service's own CDC stream: a dedicated DMS aurora replication task streams row changes here (svc-requests-tf)"
     },
     {
       "id": "sns-dispatch-lrl",
       "type": "sns",
       "label": "SnsDispatch",
+      "resources": ["sns:dispatch"],
       "description": "Request-event fan-out topic — SQS subscriptions filter on the trigger message attribute"
     }
   ],

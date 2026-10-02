@@ -126,6 +126,7 @@ const bff_dashboard_load: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-kpis",
       "type": "mongodb",
       "label": "SvcKpisV2 (VPC MongoDB)",
+      "resources": ["mongo:svc-kpis-v2"],
       "description": "KPI collections — kpisManual, settingActivityPrediction, settingsDisplayMetrics"
     }
   ],

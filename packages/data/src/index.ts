@@ -11,6 +11,7 @@ import monolithRoutesJson from './generated/monolith-routes.json'
 import resourcesJson from './generated/resources.json'
 import { monolithEndpoints } from './monolith-endpoints'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
+import { flowRelations } from './resources-derive'
 
 import svc_events from './services/svc-events'
 import svc_communications_v2 from './services/svc-communications-v2'
@@ -249,9 +250,12 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   externals,
 })
 
+export const allResourceRelations = [...resourceSurface.relations, ...flowRelations(connectivityMap)]
+
 export * from '@dependency-explorer/schema'
 export { globToRegExp } from './glob'
 export { resourceNotes, type ResourceNote } from './resource-notes'
 export { normalizeResourceName } from './resource-names'
+export { flowRelations, resourceImpact, type ResourceImpact } from './resources-derive'
 export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, getCrossAreaEdges, buildContextLanes } from './areas-derive'
 export type { CrossAreaEdge, ContextLanes } from './areas-derive'

@@ -167,12 +167,14 @@ const contract_amendment: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-amendments",
       "type": "postgresql",
       "label": "skello_production — contract_amendments, planning_hours_datas, cached_contracts_timelines",
+      "resources": ["pg:skello_production.contract_amendments", "pg:skello_production.planning_hours_data", "pg:skello_production.cached_contracts_timelines"],
       "description": "Amendment rows + recomputed counters + the contracts-timeline cache microservices read"
     },
     {
       "id": "redis-skello-amendments",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "Sidekiq broker (default + hours_counter queues)"
     }
   ],

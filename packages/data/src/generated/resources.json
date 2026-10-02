@@ -199,38 +199,43 @@
       ]
     },
     {
-      "id": "kinesis:bus-temp",
+      "id": "kinesis:cdc",
       "kind": "stream",
       "store": "kinesis",
-      "name": "bus-temp",
+      "name": "cdc",
+      "owner": "svc-shops",
+      "evidence": [
+        "svc-shops-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:conversation",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "conversation",
+      "owner": "svc-skello-assistant",
+      "evidence": [
+        "svc-skello-assistant-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:dataLake",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "dataLake",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:globalDms",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "globalDms",
       "owner": "skello-app",
       "evidence": [
         "skello-app-tf:terraform"
-      ]
-    },
-    {
-      "id": "kinesis:fullload",
-      "kind": "stream",
-      "store": "kinesis",
-      "name": "fullload",
-      "owner": "svc-documents-v2",
-      "evidence": [
-        "svc-documents-v2-tf:terraform",
-        "svc-requests-tf:terraform",
-        "svc-requests:serverless"
-      ]
-    },
-    {
-      "id": "kinesis:lower",
-      "kind": "stream",
-      "store": "kinesis",
-      "name": "lower",
-      "owner": "svc-kpis-v2",
-      "evidence": [
-        "svc-kpis-v2-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform",
-        "svc-search-tf:terraform"
       ]
     },
     {
@@ -268,11 +273,33 @@
       ]
     },
     {
+      "id": "kinesis:skelloApp-bus-temp",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "skelloApp-bus-temp",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:skelloapp-svckpisv2-fullload",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "skelloapp-svckpisv2-fullload",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2-tf:terraform"
+      ]
+    },
+    {
       "id": "kinesis:skelloapp-svcpunch-fullload",
       "kind": "stream",
       "store": "kinesis",
       "name": "skelloapp-svcpunch-fullload",
+      "owner": "svc-punch",
       "evidence": [
+        "svc-punch-tf:terraform",
         "svc-punch:serverless"
       ]
     },
@@ -281,7 +308,9 @@
       "kind": "stream",
       "store": "kinesis",
       "name": "skelloapp-svcreports-fullload",
+      "owner": "svc-reports",
       "evidence": [
+        "svc-reports-tf:terraform",
         "svc-reports:serverless"
       ]
     },
@@ -290,8 +319,99 @@
       "kind": "stream",
       "store": "kinesis",
       "name": "skelloapp-svcsearch-fullload",
+      "owner": "svc-search",
       "evidence": [
+        "svc-search-tf:terraform",
         "svc-search:serverless"
+      ]
+    },
+    {
+      "id": "kinesis:svc-billing-automation/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-billing-automation",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-communications-v2/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-communications-v2",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-documents-esignature/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-documents-esignature",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-documents-v2/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-documents-v2/fullload",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "fullload",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2-tf:terraform",
+        "svc-requests-tf:terraform",
+        "svc-requests:serverless",
+        "svc-shops-tf:terraform"
       ]
     },
     {
@@ -301,6 +421,302 @@
       "name": "svc-employees-stream",
       "evidence": [
         "dataset:svc-employees"
+      ]
+    },
+    {
+      "id": "kinesis:svc-employees/apiCounter",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "apiCounter",
+      "owner": "svc-employees",
+      "evidence": [
+        "svc-employees-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-shops-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-employees/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-employees",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-hris/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-hris",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-intelligence/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-intelligence",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-pos/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-punch/apiCounter",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "apiCounter",
+      "owner": "svc-punch",
+      "evidence": [
+        "svc-employees-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-shops-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-punch/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-punch",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-reports/full-load",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "full-load",
+      "owner": "svc-reports",
+      "evidence": [
+        "svc-billing-automation-tf:terraform",
+        "svc-communications-v2-tf:terraform",
+        "svc-documents-esignature-tf:terraform",
+        "svc-documents-v2-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-hris-tf:terraform",
+        "svc-intelligence-tf:terraform",
+        "svc-pos-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-requests/fullload",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "fullload",
+      "owner": "svc-requests",
+      "evidence": [
+        "svc-documents-v2-tf:terraform",
+        "svc-requests-tf:terraform",
+        "svc-requests:serverless",
+        "svc-shops-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-shops/apiCounter",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "apiCounter",
+      "owner": "svc-shops",
+      "evidence": [
+        "svc-employees-tf:terraform",
+        "svc-punch-tf:terraform",
+        "svc-shops-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svc-shops/fullload",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "fullload",
+      "owner": "svc-shops",
+      "evidence": [
+        "svc-documents-v2-tf:terraform",
+        "svc-requests-tf:terraform",
+        "svc-requests:serverless",
+        "svc-shops-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcCommunicationsV2",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcCommunicationsV2",
+      "owner": "svc-communications-v2",
+      "evidence": [
+        "svc-communications-v2-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcDocuments",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcDocuments",
+      "owner": "svc-documents-esignature",
+      "evidence": [
+        "svc-documents-esignature-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcDocumentsV2",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcDocumentsV2",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcEmployees",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcEmployees",
+      "owner": "svc-employees",
+      "evidence": [
+        "svc-employees-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcEnrollment",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcEnrollment",
+      "owner": "svc-enrollment",
+      "evidence": [
+        "svc-enrollment-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcHris",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcHris",
+      "owner": "svc-hris",
+      "evidence": [
+        "svc-hris-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcIntelligence",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcIntelligence",
+      "owner": "svc-intelligence",
+      "evidence": [
+        "svc-intelligence-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svckpis-svckpisv2-user-kpis-settings-cdc",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svckpis-svckpisv2-user-kpis-settings-cdc",
+      "owner": "svc-kpis-v2",
+      "evidence": [
+        "svc-kpis-v2-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcPunch",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcPunch",
+      "owner": "svc-punch",
+      "evidence": [
+        "svc-punch-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcReports",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcReports",
+      "owner": "svc-reports",
+      "evidence": [
+        "svc-reports-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcRequests",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcRequests",
+      "owner": "svc-requests",
+      "evidence": [
+        "svc-requests-tf:terraform"
+      ]
+    },
+    {
+      "id": "kinesis:svcUsers",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "svcUsers",
+      "owner": "svc-users",
+      "evidence": [
+        "svc-users-tf:terraform"
       ]
     },
     {
@@ -3318,6 +3734,26 @@
       ]
     },
     {
+      "id": "sqs:forecastIntegrationJob",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "forecastIntegrationJob",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:forecastIntegrationJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "forecastIntegrationJobDlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
       "id": "sqs:forgotPasswordEmailJob",
       "kind": "queue",
       "store": "sqs",
@@ -3648,6 +4084,26 @@
       ]
     },
     {
+      "id": "sqs:integrationJob",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "integrationJob",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:integrationJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "integrationJobDlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
       "id": "sqs:IntegrationStateChangedEventsQueue",
       "kind": "queue",
       "store": "sqs",
@@ -3868,36 +4324,6 @@
       ]
     },
     {
-      "id": "sqs:pingShopIdAndDateDlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "pingShopIdAndDateDlq",
-      "owner": "svc-websockets",
-      "evidence": [
-        "websocket-tf:terraform"
-      ]
-    },
-    {
-      "id": "sqs:pingTypeAndUuid",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "pingTypeAndUuid",
-      "owner": "svc-websockets",
-      "evidence": [
-        "websocket-tf:terraform"
-      ]
-    },
-    {
-      "id": "sqs:pingTypeAndUuidDlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "pingTypeAndUuidDlq",
-      "owner": "svc-websockets",
-      "evidence": [
-        "websocket-tf:terraform"
-      ]
-    },
-    {
       "id": "sqs:plannedPositionSynchronizerSqs",
       "kind": "queue",
       "store": "sqs",
@@ -3955,6 +4381,26 @@
       "owner": "svc-kpis-v2",
       "evidence": [
         "svc-kpis-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:posHistoryJob",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "posHistoryJob",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:posHistoryJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "posHistoryJobDlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
       ]
     },
     {
@@ -4065,46 +4511,6 @@
       "owner": "svc-automatic-scheduling",
       "evidence": [
         "svc-automatic-scheduling:serverless"
-      ]
-    },
-    {
-      "id": "sqs:puma-documentsV2-workflow",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "puma-documentsV2-workflow",
-      "owner": "skello-app",
-      "evidence": [
-        "skello-app-tf:terraform"
-      ]
-    },
-    {
-      "id": "sqs:puma-documentsV2-workflow-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "puma-documentsV2-workflow-dlq",
-      "owner": "skello-app",
-      "evidence": [
-        "skello-app-tf:terraform"
-      ]
-    },
-    {
-      "id": "sqs:puma-eSignature",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "puma-eSignature",
-      "owner": "skello-app",
-      "evidence": [
-        "skello-app-tf:terraform"
-      ]
-    },
-    {
-      "id": "sqs:puma-eSignature-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "puma-eSignature-dlq",
-      "owner": "skello-app",
-      "evidence": [
-        "skello-app-tf:terraform"
       ]
     },
     {
@@ -4235,6 +4641,26 @@
       "owner": "svc-kpis",
       "evidence": [
         "svc-kpis:serverless"
+      ]
+    },
+    {
+      "id": "sqs:sendDataToFirehose",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "sendDataToFirehose",
+      "owner": "svc-employees",
+      "evidence": [
+        "svc-employees:serverless"
+      ]
+    },
+    {
+      "id": "sqs:sendDataToFirehoseDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "sendDataToFirehoseDlq",
+      "owner": "svc-employees",
+      "evidence": [
+        "svc-employees:serverless"
       ]
     },
     {
@@ -4455,6 +4881,46 @@
       "name": "skello-sqs-events",
       "evidence": [
         "dataset:skello-app"
+      ]
+    },
+    {
+      "id": "sqs:skelloApp-puma-documentsV2-workflow",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "skelloApp-puma-documentsV2-workflow",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:skelloApp-puma-documentsV2-workflow-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "skelloApp-puma-documentsV2-workflow-dlq",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:skelloApp-puma-eSignature",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "skelloApp-puma-eSignature",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:skelloApp-puma-eSignature-dlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "skelloApp-puma-eSignature-dlq",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
       ]
     },
     {
@@ -5176,6 +5642,26 @@
       ]
     },
     {
+      "id": "sqs:transaction",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "transaction",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
+      "id": "sqs:transactionDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "transactionDlq",
+      "owner": "svc-pos",
+      "evidence": [
+        "svc-pos:serverless"
+      ]
+    },
+    {
       "id": "sqs:triggerActivityPredictionSettingsSNSJobDlq",
       "kind": "queue",
       "store": "sqs",
@@ -5475,12 +5961,34 @@
       ]
     },
     {
+      "id": "sqs:websocket-pingShopIdAndDateDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "websocket-pingShopIdAndDateDlq",
+      "owner": "svc-websockets",
+      "evidence": [
+        "websocket-tf:terraform"
+      ]
+    },
+    {
       "id": "sqs:websocket-pingTypeAndUuid",
       "kind": "queue",
       "store": "sqs",
       "name": "websocket-pingTypeAndUuid",
+      "owner": "svc-websockets",
       "evidence": [
-        "dataset:svc-websockets"
+        "dataset:svc-websockets",
+        "websocket-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:websocket-pingTypeAndUuidDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "websocket-pingTypeAndUuidDlq",
+      "owner": "svc-websockets",
+      "evidence": [
+        "websocket-tf:terraform"
       ]
     },
     {
@@ -16162,6 +16670,69 @@
       "grade": "code"
     },
     {
+      "resource": "kinesis:conversation",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "config/locales/app/de/views.yml",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:conversation",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "config/locales/app/en/views.yml",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:conversation",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "config/locales/app/es/views.yml",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:conversation",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "config/locales/app/fr/views.yml",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:conversation",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "config/locales/app/fr-BE/views.yml",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:conversation",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "config/locales/app/fr-CH/views.yml",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:conversation",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "config/locales/app/it/views.yml",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:conversation",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "config/locales/app/nl/views.yml",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:conversation",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "config/locales/app/pt/views.yml",
+      "grade": "code"
+    },
+    {
       "resource": "kinesis:skelloapp-bus",
       "relation": "produces",
       "service": "svc-automatic-scheduling",
@@ -16295,24 +16866,290 @@
       "grade": "config"
     },
     {
-      "resource": "kinesis:skelloapp-svcpunch-fullload",
+      "resource": "kinesis:svc-employees/apiCounter",
       "relation": "produces",
       "service": "svc-punch",
       "file": "serverless.ts",
       "grade": "config"
     },
     {
-      "resource": "kinesis:skelloapp-svcreports-fullload",
+      "resource": "kinesis:svc-employees/apiCounter",
       "relation": "produces",
-      "service": "svc-reports",
+      "service": "svc-shops",
       "file": "serverless.ts",
       "grade": "config"
     },
     {
-      "resource": "kinesis:skelloapp-svcsearch-fullload",
+      "resource": "kinesis:svc-punch/apiCounter",
       "relation": "produces",
-      "service": "svc-search",
-      "file": "serverless/functions/stream.ts",
+      "service": "svc-employees",
+      "file": "src/Controller/EmployeeController.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:svc-punch/apiCounter",
+      "relation": "produces",
+      "service": "svc-employees",
+      "file": "src/Controller/PublicEmployeeController.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:svc-punch/apiCounter",
+      "relation": "produces",
+      "service": "svc-employees",
+      "file": "src/Helper/EnvVarsHelper.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:svc-punch/apiCounter",
+      "relation": "produces",
+      "service": "svc-employees",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svc-punch/apiCounter",
+      "relation": "produces",
+      "service": "svc-shops",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svc-shops/apiCounter",
+      "relation": "produces",
+      "service": "svc-employees",
+      "file": "src/Controller/EmployeeController.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:svc-shops/apiCounter",
+      "relation": "produces",
+      "service": "svc-employees",
+      "file": "src/Controller/PublicEmployeeController.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:svc-shops/apiCounter",
+      "relation": "produces",
+      "service": "svc-employees",
+      "file": "src/Helper/EnvVarsHelper.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:svc-shops/apiCounter",
+      "relation": "produces",
+      "service": "svc-employees",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svc-shops/apiCounter",
+      "relation": "produces",
+      "service": "svc-punch",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/current_user_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-billing-automation",
+      "file": "serverless/provider/index.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-documents-v2",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-employees",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-enrollment",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-events",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-hiring",
+      "file": "serverless/custom/index.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-hris",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-intercom-bot",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-payroll",
+      "file": "serverless/custom/index.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-requests",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcCommunicationsV2",
+      "relation": "produces",
+      "service": "svc-users",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcDocuments",
+      "relation": "produces",
+      "service": "svc-documents-v2",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcDocumentsV2",
+      "relation": "produces",
+      "service": "svc-bff",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcDocumentsV2",
+      "relation": "produces",
+      "service": "svc-documents-esignature",
+      "file": "src/Manager/YousignManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:svcDocumentsV2",
+      "relation": "produces",
+      "service": "svc-documents-esignature",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcDocumentsV2",
+      "relation": "produces",
+      "service": "svc-intelligence",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcDocumentsV2",
+      "relation": "produces",
+      "service": "svc-punch",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcDocumentsV2",
+      "relation": "produces",
+      "service": "svc-skello-assistant",
+      "file": "serverless/serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcDocumentsV2",
+      "relation": "produces",
+      "service": "svc-users",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcEmployees",
+      "relation": "produces",
+      "service": "svc-hris",
+      "file": "src/Helper/SyncEmployeeErrorClassifier.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:svcEmployees",
+      "relation": "produces",
+      "service": "svc-hris",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcEmployees",
+      "relation": "produces",
+      "service": "svc-intercom-bot",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcEmployees",
+      "relation": "produces",
+      "service": "svc-shops",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcEmployees",
+      "relation": "produces",
+      "service": "svc-users",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcIntelligence",
+      "relation": "produces",
+      "service": "svc-documents-v2",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcIntelligence",
+      "relation": "produces",
+      "service": "svc-skello-assistant",
+      "file": "serverless/serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcIntelligence",
+      "relation": "produces",
+      "service": "svc-users",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:svcReports",
+      "relation": "produces",
+      "service": "svc-users",
+      "file": "serverless.ts",
       "grade": "config"
     },
     {
@@ -16773,6 +17610,18 @@
       "grade": "config"
     },
     {
+      "resource": "sqs:forecastIntegrationJob",
+      "relation": "consumes",
+      "service": "svc-pos",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:forecastIntegrationJobDlq",
+      "relation": "consumes",
+      "service": "svc-pos",
+      "grade": "config"
+    },
+    {
       "resource": "sqs:forgotPasswordEmailJob",
       "relation": "consumes",
       "service": "svc-users",
@@ -16938,6 +17787,18 @@
       "grade": "config"
     },
     {
+      "resource": "sqs:integrationJob",
+      "relation": "consumes",
+      "service": "svc-pos",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:integrationJobDlq",
+      "relation": "consumes",
+      "service": "svc-pos",
+      "grade": "config"
+    },
+    {
       "resource": "sqs:IntegrationStateChangedEventsQueue",
       "relation": "consumes",
       "service": "svc-hris",
@@ -17046,27 +17907,6 @@
       "grade": "config"
     },
     {
-      "resource": "sqs:pingTypeAndUuid",
-      "relation": "produces",
-      "service": "svc-billing-automation",
-      "file": "serverless/functions/stepFunctions.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "sqs:pingTypeAndUuid",
-      "relation": "produces",
-      "service": "svc-billing-automation",
-      "file": "serverless/functions/stepFunctionsV2026.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "sqs:pingTypeAndUuid",
-      "relation": "produces",
-      "service": "svc-billing-automation",
-      "file": "serverless/resources/iam/lambdaExecutionRole.ts",
-      "grade": "config"
-    },
-    {
       "resource": "sqs:plannedPositionSynchronizerSqs",
       "relation": "consumes",
       "service": "svc-workload-plan",
@@ -17100,6 +17940,18 @@
       "resource": "sqs:posDailyTransactionsAggregated-dlq",
       "relation": "consumes",
       "service": "svc-kpis-v2",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:posHistoryJob",
+      "relation": "consumes",
+      "service": "svc-pos",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:posHistoryJobDlq",
+      "relation": "consumes",
+      "service": "svc-pos",
       "grade": "config"
     },
     {
@@ -17148,34 +18000,6 @@
       "resource": "sqs:PruneCustomRuleTeamsRecoverySqs",
       "relation": "consumes",
       "service": "svc-automatic-scheduling",
-      "grade": "config"
-    },
-    {
-      "resource": "sqs:puma-documentsV2-workflow",
-      "relation": "produces",
-      "service": "svc-documents-v2",
-      "file": "src/Helper/EnvVarsHelper.ts",
-      "grade": "code"
-    },
-    {
-      "resource": "sqs:puma-documentsV2-workflow",
-      "relation": "produces",
-      "service": "svc-documents-v2",
-      "file": "serverless/resources/lambdas/Signature/jobCreateSignatureRecord.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "sqs:puma-documentsV2-workflow",
-      "relation": "produces",
-      "service": "svc-documents-v2",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "sqs:puma-eSignature",
-      "relation": "produces",
-      "service": "svc-documents-esignature",
-      "file": "serverless.ts",
       "grade": "config"
     },
     {
@@ -17242,6 +18066,32 @@
       "resource": "sqs:send-skello-app-to-rds-dlq",
       "relation": "consumes",
       "service": "svc-kpis",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:sendDataToFirehose",
+      "relation": "consumes",
+      "service": "svc-employees",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:sendDataToFirehose",
+      "relation": "produces",
+      "service": "svc-documents-esignature",
+      "file": "src/handlers.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:sendDataToFirehose",
+      "relation": "produces",
+      "service": "svc-documents-esignature",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:sendDataToFirehoseDlq",
+      "relation": "consumes",
+      "service": "svc-employees",
       "grade": "config"
     },
     {
@@ -17320,6 +18170,34 @@
       "resource": "sqs:signedSignatureErrorDlq",
       "relation": "consumes",
       "service": "svc-documents-v2",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:skelloApp-puma-documentsV2-workflow",
+      "relation": "produces",
+      "service": "svc-documents-v2",
+      "file": "src/Helper/EnvVarsHelper.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:skelloApp-puma-documentsV2-workflow",
+      "relation": "produces",
+      "service": "svc-documents-v2",
+      "file": "serverless/resources/lambdas/Signature/jobCreateSignatureRecord.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:skelloApp-puma-documentsV2-workflow",
+      "relation": "produces",
+      "service": "svc-documents-v2",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:skelloApp-puma-eSignature",
+      "relation": "produces",
+      "service": "svc-documents-esignature",
+      "file": "serverless.ts",
       "grade": "config"
     },
     {
@@ -17752,6 +18630,1376 @@
       "resource": "sqs:toggleFeaturesSqs",
       "relation": "consumes",
       "service": "svc-billing-automation",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "consumes",
+      "service": "svc-pos",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/api/v2/shifts_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/notifications_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/private/svc_employees/employees_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/super_admin/api/organisations_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/super_admin/api/stripe_charges_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/automatic_planning/rules_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/billing_automation/organisations_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/billing_automation/shops_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/billing_infos_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/cluster_trees_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/current_user/profile_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/dpae_deposits_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/integrations/lightspeed_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/integrations/zelty_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/licenses_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/onboarding/organisations_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/postes_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/rcr_counters_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/registrations_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/self_serve_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/shops/holiday_settings_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/shops/initial_counters_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/shops/initial_paid_leaves_counters_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/shops/initial_rcr_counters_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/shops/meal_rules_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/shops/pause_compensation_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/shops/postes_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/shops/shop_annualization_configs_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/shops_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/team_schedules_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/users/contracts_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/users/initial_rcr_counters_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/archive_shifts_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/clean_audits_and_notifications_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/holiday_settings/duplicate_holiday_settings_for_new_year_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/integrations/payroll/big_mamma/absences_and_evp_exporter_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/integrations/payroll/big_mamma/predicted_hours_exporter_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/add_can_archive_and_restore_users_permission_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/add_can_edit_shifts_permission.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/add_mission_permissions_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/add_pto_tracker_permissions_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/add_tracker_permissions_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/backfill_cross_organisation_user_licenses_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/clean_illegal_permissions.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/clean_self_serve_prospects.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/clean_workshift_absence_calculation.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/compute_all_contracts_timeline_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/compute_custom_shop_holiday_settings_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/compute_custom_user_holiday_settings_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/compute_meal_in_pdf_config_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/compute_poste_color_by_country_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/configure_shop_labour_law_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/create_spanish_contract_types_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/fix_bulk_edit_with_previsional_times_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/fix_payment_entity_in_shops_created_from_svc_billing_automation.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/fix_shop_hours_minutes.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/fix_sport_complementary_hours_maj_slices_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/fix_user_holiday_settings_for_past_year.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/fixup_shop_onboarding_status_positions_filled_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/migrate_belgian_contracts_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/migrate_british_contracts_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/migrate_country_absences_on_single_shop_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/migrate_german_contracts_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/migrate_orga_and_shops_to_raul_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/migrate_spanish_contracts_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/migrate_swiss_contracts_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/populate_features_states_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/populate_users_policy_consent_columns.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/put_substitution_contract_into_standard_category.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/reactivate_cancelled_opt_in_shops_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/recreate_maj_slices_positions_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/remove_shop_labour_law_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/update_absence_keys_and_shifts_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/fill_invoice_period_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/initialize_new_permission_with_default_values.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/self_serve/clean_unfinished_accounts_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/update_contract_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/update_user_data_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/update_user_pay_identification_numbers_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/jobs/users/fix_wrong_multi_orga_user_data_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/models/application_record.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/models/cluster_node.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/models/concerns/shops/shops_callback_concern.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/models/organisation.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/models/paid_leaves_counter.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/models/planning_hours_data.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/models/user_license.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/automatic_planning_rules/create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/cluster_nodes/destroyer.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/cluster_nodes/parent_changer.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/conventions/set_flexible_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/integrations/global_integrations/add_custom_key_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/integrations/hris/data_importer.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/labour_law/labour_law_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/paid_leaves_counters/paid_leaves_counter_resolver.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/paid_leaves_counters/paid_leaves_counter_resolver_v2.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/persisters/bulk_majoration_slices_creator.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/persisters/leave_request_absence_creator.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/persisters/leave_request_accepter.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/persisters/organisation_destroyer.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/planning_duplicator.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/planning_hours_datas/counter_updater.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/planning_templates/creator.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/shop_merge_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/shop_migrator.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/super_admin/automatic_planning_rules_replicator.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/super_admin/meal_rules_replicator.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/super_admin/shop_rules_replicator.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/users/user_destroyer.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/annualization/delete_shop_annualization_configs_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/automatic_planning/assignment_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/automatic_planning/unassigned_shifts_creation_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/automatic_planning_competencies/shop_update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/conventions/update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/matched_badgings/day_update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/memberships/manage_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/organisations/upsert_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/paid_leaves_counters/resetter.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/report_rules/update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/self_serve/cancel_free_trial_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/self_serve/subscription_confirmation_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shifts/automatic_assignment_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shifts/automatic_assignment_undo_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shifts/bulk_destroy_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shifts/create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shifts/destroy_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shifts/duplicate_from_previous_week_or_day_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shifts/sick_leave_duration_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shifts/update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shops/bulk_upsert_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shops/create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shops/destroy_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shops/downsell_upsell_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shops/holiday_settings/create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/shops/holiday_settings/delete_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/stripe/billing_migrate_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/stripe/customer_create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/stripe/migrate_sepa_shop_to_transfer_organisation_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/stripe/source_update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/team_schedules/amendment_bulk_create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/team_schedules/amendment_bulk_destroy_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/team_schedules/amendment_bulk_update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/team_schedules/create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/team_schedules/destroy_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/team_schedules/disable_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/templates/apply_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/user_licenses/create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/user_licenses/update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/user_recurrent_shifts/history_reset_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/users/create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/users/holiday_settings/create_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/users/hr_update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/users/personal_info_update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/users/registrate_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/weekly_option_publications/publish_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "skello-app",
+      "file": "app/services/v3/weekly_options/lock_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-documents-esignature",
+      "file": "src/Handler/Job/UpdateOrganisationIdAfterShopMigrationJobHandler.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-enrollment",
+      "file": "src/Manager/EmployeeOnboardingManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-kpis",
+      "file": "src/Manager/SkelloAppBus/SkelloAppBusManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "file": "src/Handler/Jobs/CleanupRedundantDailyKpisWorkerJob.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "file": "src/Helper/utils.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "file": "src/Manager/IKpiManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "file": "src/Manager/KpiTransaction/KpiTransactionManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "file": "src/Manager/KpiTransaction/Processor/IKpiTransactionProcessor.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "file": "src/Manager/KpiTransaction/Processor/KpiTransactionProcessor.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "file": "src/Manager/KpisManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "file": "src/Repository/Mongo/TransactionRepository.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-payroll",
+      "file": "src/Manager/SyncOrchestratorManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-payroll",
+      "file": "src/Repository/DynamoDB/SyncOrchestratorRepository.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-payroll",
+      "file": "src/Repository/DynamoDB/transactionRunner.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-payroll",
+      "file": "src/Swagger/SyncControllerSwagger.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-requests",
+      "file": "src/Repository/RDS/KinesisEventsRepository.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-search",
+      "file": "src/Manager/TransactionManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-search",
+      "file": "src/Repository/MongoDb/TransactionRepository.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Helper/MongoHelper.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Manager/CarryOverCalculationManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Manager/EmployeeSettingManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Manager/PtoTrackerComputationManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Manager/PublicHolidayChTrackerComputationManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Manager/RttHourContractTrackerComputationManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Manager/ShopSettingManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Manager/TrackerManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Manager/TrackerStrategy/Strategies/PtoTrackerStrategy.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "src/Manager/TrackerStrategy/Strategies/RttHourContractTrackerStrategy.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "src/Handler/Jobs/DeletePositionAssociatedDataJobHandler.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "src/Helper/MongoHelper.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "src/Manager/PlannedPositionAggregationManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "src/Manager/PlannedPositionSyncManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "src/Manager/WorkloadRuleManager.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "src/Repository/MongoDB/PlannedPositionRepository.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "src/Repository/MongoDB/WorkloadPlanRepository.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "src/Repository/MongoDB/WorkloadRuleRepository.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transaction",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "src/Swagger/WorkloadRuleV2ControllerSwagger.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:transactionDlq",
+      "relation": "consumes",
+      "service": "svc-pos",
       "grade": "config"
     },
     {

@@ -153,6 +153,7 @@ const shift_swap: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-shifts-swap",
       "type": "postgresql",
       "label": "skello_production — shifts",
+      "resources": ["pg:skello_production.shifts"],
       "description": "Both shift rows reassigned; attached ShiftSwap request rows destroyed"
     }
   ],

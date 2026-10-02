@@ -330,9 +330,11 @@ service repo.
 ### 7.5 Infra nodes/edges
 
 ```typescript
-FlowInfraNodeSchema = { id, type: DatabaseTypeSchema, label, description? }
+FlowInfraNodeSchema = { id, type: DatabaseTypeSchema, label, description?, resources?: string[] }
 FlowInfraEdgeSchema = { from, to, label?, crud? }
 ```
+
+Every infra node except on-device `sqlite` queues names the registry resources it stands for in `resources` (ids from `generated/resources.json`: `pg:skello_production.shifts`, `sqs:createActivityLogJob`, `mongo:svc-search`). A node standing for several resources lists each — a queue and its DLQ, or every table a transaction writes; a node naming only the monolith database uses `pg:skello_production`. The label stays the flow-local caption. A resource missing from the registry is an extractor gap, fixed at the extractor before the link is authored. Code edges into and out of a linked node become `flow`-graded relations on its resources (writes/reads for stores by `crud`, produces/consumes for queues, topics and streams).
 
 ### 7.6 Which check answers to what
 

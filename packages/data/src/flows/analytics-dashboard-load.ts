@@ -50,6 +50,7 @@ const analytics_dashboard_load: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-analytics",
       "type": "postgresql",
       "label": "skello_production",
+      "resources": ["pg:skello_production"],
       "description": "KPI source data — metrics computed in-process by the monolith"
     }
   ],

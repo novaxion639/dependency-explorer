@@ -125,6 +125,7 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-templates",
       "type": "postgresql",
       "label": "skello_production — templates + shifts",
+      "resources": ["pg:skello_production.planning_templates", "pg:skello_production.planning_template_shifts", "pg:skello_production.shifts"],
       "description": "Template snapshots and the shifts created from them"
     }
   ],
