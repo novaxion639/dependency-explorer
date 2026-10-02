@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseUrl, toQueryString, isNavigation, commitPatch } from './useUrlState'
+import { parseUrl, toQueryString, isNavigation, commitPatch, selectServicePatch } from './useUrlState'
 
 describe('parseUrl', () => {
   it('lands on the areas home with no params', () => {
@@ -49,7 +49,7 @@ describe('isNavigation', () => {
   })
 
   it('treats toggles and unchanged values as in-place updates', () => {
-    expect(isNavigation(base, { blast: true })).toBe(false)
+    expect(isNavigation(base, { blast: 'svc-a' })).toBe(false)
     expect(isNavigation(base, { detail: 'code' })).toBe(false)
     expect(isNavigation(base, { s: 'svc-punch' })).toBe(false)
   })
@@ -99,5 +99,19 @@ describe('resources', () => {
   })
   it('treats opening a resource as navigation', () => {
     expect(isNavigation(parseUrl(''), { resource: 'sqs:jobs' })).toBe(true)
+  })
+})
+
+describe('blast permalinks', () => {
+  it('names the impact origin, upgrading the legacy ?blast=1 to the selected service', () => {
+    expect(parseUrl('?s=svc-a&blast=1').blast).toBe('svc-a')
+    expect(parseUrl('?blast=sqs%3Ajobs').blast).toBe('sqs:jobs')
+    expect(toQueryString(parseUrl('?blast=sqs%3Ajobs'))).toBe('blast=sqs%3Ajobs')
+  })
+})
+
+describe('selectServicePatch', () => {
+  it('leaves a resource page for the service view', () => {
+    expect(selectServicePatch('svc-a')).toEqual({ s: 'svc-a', view: 'services', resource: null, edge: null, drawer: null, ep: null })
   })
 })

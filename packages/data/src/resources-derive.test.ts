@@ -61,3 +61,21 @@ describe('resourceIdForDatabase', () => {
     expect(resourceIdForDatabase('svc-requests', { type: 'sqs', name: 'not-a-queue' }, resourceSurface.resources)).toBeUndefined()
   })
 })
+
+describe('flowRelations infra-to-infra edges', () => {
+  it('never credits an infra node id as a service', () => {
+    const cdc = ConnectivityMapSchema.parse({
+      services: [{ name: 'svc-a', type: 'typescript-microservice', description: 'd', endpoints: [] }],
+      connections: [],
+      flows: [{
+        id: 'c', name: 'C', description: 'd', steps: [],
+        infraNodes: [
+          { id: 'pg-a', type: 'postgresql', label: 'svc-a db', resources: ['pg:svc_a'] },
+          { id: 'cdc-a', type: 'kinesis', label: 'cdc', resources: ['kinesis:svcA'] },
+        ],
+        codeEdges: [{ from: 'pg-a', to: 'cdc-a' }, { from: 'svc-a', to: 'pg-a', crud: ['create'] }],
+      }],
+    })
+    expect(flowRelations(cdc).map(r => `${r.relation} ${r.resource} ${r.service}`)).toEqual(['writes pg:svc_a svc-a'])
+  })
+})

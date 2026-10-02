@@ -6,28 +6,34 @@ const WRITES = new Set(['create', 'update', 'delete'])
 
 export function flowRelations(map: ConnectivityMap): ResourceRelation[] {
   const out: ResourceRelation[] = []
+  const services = new Set(map.services.map(s => s.name))
   for (const flow of map.flows) {
     const nodes = new Map((flow.infraNodes ?? []).map(n => [n.id, n]))
     const units = new Map((flow.codeUnits ?? []).map(u => [u.id, u]))
-    const actor = (id: string) => {
+    const actor = (id: string): { service: string; file?: string } | null => {
       const u = units.get(id)
-      return u ? { service: u.service, ...(u.path ? { file: u.path } : {}) } : { service: id }
+      if (u) {
+        return { service: u.service, ...(u.path ? { file: u.path } : {}) }
+      }
+      return services.has(id) ? { service: id } : null
     }
     for (const e of flow.codeEdges ?? []) {
       const into = nodes.get(e.to)
       const outOf = nodes.get(e.from)
-      if (into?.resources) {
+      const from = actor(e.from)
+      const to = actor(e.to)
+      if (into?.resources && from) {
         const messaging = MESSAGING.has(into.type)
         const writes = !e.crud?.length || e.crud.some(c => WRITES.has(c))
         const relation = messaging ? 'produces' : writes ? 'writes' : 'reads'
         for (const resource of into.resources) {
-          out.push({ resource, relation, ...actor(e.from), grade: 'flow' })
+          out.push({ resource, relation, ...from, grade: 'flow' })
         }
       }
-      if (outOf?.resources) {
+      if (outOf?.resources && to) {
         const relation = MESSAGING.has(outOf.type) ? 'consumes' : 'reads'
         for (const resource of outOf.resources) {
-          out.push({ resource, relation, ...actor(e.to), grade: 'flow' })
+          out.push({ resource, relation, ...to, grade: 'flow' })
         }
       }
     }

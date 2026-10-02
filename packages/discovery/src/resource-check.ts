@@ -1,15 +1,16 @@
 import type { Resource } from '@dependency-explorer/schema'
 import type { RailsModel } from './extractors/rails-schema'
 
-export interface ResourceFinding { subject: string; kind: 'resource-gone' | 'resource-new' | 'model-without-table'; detail: string }
+export interface ResourceFinding { subject: string; kind: 'resource-gone' | 'resource-new' | 'model-without-table' | 'readers-unavailable'; detail: string }
 
-export function checkResources(committed: Resource[], live: Resource[], models: RailsModel[], tables: string[]) {
+export function checkResources(committed: Resource[], live: Resource[], models: RailsModel[], tables: string[], readersAvailable: boolean) {
   const liveIds = new Set(live.map(x => x.id))
   const committedIds = new Set(committed.map(x => x.id))
   const findings: ResourceFinding[] = [
     ...committed.filter(x => !liveIds.has(x.id)).map(x => ({ subject: x.id, kind: 'resource-gone' as const, detail: `${x.id} has no evidence at the pinned commit — pnpm discover:apply drops it` })),
     ...live.filter(x => !committedIds.has(x.id)).map(x => ({ subject: x.id, kind: 'resource-new' as const, detail: `${x.id} (${x.evidence.join(', ')}) is not in resources.json — pnpm discover:apply adds it` })),
     ...models.filter(m => !tables.includes(m.table)).map(m => ({ subject: m.className, kind: 'model-without-table' as const, detail: `${m.file} maps to "${m.table}", absent from db/schema.rb` })),
+    ...(tables.length && !readersAvailable ? [{ subject: 'skello-app', kind: 'readers-unavailable' as const, detail: 'no skello-app graph built at the pinned commit — table readers cannot be derived; discover:apply refuses to write resources.json' }] : []),
   ]
   const mapped = new Set(models.map(m => m.table))
   return {

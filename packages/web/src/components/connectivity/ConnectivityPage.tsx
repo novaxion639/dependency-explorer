@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { allResourceRelations, connectivityMap, monolithRoutes, resourceSurface } from '@dependency-explorer/data'
-import { computeBlastRadius } from '../../utils/blastRadius'
+import { computeImpact } from '../../utils/impact'
 import { buildSearchIndex } from '../../utils/searchIndex'
-import { useUrlState, edgeKey, EDGE_SEP } from '../../hooks/useUrlState'
+import { useUrlState, edgeKey, EDGE_SEP, selectServicePatch } from '../../hooks/useUrlState'
 import type { UrlState } from '../../hooks/useUrlState'
 import { SearchModal } from '../SearchModal'
 import { ServiceSidebar } from './ServiceSidebar'
@@ -19,6 +19,7 @@ import { SystemContext } from '../areas/SystemContext'
 import { NotFoundBanner } from '../areas/NotFoundBanner'
 import { ResourcePage } from '../resources/ResourcePage'
 import { ResourcesIndex } from '../resources/ResourcesIndex'
+import { ImpactPanel } from '../resources/ImpactPanel'
 import { buildFlagRegistry } from '../../utils/flagRegistry'
 import { buildFileIndex } from '../../utils/fileIndex'
 import { CLAMP_TWO_LINES } from '../../utils/clamp'
@@ -73,7 +74,9 @@ function validateUrlState(st: UrlState): UrlState {
     const drawerSvc = next.drawer ? map.services.find(s => s.name === next.drawer) : null
     if (!drawerSvc?.endpoints.some(e => e.id === next.ep)) next.ep = null
   }
-  if (!next.s) next.blast = false
+  if (next.blast && !serviceNames.has(next.blast) && !resourceIds.has(next.blast)) {
+    next.blast = null
+  }
   next.notFound = notFound
   return next
 }
@@ -87,12 +90,11 @@ export function ConnectivityPage() {
   const selectedService = url.s
   const openResource = useCallback((id: string) => patch({ flow: null, detail: null, file: null, resource: id }), [patch])
   const viewMode = url.view
-  const showBlastRadius = url.blast
 
   const selectService = useCallback(
     (name: string) => {
       setSidebarOpen(false)
-      patch({ s: name, view: 'services', edge: null, drawer: null, ep: null })
+      patch(selectServicePatch(name))
     },
     [patch],
   )
@@ -109,10 +111,8 @@ export function ConnectivityPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const blastRadius = useMemo(() => {
-    if (!selectedService || !showBlastRadius) return null
-    return computeBlastRadius(map, selectedService, 3)
-  }, [selectedService, showBlastRadius])
+  const impact = useMemo(() => (url.blast ? computeImpact(map, allResourceRelations, url.blast) : null), [url.blast])
+  const impactHops = useMemo(() => (impact ? new Map(impact.entries.map(e => [e.node, e.hop])) : null), [impact])
 
   const selected = selectedService
     ? map.services.find(s => s.name === selectedService)
@@ -243,17 +243,17 @@ export function ConnectivityPage() {
               <Pill label="called by" count={inCount} color="#818cf8" />
               <Pill label="endpoints" count={selected.endpoints.length} color="#6366f1" />
               <button
-                onClick={() => patch({ blast: !showBlastRadius })}
+                onClick={() => patch({ blast: url.blast ? null : selectedService })}
                 style={{
                   padding: '3px 8px', borderRadius: 5, fontSize: 10, fontWeight: 600,
                   border: 'none', cursor: 'pointer',
-                  background: showBlastRadius ? '#ef444422' : '#2e3250',
-                  color: showBlastRadius ? '#ef4444' : '#64748b',
+                  background: url.blast ? '#ef444422' : '#2e3250',
+                  color: url.blast ? '#ef4444' : '#64748b',
                 }}
               >
-                {showBlastRadius
-                  ? `Blast radius: ${blastRadius?.count ?? 0} services`
-                  : 'Show blast radius'}
+                {url.blast
+                  ? `Impact: ${impact?.entries.length ?? 0} affected`
+                  : 'Show impact'}
               </button>
             </div>
             <div style={{ fontSize: 11, color: '#3e4363' }}>
@@ -268,11 +268,8 @@ export function ConnectivityPage() {
             onOpenResource={openResource}
             onOpenFile={key => patch({ resource: null, file: key })}
             onOpenFlow={id => patch({ flow: id })}
-            onSelectService={name => {
-              patch({ resource: null })
-              selectService(name)
-            }}
-            onBlast={() => {}}
+            onSelectService={selectService}
+            onBlast={id => patch({ blast: id })}
           />
         ) : viewMode === 'resources' ? (
           <ResourcesIndex onOpenResource={openResource} />
@@ -296,7 +293,7 @@ export function ConnectivityPage() {
             selectedService={selectedService}
             onSelectService={selectService}
             onOpenFlows={name => patch({ flows: name, flow: null })}
-            blastRadius={blastRadius?.affected ?? null}
+            blastRadius={impactHops}
             edgeConnection={edgeConnection}
             onEdgeSelect={conn => patch({ edge: conn ? edgeKey(conn.from, conn.to, conn.protocol) : null })}
             drawerService={drawerService}
@@ -368,6 +365,15 @@ export function ConnectivityPage() {
           onOpenRoute={id => patch({ file: null, s: 'skello-app', view: 'services', drawer: 'skello-app', ep: id })}
           onOpenResource={openResource}
           onClose={() => patch({ file: null })}
+        />
+      )}
+
+      {url.blast && (
+        <ImpactPanel
+          origin={url.blast}
+          onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))}
+          onOpenFlow={id => patch({ flow: id })}
+          onClose={() => patch({ blast: null })}
         />
       )}
 

@@ -24,7 +24,7 @@ const TYPE_ORDER: Record<SearchResultType, number> = {
 
 // Choosing a result fully describes the target view: modal/popup params are
 // reset explicitly so the landing state never mixes with whatever was open.
-const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null, resource: null, area: null, term: null, blast: false, detail: null }
+const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null, resource: null, area: null, term: null, blast: null, detail: null }
 
 export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] = [], resources: Resource[] = []): SearchEntry[] {
   const entries: SearchEntry[] = []

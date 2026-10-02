@@ -13,7 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  *   ?view=services               service view without a selection
  *   ?view=teams                  ownership view (per-team service ownership)
  *   ?team=team-salsa             team focused inside the ownership view
- *   ?blast=1                     blast-radius overlay on
+ *   ?blast=svc-users             impact panel for a failing service or resource id
  *   ?flows=svc-users             flow LIST modal for a service
  *   ?flow=shift-creation         flow GRAPH modal (by flow id)
  *   ?edge=from~to~protocol       connection popup (protocol disambiguates
@@ -33,7 +33,7 @@ export interface UrlState {
   area: string | null
   term: string | null
   team: string | null
-  blast: boolean
+  blast: string | null
   flows: string | null
   flow: string | null
   /** 'code' = code-detail view of the open flow graph, 'sequence' = its sequence diagram */
@@ -78,7 +78,7 @@ export function parseUrl(search: string): UrlState {
     area: p.get('area'),
     term: p.get('term'),
     team: p.get('team'),
-    blast: p.get('blast') === '1',
+    blast: p.get('blast') === '1' ? p.get('s') : p.get('blast'),
     flows: p.get('flows'),
     flow: p.get('flow'),
     detail: p.get('detail') === 'code' ? 'code' : p.get('detail') === 'sequence' ? 'sequence' : null,
@@ -110,7 +110,7 @@ export function toQueryString(state: UrlState): string {
     p.set('team', state.team)
   }
   if (state.blast) {
-    p.set('blast', '1')
+    p.set('blast', state.blast)
   }
   if (state.flows) {
     p.set('flows', state.flows)
@@ -140,6 +140,10 @@ export function toQueryString(state: UrlState): string {
     p.set('resource', state.resource)
   }
   return p.toString()
+}
+
+export function selectServicePatch(name: string): Partial<UrlState> {
+  return { s: name, view: 'services', resource: null, edge: null, drawer: null, ep: null }
 }
 
 export function isNavigation(prev: UrlState, p: Partial<UrlState>): boolean {

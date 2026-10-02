@@ -700,7 +700,7 @@ function run(): Report {
     ...tableRelations(live, railsSchema?.models ?? [], monolithFiles, monolithGraph),
     ...messagingRelations(live, serverlessByRepo, sourcesByRepo),
   ]
-  const resourceFacts = checkResources(resourceSurface.resources, live, railsSchema?.models ?? [], railsSchema?.tables ?? [])
+  const resourceFacts = checkResources(resourceSurface.resources, live, railsSchema?.models ?? [], railsSchema?.tables ?? [], monolithGraph !== null)
   const byKind: Record<string, number> = {}
   for (const x of live) {
     byKind[x.kind] = (byKind[x.kind] ?? 0) + 1
@@ -745,6 +745,10 @@ function writeOverlay(report: Report) {
     const surface = [...byId.values()].sort((a, b) => a.path.localeCompare(b.path) || a.verb.localeCompare(b.verb))
     fs.writeFileSync(MONOLITH_ROUTES_PATH, JSON.stringify(surface, null, 2) + '\n')
     console.log(`  ${surface.length} monolith routes written: ${path.relative(process.cwd(), MONOLITH_ROUTES_PATH)}`)
+  }
+  if (report.resourceCheck?.findings.some(f => f.kind === 'readers-unavailable')) {
+    console.error('  resources.json not written: no skello-app graph at the pinned commit (🗄 readers-unavailable)')
+    return
   }
   fs.writeFileSync(RESOURCES_PATH, JSON.stringify({ resources: report.liveResources, relations: report.liveRelations }, null, 2) + '\n')
   console.log(`  ${report.liveResources.length} resources written: ${path.relative(process.cwd(), RESOURCES_PATH)}`)
