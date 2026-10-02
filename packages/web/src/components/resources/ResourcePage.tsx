@@ -30,6 +30,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
   }
   const { resource, byService, flows, dlq, counts } = impact
   const note = resourceNotes[id]
+  const tables = resource.kind === 'database' ? resourceSurface.resources.filter(r => r.id.startsWith(`${id}.`)) : []
   return (
     <main style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
       <header style={{ marginBottom: 12 }}>
@@ -84,6 +85,12 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
         <section aria-label="Related tables" style={{ marginTop: 14 }}>
           <h2 style={{ fontSize: 12, color: '#94a3b8' }}>Related tables</h2>
           {(resource.related ?? []).map(t => <button key={t} type="button" onClick={() => onOpenResource(t)} style={{ margin: '4px 6px 0 0', fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid #2e3250', background: 'transparent', color: '#cbd5e1', cursor: 'pointer' }}>{t.split('.').pop()}</button>)}
+        </section>
+      )}
+      {tables.length > 0 && (
+        <section aria-label="Tables" style={{ marginTop: 14 }}>
+          <h2 style={{ fontSize: 12, color: '#94a3b8' }}>Tables ({tables.length})</h2>
+          {tables.map(t => <button key={t.id} type="button" onClick={() => onOpenResource(t.id)} style={{ margin: '4px 6px 0 0', fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid #2e3250', background: 'transparent', color: '#cbd5e1', cursor: 'pointer' }}>{t.name}</button>)}
         </section>
       )}
       {flows.length > 0 && (

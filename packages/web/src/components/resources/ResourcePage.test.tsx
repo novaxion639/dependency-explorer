@@ -21,6 +21,11 @@ describe('ResourcePage', () => {
     const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
     expect(html).toMatch(/href="https:\/\/github\.com\/skelloapp\/skello-app\/blob\/[0-9a-f]{40}\/db\/schema\.rb"/)
   })
+  it('lists the tables of the monolith database', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production" {...props} />)
+    expect(html).toContain('aria-label="Tables"')
+    expect(html).toContain('>shifts</button>')
+  })
   it('renders a resource with no relations without throwing', () => {
     const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))
     expect(quiet, 'the registry holds at least one untouched resource (dataset-only stores)').toBeDefined()
