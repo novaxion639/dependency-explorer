@@ -13,3 +13,14 @@ describe('buildFlowCodeGraph', () => {
     expect(edges.find(e => e.source === edge.from && e.target === edge.to)?.data?.grade).toBe('graph')
   })
 })
+
+describe('buildFlowCodeGraph resources', () => {
+  it('carries the infra node resource on the node data', () => {
+    const flow = connectivityMap.flows.find(f => f.id === 'shift-creation')
+    const infra = flow?.infraNodes?.find(n => n.resources?.length)
+    if (!flow || !infra) {
+      throw new Error('shift-creation has no linked infra node')
+    }
+    expect(buildFlowCodeGraph(flow, connectivityMap).nodes.find(n => n.id === infra.id)?.data.resource).toBe(infra.resources?.[0])
+  })
+})

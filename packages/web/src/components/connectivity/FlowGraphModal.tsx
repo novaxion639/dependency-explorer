@@ -41,6 +41,7 @@ interface Props {
   /** Navigate to a linked flow (composition links) */
   onOpenFlow: (flowId: string) => void
   onOpenArea: (areaId: string) => void
+  onOpenResource: (id: string) => void
   onBack: () => void
   onClose: () => void
 }
@@ -52,7 +53,7 @@ const LINK_KIND_META: Record<string, { label: string; color: string }> = {
   'domain-related': { label: 'related', color: '#64748b' },
 }
 
-function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onOpenArea, onBack, onClose }: Props) {
+function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onOpenArea, onOpenResource, onBack, onClose }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<ReturnType<typeof buildFlowGraph>['edges'][number]>([])
@@ -328,6 +329,10 @@ function FlowInner({ flow, map, detail, onDetailChange, onOpenFlow, onOpenArea, 
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={(_, node) => {
+            if (node.type === 'databaseNode' && typeof node.data.resource === 'string') {
+              onOpenResource(node.data.resource)
+              return
+            }
             if (showCode && node.type === 'codeUnitNode') {
               setSelectedRuleId(null)
               setSelectedUnitId(prev => (prev === node.id ? null : node.id))

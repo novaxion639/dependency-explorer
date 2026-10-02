@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { ConnectivityMapSchema } from '@dependency-explorer/schema'
-import { flowRelations, resourceImpact } from './resources-derive'
+import { flowRelations, resourceImpact, resourceIdForDatabase } from './resources-derive'
+import { resourceSurface } from './index'
 
 const map = ConnectivityMapSchema.parse({
   services: [{ name: 'svc-a', type: 'typescript-microservice', description: 'd', endpoints: [] }],
@@ -51,5 +52,12 @@ describe('resourceImpact', () => {
   it('exposes the dead-letter queue and returns null for unknown ids', () => {
     expect(resourceImpact('sqs:jobs', map, resources, relations)?.dlq).toBe('sqs:jobsDlq')
     expect(resourceImpact('sqs:nope', map, resources, relations)).toBeNull()
+  })
+})
+
+describe('resourceIdForDatabase', () => {
+  it('resolves a service database to its registry resource', () => {
+    expect(resourceIdForDatabase('svc-requests', { type: 'postgresql', name: 'svc_requests' }, resourceSurface.resources)).toBe('pg:svc_requests')
+    expect(resourceIdForDatabase('svc-requests', { type: 'sqs', name: 'not-a-queue' }, resourceSurface.resources)).toBeUndefined()
   })
 })

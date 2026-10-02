@@ -22,8 +22,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  *   ?ep=api-sign-up              endpoint highlighted inside the drawer
  *   ?flag=FEATUREDEV_X           feature-flag view (flows gated by the flag)
  *   ?file=svc-punch/src/…        reverse index view (flows traversing a file)
+ *   ?view=resources              resource index
+ *   ?resource=pg:skello_production.shifts   resource page (change impact)
  */
-export type View = 'areas' | 'context' | 'services' | 'teams'
+export type View = 'areas' | 'context' | 'services' | 'resources' | 'teams'
 
 export interface UrlState {
   s: string | null
@@ -41,14 +43,15 @@ export interface UrlState {
   ep: string | null
   flag: string | null
   file: string | null
+  resource: string | null
   /** A permalink param that did not resolve — rendered as a banner, never serialized */
-  notFound: { param: 'area' | 'term' | 'flow' | 's'; value: string } | null
+  notFound: { param: 'area' | 'term' | 'flow' | 's' | 'resource'; value: string } | null
 }
 
 export const EDGE_SEP = '~'
 
-const VIEWS: readonly View[] = ['areas', 'context', 'services', 'teams']
-const NAVIGATION_KEYS = ['view', 'area', 's', 'team', 'flows', 'flow', 'drawer', 'flag', 'file'] as const
+const VIEWS: readonly View[] = ['areas', 'context', 'services', 'resources', 'teams']
+const NAVIGATION_KEYS = ['view', 'area', 's', 'team', 'flows', 'flow', 'drawer', 'flag', 'file', 'resource'] as const
 
 export function edgeKey(from: string, to: string, protocol: string): string {
   return [from, to, protocol].join(EDGE_SEP)
@@ -84,6 +87,7 @@ export function parseUrl(search: string): UrlState {
     ep: p.get('ep'),
     flag: p.get('flag'),
     file: p.get('file'),
+    resource: p.get('resource'),
     notFound: null,
   }
 }
@@ -131,6 +135,9 @@ export function toQueryString(state: UrlState): string {
   }
   if (state.file) {
     p.set('file', state.file)
+  }
+  if (state.resource) {
+    p.set('resource', state.resource)
   }
   return p.toString()
 }
