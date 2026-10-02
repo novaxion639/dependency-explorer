@@ -142,6 +142,10 @@ export function toQueryString(state: UrlState): string {
   return p.toString()
 }
 
+export function selectServicePatch(name: string): Partial<UrlState> {
+  return { s: name, view: 'services', resource: null, edge: null, drawer: null, ep: null }
+}
+
 export function isNavigation(prev: UrlState, p: Partial<UrlState>): boolean {
   return NAVIGATION_KEYS.some(k => k in p && p[k] !== prev[k])
 }

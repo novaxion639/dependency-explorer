@@ -56,7 +56,7 @@ describe('messagingRelations', () => {
   ])
   const sources = new Map([
     ['svc-events', [{ file: 'serverless/functions/queues.ts', source: "events: [{ sqs: { arn: 'x' } }]" }]],
-    ['svc-requests', [{ file: 'serverless.ts', source: 'svcEvents-createActivityLogJob-${awsEnv}' }, { file: 'src/x.ts', source: 'nothing here' }]],
+    ['svc-requests', [{ file: 'serverless.ts', source: 'queueUrl: `https://sqs.eu-west-1.amazonaws.com/${accountId}/svcEvents-createActivityLogJob-${awsEnv}`' }, { file: 'src/x.ts', source: 'nothing here' }]],
     ['skello-app-front', [{ file: 'src/env.js', source: 'createActivityLogJob' }]],
   ])
 
@@ -85,5 +85,46 @@ describe('messagingRelations literal matching', () => {
       ]],
     ])
     expect(messagingRelations(resources, new Map(), sources).map(r => `${r.relation} ${r.resource} ${r.file}`)).toEqual(['produces sqs:mergeShopSqs app/b.rb'])
+  })
+})
+
+describe('messagingRelations producer precision', () => {
+  const resources: Resource[] = [
+    { id: 'sqs:transaction', kind: 'queue', store: 'sqs', name: 'transaction', owner: 'svc-pos', evidence: [] },
+    { id: 'kinesis:skelloapp-bus', kind: 'stream', store: 'kinesis', name: 'skelloapp-bus', owner: 'skello-app', evidence: [] },
+    { id: 'sqs:svc-a/fullLoadTriggerSqs', kind: 'queue', store: 'sqs', name: 'fullLoadTriggerSqs', owner: 'svc-a', evidence: [] },
+    { id: 'sqs:svc-b/fullLoadTriggerSqs', kind: 'queue', store: 'sqs', name: 'fullLoadTriggerSqs', owner: 'svc-b', evidence: [] },
+  ]
+  const serverless = new Map([['svc-employees', sls({ streamConsumers: [{ stream: 'skelloapp-bus', kind: 'kinesis', raw: 'x' }] })]])
+  const sources = new Map([
+    ['skello-app', [
+      { file: 'app/services/a.rb', source: 'ActiveRecord::Base.transaction do\n  save!\nend' },
+      { file: 'config/locales/fr.yml', source: 'title: "Start a transaction now"' },
+      { file: 'app/jobs/send.rb', source: "client.send_message(queue_url: 'svcPos-transaction-production')" },
+    ]],
+    ['svc-employees', [{ file: 'serverless.ts', source: 'stream: `arn:aws:kinesis:${region}:${account}:stream/skelloapp-bus-${stage}`' }]],
+    ['svc-b', [{ file: 'serverless.ts', source: "QueueName: 'fullLoadTriggerSqs'" }]],
+  ])
+  const rels = messagingRelations(resources, serverless, sources).filter(r => r.relation === 'produces').map(r => `${r.resource} ${r.service} ${r.file}`)
+
+  it('needs the name inside a whitespace-free string literal', () => {
+    expect(rels).toEqual(['sqs:transaction skello-app app/jobs/send.rb'])
+  })
+  it('never credits a consumer or a same-named sibling owner as producer', () => {
+    expect(rels.some(r => r.startsWith('kinesis:skelloapp-bus'))).toBe(false)
+    expect(rels.some(r => r.startsWith('sqs:svc-a/fullLoadTriggerSqs'))).toBe(false)
+  })
+})
+
+describe('messagingRelations dead-letter queues', () => {
+  it('never credits the owner with consuming a DLQ-named queue, whatever the wiring casing', () => {
+    const resources: Resource[] = [
+      { id: 'sqs:mergeShopSqs', kind: 'queue', store: 'sqs', name: 'mergeShopSqs', owner: 'svc-shops', evidence: [] },
+      { id: 'sqs:mergeShopSqsDlq', kind: 'queue', store: 'sqs', name: 'mergeShopSqsDlq', owner: 'svc-shops', evidence: [] },
+      { id: 'sqs:kpisCleanup-dlq', kind: 'queue', store: 'sqs', name: 'kpisCleanup-dlq', owner: 'svc-shops', evidence: [] },
+    ]
+    const serverless = new Map([['svc-shops', sls({ dlqWirings: [{ queue: 'MergeShopSqs', dlq: 'MergeShopSqsDlq', retry: null, via: 'redrive' }] })]])
+    const sources = new Map([['svc-shops', [{ file: 'serverless/functions.ts', source: "events: [{ sqs: { arn: 'x' } }]" }]]])
+    expect(messagingRelations(resources, serverless, sources).filter(r => r.relation === 'consumes').map(r => r.resource)).toEqual(['sqs:mergeShopSqs'])
   })
 })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseUrl, toQueryString, isNavigation, commitPatch } from './useUrlState'
+import { parseUrl, toQueryString, isNavigation, commitPatch, selectServicePatch } from './useUrlState'
 
 describe('parseUrl', () => {
   it('lands on the areas home with no params', () => {
@@ -107,5 +107,11 @@ describe('blast permalinks', () => {
     expect(parseUrl('?s=svc-a&blast=1').blast).toBe('svc-a')
     expect(parseUrl('?blast=sqs%3Ajobs').blast).toBe('sqs:jobs')
     expect(toQueryString(parseUrl('?blast=sqs%3Ajobs'))).toBe('blast=sqs%3Ajobs')
+  })
+})
+
+describe('selectServicePatch', () => {
+  it('leaves a resource page for the service view', () => {
+    expect(selectServicePatch('svc-a')).toEqual({ s: 'svc-a', view: 'services', resource: null, edge: null, drawer: null, ep: null })
   })
 })

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { allResourceRelations, connectivityMap, monolithRoutes, resourceSurface } from '@dependency-explorer/data'
 import { computeImpact } from '../../utils/impact'
 import { buildSearchIndex } from '../../utils/searchIndex'
-import { useUrlState, edgeKey, EDGE_SEP } from '../../hooks/useUrlState'
+import { useUrlState, edgeKey, EDGE_SEP, selectServicePatch } from '../../hooks/useUrlState'
 import type { UrlState } from '../../hooks/useUrlState'
 import { SearchModal } from '../SearchModal'
 import { ServiceSidebar } from './ServiceSidebar'
@@ -94,7 +94,7 @@ export function ConnectivityPage() {
   const selectService = useCallback(
     (name: string) => {
       setSidebarOpen(false)
-      patch({ s: name, view: 'services', edge: null, drawer: null, ep: null })
+      patch(selectServicePatch(name))
     },
     [patch],
   )
@@ -268,10 +268,7 @@ export function ConnectivityPage() {
             onOpenResource={openResource}
             onOpenFile={key => patch({ resource: null, file: key })}
             onOpenFlow={id => patch({ flow: id })}
-            onSelectService={name => {
-              patch({ resource: null })
-              selectService(name)
-            }}
+            onSelectService={selectService}
             onBlast={id => patch({ blast: id })}
           />
         ) : viewMode === 'resources' ? (

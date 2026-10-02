@@ -35,3 +35,21 @@ describe('computeImpact', () => {
     expect(r.entries.find(e => e.node === 'worker')?.effect).toBe('starves')
   })
 })
+
+describe('computeImpact effect ranking', () => {
+  it('keeps the strongest effect when a node is both an async partner and a sync caller of the origin', () => {
+    const both = ConnectivityMapSchema.parse({
+      services: ['hub', 'pos'].map(svc),
+      connections: [conn('hub', 'pos', 'async'), conn('pos', 'hub', 'sync')],
+      flows: [],
+    })
+    expect(computeImpact(both, [], 'hub').entries.map(e => `${e.node}:${e.effect}:${e.mode}`)).toEqual(['pos:fails:sync'])
+  })
+  it('keeps fails over starves for a resource writer that also consumes it', () => {
+    const r = computeImpact(map, [
+      { resource: 'kinesis:bus', relation: 'consumes', service: 'api', grade: 'config' },
+      { resource: 'kinesis:bus', relation: 'writes', service: 'api', grade: 'code' },
+    ], 'kinesis:bus')
+    expect(r.entries.find(e => e.node === 'api')?.effect).toBe('fails')
+  })
+})

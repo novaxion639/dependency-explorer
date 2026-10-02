@@ -57,23 +57,53 @@ export function tableRelations(resources: Resource[], models: RailsModel[], file
 const MIN_LITERAL = 10
 const NON_SENDERS = new Set(['skello-app-front'])
 const SQS_EVENT = /\bsqs:\s*(\{|['"`])/
+const DLQ_NAME = /dlq/i
+const IDENTIFIER_LITERAL = /(['"`])([^'"`\s]+)\1/g
 
 export function messagingRelations(resources: Resource[], serverless: Map<string, ServerlessFacts>, sources: Map<string, Array<{ file: string; source: string }>>): ResourceRelation[] {
   const out: ResourceRelation[] = []
   const byName = new Map(resources.map(r => [`${r.store}:${r.name}`, r]))
-  const deadLetterTargets = new Set([...serverless.values()].flatMap(f => f.dlqWirings.flatMap(w => (w.dlq ? [w.dlq] : []))))
+  const deadLetterTargets = new Set([...serverless.values()].flatMap(f => f.dlqWirings.flatMap(w => (w.dlq ? [w.dlq.toLowerCase()] : []))))
+  const isDeadLetter = (name: string) => DLQ_NAME.test(name) || deadLetterTargets.has(name.toLowerCase())
+  const consumersOf = new Map<string, Set<string>>()
+  for (const [repo, facts] of serverless) {
+    const consumed = [...facts.streamConsumers.map(c => `kinesis:${c.stream}`), ...facts.s3Triggers.map(t => `s3:${t.bucket}`)]
+    for (const key of consumed) {
+      const id = byName.get(key)?.id
+      if (id) {
+        consumersOf.set(id, new Set([...(consumersOf.get(id) ?? []), repo]))
+      }
+    }
+  }
+  const ownersOfName = new Map<string, Set<string>>()
   for (const r of resources) {
-    if (r.kind === 'queue' && r.owner && !deadLetterTargets.has(r.name) && (sources.get(r.owner) ?? []).some(f => f.file.includes('serverless') && SQS_EVENT.test(f.source))) {
+    if (r.owner) {
+      ownersOfName.set(`${r.store}:${r.name}`, new Set([...(ownersOfName.get(`${r.store}:${r.name}`) ?? []), r.owner]))
+    }
+  }
+  const literalCache = new Map<string, string[]>()
+  const literalsOf = (repo: string, f: { file: string; source: string }) => {
+    const key = `${repo}/${f.file}`
+    const cached = literalCache.get(key)
+    if (cached) {
+      return cached
+    }
+    const found = [...f.source.matchAll(IDENTIFIER_LITERAL)].map(m => m[2] ?? '')
+    literalCache.set(key, found)
+    return found
+  }
+  for (const r of resources) {
+    if (r.kind === 'queue' && r.owner && !isDeadLetter(r.name) && (sources.get(r.owner) ?? []).some(f => f.file.includes('serverless') && SQS_EVENT.test(f.source))) {
       out.push({ resource: r.id, relation: 'consumes', service: r.owner, grade: 'config' })
     }
     if (['queue', 'topic', 'stream'].includes(r.kind) && r.name.length >= MIN_LITERAL) {
       for (const [repo, files] of sources) {
-        if (repo === r.owner || NON_SENDERS.has(repo)) {
+        if (repo === r.owner || NON_SENDERS.has(repo) || consumersOf.get(r.id)?.has(repo) || ownersOfName.get(`${r.store}:${r.name}`)?.has(repo)) {
           continue
         }
         const token = new RegExp(`(?<![A-Za-z0-9_])${escape(r.name)}(?![A-Za-z0-9_])`)
         for (const f of files) {
-          if (token.test(f.source)) {
+          if (literalsOf(repo, f).some(l => token.test(l))) {
             out.push({ resource: r.id, relation: 'produces', service: repo, file: f.file, grade: f.file.includes('serverless') ? 'config' : 'code' })
           }
         }
