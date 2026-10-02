@@ -193,7 +193,7 @@ const svc_workload_plan: ConnectivityService = ConnectivityServiceSchema.parse({
     {
       "type": "mongodb",
       "name": "svc-workload-plan",
-      "description": "V2 store — workload plans and rules (WorkloadPlanManagerV2 on Mongo repositories, SSM {serviceName}/MONGO_DB_URI). The DynamoDB→MongoDB migration is ONGOING, not complete: the V1 WorkloadPlanController still serves reads/writes from the DynamoDB-backed WorkloadPlanManager, and TriggerDynamoToFullLoadSqsJobHandler replicates dynamo→mongo (re-verified 2026-07-11 — the 2026-06-10 'no longer bound' correction was wrong against current code)."
+      "description": "Workload plans and rules — the service's only store (WorkloadPlanManagerV2 on Mongo repositories, SSM {serviceName}/MONGO_DB_URI)."
     }
   ]
 })

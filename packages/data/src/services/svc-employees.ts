@@ -549,7 +549,7 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
     {
       "type": "mongodb",
       "name": "svc-search",
-      "description": "Legacy employee data store (migration in progress)"
+      "description": "Shared svc-search database, read-only (Atlas read role; SSM svcSearch/MONGO_DB_NAME)"
     }
   ]
 })

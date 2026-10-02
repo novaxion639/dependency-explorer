@@ -15,7 +15,7 @@ const svc_search: ConnectivityService = ConnectivityServiceSchema.parse({
     {
       "type": "s3",
       "name": "skello-app.shifts-full-load.{env}",
-      "description": "Bulk index snapshots and export files"
+      "description": "DMS full-load export of skello_production shifts (parquet)"
     }
   ]
 })

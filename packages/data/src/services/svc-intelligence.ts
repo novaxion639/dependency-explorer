@@ -132,7 +132,7 @@ const svc_intelligence: ConnectivityService = ConnectivityServiceSchema.parse({
     {
       "type": "s3",
       "name": "svc-intelligence-textract.{env}",
-      "description": "Model artefacts and training datasets"
+      "description": "Textract staging bucket (SSM TEMP_BUCKET_NAME)"
     }
   ]
 })

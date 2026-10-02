@@ -115,7 +115,7 @@ const svc_shifts: ConnectivityService = ConnectivityServiceSchema.parse({
     {
       "type": "mongodb",
       "name": "svc-search",
-      "description": "Shift metrics and employee aggregated shift data"
+      "description": "Shared svc-search database — the raw shift and employee collections svc-shifts reads (SSM svcSearch/MONGO_DB_NAME)"
     }
   ]
 })

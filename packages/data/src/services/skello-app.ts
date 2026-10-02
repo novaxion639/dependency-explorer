@@ -20,7 +20,7 @@ const skello_app: ConnectivityService = ConnectivityServiceSchema.parse({
     {
       "type": "dynamodb",
       "name": "svcUsers-{env}",
-      "description": "DynamoDB for high-throughput writes"
+      "description": "svc-users table — API access keys read by AccessKeyService (SVC_USERS_DYNAMO_TABLE_NAME)"
     }
   ]
 })

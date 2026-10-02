@@ -102,7 +102,7 @@ const svc_events: ConnectivityService = ConnectivityServiceSchema.parse({
     {
       "type": "s3",
       "name": "skello-app.temporary-assets.{env}",
-      "description": "Event payload archive"
+      "description": "skello-app's temporary-assets bucket — activity-log downloads are written here (S3_TEMPORARY_ASSETS_BUCKET)"
     }
   ]
 })
