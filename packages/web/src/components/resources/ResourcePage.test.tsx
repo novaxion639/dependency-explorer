@@ -34,5 +34,6 @@ describe('ResourcesIndex', () => {
     for (const store of new Set(resourceSurface.resources.map(r => r.store))) {
       expect(html).toContain(`aria-label="${store}"`)
     }
+    expect(html).toContain('aria-label="Owner"')
   })
 })
