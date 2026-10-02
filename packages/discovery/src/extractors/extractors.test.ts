@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
 import { classifyAwsUsage } from './aws-clients'
-import { parseTerraform, parseTerraformLocals, applyTerraformLocals, parseTerraformDataNames, parseTerraformLocalMaps, expandTerraformNames } from './terraform'
+import { parseTerraform, parseTerraformLocals, applyTerraformLocals, parseTerraformDataNames, parseTerraformLocalMaps, expandTerraformNames, parseTerraformSsmValues } from './terraform'
 import { parseEnvServiceUrls } from './frontend'
 import { classifyImports } from './typescript'
 import { parseSdkSource } from './sdk-registry'
@@ -366,6 +366,21 @@ export class ShopEntity {}`
 })
 
 describe('parseTerraform', () => {
+  it('mines MongoDB Atlas user roles', () => {
+    const src = `resource "mongodbatlas_database_user" "user" {
+  username = "svcshops"
+  roles {
+    role_name     = "readWrite"
+    database_name = local.mongo_db_name
+  }
+  roles {
+    role_name     = "read"
+    database_name = "svc-search"
+  }
+}`
+    expect(parseTerraform(src).mongoRoles).toEqual([{ role: 'readWrite', database: 'local.mongo_db_name' }, { role: 'read', database: 'svc-search' }])
+  })
+
   it('reads terraform-aws-modules blocks by their top-level name attribute', () => {
     const src = `
 module "dynamodb_svc_punch" {
@@ -577,5 +592,16 @@ resource "aws_s3_bucket" "buckets" {
       '${local.application}.emails.${local.workspace}',
       '${local.application}.attachments.${local.workspace}',
     ])
+  })
+})
+
+describe('parseTerraformSsmValues', () => {
+  it('reads the value an SSM parameter publishes, so a role naming it resolves', () => {
+    const values = parseTerraformSsmValues(`resource "aws_ssm_parameter" "mongo_db_name" {
+  name  = "/\${local.workspace}/\${local.project}/MONGO_DB_NAME"
+  type  = "String"
+  value = local.project_kebab_case
+}`)
+    expect(values).toEqual({ mongo_db_name: 'local.project_kebab_case' })
   })
 })

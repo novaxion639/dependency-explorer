@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tableWriters, tableRelations, messagingRelations } from './resource-relations'
+import { tableWriters, tableRelations, messagingRelations, atlasRelations } from './resource-relations'
 import type { ServerlessFacts } from './extractors/serverless'
 import { loadRepoGraph } from './code-grades'
 import type { Resource } from '@dependency-explorer/schema'
@@ -142,5 +142,16 @@ describe('messagingRelations dead-letter queues', () => {
     const serverless = new Map([['svc-shops', sls({ dlqWirings: [{ queue: 'MergeShopSqs', dlq: 'MergeShopSqsDlq', retry: null, via: 'redrive' }] })]])
     const sources = new Map([['svc-shops', [{ file: 'serverless/functions.ts', source: "events: [{ sqs: { arn: 'x' } }]" }]]])
     expect(messagingRelations(resources, serverless, sources).filter(r => r.relation === 'consumes').map(r => r.resource)).toEqual(['sqs:mergeShopSqs'])
+  })
+})
+
+describe('atlasRelations', () => {
+  it('turns Atlas roles into config-graded writes and reads', () => {
+    const db = (name: string): Resource => ({ id: `mongo:${name}`, kind: 'database', store: 'mongodb', name, evidence: [] })
+    const facts = { resources: [], dmsTasks: [], dmsEndpoints: [], iamActions: [], mongoRoles: [{ role: 'readWrite', database: 'svc-shops' }, { role: 'read', database: 'svc-search' }] }
+    expect(atlasRelations([{ service: 'svc-shops', facts }], [db('svc-shops'), db('svc-search')])).toEqual([
+      { resource: 'mongo:svc-shops', relation: 'writes', service: 'svc-shops', grade: 'config' },
+      { resource: 'mongo:svc-search', relation: 'reads', service: 'svc-shops', grade: 'config' },
+    ])
   })
 })

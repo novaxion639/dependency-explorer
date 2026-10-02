@@ -707,6 +707,26 @@
       ]
     },
     {
+      "id": "mongo:svc-automatic-scheduling",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-automatic-scheduling",
+      "owner": "svc-automatic-scheduling",
+      "evidence": [
+        "svc-automatic-scheduling-tf:terraform"
+      ]
+    },
+    {
+      "id": "mongo:svc-documents-v2",
+      "kind": "database",
+      "store": "mongodb",
+      "name": "svc-documents-v2",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2-tf:terraform"
+      ]
+    },
+    {
       "id": "mongo:svc-employees",
       "kind": "database",
       "store": "mongodb",
@@ -720,8 +740,10 @@
       "kind": "database",
       "store": "mongodb",
       "name": "svc-intelligence",
+      "owner": "svc-intelligence",
       "evidence": [
-        "dataset:svc-intelligence"
+        "dataset:svc-intelligence",
+        "svc-intelligence-tf:terraform"
       ]
     },
     {
@@ -729,8 +751,10 @@
       "kind": "database",
       "store": "mongodb",
       "name": "svc-kpis-v2",
+      "owner": "svc-kpis-v2",
       "evidence": [
-        "dataset:svc-kpis-v2"
+        "dataset:svc-kpis-v2",
+        "svc-kpis-v2-tf:terraform"
       ]
     },
     {
@@ -738,9 +762,17 @@
       "kind": "database",
       "store": "mongodb",
       "name": "svc-search",
+      "owner": "svc-search",
       "evidence": [
         "dataset:svc-bff-planning",
-        "dataset:svc-search"
+        "dataset:svc-search",
+        "svc-automatic-scheduling-tf:terraform",
+        "svc-employees-tf:terraform",
+        "svc-kpis-v2-tf:terraform",
+        "svc-search-tf:terraform",
+        "svc-shops-tf:terraform",
+        "svc-trackers-tf:terraform",
+        "svc-workload-plan-tf:terraform"
       ]
     },
     {
@@ -748,8 +780,10 @@
       "kind": "database",
       "store": "mongodb",
       "name": "svc-shifts",
+      "owner": "svc-shifts",
       "evidence": [
-        "dataset:svc-shifts"
+        "dataset:svc-shifts",
+        "svc-shifts-tf:terraform"
       ]
     },
     {
@@ -757,8 +791,10 @@
       "kind": "database",
       "store": "mongodb",
       "name": "svc-shops",
+      "owner": "svc-shops",
       "evidence": [
-        "dataset:svc-shops"
+        "dataset:svc-shops",
+        "svc-shops-tf:terraform"
       ]
     },
     {
@@ -766,8 +802,10 @@
       "kind": "database",
       "store": "mongodb",
       "name": "svc-skello-assistant",
+      "owner": "svc-skello-assistant",
       "evidence": [
-        "dataset:svc-skello-assistant"
+        "dataset:svc-skello-assistant",
+        "svc-skello-assistant-tf:terraform"
       ]
     },
     {
@@ -775,8 +813,10 @@
       "kind": "database",
       "store": "mongodb",
       "name": "svc-trackers",
+      "owner": "svc-trackers",
       "evidence": [
-        "dataset:svc-trackers"
+        "dataset:svc-trackers",
+        "svc-trackers-tf:terraform"
       ]
     },
     {
@@ -784,8 +824,10 @@
       "kind": "database",
       "store": "mongodb",
       "name": "svc-workload-plan",
+      "owner": "svc-workload-plan",
       "evidence": [
-        "dataset:svc-workload-plan"
+        "dataset:svc-workload-plan",
+        "svc-workload-plan-tf:terraform"
       ]
     },
     {
@@ -18181,6 +18223,102 @@
     {
       "resource": "kinesis:skelloapp-bus",
       "relation": "consumes",
+      "service": "svc-workload-plan",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-automatic-scheduling",
+      "relation": "writes",
+      "service": "svc-automatic-scheduling",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-search",
+      "relation": "reads",
+      "service": "svc-automatic-scheduling",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-documents-v2",
+      "relation": "writes",
+      "service": "svc-documents-v2",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-search",
+      "relation": "reads",
+      "service": "svc-employees",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-intelligence",
+      "relation": "writes",
+      "service": "svc-intelligence",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-kpis-v2",
+      "relation": "writes",
+      "service": "svc-kpis-v2",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-search",
+      "relation": "reads",
+      "service": "svc-kpis-v2",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-search",
+      "relation": "writes",
+      "service": "svc-search",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-shifts",
+      "relation": "writes",
+      "service": "svc-shifts",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-shops",
+      "relation": "writes",
+      "service": "svc-shops",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-search",
+      "relation": "reads",
+      "service": "svc-shops",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-skello-assistant",
+      "relation": "writes",
+      "service": "svc-skello-assistant",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-trackers",
+      "relation": "writes",
+      "service": "svc-trackers",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-search",
+      "relation": "reads",
+      "service": "svc-trackers",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-workload-plan",
+      "relation": "writes",
+      "service": "svc-workload-plan",
+      "grade": "config"
+    },
+    {
+      "resource": "mongo:svc-search",
+      "relation": "reads",
       "service": "svc-workload-plan",
       "grade": "config"
     }

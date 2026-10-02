@@ -1,6 +1,8 @@
 import type { Resource, ResourceRelation } from '@dependency-explorer/schema'
 import type { RailsModel } from './extractors/rails-schema'
 import { stripComments, type RepoGraph } from './code-grades'
+import type { TerraformFacts } from './extractors/terraform'
+import { normalizeResourceName } from '@dependency-explorer/data'
 import type { ServerlessFacts } from './extractors/serverless'
 
 export const WRITE_CALL = /\.(create!?|create_or_find_by!?|find_or_create_by!?|insert!?|insert_all!?|upsert|upsert_all|update_all|delete_all|destroy_all|delete_by|destroy_by)\b/
@@ -130,6 +132,23 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
       const dlq = pick(w.dlq)
       if (q && dlq) {
         out.push({ resource: q.id, relation: 'dead-letters-to', service: repo, target: dlq.id, grade: 'config' })
+      }
+    }
+  }
+  return out
+}
+
+export const OWNING_ROLES = new Set(['readWrite', 'dbOwner'])
+export const READING_ROLES = new Set(['read'])
+
+export function atlasRelations(terraform: Array<{ service: string; facts: TerraformFacts }>, resources: Resource[]): ResourceRelation[] {
+  const out: ResourceRelation[] = []
+  for (const t of terraform) {
+    for (const role of t.facts.mongoRoles) {
+      const name = normalizeResourceName(role.database, 'mongodb').name
+      const r = resources.find(x => x.store === 'mongodb' && x.name === name)
+      if (r && (OWNING_ROLES.has(role.role) || READING_ROLES.has(role.role))) {
+        out.push({ resource: r.id, relation: OWNING_ROLES.has(role.role) ? 'writes' : 'reads', service: t.service, grade: 'config' })
       }
     }
   }

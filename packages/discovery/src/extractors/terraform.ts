@@ -41,8 +41,14 @@ export interface TfDmsEndpoint {
   engineName?: string
 }
 
+export interface TfMongoRole {
+  role: string
+  database: string
+}
+
 export interface TerraformFacts {
   resources: TfResource[]
+  mongoRoles: TfMongoRole[]
   dmsTasks: TfDmsTask[]
   dmsEndpoints: TfDmsEndpoint[]
   /** recognized data-plane IAM actions found in policy documents */
@@ -94,6 +100,7 @@ export function parseTerraform(content: string): TerraformFacts {
   const resources: TfResource[] = []
   const dmsTasks: TfDmsTask[] = []
   const dmsEndpoints: TfDmsEndpoint[] = []
+  const mongoRoles: TfMongoRole[] = []
   const iamActions = new Set<string>()
 
   const resourceRe = /^resource\s+"([a-z0-9_]+)"\s+"([A-Za-z0-9_-]+)"\s*\{/gm
@@ -117,6 +124,14 @@ export function parseTerraform(content: string): TerraformFacts {
         source: attr(block, 'source_endpoint_arn'),
         target: attr(block, 'target_endpoint_arn'),
       })
+    } else if (tfType === 'mongodbatlas_database_user') {
+      for (const role of blockAt(content, m.index).matchAll(/roles\s*\{([^}]*)\}/g)) {
+        const roleName = attr(role[1] ?? '', 'role_name')
+        const database = attr(role[1] ?? '', 'database_name')
+        if (roleName && database) {
+          mongoRoles.push({ role: roleName, database })
+        }
+      }
     } else if (tfType === 'aws_dms_endpoint') {
       dmsEndpoints.push({
         label: label!,
@@ -141,7 +156,7 @@ export function parseTerraform(content: string): TerraformFacts {
   let a: RegExpExecArray | null
   while ((a = IAM_ACTION_RE.exec(content))) iamActions.add(a[1]!)
 
-  return { resources, dmsTasks, dmsEndpoints, iamActions: [...iamActions].sort() }
+  return { resources, mongoRoles, dmsTasks, dmsEndpoints, iamActions: [...iamActions].sort() }
 }
 
 const IDENTITY_LOCALS = new Set(['project', 'project_kebab_case', 'projectCamelCase', 'application', 'comp'])
@@ -196,6 +211,18 @@ export function parseTerraformDataNames(content: string): Record<string, string>
   return names
 }
 
+export function parseTerraformSsmValues(content: string): Record<string, string> {
+  const values: Record<string, string> = {}
+  for (const m of content.matchAll(/^resource\s+"aws_ssm_parameter"\s+"([\w-]+)"\s*\{/gm)) {
+    const block = blockAt(content, m.index)
+    const value = topLevelAttr(block, 'value') ?? topLevelAttr(block, 'insecure_value')
+    if (m[1] && value) {
+      values[m[1]] = value
+    }
+  }
+  return values
+}
+
 export function parseTerraformLocalMaps(content: string): Record<string, Record<string, Record<string, string>>> {
   const maps: Record<string, Record<string, Record<string, string>>> = {}
   for (const block of content.matchAll(/^locals\s*\{([\s\S]*?)^\}/gm)) {
@@ -236,7 +263,7 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
   }
   if (!entries.length) return null
 
-  const merged: TerraformFacts = { resources: [], dmsTasks: [], dmsEndpoints: [], iamActions: [] }
+  const merged: TerraformFacts = { resources: [], mongoRoles: [], dmsTasks: [], dmsEndpoints: [], iamActions: [] }
   const actions = new Set<string>()
   const contents = entries.flatMap(file => {
     try {
@@ -250,6 +277,7 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
     merged.resources.push(...facts.resources)
     merged.dmsTasks.push(...facts.dmsTasks)
     merged.dmsEndpoints.push(...facts.dmsEndpoints)
+    merged.mongoRoles.push(...facts.mongoRoles)
     facts.iamActions.forEach(x => actions.add(x))
   }
   const locals = Object.assign({}, ...contents.map(parseTerraformLocals))
@@ -261,7 +289,12 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
     ...(r.name ? { name: applyTerraformLocals(r.name, locals) } : {}),
     ...(r.engine ? { engine: applyTerraformLocals(r.engine, locals) } : {}),
   }))
+  const ssmValues = Object.assign({}, ...contents.map(parseTerraformSsmValues))
+  merged.mongoRoles = merged.mongoRoles.map(r => {
+    const parameter = r.database.match(/^aws_ssm_parameter\.([\w-]+)\.(?:insecure_)?value$/)?.[1]
+    return { ...r, database: applyTerraformLocals((parameter && ssmValues[parameter]) || r.database, locals) }
+  })
   merged.iamActions = [...actions].sort()
-  if (!merged.resources.length && !merged.dmsTasks.length && !merged.dmsEndpoints.length && !merged.iamActions.length) return null
+  if (!merged.resources.length && !merged.mongoRoles.length && !merged.dmsTasks.length && !merged.dmsEndpoints.length && !merged.iamActions.length) return null
   return merged
 }

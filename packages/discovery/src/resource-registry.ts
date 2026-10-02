@@ -3,6 +3,7 @@ import { normalizeResourceName } from '@dependency-explorer/data'
 import type { RailsModel } from './extractors/rails-schema'
 import type { ServerlessFacts } from './extractors/serverless'
 import type { TerraformFacts } from './extractors/terraform'
+import { OWNING_ROLES, READING_ROLES } from './resource-relations'
 
 export const STORE_PREFIX: Record<string, string> = {
   postgresql: 'pg', mongodb: 'mongo', dynamodb: 'ddb', s3: 's3', sqs: 'sqs', sns: 'sns', kinesis: 'kinesis', redis: 'redis', elasticsearch: 'es',
@@ -95,6 +96,11 @@ export function buildRegistry(inputs: RegistryInputs): Resource[] {
       if (store && r.name) {
         add(store, r.name, KIND_BY_STORE[store] ?? 'database', `${t.tfRepo}:terraform`, t.service)
       }
+    }
+  }
+  for (const t of inputs.terraform) {
+    for (const role of t.facts.mongoRoles.filter(r => OWNING_ROLES.has(r.role) || READING_ROLES.has(r.role))) {
+      add('mongodb', role.database, 'database', `${t.tfRepo}:terraform`, OWNING_ROLES.has(role.role) ? t.service : undefined)
     }
   }
   for (const svc of inputs.services) {
