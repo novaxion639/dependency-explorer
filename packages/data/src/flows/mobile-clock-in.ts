@@ -185,7 +185,7 @@ const mobile_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-lateness",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "Sidekiq broker for LatenessNotificationJob"
     }
   ],

@@ -272,7 +272,7 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-badging-review",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "Sidekiq broker for the recalculation job and the per-shift creation callbacks"
     }
   ],

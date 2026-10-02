@@ -123,7 +123,7 @@ const shift_publication: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-publication",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "Sidekiq broker carrying PublishJob"
     }
   ],

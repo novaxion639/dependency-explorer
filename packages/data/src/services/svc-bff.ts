@@ -25,12 +25,7 @@ const svc_bff: ConnectivityService = ConnectivityServiceSchema.parse({
         "201": "Created",
         "400": "Validation error"
       },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcBff-{env}"
-        }
-      ]
+      "awsCalls": []
     },
     {
       "id": "api-bulk-update-kpis",
@@ -51,12 +46,7 @@ const svc_bff: ConnectivityService = ConnectivityServiceSchema.parse({
         "201": "Created",
         "400": "Validation error"
       },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcBff-{env}"
-        }
-      ]
+      "awsCalls": []
     },
     {
       "id": "api-get-payroll-anomalies",
@@ -112,13 +102,7 @@ const svc_bff: ConnectivityService = ConnectivityServiceSchema.parse({
       "response": {}
     }
   ],
-  "databases": [
-    {
-      "type": "dynamodb",
-      "name": "svcBff-{env}",
-      "description": "BFF request cache and orchestration state"
-    }
-  ]
+  "databases": []
 })
 
 export default svc_bff

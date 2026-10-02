@@ -4,21 +4,18 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 // Code layer traced 2026-07-11. The KPI calibration sits on THIS read path:
 // WorkloadPlanManagerV2#get generates dynamic staffing rules from predictive
 // KPIs (svc-kpis-v2, 15m period) when the shop's rules carry metrics — the
-// earlier claim that creation did the calibration was wrong. The service is
-// dual-store during the Dynamo→Mongo migration: the front ships BOTH clients
-// (svc_workload_client V1 + svc_workload_plans_v2_client), and V1 reads come
-// from the DynamoDB-backed WorkloadPlanManager.
+// earlier claim that creation did the calibration was wrong.
 const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "workload-plan-consultation",
   "name": "Workload Plan Consultation",
-  "description": "A planner opens the workload forecasting view. The front queries svc-workload-plan directly (both generations ship: the V1 client reads the DynamoDB-backed store, the V2 client the MongoDB one — dual-store migration in flight). On the V2 path, WorkloadPlanManagerV2#get loads the plans and rules from Mongo, fetches the shop from svc-search's shared raw-shop collections, and — when rules reference metrics — pulls predictive KPIs from svc-kpis-v2 to generate dynamic staffing rules (degrades gracefully when the KPI service is unavailable). (Previously routed through svc-bff-planning, decommissioned.)",
+  "description": "A planner opens the workload forecasting view. The front queries svc-workload-plan directly through the V2 client. WorkloadPlanManagerV2#get loads the plans and rules from Mongo, fetches the shop from svc-search's shared raw-shop collections, and — when rules reference metrics — pulls predictive KPIs from svc-kpis-v2 to generate dynamic staffing rules (degrades gracefully when the KPI service is unavailable). (Previously routed through svc-bff-planning, decommissioned.)",
   "trigger": {"actor": "manager"},
   "primaryArea": "workload-forecasting",
   "steps": [
     {
       "from": "skello-app-front",
       "to": "svc-workload-plan",
-      "action": "GET /workload-plans (V1) + GET /v2/workload-plans + /v2/workload-rules/{shopId} (V2)"
+      "action": "GET /v2/workload-plans + /v2/workload-rules/{shopId}"
     },
     {
       "from": "svc-workload-plan",
@@ -38,15 +35,7 @@ const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "service",
       "label": "svcWorkloadPlanV2Client",
       "path": "apps/vue-app/src/shared/utils/clients/svc_workload_plans_v2_client.js",
-      "description": "V2 client (Mongo-backed API); the V1 svc_workload_client still ships alongside it"
-    },
-    {
-      "id": "cu-wpc-controller-v1",
-      "service": "svc-workload-plan",
-      "kind": "controller",
-      "label": "WorkloadPlanController#indexAction",
-      "path": "src/Controller/WorkloadPlan/WorkloadPlanController.ts",
-      "description": "V1 read surface — findAllByPosteIdsAndDateRange on the DynamoDB-backed manager (still live during the migration)"
+      "description": "V2 client over the Mongo-backed API"
     },
     {
       "id": "cu-wpc-controller-v2",
@@ -101,24 +90,10 @@ const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
       "mode": "sync"
     },
     {
-      "from": "svc-workload-plan",
-      "to": "cu-wpc-controller-v1",
-      "label": "API GW → WorkloadPlanController#indexAction",
-      "mode": "sync",
-      "condition": "V1 client path (migration in flight)"
-    },
-    {
       "from": "cu-wpc-controller-v2",
       "to": "cu-wpc-manager-v2",
       "label": "WorkloadPlanManagerV2#get",
       "mode": "sync"
-    },
-    {
-      "from": "cu-wpc-controller-v1",
-      "to": "dynamo-workload-v1",
-      "label": "WorkloadPlanManager findAllByPosteIdsAndDateRange",
-      "mode": "sync",
-      "crud": ["read"]
     },
     {
       "from": "cu-wpc-manager-v2",
@@ -154,13 +129,6 @@ const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
       "label": "svc-workload-plan MongoDB",
       "resources": ["mongo:svc-workload-plan"],
       "description": "V2 store — workload plans and rules"
-    },
-    {
-      "id": "dynamo-workload-v1",
-      "type": "dynamodb",
-      "label": "workloadPlan (V1)",
-      "resources": ["ddb:workloadPlan"],
-      "description": "Legacy store still serving V1 reads during the Mongo migration"
     }
   ],
   "infraEdges": [
@@ -168,12 +136,6 @@ const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
       "from": "svc-workload-plan",
       "to": "mongo-workload",
       "label": "plans + rules",
-      "crud": ["read"]
-    },
-    {
-      "from": "svc-workload-plan",
-      "to": "dynamo-workload-v1",
-      "label": "V1 reads",
       "crud": ["read"]
     }
   ]

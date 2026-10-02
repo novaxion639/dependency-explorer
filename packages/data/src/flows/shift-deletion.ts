@@ -161,7 +161,7 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-del",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "First-shift cache and Sidekiq broker (DeleteShiftDocumentsJob, slow queue)"
     }
   ],

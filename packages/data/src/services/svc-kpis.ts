@@ -47,7 +47,7 @@ const svc_kpis: ConnectivityService = ConnectivityServiceSchema.parse({
   "databases": [
     {
       "type": "postgresql",
-      "name": "svc-kpis",
+      "name": "svckpis-aurora-{env}",
       "description": "Own Postgres replica of monolith tables (10 TypeORM entities: shops, users, contracts, weekly options, predicted shifts, postes…) fed by the skelloapp-bus CDC consumption — the data KPI settings and v1 computations read. Surfaced by the AWS client-usage discovery pass, 2026-07-11."
     },
     {

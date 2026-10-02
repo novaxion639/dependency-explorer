@@ -186,7 +186,7 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-upd",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "First-shift cache and Sidekiq broker for the async-job edges"
     }
   ],

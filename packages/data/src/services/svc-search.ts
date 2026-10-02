@@ -14,13 +14,8 @@ const svc_search: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "type": "s3",
-      "name": "svc-search.{env}",
+      "name": "skello-app.shifts-full-load.{env}",
       "description": "Bulk index snapshots and export files"
-    },
-    {
-      "type": "sqs",
-      "name": "svc-search-index-dlq",
-      "description": "Failed index update retry queue"
     }
   ]
 })

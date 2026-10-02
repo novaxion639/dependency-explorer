@@ -292,7 +292,7 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-requests-approval",
       "type": "postgresql",
       "label": "svc-requests Aurora",
-      "resources": ["pg:svc_requests"],
+      "resources": ["pg:svcrequests"],
       "description": "Persists the accepted/refused status"
     },
     {

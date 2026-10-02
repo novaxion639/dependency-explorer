@@ -28,7 +28,7 @@ const svc_shifts: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "mongodb",
-          "name": "svc-shifts"
+          "name": "svc-search"
         }
       ]
     },
@@ -54,7 +54,7 @@ const svc_shifts: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "mongodb",
-          "name": "svc-shifts"
+          "name": "svc-search"
         }
       ]
     },
@@ -80,7 +80,7 @@ const svc_shifts: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "mongodb",
-          "name": "svc-shifts"
+          "name": "svc-search"
         }
       ]
     },
@@ -106,7 +106,7 @@ const svc_shifts: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "mongodb",
-          "name": "svc-shifts"
+          "name": "svc-search"
         }
       ]
     }
@@ -114,7 +114,7 @@ const svc_shifts: ConnectivityService = ConnectivityServiceSchema.parse({
   "databases": [
     {
       "type": "mongodb",
-      "name": "svc-shifts",
+      "name": "svc-search",
       "description": "Shift metrics and employee aggregated shift data"
     }
   ]

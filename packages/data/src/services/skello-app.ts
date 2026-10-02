@@ -14,23 +14,13 @@ const skello_app: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "type": "redis",
-      "name": "skello-redis",
+      "name": "skelloApp-valkey-{env}",
       "description": "Sidekiq job queues, session store and caching"
     },
     {
       "type": "dynamodb",
-      "name": "skello-dynamodb",
+      "name": "svcUsers-{env}",
       "description": "DynamoDB for high-throughput writes"
-    },
-    {
-      "type": "s3",
-      "name": "skello-assets.{env}",
-      "description": "User-uploaded files, documents and media"
-    },
-    {
-      "type": "sqs",
-      "name": "skello-sqs-events",
-      "description": "Async SQS messages to/from microservices"
     }
   ]
 })

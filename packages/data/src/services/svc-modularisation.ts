@@ -17,21 +17,10 @@ const svc_modularisation: ConnectivityService = ConnectivityServiceSchema.parse(
         "200": "Success response",
         "404": "Not found"
       },
-      "awsCalls": [
-        {
-          "type": "dynamodb",
-          "name": "svcModularisation-{env}"
-        }
-      ]
+      "awsCalls": []
     }
   ],
-  "databases": [
-    {
-      "type": "dynamodb",
-      "name": "svcModularisation-{env}",
-      "description": "Module activation flags per shop and organisation"
-    }
-  ]
+  "databases": []
 })
 
 export default svc_modularisation

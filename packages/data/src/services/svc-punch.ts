@@ -519,11 +519,6 @@ const svc_punch: ConnectivityService = ConnectivityServiceSchema.parse({
       "type": "dynamodb",
       "name": "svcPunch-{env}",
       "description": "Punch clock records — clock-in/out events per employee"
-    },
-    {
-      "type": "sqs",
-      "name": "svc-punch-dlq",
-      "description": "Retry queue for failed punch sync"
     }
   ]
 })

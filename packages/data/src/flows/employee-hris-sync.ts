@@ -177,7 +177,7 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
       "id": "dynamo-employees",
       "type": "dynamodb",
       "label": "SvcEmployees ({env})",
-      "resources": ["ddb:svcEmployees"],
+      "resources": ["ddb:svcEmployees-restaure"],
       "description": "Employee configs and sync state (employee master data lives in the monolith, fronted by private endpoints)"
     },
     {
