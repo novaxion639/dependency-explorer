@@ -78,6 +78,9 @@ export interface ServerlessFacts {
 
 // ── Stream / template identity helpers ────────────────────────────────────────
 
+const QUEUE_FACTORY_OBJECT = /\bcreate\w*(?:Sqs|Queue|SQS)\w*\(\s*\{([^}]{0,600})\}/g
+const QUEUE_FACTORY_CALL = /\bcreate\w*(?:Sqs|Queue|SQS)\w*\(\s*['"`]([^'"`]+)['"`]/g
+
 const OWNED_RESOURCE_TYPES = new Set([
   'AWS::DynamoDB::Table', 'AWS::S3::Bucket', 'AWS::Kinesis::Stream', 'AWS::Events::Rule',
   'AWS::SNS::Topic',
@@ -583,6 +586,17 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
   for (const m of content.matchAll(/\bauthorizer:\s*['"`]([A-Za-z][\w-]*)['"`]/g)) authorizerNames.add(m[1]!)
   for (const m of content.matchAll(/\bauthorizer:\s*\{[^}]*?\bname:\s*['"`]([A-Za-z][\w-]*)['"`]/gs)) authorizerNames.add(m[1]!)
 
+  for (const m of content.matchAll(QUEUE_FACTORY_OBJECT)) {
+    const name = m[1]?.match(/\bname:\s*['"`]([^'"`]+)['"`]/)?.[1]
+    if (name) {
+      queueNames.add(stripTemplate(name) || name)
+    }
+  }
+  for (const m of content.matchAll(QUEUE_FACTORY_CALL)) {
+    if (m[1]) {
+      queueNames.add(stripTemplate(m[1]) || m[1])
+    }
+  }
   return { endpoints, queueNames: [...queueNames].sort(), streamConsumers, s3Triggers, schedules, ownedResources, dlqWirings: parseDlqStatic(content), authorizerNames: [...authorizerNames].sort() }
 }
 

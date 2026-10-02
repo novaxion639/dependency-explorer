@@ -54,7 +54,7 @@ export function tableRelations(resources: Resource[], models: RailsModel[], file
 }
 
 
-const MIN_LITERAL = 8
+const MIN_LITERAL = 10
 const NON_SENDERS = new Set(['skello-app-front'])
 const SQS_EVENT = /\bsqs:\s*(\{|['"`])/
 
@@ -71,8 +71,9 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
         if (repo === r.owner || NON_SENDERS.has(repo)) {
           continue
         }
+        const token = new RegExp(`(?<![A-Za-z0-9_])${escape(r.name)}(?![A-Za-z0-9_])`)
         for (const f of files) {
-          if (f.source.includes(r.name)) {
+          if (token.test(f.source)) {
             out.push({ resource: r.id, relation: 'produces', service: repo, file: f.file, grade: f.file.includes('serverless') ? 'config' : 'code' })
           }
         }

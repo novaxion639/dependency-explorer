@@ -451,3 +451,10 @@ describe('resource declarations for the registry', () => {
     expect(facts.resources.map(r => `${r.tfType}:${r.name}`)).toEqual(['aws_sqs_queue:svc-x-jobs', 'aws_sns_topic:svc-x-events'])
   })
 })
+
+describe('queues declared through helper factories', () => {
+  it('reads createSqs({ name }) objects and create*Sqs*(name) calls', () => {
+    const facts = parseServerlessStatic("export const dlq = createSqs({\n  isDlq: true,\n  name: 'createActivityLogJobDlq',\n});\nexport const q = createSqs({\n  dlqToAppend: dlq.name,\n  name: 'createActivityLogJob',\n  visibilityTimeout: 180,\n});\n...createSqsAndDlq('invoiceUpsertSqs', stage),\n...createRecoverySqs('DeletePositionConfigRecoverySqs', 'DeletePositionConfigJobDlq', serviceName, stage),\n")
+    expect(facts.queueNames).toEqual(['DeletePositionConfigRecoverySqs', 'createActivityLogJob', 'createActivityLogJobDlq', 'invoiceUpsertSqs'])
+  })
+})

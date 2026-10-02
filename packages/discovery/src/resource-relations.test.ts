@@ -70,3 +70,20 @@ describe('messagingRelations', () => {
     ])
   })
 })
+
+describe('messagingRelations literal matching', () => {
+  it('matches whole tokens of distinctive names only', () => {
+    const resources: Resource[] = [
+      { id: 'sns:dispatch', kind: 'topic', store: 'sns', name: 'dispatch', owner: 'svc-requests', evidence: [] },
+      { id: 'sqs:mergeShopSqs', kind: 'queue', store: 'sqs', name: 'mergeShopSqs', owner: 'svc-shops', evidence: [] },
+    ]
+    const sources = new Map([
+      ['skello-app', [
+        { file: 'app/a.rb', source: 'store.dispatch(action)' },
+        { file: 'app/b.rb', source: "queue: 'svcShops-mergeShopSqs-production'" },
+        { file: 'app/c.rb', source: 'mergeShopSqsHandler.run' },
+      ]],
+    ])
+    expect(messagingRelations(resources, new Map(), sources).map(r => `${r.relation} ${r.resource} ${r.file}`)).toEqual(['produces sqs:mergeShopSqs app/b.rb'])
+  })
+})
