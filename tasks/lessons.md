@@ -62,3 +62,18 @@
 - **zsh reads `$VAR:c…` as a modifier** — write `"${SHA}:config/routes.rb"` with braces.
 - **Plan code is not exempt from the code rules** — plan snippets carried `as` casts; check
   every transcribed block against the rules before committing it.
+
+## Resource Impact phase (2026-10-02)
+
+- **A literal match is a reference, not a direction** — "the name appears in another repo" fired on Rails
+  `transaction`, locale prose and every consumer's event source; producers need an identifier-shaped
+  string literal and must exclude consumers and same-named sibling owners.
+- **First-seen wins is order-dependent** — any BFS that keeps the first effect per node must rank
+  effects and settle each hop before spreading, or the answer depends on array order.
+- **Transitive "fails" through a hub over-claims** — a caller loses only its calls to the failing node;
+  beyond hop 1 the map can say "may fail", and flows break only at steps calling the origin.
+- **Static configs hide names behind factories, constants and locals** — check `createSqs({ name })`,
+  `\${sls:stage}` escapes and HCL `local.project` before concluding a resource is absent, and verify
+  constants are names (svc-pos `QUEUE_NAME` were logical ids).
+- **A derived surface must refuse to regenerate from missing inputs** — a stale graph silently
+  produced zero readers ("safe to change"); make the gap a finding and block the write.
