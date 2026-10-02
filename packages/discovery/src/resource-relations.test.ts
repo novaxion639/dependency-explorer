@@ -36,6 +36,22 @@ describe('tableRelations', () => {
     const rels = tableRelations([shifts], models, files, graph).map(r => `${r.relation} ${r.file}`)
     expect(rels.sort()).toEqual(['reads app/services/commented.rb', 'writes app/services/bulk.rb', 'writes app/services/create.rb'])
   })
+  it('reads only from the scanned files, so specs and migrations are neither readers nor writers', () => {
+    const graph = loadRepoGraph({
+      built_at_commit: 'x',
+      nodes: [
+        { id: 'm', label: 'Shift', source_file: 'app/models/shift.rb', _callable_class: true },
+        { id: 's', label: 's', source_file: 'spec/models/shift_spec.rb' },
+        { id: 'g', label: 'g', source_file: 'db/migrate/20200101_backfill.rb' },
+      ],
+      links: [
+        { source: 's', target: 'm', relation: 'calls', confidence: 'EXTRACTED' },
+        { source: 'g', target: 'm', relation: 'calls', confidence: 'EXTRACTED' },
+      ],
+    })
+    const shifts: Resource = { id: 'pg:skello_production.shifts', kind: 'table', store: 'postgresql', name: 'shifts', evidence: [], model: { file: 'app/models/shift.rb', className: 'Shift' } }
+    expect(tableRelations([shifts], models, files, graph).filter(r => r.relation === 'reads')).toEqual([])
+  })
 })
 
 

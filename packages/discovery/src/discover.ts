@@ -686,7 +686,7 @@ function run(): Report {
   const readSources = (repo: string, files: string[]) =>
     files.map(f => ({ file: path.relative(path.join(REPO_BASE, repo), f), source: fs.readFileSync(f, 'utf-8') }))
   const monolithFiles = railsSchema
-    ? readSources('skello-app', ['app', 'lib'].flatMap(dir => walkFiles(path.join(REPO_BASE, 'skello-app', dir))).filter(f => f.endsWith('.rb')))
+    ? readSources('skello-app', ['app', 'lib', 'config'].flatMap(dir => walkFiles(path.join(REPO_BASE, 'skello-app', dir))).filter(f => f.endsWith('.rb')))
     : []
   const graphFile = path.join(REPO_BASE, 'skello-app', 'graphify-out', 'graph.json')
   const monolithPin = PIN?.pinned.find(p => p.repo === 'skello-app')
