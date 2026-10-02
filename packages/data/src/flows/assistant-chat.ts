@@ -210,6 +210,7 @@ const assistant_chat: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-svc-int",
       "type": "mongodb",
       "label": "svc-intelligence MongoDB (shared)",
+      "resources": ["mongo:svc-intelligence"],
       "description": "Conversations, LangGraph checkpoints and checkpoint_writes with 1-week TTL — 'FOR continuity we keep using svc int mongo db' (MongooseInstance.ts). A shared-store coupling, modelled as the svc-skello-assistant → svc-intelligence mongodb connection."
     }
   ],

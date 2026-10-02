@@ -109,6 +109,30 @@ export function parseTerraform(content: string): TerraformFacts {
   return { resources, dmsTasks, dmsEndpoints, iamActions: [...iamActions].sort() }
 }
 
+const IDENTITY_LOCALS = new Set(['project'])
+
+export function parseTerraformLocals(content: string): Record<string, string> {
+  const locals: Record<string, string> = {}
+  for (const block of content.matchAll(/^locals\s*\{([\s\S]*?)^\}/gm)) {
+    for (const m of (block[1] ?? '').matchAll(/^\s*(\w+)\s*=\s*"([^"$]*)"\s*$/gm)) {
+      if (m[1] && m[2]) {
+        locals[m[1]] = m[2]
+      }
+    }
+  }
+  return locals
+}
+
+export function applyTerraformLocals(value: string, locals: Record<string, string>): string {
+  const substituted = value.replace(/\$\{local\.(\w+)\}/g, (whole, key: string) => (IDENTITY_LOCALS.has(key) ? locals[key] ?? whole : whole))
+  const call = substituted.match(/^(lower|upper)\(\s*"(.*)"\s*\)$/)
+  if (!call) {
+    return substituted
+  }
+  const inner = call[2] ?? ''
+  return call[1] === 'lower' ? inner.replace(/^[^$]*/, head => head.toLowerCase()) : inner.replace(/^[^$]*/, head => head.toUpperCase())
+}
+
 /** Scan a `<service>-tf` sibling checkout. Null when absent or empty. */
 export function extractTerraform(repoBase: string, tfRepo: string): TerraformFacts | null {
   const repoPath = path.join(repoBase, tfRepo)
@@ -135,6 +159,14 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
     merged.dmsEndpoints.push(...facts.dmsEndpoints)
     facts.iamActions.forEach(x => actions.add(x))
   }
+  const locals = Object.assign({}, ...entries.map(file => {
+    try {
+      return parseTerraformLocals(fs.readFileSync(path.join(repoPath, file), 'utf-8'))
+    } catch {
+      return {}
+    }
+  }))
+  merged.resources = merged.resources.map(r => (r.name ? { ...r, name: applyTerraformLocals(r.name, locals) } : r))
   merged.iamActions = [...actions].sort()
   if (!merged.resources.length && !merged.dmsTasks.length && !merged.dmsEndpoints.length && !merged.iamActions.length) return null
   return merged

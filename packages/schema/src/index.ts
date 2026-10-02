@@ -349,6 +349,8 @@ export const FlowInfraNodeSchema = z.object({
   type: DatabaseTypeSchema,
   label: z.string(),
   description: z.string().optional(),
+  // registry resource ids this node stands for (🗄) — aggregate nodes list several
+  resources: z.array(z.string()).min(1).optional(),
 })
 
 export const FlowInfraEdgeSchema = z.object({

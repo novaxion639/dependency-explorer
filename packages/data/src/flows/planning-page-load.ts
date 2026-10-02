@@ -123,18 +123,21 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-planning",
       "type": "postgresql",
       "label": "skello_production",
+      "resources": ["pg:skello_production"],
       "description": "Shifts, employees, contracts and planning data — primary monolith DB (shift index reads can be routed to the read replica)"
     },
     {
       "id": "dynamo-labour-laws-planning",
       "type": "dynamodb",
       "label": "svcLabourLaws-{env}",
+      "resources": ["ddb:svcLabourLaws"],
       "description": "Labour law rule sets for compliance display"
     },
     {
       "id": "mongo-workload-planning",
       "type": "mongodb",
       "label": "svc-workload-plan (MongoDB)",
+      "resources": ["mongo:svc-workload-plan"],
       "description": "Workload plan forecasts and staffing rules (corrected 2026-06-12: the previously documented DynamoDB store was migrated — the container binds the Mongo repository)"
     }
   ],

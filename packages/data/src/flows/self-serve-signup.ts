@@ -147,12 +147,14 @@ const self_serve_signup: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-signup",
       "type": "postgresql",
       "label": "skello_production — prospects, users, shops, organisations",
+      "resources": ["pg:skello_production.prospects", "pg:skello_production.users", "pg:skello_production.shops", "pg:skello_production.organisations"],
       "description": "The self-serve funnel's core rows: prospect with activation token, then user, shop and organisation"
     },
     {
       "id": "redis-skello-signup",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "Sidekiq broker for the mailer jobs"
     }
   ],

@@ -168,12 +168,14 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-onboarding",
       "type": "postgresql",
       "label": "skello_production — users, contracts, memberships, dpae_deposits",
+      "resources": ["pg:skello_production.users", "pg:skello_production.contracts", "pg:skello_production.memberships", "pg:skello_production.dpae_deposits"],
       "description": "The employee's core rows, built in one transaction; DPAE deposits tracked per contract"
     },
     {
       "id": "dynamo-employees-onboarding",
       "type": "dynamodb",
       "label": "SvcEmployees ({env})",
+      "resources": ["ddb:svcEmployees"],
       "description": "svc-employees' own store — DPAE submission state and step-function follow-up"
     }
   ],

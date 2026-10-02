@@ -150,6 +150,7 @@ const document_generation_esignature: ServiceFlow = ServiceFlowSchema.parse({
       "id": "s3-des-pdfs",
       "type": "s3",
       "label": "signature PDFs (S3)",
+      "resources": ["s3:svc-documents-v2"],
       "description": "Staging for the PDF handed to Yousign"
     }
   ],

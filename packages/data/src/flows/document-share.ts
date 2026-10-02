@@ -125,8 +125,8 @@ const document_share: ServiceFlow = ServiceFlowSchema.parse({
     { "from": "cu-ds-modal", "to": "svc-events", "label": "EMPLOYEE_DOCUMENT_UPLOADED (best-effort)", "mode": "async-event", "failure": { "dlqAbsent": "confirmed-missing", "onError": "Best-effort browser call — a lost event silently misses the activity log; the document and its notification are unaffected" } }
   ],
   "infraNodes": [
-    { "id": "s3-documents", "type": "s3", "label": "documents bucket (presigned PUT/GET)", "description": "Document blobs — the front writes directly; ObjectCreated drives promotion" },
-    { "id": "dynamo-documents", "type": "dynamodb", "label": "svc-documents-v2 single-table (+stream)", "description": "DOCUMENT_IN_PROGRESS (TTL) + DOCUMENT entities; the stream INSERT filter drives employee notification" }
+    { "id": "s3-documents", "type": "s3", "label": "documents bucket (presigned PUT/GET)", "resources": ["s3:svc-documents-v2"], "description": "Document blobs — the front writes directly; ObjectCreated drives promotion" },
+    { "id": "dynamo-documents", "type": "dynamodb", "label": "svc-documents-v2 single-table (+stream)", "resources": ["ddb:svcDocumentsV2"], "description": "DOCUMENT_IN_PROGRESS (TTL) + DOCUMENT entities; the stream INSERT filter drives employee notification" }
   ],
   "infraEdges": [
     { "from": "skello-app-front", "to": "s3-documents", "label": "direct presigned PUT", "crud": ["create"] },

@@ -131,18 +131,21 @@ const leave_request_cancellation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-requests-cancel",
       "type": "postgresql",
       "label": "svc-requests Aurora",
+      "resources": ["pg:svc_requests"],
       "description": "Leave request row removed"
     },
     {
       "id": "kinesis-requests-cdc-cancel",
       "type": "kinesis",
       "label": "svcRequests-{env}",
+      "resources": ["kinesis:svcRequests"],
       "description": "The service's own CDC stream"
     },
     {
       "id": "sns-dispatch-cancel",
       "type": "sns",
       "label": "SnsDispatch",
+      "resources": ["sns:dispatch"],
       "description": "The request-event fan-out topic — deletions match no mail/notification/createShifts FilterPolicy (only the sendToData export sees them)"
     }
   ],

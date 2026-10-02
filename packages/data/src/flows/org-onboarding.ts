@@ -152,9 +152,9 @@ const org_onboarding: ServiceFlow = ServiceFlowSchema.parse({
     { "from": "cu-oo-firehose", "to": "kinesis-enrollment-datalake", "label": "ReplicationModel batches", "mode": "async-event", "crud": ["create"] }
   ],
   "infraNodes": [
-    { "id": "pg-skello-onboarding", "type": "postgresql", "label": "skello_production — organisations, licenses, contracts, prospects", "description": "Everything the provisioning transaction writes" },
-    { "id": "dynamo-enrollment", "type": "dynamodb", "label": "svcEnrollment-{env} (+stream)", "description": "Per-(shopId, flow) onboarding progress payloads — self-contained, no monolith write-back" },
-    { "id": "kinesis-enrollment-datalake", "type": "kinesis", "label": "svc-enrollment Firehose → data lake", "description": "Analytics replication of onboarding progress" }
+    { "id": "pg-skello-onboarding", "type": "postgresql", "label": "skello_production — organisations, licenses, contracts, prospects", "resources": ["pg:skello_production.organisations", "pg:skello_production.licenses", "pg:skello_production.contracts", "pg:skello_production.prospects"], "description": "Everything the provisioning transaction writes" },
+    { "id": "dynamo-enrollment", "type": "dynamodb", "label": "svcEnrollment-{env} (+stream)", "resources": ["ddb:svcEnrollment"], "description": "Per-(shopId, flow) onboarding progress payloads — self-contained, no monolith write-back" },
+    { "id": "kinesis-enrollment-datalake", "type": "kinesis", "label": "svc-enrollment Firehose → data lake", "resources": ["kinesis:svcEnrollment"], "description": "Analytics replication of onboarding progress" }
   ],
   "infraEdges": [
     { "from": "skello-app", "to": "pg-skello-onboarding", "label": "provisioning writes", "crud": ["create", "update"] },

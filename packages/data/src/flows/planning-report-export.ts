@@ -120,12 +120,14 @@ const planning_report_export: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-report-export",
       "type": "postgresql",
       "label": "skello_production",
+      "resources": ["pg:skello_production"],
       "description": "Planning data read for the workbook"
     },
     {
       "id": "s3-temporary-assets",
       "type": "s3",
       "label": "skello-app.temporary-assets",
+      "resources": ["s3:skello-app.temporary-assets"],
       "description": "Export staging: presigned download links; the same bucket svc-reports listens on for automated PAM report dispatch"
     }
   ],

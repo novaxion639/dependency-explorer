@@ -167,6 +167,7 @@ const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "id": "dynamo-svc-punch-tablet",
       "type": "dynamodb",
       "label": "svcPunch-{env}",
+      "resources": ["ddb:svcPunch"],
       "description": "Single-table store (CLOCKINOUT/SETTING/HISTORY + replicated users). The SETTING stream feeds the lateness callback and mobile-permission recalculation"
     }
   ],

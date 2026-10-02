@@ -172,18 +172,21 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-shifts-upd",
       "type": "postgresql",
       "label": "skello_production — shifts, shift_replacements, badgings",
+      "resources": ["pg:skello_production.shifts", "pg:skello_production.shift_replacements", "pg:skello_production.badgings"],
       "description": "Shift row updated in the transaction; badging detached when the shift is unassigned"
     },
     {
       "id": "pg-skello-counters-upd",
       "type": "postgresql",
       "label": "skello_production — planning_hours_datas, RCR & paid-leave counters",
+      "resources": ["pg:skello_production.planning_hours_data", "pg:skello_production.rcr_counters", "pg:skello_production.paid_leaves_counters"],
       "description": "Counter tables recomputed for old and new assignees"
     },
     {
       "id": "redis-skello-upd",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "First-shift cache and Sidekiq broker for the async-job edges"
     }
   ],

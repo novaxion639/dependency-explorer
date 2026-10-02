@@ -152,12 +152,14 @@ const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-workload",
       "type": "mongodb",
       "label": "svc-workload-plan MongoDB",
+      "resources": ["mongo:svc-workload-plan"],
       "description": "V2 store — workload plans and rules"
     },
     {
       "id": "dynamo-workload-v1",
       "type": "dynamodb",
       "label": "workloadPlan (V1)",
+      "resources": ["ddb:workloadPlan"],
       "description": "Legacy store still serving V1 reads during the Mongo migration"
     }
   ],

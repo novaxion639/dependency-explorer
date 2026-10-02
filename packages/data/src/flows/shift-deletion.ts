@@ -147,18 +147,21 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-shifts-del",
       "type": "postgresql",
       "label": "skello_production — shifts, predicted_shifts",
+      "resources": ["pg:skello_production.shifts", "pg:skello_production.predicted_shifts"],
       "description": "Shift row destroyed in the transaction; future PredictedShift dropped post-destroy"
     },
     {
       "id": "pg-skello-counters-del",
       "type": "postgresql",
       "label": "skello_production — planning_hours_datas, RCR & paid-leave counters",
+      "resources": ["pg:skello_production.planning_hours_data", "pg:skello_production.rcr_counters", "pg:skello_production.paid_leaves_counters"],
       "description": "Counters recomputed synchronously inside the destroy transaction"
     },
     {
       "id": "redis-skello-del",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "First-shift cache and Sidekiq broker (DeleteShiftDocumentsJob, slow queue)"
     }
   ],

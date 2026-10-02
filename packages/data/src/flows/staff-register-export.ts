@@ -89,12 +89,14 @@ const staff_register_export: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-staffregister",
       "type": "postgresql",
       "label": "skello_production — contracts, user_extended_infos, memberships",
+      "resources": ["pg:skello_production.contracts", "pg:skello_production.user_extended_infos", "pg:skello_production.memberships"],
       "description": "Contract scopes the register is built from"
     },
     {
       "id": "s3-staffregister",
       "type": "s3",
       "label": "documents-v2 temporary assets",
+      "resources": ["s3:skello-app.temporary-assets"],
       "description": "Generated xlsx behind a short-lived download URL (Location redirect)"
     }
   ],

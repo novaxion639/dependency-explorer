@@ -253,24 +253,28 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-shifts",
       "type": "postgresql",
       "label": "skello_production — shifts, shift_replacements, predicted_shifts",
+      "resources": ["pg:skello_production.shifts", "pg:skello_production.shift_replacements", "pg:skello_production.predicted_shifts"],
       "description": "Shift rows persisted within the ActiveRecord transaction; PredictedShift upserts arrive post-commit from the callback group"
     },
     {
       "id": "pg-skello-counters",
       "type": "postgresql",
       "label": "skello_production — planning_hours_datas, RCR & paid-leave counters",
+      "resources": ["pg:skello_production.planning_hours_data", "pg:skello_production.rcr_counters", "pg:skello_production.paid_leaves_counters"],
       "description": "Counter tables recomputed by CombinedTrackerUpdateService for every assigned user"
     },
     {
       "id": "redis-skello-shifts",
       "type": "redis",
       "label": "skello-redis",
+      "resources": ["redis:skello-redis"],
       "description": "First-shift cache (after_save) and the Sidekiq broker carrying every async-job edge of this flow"
     },
     {
       "id": "dynamo-events-shift",
       "type": "dynamodb",
       "label": "svcEvents-{env}",
+      "resources": ["ddb:svcEvents"],
       "description": "Audit event store — BatchWriteItem for shift.created (absence shifts only)"
     }
   ],

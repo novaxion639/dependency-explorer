@@ -114,12 +114,14 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-workload-cr",
       "type": "mongodb",
       "label": "svc-workload-plan MongoDB",
+      "resources": ["mongo:svc-workload-plan"],
       "description": "V2 store — the migration's destination"
     },
     {
       "id": "dynamo-workload-cr",
       "type": "dynamodb",
       "label": "workloadPlan (V1)",
+      "resources": ["ddb:workloadPlan"],
       "description": "Legacy store; its stream feeds the replication bridge"
     }
   ],

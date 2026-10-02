@@ -92,6 +92,7 @@ const mobile_shift_swap_request: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-swaps",
       "type": "postgresql",
       "label": "skello_production — shift_swaps",
+      "resources": ["pg:skello_production.shift_swaps"],
       "description": "Pending swaps; destroyed by V3::Shifts::UpdateService#remove_dependencies when the shift is reassigned or changes opening-window day"
     }
   ],

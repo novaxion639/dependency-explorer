@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
 import { classifyAwsUsage } from './aws-clients'
-import { parseTerraform } from './terraform'
+import { parseTerraform, parseTerraformLocals, applyTerraformLocals } from './terraform'
 import { parseEnvServiceUrls } from './frontend'
 import { classifyImports } from './typescript'
 import { parseSdkSource } from './sdk-registry'
@@ -456,5 +456,15 @@ describe('queues declared through helper factories', () => {
   it('reads createSqs({ name }) objects and create*Sqs*(name) calls', () => {
     const facts = parseServerlessStatic("export const dlq = createSqs({\n  isDlq: true,\n  name: 'createActivityLogJobDlq',\n});\nexport const q = createSqs({\n  dlqToAppend: dlq.name,\n  name: 'createActivityLogJob',\n  visibilityTimeout: 180,\n});\n...createSqsAndDlq('invoiceUpsertSqs', stage),\n...createRecoverySqs('DeletePositionConfigRecoverySqs', 'DeletePositionConfigJobDlq', serviceName, stage),\n")
     expect(facts.queueNames).toEqual(['DeletePositionConfigRecoverySqs', 'createActivityLogJob', 'createActivityLogJobDlq', 'invoiceUpsertSqs'])
+  })
+})
+
+describe('resource names behind constants and locals', () => {
+  it('substitutes literal Terraform locals into resource names', () => {
+    const locals = parseTerraformLocals('locals {\n  project      = "svcRequests"\n  workspace    = terraform.workspace\n}\n')
+    expect(locals).toEqual({ project: 'svcRequests' })
+    expect(applyTerraformLocals('${local.project}-dataLake-${local.workspace}', locals)).toBe('svcRequests-dataLake-${local.workspace}')
+    expect(applyTerraformLocals('lower("${local.project}-full-load-${local.workspace}")', locals)).toBe('svcrequests-full-load-${local.workspace}')
+    expect(applyTerraformLocals('skello-app.images.${local.region}', { project: 'skelloApp', region: 'eu-west-1' })).toBe('skello-app.images.${local.region}')
   })
 })

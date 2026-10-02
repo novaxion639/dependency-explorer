@@ -133,12 +133,14 @@ const subscription_upgrade: ServiceFlow = ServiceFlowSchema.parse({
       "id": "dynamo-billing",
       "type": "dynamodb",
       "label": "svcBillingAutomation-{env}",
+      "resources": ["ddb:svcBillingAutomation"],
       "description": "Billing service state — upsell requests, subscription mirror, credit balances"
     },
     {
       "id": "pg-skello-billing",
       "type": "postgresql",
       "label": "skello_production — organisations, licenses, shops",
+      "resources": ["pg:skello_production.organisations", "pg:skello_production.licenses", "pg:skello_production.shops"],
       "description": "Monolith state updated by billing's write-backs"
     }
   ],

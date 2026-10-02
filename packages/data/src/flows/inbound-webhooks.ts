@@ -62,6 +62,7 @@ const inbound_webhooks: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-webhooks",
       "type": "postgresql",
       "label": "skello_production — shops, users",
+      "resources": ["pg:skello_production.shops", "pg:skello_production.users"],
       "description": "Shop cancellation/coach updates + demo-request user lookups"
     }
   ],

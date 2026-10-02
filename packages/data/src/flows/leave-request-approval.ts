@@ -292,18 +292,21 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-requests-approval",
       "type": "postgresql",
       "label": "svc-requests Aurora",
+      "resources": ["pg:svc_requests"],
       "description": "Persists the accepted/refused status"
     },
     {
       "id": "kinesis-requests-cdc-approval",
       "type": "kinesis",
       "label": "svcRequests-{env}",
+      "resources": ["kinesis:svcRequests"],
       "description": "The service's own CDC stream (dedicated DMS aurora replication task)"
     },
     {
       "id": "sns-dispatch-lra",
       "type": "sns",
       "label": "SnsDispatch",
+      "resources": ["sns:dispatch"],
       "description": "Request-event fan-out topic — SQS subscriptions filter on the trigger message attribute"
     }
   ],

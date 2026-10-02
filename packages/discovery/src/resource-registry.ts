@@ -10,7 +10,7 @@ export const STORE_PREFIX: Record<string, string> = {
 const MONOLITH_DB = 'skello_production'
 const KIND_BY_STORE: Partial<Record<Resource['store'], Resource['kind']>> = { sqs: 'queue', sns: 'topic', kinesis: 'stream', s3: 'bucket', dynamodb: 'table' }
 const CF_STORE: Record<string, Resource['store']> = { 'AWS::DynamoDB::Table': 'dynamodb', 'AWS::S3::Bucket': 's3', 'AWS::Kinesis::Stream': 'kinesis', 'AWS::SNS::Topic': 'sns' }
-const TF_STORE: Record<string, Resource['store']> = { aws_dynamodb_table: 'dynamodb', aws_s3_bucket: 's3', aws_kinesis_stream: 'kinesis', aws_sqs_queue: 'sqs', aws_sns_topic: 'sns' }
+const TF_STORE: Record<string, Resource['store']> = { aws_dynamodb_table: 'dynamodb', aws_s3_bucket: 's3', aws_kinesis_stream: 'kinesis', aws_sqs_queue: 'sqs', aws_sns_topic: 'sns', aws_kinesis_firehose_delivery_stream: 'kinesis' }
 
 export interface RegistryInputs {
   monolith: { tables: string[]; models: RailsModel[] } | null
@@ -103,7 +103,7 @@ export function buildRegistry(inputs: RegistryInputs): Resource[] {
   const out: Resource[] = []
   for (const [key, d] of drafts) {
     const owners = [...d.owners].sort()
-    const split = (d.kind === 'queue' || d.kind === 'topic') && owners.length > 1
+    const split = d.kind !== 'table' && d.kind !== 'database' && owners.length > 1
     const prefix = key.split(':')[0]
     const base = key.startsWith(`pg:${MONOLITH_DB}`) ? key : `${prefix}:${d.name}`
     for (const owner of split ? owners : [owners[0]]) {

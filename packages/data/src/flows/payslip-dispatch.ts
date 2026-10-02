@@ -185,18 +185,21 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
       "id": "dynamo-docs-v2-pd",
       "type": "dynamodb",
       "label": "SvcDocV2-{env}",
+      "resources": ["ddb:svcDocumentsV2"],
       "description": "svc-documents-v2's table — its stream is the analysis-request trigger"
     },
     {
       "id": "dynamo-intelligence",
       "type": "dynamodb",
       "label": "svcIntelligence-{env}",
+      "resources": ["ddb:svcIntelligence"],
       "description": "Document analysis requests and extraction state"
     },
     {
       "id": "mongo-intelligence-pd",
       "type": "mongodb",
       "label": "svc-intelligence MongoDB",
+      "resources": ["mongo:svc-intelligence"],
       "description": "The service's Mongo store (also shared with the AI assistant's conversation checkpoints)"
     }
   ],
