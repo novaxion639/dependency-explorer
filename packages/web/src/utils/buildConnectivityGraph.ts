@@ -1,6 +1,7 @@
 import { MarkerType } from '@xyflow/react'
 import type { Node, Edge } from '@xyflow/react'
 import type { ConnectivityMap, RecurringTask } from '@dependency-explorer/data'
+import { resourceIdForDatabase, resourceSurface } from '@dependency-explorer/data'
 import type { DatabaseNodeData } from '../components/nodes/DatabaseNode'
 
 const NODE_W = 200
@@ -192,6 +193,7 @@ export function buildConnectivityGraph(
           dbType: db.type,
           name: db.name,
           description: db.description,
+          resource: resourceIdForDatabase(svc.name, db, resourceSurface.resources),
         } satisfies DatabaseNodeData,
       })
 

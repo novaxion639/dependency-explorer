@@ -44,9 +44,10 @@ interface Props {
   onDrawerSelect: (serviceName: string | null) => void
   /** Endpoint to open + scroll to inside the drawer (?ep= permalink param) */
   highlightEndpointId?: string | null
+  onOpenResource: (id: string) => void
 }
 
-function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnection, onEdgeSelect, drawerService, onDrawerSelect, highlightEndpointId }: Props) {
+function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnection, onEdgeSelect, drawerService, onDrawerSelect, highlightEndpointId, onOpenResource }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -89,11 +90,16 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
 
   const onNodeClick: NodeMouseHandler = useCallback(
     (_evt, node) => {
-      if (node.type === 'databaseNode') return
+      if (node.type === 'databaseNode') {
+        if (typeof node.data.resource === 'string') {
+          onOpenResource(node.data.resource)
+        }
+        return
+      }
       // Always open the flows modal on click — sidebar handles selection
       onOpenFlows(node.id)
     },
-    [onOpenFlows],
+    [onOpenFlows, onOpenResource],
   )
 
   const onPaneClick = useCallback(() => onEdgeSelect(null), [onEdgeSelect])

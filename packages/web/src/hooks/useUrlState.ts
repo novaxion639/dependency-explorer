@@ -45,7 +45,7 @@ export interface UrlState {
   file: string | null
   resource: string | null
   /** A permalink param that did not resolve — rendered as a banner, never serialized */
-  notFound: { param: 'area' | 'term' | 'flow' | 's'; value: string } | null
+  notFound: { param: 'area' | 'term' | 'flow' | 's' | 'resource'; value: string } | null
 }
 
 export const EDGE_SEP = '~'

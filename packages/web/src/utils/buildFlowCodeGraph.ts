@@ -153,6 +153,7 @@ export function buildFlowCodeGraph(
           dbType: infra.type,
           name: infra.label,
           description: infra.description ?? '',
+          resource: infra.resources?.[0],
         } satisfies DatabaseNodeData,
       })
       continue

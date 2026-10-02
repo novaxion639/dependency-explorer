@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { connectivityMap, monolithRoutes } from '@dependency-explorer/data'
+import { allResourceRelations, connectivityMap, monolithRoutes, resourceSurface } from '@dependency-explorer/data'
 import { computeBlastRadius } from '../../utils/blastRadius'
 import { buildSearchIndex } from '../../utils/searchIndex'
 import { useUrlState, edgeKey, EDGE_SEP } from '../../hooks/useUrlState'
@@ -17,14 +17,17 @@ import { AreasHome } from '../areas/AreasHome'
 import { AreaPage } from '../areas/AreaPage'
 import { SystemContext } from '../areas/SystemContext'
 import { NotFoundBanner } from '../areas/NotFoundBanner'
+import { ResourcePage } from '../resources/ResourcePage'
+import { ResourcesIndex } from '../resources/ResourcesIndex'
 import { buildFlagRegistry } from '../../utils/flagRegistry'
 import { buildFileIndex } from '../../utils/fileIndex'
 import { CLAMP_TWO_LINES } from '../../utils/clamp'
 
 const map = connectivityMap
-const searchIndex = buildSearchIndex(map, monolithRoutes)
+const searchIndex = buildSearchIndex(map, monolithRoutes, resourceSurface.resources)
 const flagRegistry = buildFlagRegistry(map)
-const fileIndex = buildFileIndex(map, monolithRoutes)
+const fileIndex = buildFileIndex(map, monolithRoutes, allResourceRelations)
+const resourceIds = new Set(resourceSurface.resources.map(r => r.id))
 const areaById = new Map((map.areas ?? []).map(a => [a.id, a]))
 
 // Strip URL params that don't resolve against the dataset, so a stale shared
@@ -49,6 +52,10 @@ function validateUrlState(st: UrlState): UrlState {
   if (next.flow && !map.flows.some(f => f.id === next.flow)) {
     notFound = notFound ?? { param: 'flow', value: next.flow }
     next.flow = null
+  }
+  if (next.resource && !resourceIds.has(next.resource)) {
+    notFound = notFound ?? { param: 'resource', value: next.resource }
+    next.resource = null
   }
   if (next.team && !(map.teams ?? []).some(t => t.id === next.team)) next.team = null
   if (next.flows && !serviceNames.has(next.flows)) next.flows = null
@@ -78,6 +85,7 @@ export function ConnectivityPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const selectedService = url.s
+  const openResource = useCallback((id: string) => patch({ flow: null, detail: null, file: null, resource: id }), [patch])
   const viewMode = url.view
   const showBlastRadius = url.blast
 
@@ -147,10 +155,10 @@ export function ConnectivityPage() {
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
           <button type="button" className="mobile-only" onClick={() => setSidebarOpen(true)} aria-label="Open services menu" style={{ background: 'transparent', border: '1px solid #2e3250', color: '#94a3b8', borderRadius: 5, padding: '2px 8px', cursor: 'pointer' }}>☰</button>
-          {(['areas', 'context', 'services', 'teams'] as const).map(mode => (
+          {(['areas', 'context', 'services', 'resources', 'teams'] as const).map(mode => (
             <button
               key={mode}
-              onClick={() => patch({ view: mode })}
+              onClick={() => patch({ view: mode, resource: null })}
               style={{
                 padding: '4px 12px', borderRadius: 5, fontSize: 11, fontWeight: 600,
                 border: 'none', cursor: 'pointer',
@@ -254,7 +262,21 @@ export function ConnectivityPage() {
           </div>
         )}
 
-        {viewMode === 'areas' && url.area ? (
+        {url.resource ? (
+          <ResourcePage
+            id={url.resource}
+            onOpenResource={openResource}
+            onOpenFile={key => patch({ resource: null, file: key })}
+            onOpenFlow={id => patch({ flow: id })}
+            onSelectService={name => {
+              patch({ resource: null })
+              selectService(name)
+            }}
+            onBlast={() => {}}
+          />
+        ) : viewMode === 'resources' ? (
+          <ResourcesIndex onOpenResource={openResource} />
+        ) : viewMode === 'areas' && url.area ? (
           <AreaPage
             map={map}
             areaId={url.area}
@@ -280,6 +302,7 @@ export function ConnectivityPage() {
             drawerService={drawerService}
             onDrawerSelect={name => patch({ drawer: name, ep: null })}
             highlightEndpointId={url.ep}
+            onOpenResource={openResource}
           />
         ) : (
           <OwnershipPage
@@ -322,6 +345,7 @@ export function ConnectivityPage() {
           onDetailChange={d => patch({ detail: d })}
           onOpenFlow={flowId => patch({ flow: flowId, detail: null })}
           onOpenArea={id => patch({ view: 'areas', area: id, term: null, flow: null, flows: null, detail: null })}
+          onOpenResource={openResource}
           onBack={() => patch({ flow: null, detail: null })}
           onClose={() => patch({ flow: null, flows: null, detail: null })}
         />
@@ -342,6 +366,7 @@ export function ConnectivityPage() {
           entry={fileIndex.get(url.file)!}
           onSelectFlow={flow => patch({ flow: flow.id, detail: 'code', file: null })}
           onOpenRoute={id => patch({ file: null, s: 'skello-app', view: 'services', drawer: 'skello-app', ep: id })}
+          onOpenResource={openResource}
           onClose={() => patch({ file: null })}
         />
       )}
@@ -361,7 +386,7 @@ export function ConnectivityPage() {
   )
 }
 
-const VIEW_LABEL = { areas: 'Areas', context: 'System context', services: 'Service View', teams: 'Ownership' } as const
+const VIEW_LABEL = { areas: 'Areas', context: 'System context', services: 'Service View', resources: 'Resources', teams: 'Ownership' } as const
 
 function CopyPermalinkButton() {
   const [copied, setCopied] = useState(false)

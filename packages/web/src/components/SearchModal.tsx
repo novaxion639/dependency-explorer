@@ -12,7 +12,7 @@ const TYPE_META: Record<SearchResultType, { label: string; color: string }> = {
   term: { label: 'term', color: '#14b8a6' },
   external: { label: 'external', color: '#a78bfa' },
   team: { label: 'team', color: '#ec4899' },
-  infra: { label: 'infra', color: '#f59e0b' },
+  resource: { label: 'resource', color: '#f59e0b' },
   flag: { label: 'flag', color: '#a78bfa' },
   file: { label: 'file', color: '#94a3b8' },
 }

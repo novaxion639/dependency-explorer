@@ -8,10 +8,11 @@ interface Props {
   entry: FileIndexEntry
   onSelectFlow: (flow: ServiceFlow) => void
   onOpenRoute: (id: string) => void
+  onOpenResource: (id: string) => void
   onClose: () => void
 }
 
-export function FileModal({ entry, onSelectFlow, onOpenRoute, onClose }: Props) {
+export function FileModal({ entry, onSelectFlow, onOpenRoute, onOpenResource, onClose }: Props) {
   return (
     <>
       {/* Backdrop */}
@@ -109,6 +110,18 @@ export function FileModal({ entry, onSelectFlow, onOpenRoute, onClose }: Props) 
                 {entry.routes.map(id => (
                   <li key={id}>
                     <button type="button" onClick={() => onOpenRoute(id)} style={{ background: 'transparent', border: 'none', padding: '2px 0', color: '#10b981', cursor: 'pointer', fontFamily: 'monospace', textAlign: 'left' }}>{id}</button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {entry.resources.length > 0 && (
+            <section aria-label="Resources this file touches" style={{ margin: '4px 18px 0' }}>
+              <h3 style={{ fontSize: 11, color: '#94a3b8', marginBottom: 6 }}>Resources this file touches ({entry.resources.length})</h3>
+              <ul style={{ listStyle: 'none', fontSize: 11 }}>
+                {entry.resources.map(r => (
+                  <li key={`${r.id}-${r.relation}`}>
+                    <button type="button" onClick={() => onOpenResource(r.id)} style={{ background: 'transparent', border: 'none', padding: '2px 0', color: '#f59e0b', cursor: 'pointer', fontFamily: 'monospace', textAlign: 'left' }}>{r.relation} {r.id}</button>
                   </li>
                 ))}
               </ul>

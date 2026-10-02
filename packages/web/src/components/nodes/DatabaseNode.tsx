@@ -29,6 +29,7 @@ export interface DatabaseNodeData {
   name: string
   description: string
   crud?: string[]
+  resource?: string
   [key: string]: unknown
 }
 

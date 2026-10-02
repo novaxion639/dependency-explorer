@@ -1,4 +1,5 @@
 import type { ConnectivityMap, Resource, ResourceRelation } from '@dependency-explorer/schema'
+import { normalizeResourceName } from './resource-names'
 
 const MESSAGING = new Set(['sqs', 'sns', 'kinesis'])
 const WRITES = new Set(['create', 'update', 'delete'])
@@ -74,4 +75,9 @@ export function resourceImpact(id: string, map: ConnectivityMap, resources: Reso
     ...(dlq ? { dlq } : {}),
     counts: { services: services.length, files: files.size, flows: flows.length },
   }
+}
+
+export function resourceIdForDatabase(serviceName: string, db: { type: string; name: string }, resources: Resource[]): string | undefined {
+  const name = normalizeResourceName(db.name).name
+  return resources.find(r => r.store === db.type && r.name === name && r.evidence.includes(`dataset:${serviceName}`))?.id
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { connectivityMap, monolithRoutes } from '@dependency-explorer/data'
+import { allResourceRelations, connectivityMap, monolithRoutes } from '@dependency-explorer/data'
 import type { MonolithRoute } from '@dependency-explorer/data'
 import { buildFileIndex } from './fileIndex'
 
@@ -22,5 +22,15 @@ describe('buildFileIndex', () => {
     const index = buildFileIndex(connectivityMap, monolithRoutes)
     const served = [...index.values()].reduce((n, e) => n + e.routes.length, 0)
     expect(served).toBe(monolithRoutes.length)
+  })
+})
+
+describe('buildFileIndex resources', () => {
+  it('lists the resources a file writes', () => {
+    const writer = allResourceRelations.find(r => r.resource === 'pg:skello_production.shifts' && r.relation === 'writes' && r.grade === 'code')
+    if (!writer?.file) {
+      throw new Error('no code-graded writer of shifts')
+    }
+    expect(buildFileIndex(connectivityMap, [], allResourceRelations).get(`${writer.service}/${writer.file}`)?.resources).toContainEqual({ id: 'pg:skello_production.shifts', relation: 'writes' })
   })
 })

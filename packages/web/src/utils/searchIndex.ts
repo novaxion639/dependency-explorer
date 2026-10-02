@@ -1,10 +1,10 @@
-import type { ConnectivityMap, MonolithRoute } from '@dependency-explorer/data'
+import type { ConnectivityMap, MonolithRoute, Resource } from '@dependency-explorer/data'
 import type { UrlState } from '../hooks/useUrlState'
 import { edgeKey } from '../hooks/useUrlState'
 import { buildFlagRegistry } from './flagRegistry'
 import { buildFileIndex } from './fileIndex'
 
-export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' | 'term' | 'external' | 'team' | 'infra' | 'flag' | 'file'
+export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' | 'term' | 'external' | 'team' | 'resource' | 'flag' | 'file'
 
 export interface SearchEntry {
   type: SearchResultType
@@ -19,14 +19,14 @@ export interface SearchEntry {
 }
 
 const TYPE_ORDER: Record<SearchResultType, number> = {
-  service: 0, endpoint: 1, connection: 2, flow: 3, area: 4, term: 5, external: 6, team: 7, infra: 8, flag: 9, file: 10,
+  service: 0, endpoint: 1, connection: 2, flow: 3, area: 4, term: 5, external: 6, team: 7, resource: 8, flag: 9, file: 10,
 }
 
 // Choosing a result fully describes the target view: modal/popup params are
 // reset explicitly so the landing state never mixes with whatever was open.
-const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null, area: null, term: null, blast: false, detail: null }
+const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null, resource: null, area: null, term: null, blast: false, detail: null }
 
-export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] = []): SearchEntry[] {
+export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] = [], resources: Resource[] = []): SearchEntry[] {
   const entries: SearchEntry[] = []
 
   for (const svc of map.services) {
@@ -46,15 +46,16 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
         patch: { ...CLOSE_OVERLAYS, s: svc.name, view: 'services', drawer: svc.name, ep: ep.id },
       })
     }
-    for (const db of svc.databases ?? []) {
-      entries.push({
-        type: 'infra',
-        label: db.name,
-        sublabel: `${db.type} · ${svc.name}`,
-        haystack: db.description ?? '',
-        patch: { ...CLOSE_OVERLAYS, s: svc.name, view: 'services' },
-      })
-    }
+  }
+
+  for (const r of resources) {
+    entries.push({
+      type: 'resource',
+      label: r.name,
+      sublabel: `${r.kind} · ${r.store}${r.owner ? ` · ${r.owner}` : ''}`,
+      haystack: r.id,
+      patch: { ...CLOSE_OVERLAYS, resource: r.id },
+    })
   }
 
   for (const conn of map.connections) {

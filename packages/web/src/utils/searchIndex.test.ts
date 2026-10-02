@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { connectivityMap } from '@dependency-explorer/data'
+import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
 import { buildSearchIndex } from './searchIndex'
 
 describe('buildSearchIndex', () => {
@@ -8,5 +8,15 @@ describe('buildSearchIndex', () => {
       expect(entry.patch.blast, `${entry.type} ${entry.label}`).toBe(false)
       expect(entry.patch.detail, `${entry.type} ${entry.label}`).toBeNull()
     }
+  })
+})
+
+describe('resource entries', () => {
+  it('index every registry resource and replace the old infra entries', () => {
+    const entries = buildSearchIndex(connectivityMap, [], resourceSurface.resources)
+    const shifts = entries.find(e => e.type === 'resource' && e.label === 'shifts')
+    expect(shifts?.patch.resource).toBe('pg:skello_production.shifts')
+    expect(entries.filter(e => e.type === 'resource')).toHaveLength(resourceSurface.resources.length)
+    expect(entries.some(e => String(e.type) === 'infra')).toBe(false)
   })
 })

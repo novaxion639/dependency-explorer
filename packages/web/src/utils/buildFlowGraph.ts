@@ -188,6 +188,7 @@ export function buildFlowGraph(
           name: infra.label,
           description: infra.description ?? '',
           crud: crudByInfraId.get(infra.id),
+          resource: infra.resources?.[0],
         } satisfies DatabaseNodeData,
       })
       placedInfraIds.add(infra.id)
@@ -207,6 +208,7 @@ export function buildFlowGraph(
         name: infra.label,
         description: infra.description ?? '',
         crud: crudByInfraId.get(infra.id),
+        resource: infra.resources?.[0],
       } satisfies DatabaseNodeData,
     })
   })
