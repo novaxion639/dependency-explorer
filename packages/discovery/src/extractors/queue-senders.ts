@@ -28,7 +28,7 @@ export function walkFiles(dir: string, out: string[] = []): string[] {
     if (SKIP_DIRS.has(e.name) || e.name.startsWith('.')) continue
     const full = path.join(dir, e.name)
     if (e.isDirectory()) walkFiles(full, out)
-    else if (SOURCE_EXTS.has(path.extname(e.name)) && !/\.(test|spec)\./.test(e.name)) out.push(full)
+    else if (SOURCE_EXTS.has(path.extname(e.name)) && !/\.(test|spec)\./.test(e.name) && fs.statSync(full).size <= MAX_FILE_SIZE) out.push(full)
   }
   return out
 }
@@ -65,7 +65,6 @@ export function findQueueSenders(
     for (const file of files) {
       let content: string
       try {
-        if (fs.statSync(file).size > MAX_FILE_SIZE) continue
         content = fs.readFileSync(file, 'utf-8')
       } catch {
         continue
