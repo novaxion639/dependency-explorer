@@ -511,3 +511,39 @@ describe('resource names behind constants and locals', () => {
     expect(applyTerraformLocals('skello-app.images.${local.region}', { project: 'skelloApp', region: 'eu-west-1' })).toBe('skello-app.images.${local.region}')
   })
 })
+
+describe('Terraform locals resolution', () => {
+  const locals = parseTerraformLocals(`locals {
+  project            = "svcDocumentsV2"
+  project_kebab_case = "svc-documents-v2"
+  application        = "svc-communications-v2" # ARCHI naming
+  region             = "eu-west-1"
+  workspace          = terraform.workspace
+  dynamodb_table_name = "svcDocumentsV2-\${local.workspace}"
+  bucket_name        = "\${local.project_kebab_case}.\${local.region}.\${local.workspace}"
+  mongo_db_name      = local.project_kebab_case
+  loop_a             = "\${local.loop_b}"
+  loop_b             = "\${local.loop_a}"
+  s3_buckets = {
+    emails = {
+      name_suffix = "emails"
+    }
+  }
+}`)
+  it('reads quoted, templated, commented and bare-reference locals at the top level only', () => {
+    expect(locals.application).toBe('svc-communications-v2')
+    expect(locals.mongo_db_name).toBe('${local.project_kebab_case}')
+    expect(locals.workspace).toBeUndefined()
+    expect(locals.name_suffix).toBeUndefined()
+  })
+  it('resolves bare references, nested templates and case calls', () => {
+    expect(applyTerraformLocals('local.dynamodb_table_name', locals)).toBe('svcDocumentsV2-${local.workspace}')
+    expect(applyTerraformLocals('lower(local.bucket_name)', locals)).toBe('svc-documents-v2.${local.region}.${local.workspace}')
+    expect(applyTerraformLocals('local.mongo_db_name', locals)).toBe('svc-documents-v2')
+    expect(applyTerraformLocals('lower("${local.project}-${local.workspace}")', locals)).toBe('svcdocumentsv2-${local.workspace}')
+  })
+  it('never substitutes environment locals and terminates on cycles', () => {
+    expect(applyTerraformLocals('svc-hris.${local.region}.${local.workspace}', locals)).toBe('svc-hris.${local.region}.${local.workspace}')
+    expect(applyTerraformLocals('local.loop_a', locals)).toMatch(/\$\{local\.loop_[ab]\}/)
+  })
+})

@@ -143,28 +143,45 @@ export function parseTerraform(content: string): TerraformFacts {
   return { resources, dmsTasks, dmsEndpoints, iamActions: [...iamActions].sort() }
 }
 
-const IDENTITY_LOCALS = new Set(['project'])
+const IDENTITY_LOCALS = new Set(['project', 'project_kebab_case', 'projectCamelCase', 'application', 'comp'])
+const MAX_LOCAL_DEPTH = 4
+const BARE_LOCAL = /^local\.(\w+)$/
+const CASE_CALL = /^(lower|upper)\(\s*(.*?)\s*\)$/
 
 export function parseTerraformLocals(content: string): Record<string, string> {
   const locals: Record<string, string> = {}
   for (const block of content.matchAll(/^locals\s*\{([\s\S]*?)^\}/gm)) {
-    for (const m of (block[1] ?? '').matchAll(/^\s*(\w+)\s*=\s*"([^"$]*)"\s*$/gm)) {
-      if (m[1] && m[2]) {
-        locals[m[1]] = m[2]
+    for (const m of (block[1] ?? '').matchAll(/^ {2}(\w+)\s*=\s*(?:"([^"]*)"|local\.(\w+))\s*(?:#.*)?$/gm)) {
+      const value = m[2] ?? (m[3] ? `\${local.${m[3]}}` : undefined)
+      if (m[1] && value) {
+        locals[m[1]] = value
       }
     }
   }
   return locals
 }
 
-export function applyTerraformLocals(value: string, locals: Record<string, string>): string {
-  const substituted = value.replace(/\$\{local\.(\w+)\}/g, (whole, key: string) => (IDENTITY_LOCALS.has(key) ? locals[key] ?? whole : whole))
-  const call = substituted.match(/^(lower|upper)\(\s*"(.*)"\s*\)$/)
-  if (!call) {
-    return substituted
+function changeCase(value: string, fn: 'lower' | 'upper'): string {
+  return value.replace(/(\$\{[^}]*\})|([^$]+)/g, (part, template: string | undefined) => (template ? template : fn === 'lower' ? part.toLowerCase() : part.toUpperCase()))
+}
+
+export function applyTerraformLocals(value: string, locals: Record<string, string>, depth = 0): string {
+  const call = value.match(CASE_CALL)
+  if (call?.[1] === 'lower' || call?.[1] === 'upper') {
+    return changeCase(applyTerraformLocals((call[2] ?? '').replace(/^"|"$/g, ''), locals, depth), call[1])
   }
-  const inner = call[2] ?? ''
-  return call[1] === 'lower' ? inner.replace(/^[^$]*/, head => head.toLowerCase()) : inner.replace(/^[^$]*/, head => head.toUpperCase())
+  const bare = value.match(BARE_LOCAL)?.[1]
+  if (bare) {
+    const resolved = locals[bare]
+    return resolved === undefined || depth >= MAX_LOCAL_DEPTH ? value : applyTerraformLocals(resolved, locals, depth + 1)
+  }
+  return value.replace(/\$\{local\.(\w+)\}/g, (whole, key: string) => {
+    const resolved = locals[key]
+    if (resolved === undefined || depth >= MAX_LOCAL_DEPTH || !(IDENTITY_LOCALS.has(key) || resolved.includes('${'))) {
+      return whole
+    }
+    return applyTerraformLocals(resolved, locals, depth + 1)
+  })
 }
 
 /** Scan a `<service>-tf` sibling checkout. Null when absent or empty. */
