@@ -17,7 +17,7 @@ const MAX_FILE_SIZE = 400 * 1024
 const MIN_QUEUE_NAME_LENGTH = 8
 const SAMPLE_CAP = 3
 
-function walkFiles(dir: string, out: string[] = []): string[] {
+export function walkFiles(dir: string, out: string[] = []): string[] {
   let entries: fs.Dirent[]
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true })

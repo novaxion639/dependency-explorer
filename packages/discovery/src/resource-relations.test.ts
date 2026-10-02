@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { tableWriters, tableRelations } from './resource-relations'
+import { tableWriters, tableRelations, messagingRelations } from './resource-relations'
+import type { ServerlessFacts } from './extractors/serverless'
 import { loadRepoGraph } from './code-grades'
 import type { Resource } from '@dependency-explorer/schema'
 
@@ -34,5 +35,38 @@ describe('tableRelations', () => {
     const shifts: Resource = { id: 'pg:skello_production.shifts', kind: 'table', store: 'postgresql', name: 'shifts', evidence: [], model: { file: 'app/models/shift.rb', className: 'Shift' } }
     const rels = tableRelations([shifts], models, files, graph).map(r => `${r.relation} ${r.file}`)
     expect(rels.sort()).toEqual(['reads app/services/commented.rb', 'writes app/services/bulk.rb', 'writes app/services/create.rb'])
+  })
+})
+
+
+const sls = (over: Partial<ServerlessFacts>): ServerlessFacts => ({
+  source: 'static-scan', endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [],
+  ownedResources: [], dlqWirings: [], authorizerNames: [], ...over,
+})
+
+describe('messagingRelations', () => {
+  const resources: Resource[] = [
+    { id: 'sqs:createActivityLogJob', kind: 'queue', store: 'sqs', name: 'createActivityLogJob', owner: 'svc-events', evidence: [] },
+    { id: 'sqs:createActivityLogJobDlq', kind: 'queue', store: 'sqs', name: 'createActivityLogJobDlq', owner: 'svc-events', evidence: [] },
+    { id: 'kinesis:skelloapp-bus', kind: 'stream', store: 'kinesis', name: 'skelloapp-bus', evidence: [] },
+  ]
+  const serverless = new Map([
+    ['svc-events', sls({ queueNames: ['createActivityLogJob'], dlqWirings: [{ queue: 'createActivityLogJob', dlq: 'createActivityLogJobDlq', retry: null, via: 'redrive' }] })],
+    ['svc-employees', sls({ streamConsumers: [{ stream: 'skelloapp-bus', kind: 'kinesis', raw: 'x' }] })],
+  ])
+  const sources = new Map([
+    ['svc-events', [{ file: 'serverless/functions/queues.ts', source: "events: [{ sqs: { arn: 'x' } }]" }]],
+    ['svc-requests', [{ file: 'serverless.ts', source: 'svcEvents-createActivityLogJob-${awsEnv}' }, { file: 'src/x.ts', source: 'nothing here' }]],
+    ['skello-app-front', [{ file: 'src/env.js', source: 'createActivityLogJob' }]],
+  ])
+
+  it('derives consumers, producers and dead-letter wiring', () => {
+    const rels = messagingRelations(resources, serverless, sources).map(r => `${r.relation} ${r.resource} ${r.service} ${r.grade}${r.target ? ` → ${r.target}` : ''}`)
+    expect(rels.sort()).toEqual([
+      'consumes kinesis:skelloapp-bus svc-employees config',
+      'consumes sqs:createActivityLogJob svc-events config',
+      'dead-letters-to sqs:createActivityLogJob svc-events config → sqs:createActivityLogJobDlq',
+      'produces sqs:createActivityLogJob svc-requests config',
+    ])
   })
 })
