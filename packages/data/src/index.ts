@@ -252,5 +252,6 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
 export * from '@dependency-explorer/schema'
 export { globToRegExp } from './glob'
 export { resourceNotes, type ResourceNote } from './resource-notes'
+export { normalizeResourceName } from './resource-names'
 export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, getCrossAreaEdges, buildContextLanes } from './areas-derive'
 export type { CrossAreaEdge, ContextLanes } from './areas-derive'
