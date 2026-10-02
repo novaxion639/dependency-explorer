@@ -80,6 +80,7 @@ export interface ServerlessFacts {
 
 const OWNED_RESOURCE_TYPES = new Set([
   'AWS::DynamoDB::Table', 'AWS::S3::Bucket', 'AWS::Kinesis::Stream', 'AWS::Events::Rule',
+  'AWS::SNS::Topic',
 ])
 
 /** Strip ${...} template parts and collapse leftover separators. */
@@ -168,7 +169,7 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
     }
     if (OWNED_RESOURCE_TYPES.has(res?.Type)) {
       const p = res.Properties ?? {}
-      const name = p.TableName ?? p.BucketName ?? p.StreamName ?? p.Name
+      const name = p.TableName ?? p.BucketName ?? p.StreamName ?? p.TopicName ?? p.Name
       ownedResources.push({ cfType: res.Type, name: typeof name === 'string' ? stripTemplate(name) || name : logical })
     }
     // API Gateway routes defined as raw CloudFormation (e.g. SQS-SendMessage
@@ -525,7 +526,7 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     if (cfType && OWNED_RESOURCE_TYPES.has(cfType[1]!)) {
       let name: string | undefined
       for (let j = i + 1; j < Math.min(i + 14, lines.length); j++) {
-        const n = lines[j]!.match(/\b(?:TableName|BucketName|StreamName|Name):\s*['"`]([^'"`]+)['"`]/)
+        const n = lines[j]!.match(/\b(?:TableName|BucketName|StreamName|TopicName|Name):\s*['"`]([^'"`]+)['"`]/)
         if (n) {
           name = stripTemplate(n[1]!) || n[1]!
           break

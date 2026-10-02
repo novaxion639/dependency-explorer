@@ -19,17 +19,28 @@ export interface RegistryInputs {
   services: ConnectivityMap['services']
 }
 
+const RESOURCE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
+const CONSTANT_IDENTIFIER = /^[A-Z0-9_]+$/
+const HCL_REFERENCE = /^(local|var|data|module)\./
+
+function isResourceName(name: string): boolean {
+  return RESOURCE_NAME.test(name) && !CONSTANT_IDENTIFIER.test(name.split('.').pop() ?? name) && !HCL_REFERENCE.test(name)
+}
+
 interface Draft { kind: Resource['kind']; store: Resource['store']; name: string; owners: Set<string>; evidence: Set<string>; model?: Resource['model']; related?: string[] }
 
 export function buildRegistry(inputs: RegistryInputs): Resource[] {
   const drafts = new Map<string, Draft>()
   const add = (store: Resource['store'], rawName: string, kind: Resource['kind'], evidence: string, owner?: string) => {
     const { name, ownerHint } = normalizeResourceName(rawName)
-    if (!name) {
+    if (!isResourceName(name)) {
       return
     }
-    const key = `${STORE_PREFIX[store] ?? store}:${name}`
+    const key = `${STORE_PREFIX[store] ?? store}:${name.toLowerCase()}`
     const d = drafts.get(key) ?? { kind, store, name, owners: new Set<string>(), evidence: new Set<string>() }
+    if (/^[a-z]/.test(name) && !/^[a-z]/.test(d.name)) {
+      d.name = name
+    }
     const who = owner ?? ownerHint
     if (who) {
       d.owners.add(who)
@@ -53,11 +64,6 @@ export function buildRegistry(inputs: RegistryInputs): Resource[] {
   for (const [repo, facts] of inputs.serverless) {
     for (const q of facts.queueNames) {
       add('sqs', q, 'queue', `${repo}:serverless`, repo)
-    }
-    for (const w of facts.dlqWirings) {
-      if (w.dlq) {
-        add('sqs', w.dlq, 'queue', `${repo}:serverless`, repo)
-      }
     }
     for (const s of facts.streamConsumers) {
       if (s.kind === 'kinesis') {
@@ -98,9 +104,11 @@ export function buildRegistry(inputs: RegistryInputs): Resource[] {
   for (const [key, d] of drafts) {
     const owners = [...d.owners].sort()
     const split = (d.kind === 'queue' || d.kind === 'topic') && owners.length > 1
+    const prefix = key.split(':')[0]
+    const base = key.startsWith(`pg:${MONOLITH_DB}`) ? key : `${prefix}:${d.name}`
     for (const owner of split ? owners : [owners[0]]) {
       out.push({
-        id: split ? `${key.split(':')[0]}:${owner}/${d.name}` : key,
+        id: split ? `${prefix}:${owner}/${d.name}` : base,
         kind: d.kind,
         store: d.store,
         name: d.name,

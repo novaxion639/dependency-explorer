@@ -57,3 +57,29 @@ describe('buildRegistry', () => {
     expect(byId.get('mongo:svc-search')?.kind).toBe('database')
   })
 })
+
+describe('buildRegistry noise rules', () => {
+  const reg = buildRegistry({
+    monolith: null,
+    serverless: new Map([
+      ['svc-users', sls({
+        queueNames: ['addEmailToComputeUserCredentialsDlq', 'aggregationEvent-\\.fifo', 'SendDataToFirehose.QUEUE_NAME'],
+        dlqWirings: [
+          { queue: 'addEmailToComputeUserCredentials', dlq: 'AddEmailToComputeUserCredentialsDlq', retry: null, via: 'redrive' },
+          { queue: null, dlq: 'AGGREGATE_PLANNED_POSITION_JOB_DLQ_QUEUE_NAME', retry: null, via: 'helper' },
+          { queue: 'kpisCleanup', dlq: 'dlqToAppend', retry: null, via: 'helper' },
+        ],
+      })],
+    ]),
+    terraform: [{ service: 'svc-employees', tfRepo: 'svc-employees-tf', facts: { resources: [{ tfType: 'aws_dynamodb_table', label: 'restore', name: 'local.dynamodb_table_name_restore' }, { tfType: 'aws_sqs_queue', label: 'q', name: 'data.aws_sqs_queue.generic_message.name' }], dmsTasks: [], dmsEndpoints: [], iamActions: [] } }],
+    services: [{ name: 'svc-billing-automation', type: 'typescript-microservice', description: 'd', endpoints: [], databases: [{ type: 'sqs', name: 'billing job queues ×6 (+DLQs)', description: 'd' }] }],
+  })
+  const ids = reg.map(r => r.id)
+
+  it('merges logical-id casing into one queue named as declared', () => {
+    expect(ids.filter(id => id.toLowerCase() === 'sqs:addemailtocomputeusercredentialsdlq')).toEqual(['sqs:addEmailToComputeUserCredentialsDlq'])
+  })
+  it('drops expressions, constant identifiers and prose, and cleans escaped suffixes', () => {
+    expect(ids).toEqual(['sqs:addEmailToComputeUserCredentialsDlq', 'sqs:aggregationEvent.fifo'])
+  })
+})

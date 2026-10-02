@@ -440,3 +440,14 @@ NOT_A_URL=hello
     expect(JSON.stringify(out)).not.toContain('secret')
   })
 })
+
+describe('resource declarations for the registry', () => {
+  it('reads SNS topics declared in serverless config', () => {
+    const facts = parseServerlessStatic("resources: {\n  Resources: {\n    DispatchTopic: {\n      Type: 'AWS::SNS::Topic',\n      Properties: {\n        TopicName: `svcRequests-sns-${stage}`,\n      },\n    },\n  },\n}\n")
+    expect(facts.ownedResources).toEqual([{ cfType: 'AWS::SNS::Topic', name: 'svcRequests-sns' }])
+  })
+  it('reads SQS queues and SNS topics provisioned in Terraform', () => {
+    const facts = parseTerraform('resource "aws_sqs_queue" "jobs" {\n  name = "svc-x-jobs"\n}\nresource "aws_sns_topic" "events" {\n  name = "svc-x-events"\n}\n')
+    expect(facts.resources.map(r => `${r.tfType}:${r.name}`)).toEqual(['aws_sqs_queue:svc-x-jobs', 'aws_sns_topic:svc-x-events'])
+  })
+})

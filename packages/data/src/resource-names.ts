@@ -7,6 +7,7 @@ export function normalizeResourceName(raw: string): { name: string; ownerHint?: 
     .replace(/\s*\([^)]*\)\s*$/, '')
     .replace(/\s+DB$/, '')
     .replace(/\$\{[^}]*\}|\{env\}/g, '')
+    .replace(/-?\\\./g, '.')
     .replace(/[-_.]{2,}/g, '-')
     .replace(/^[-_.]+|[-_.]+$/g, '')
     .trim()
