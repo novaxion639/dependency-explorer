@@ -332,16 +332,7 @@
       "name": "full-load",
       "owner": "svc-billing-automation",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-billing-automation-tf:terraform"
       ]
     },
     {
@@ -351,16 +342,7 @@
       "name": "full-load",
       "owner": "svc-communications-v2",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-communications-v2-tf:terraform"
       ]
     },
     {
@@ -370,16 +352,7 @@
       "name": "full-load",
       "owner": "svc-documents-esignature",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-documents-esignature-tf:terraform"
       ]
     },
     {
@@ -389,16 +362,7 @@
       "name": "full-load",
       "owner": "svc-documents-v2",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-documents-v2-tf:terraform"
       ]
     },
     {
@@ -408,10 +372,7 @@
       "name": "fullload",
       "owner": "svc-documents-v2",
       "evidence": [
-        "svc-documents-v2-tf:terraform",
-        "svc-requests-tf:terraform",
-        "svc-requests:serverless",
-        "svc-shops-tf:terraform"
+        "svc-documents-v2-tf:terraform"
       ]
     },
     {
@@ -430,9 +391,7 @@
       "name": "apiCounter",
       "owner": "svc-employees",
       "evidence": [
-        "svc-employees-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-shops-tf:terraform"
+        "svc-employees-tf:terraform"
       ]
     },
     {
@@ -442,16 +401,7 @@
       "name": "full-load",
       "owner": "svc-employees",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-employees-tf:terraform"
       ]
     },
     {
@@ -461,16 +411,7 @@
       "name": "full-load",
       "owner": "svc-hris",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-hris-tf:terraform"
       ]
     },
     {
@@ -480,16 +421,7 @@
       "name": "full-load",
       "owner": "svc-intelligence",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-intelligence-tf:terraform"
       ]
     },
     {
@@ -499,16 +431,7 @@
       "name": "full-load",
       "owner": "svc-pos",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-pos-tf:terraform"
       ]
     },
     {
@@ -518,9 +441,7 @@
       "name": "apiCounter",
       "owner": "svc-punch",
       "evidence": [
-        "svc-employees-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-shops-tf:terraform"
+        "svc-punch-tf:terraform"
       ]
     },
     {
@@ -530,16 +451,7 @@
       "name": "full-load",
       "owner": "svc-punch",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
-        "svc-reports-tf:terraform"
+        "svc-punch-tf:terraform"
       ]
     },
     {
@@ -549,15 +461,6 @@
       "name": "full-load",
       "owner": "svc-reports",
       "evidence": [
-        "svc-billing-automation-tf:terraform",
-        "svc-communications-v2-tf:terraform",
-        "svc-documents-esignature-tf:terraform",
-        "svc-documents-v2-tf:terraform",
-        "svc-employees-tf:terraform",
-        "svc-hris-tf:terraform",
-        "svc-intelligence-tf:terraform",
-        "svc-pos-tf:terraform",
-        "svc-punch-tf:terraform",
         "svc-reports-tf:terraform"
       ]
     },
@@ -568,10 +471,8 @@
       "name": "fullload",
       "owner": "svc-requests",
       "evidence": [
-        "svc-documents-v2-tf:terraform",
         "svc-requests-tf:terraform",
-        "svc-requests:serverless",
-        "svc-shops-tf:terraform"
+        "svc-requests:serverless"
       ]
     },
     {
@@ -581,8 +482,6 @@
       "name": "apiCounter",
       "owner": "svc-shops",
       "evidence": [
-        "svc-employees-tf:terraform",
-        "svc-punch-tf:terraform",
         "svc-shops-tf:terraform"
       ]
     },
@@ -593,9 +492,6 @@
       "name": "fullload",
       "owner": "svc-shops",
       "evidence": [
-        "svc-documents-v2-tf:terraform",
-        "svc-requests-tf:terraform",
-        "svc-requests:serverless",
         "svc-shops-tf:terraform"
       ]
     },
@@ -5210,8 +5106,7 @@
       "name": "handleShopFeatureStateChangeRecoverySqs",
       "owner": "svc-automatic-scheduling",
       "evidence": [
-        "svc-automatic-scheduling:serverless",
-        "svc-workload-plan:serverless"
+        "svc-automatic-scheduling:serverless"
       ]
     },
     {
@@ -5221,8 +5116,7 @@
       "name": "fullLoadTriggerDatalakeFirehoseStreamSqs",
       "owner": "svc-billing-automation",
       "evidence": [
-        "svc-billing-automation:serverless",
-        "svc-communications-v2:serverless"
+        "svc-billing-automation:serverless"
       ]
     },
     {
@@ -5232,7 +5126,6 @@
       "name": "fullLoadTriggerDatalakeFirehoseStreamSqs",
       "owner": "svc-communications-v2",
       "evidence": [
-        "svc-billing-automation:serverless",
         "svc-communications-v2:serverless"
       ]
     },
@@ -5261,8 +5154,7 @@
       "name": "full-load",
       "owner": "svc-employees",
       "evidence": [
-        "svc-employees:serverless",
-        "svc-pos:serverless"
+        "svc-employees:serverless"
       ]
     },
     {
@@ -5272,8 +5164,7 @@
       "name": "full-load-dlq",
       "owner": "svc-employees",
       "evidence": [
-        "svc-employees:serverless",
-        "svc-pos:serverless"
+        "svc-employees:serverless"
       ]
     },
     {
@@ -5301,8 +5192,7 @@
       "name": "triggerFirehoseStreamSqsDlq",
       "owner": "svc-hris",
       "evidence": [
-        "svc-hris:serverless",
-        "svc-reports:serverless"
+        "svc-hris:serverless"
       ]
     },
     {
@@ -5321,9 +5211,7 @@
       "name": "mergeShop",
       "owner": "svc-kpis-v2",
       "evidence": [
-        "svc-kpis-v2:serverless",
-        "svc-punch:serverless",
-        "svc-trackers:serverless"
+        "svc-kpis-v2:serverless"
       ]
     },
     {
@@ -5333,7 +5221,6 @@
       "name": "full-load",
       "owner": "svc-pos",
       "evidence": [
-        "svc-employees:serverless",
         "svc-pos:serverless"
       ]
     },
@@ -5344,7 +5231,6 @@
       "name": "full-load-dlq",
       "owner": "svc-pos",
       "evidence": [
-        "svc-employees:serverless",
         "svc-pos:serverless"
       ]
     },
@@ -5364,9 +5250,7 @@
       "name": "mergeShop",
       "owner": "svc-punch",
       "evidence": [
-        "svc-kpis-v2:serverless",
-        "svc-punch:serverless",
-        "svc-trackers:serverless"
+        "svc-punch:serverless"
       ]
     },
     {
@@ -5376,7 +5260,6 @@
       "name": "triggerFirehoseStreamSqsDlq",
       "owner": "svc-reports",
       "evidence": [
-        "svc-hris:serverless",
         "svc-reports:serverless"
       ]
     },
@@ -5396,8 +5279,6 @@
       "name": "mergeShop",
       "owner": "svc-trackers",
       "evidence": [
-        "svc-kpis-v2:serverless",
-        "svc-punch:serverless",
         "svc-trackers:serverless"
       ]
     },
@@ -5417,7 +5298,6 @@
       "name": "handleShopFeatureStateChangeRecoverySqs",
       "owner": "svc-workload-plan",
       "evidence": [
-        "svc-automatic-scheduling:serverless",
         "svc-workload-plan:serverless"
       ]
     },
