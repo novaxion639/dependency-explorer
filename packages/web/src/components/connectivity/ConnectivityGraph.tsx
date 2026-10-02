@@ -19,6 +19,7 @@ import '@xyflow/react/dist/style.css'
 import { buildConnectivityGraph } from '../../utils/buildConnectivityGraph'
 import { ServiceNode } from '../nodes/ServiceNode'
 import { DatabaseNode, DB_COLORS } from '../nodes/DatabaseNode'
+import { ResourceOpenContext, nodeResources } from '../nodes/resourceOpenContext'
 import type { DatabaseType } from '@dependency-explorer/data'
 import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
@@ -91,8 +92,9 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
   const onNodeClick: NodeMouseHandler = useCallback(
     (_evt, node) => {
       if (node.type === 'databaseNode') {
-        if (typeof node.data.resource === 'string') {
-          onOpenResource(node.data.resource)
+        const [first] = nodeResources(node.data)
+        if (first) {
+          onOpenResource(first)
         }
         return
       }
@@ -111,6 +113,7 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
           target={graphRef}
           filename={() => `dependency-map_${selectedService ?? 'all'}`}
         />
+        <ResourceOpenContext.Provider value={onOpenResource}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -146,6 +149,7 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
             maskColor="#0f111799"
           />
         </ReactFlow>
+        </ResourceOpenContext.Provider>
 
         {/* Connection legend */}
         {selectedService && (

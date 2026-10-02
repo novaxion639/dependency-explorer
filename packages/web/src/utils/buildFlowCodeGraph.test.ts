@@ -21,6 +21,6 @@ describe('buildFlowCodeGraph resources', () => {
     if (!flow || !infra) {
       throw new Error('shift-creation has no linked infra node')
     }
-    expect(buildFlowCodeGraph(flow, connectivityMap).nodes.find(n => n.id === infra.id)?.data.resource).toBe(infra.resources?.[0])
+    expect(buildFlowCodeGraph(flow, connectivityMap).nodes.find(n => n.id === infra.id)?.data.resources).toEqual(infra.resources)
   })
 })

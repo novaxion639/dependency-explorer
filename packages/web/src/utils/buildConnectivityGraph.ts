@@ -193,7 +193,7 @@ export function buildConnectivityGraph(
           dbType: db.type,
           name: db.name,
           description: db.description,
-          resource: resourceIdForDatabase(svc.name, db, resourceSurface.resources),
+          resources: [resourceIdForDatabase(svc.name, db, resourceSurface.resources)].filter(id => id !== undefined),
         } satisfies DatabaseNodeData,
       })
 
