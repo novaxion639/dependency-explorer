@@ -184,3 +184,23 @@ describe('dmsRelations', () => {
     ])
   })
 })
+
+describe('messagingRelations literal kinds', () => {
+  const stream = (name: string, owner: string): Resource => ({ id: `kinesis:${name}`, kind: 'stream', store: 'kinesis', name, owner, evidence: [] })
+  const resources = [stream('svcBillingAutomation', 'svc-billing-automation'), stream('eSignature-V2', 'svc-documents-esignature'), stream('documentEvents', 'svc-documents-v2')]
+  const sources = new Map([
+    ['svc-billing-automation', [{ file: 'src/a.ts', source: '' }]],
+    ['skello-app', [{ file: 'app/controllers/x.rb', source: "request.headers['X-Source-Client'] == 'svcBillingAutomation'" }]],
+    ['svc-users', [
+      { file: 'serverless.ts', source: "value: '/svcBillingAutomation/API_KEY'" },
+      { file: 'src/ssm.ts', source: "get('/svcDocuments/documentEvents-stream')" },
+    ]],
+    ['svc-documents-v2', [{ file: 'serverless.ts', source: 'Resource: `arn:aws:dynamodb:${region}:${account}:table/svcDocuments-eSignature-V2-${stage}`' }]],
+    ['svc-hris', [{ file: 'serverless.ts', source: 'Resource: `arn:aws:kinesis:${region}:${account}:stream/svcDocumentsV2-documentEvents-${stage}`' }]],
+  ])
+  const rels = messagingRelations(resources, new Map(), sources).filter(r => r.relation === 'produces').map(r => `${r.resource} ${r.service}`)
+
+  it('ignores service-stem names, SSM paths and ARNs of another AWS service', () => {
+    expect(rels).toEqual(['kinesis:documentEvents svc-hris'])
+  })
+})
