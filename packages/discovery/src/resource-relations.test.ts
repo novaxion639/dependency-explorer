@@ -1,0 +1,89 @@
+import { describe, it, expect } from 'vitest'
+import { tableWriters, tableRelations, messagingRelations } from './resource-relations'
+import type { ServerlessFacts } from './extractors/serverless'
+import { loadRepoGraph } from './code-grades'
+import type { Resource } from '@dependency-explorer/schema'
+
+const models = [{ className: 'Shift', file: 'app/models/shift.rb', table: 'shifts', associations: [] }]
+const files = [
+  { file: 'app/services/create.rb', source: 'Shift.create!(attrs)\n' },
+  { file: 'app/services/bulk.rb', source: 'Shift.where(shop_id: id).update_all(deleted: true)\n' },
+  { file: 'app/services/commented.rb', source: '# Shift.delete_all\nShift.where(id: 1).first\n' },
+  { file: 'app/services/other.rb', source: 'Shifts::Thing.create(x)\nShiftTemplate.create(y)\n' },
+]
+
+describe('tableWriters', () => {
+  it('finds class-level write calls, including chained scopes, and ignores comments and other classes', () => {
+    expect([...(tableWriters(files, models).get('shifts') ?? [])].sort()).toEqual(['app/services/bulk.rb', 'app/services/create.rb'])
+  })
+})
+
+describe('tableRelations', () => {
+  it('lists writers and graph readers once each', () => {
+    const graph = loadRepoGraph({
+      built_at_commit: 'x',
+      nodes: [
+        { id: 'm', label: 'Shift', source_file: 'app/models/shift.rb', _callable_class: true },
+        { id: 'a', label: 'a', source_file: 'app/services/commented.rb' },
+        { id: 'b', label: 'b', source_file: 'app/services/create.rb' },
+      ],
+      links: [
+        { source: 'a', target: 'm', relation: 'calls', confidence: 'EXTRACTED' },
+        { source: 'b', target: 'm', relation: 'calls', confidence: 'EXTRACTED' },
+      ],
+    })
+    const shifts: Resource = { id: 'pg:skello_production.shifts', kind: 'table', store: 'postgresql', name: 'shifts', evidence: [], model: { file: 'app/models/shift.rb', className: 'Shift' } }
+    const rels = tableRelations([shifts], models, files, graph).map(r => `${r.relation} ${r.file}`)
+    expect(rels.sort()).toEqual(['reads app/services/commented.rb', 'writes app/services/bulk.rb', 'writes app/services/create.rb'])
+  })
+})
+
+
+const sls = (over: Partial<ServerlessFacts>): ServerlessFacts => ({
+  source: 'static-scan', endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [],
+  ownedResources: [], dlqWirings: [], authorizerNames: [], ...over,
+})
+
+describe('messagingRelations', () => {
+  const resources: Resource[] = [
+    { id: 'sqs:createActivityLogJob', kind: 'queue', store: 'sqs', name: 'createActivityLogJob', owner: 'svc-events', evidence: [] },
+    { id: 'sqs:createActivityLogJobDlq', kind: 'queue', store: 'sqs', name: 'createActivityLogJobDlq', owner: 'svc-events', evidence: [] },
+    { id: 'kinesis:skelloapp-bus', kind: 'stream', store: 'kinesis', name: 'skelloapp-bus', evidence: [] },
+  ]
+  const serverless = new Map([
+    ['svc-events', sls({ queueNames: ['createActivityLogJob'], dlqWirings: [{ queue: 'createActivityLogJob', dlq: 'createActivityLogJobDlq', retry: null, via: 'redrive' }] })],
+    ['svc-employees', sls({ streamConsumers: [{ stream: 'skelloapp-bus', kind: 'kinesis', raw: 'x' }] })],
+  ])
+  const sources = new Map([
+    ['svc-events', [{ file: 'serverless/functions/queues.ts', source: "events: [{ sqs: { arn: 'x' } }]" }]],
+    ['svc-requests', [{ file: 'serverless.ts', source: 'svcEvents-createActivityLogJob-${awsEnv}' }, { file: 'src/x.ts', source: 'nothing here' }]],
+    ['skello-app-front', [{ file: 'src/env.js', source: 'createActivityLogJob' }]],
+  ])
+
+  it('derives consumers, producers and dead-letter wiring', () => {
+    const rels = messagingRelations(resources, serverless, sources).map(r => `${r.relation} ${r.resource} ${r.service} ${r.grade}${r.target ? ` → ${r.target}` : ''}`)
+    expect(rels.sort()).toEqual([
+      'consumes kinesis:skelloapp-bus svc-employees config',
+      'consumes sqs:createActivityLogJob svc-events config',
+      'dead-letters-to sqs:createActivityLogJob svc-events config → sqs:createActivityLogJobDlq',
+      'produces sqs:createActivityLogJob svc-requests config',
+    ])
+  })
+})
+
+describe('messagingRelations literal matching', () => {
+  it('matches whole tokens of distinctive names only', () => {
+    const resources: Resource[] = [
+      { id: 'sns:dispatch', kind: 'topic', store: 'sns', name: 'dispatch', owner: 'svc-requests', evidence: [] },
+      { id: 'sqs:mergeShopSqs', kind: 'queue', store: 'sqs', name: 'mergeShopSqs', owner: 'svc-shops', evidence: [] },
+    ]
+    const sources = new Map([
+      ['skello-app', [
+        { file: 'app/a.rb', source: 'store.dispatch(action)' },
+        { file: 'app/b.rb', source: "queue: 'svcShops-mergeShopSqs-production'" },
+        { file: 'app/c.rb', source: 'mergeShopSqsHandler.run' },
+      ]],
+    ])
+    expect(messagingRelations(resources, new Map(), sources).map(r => `${r.relation} ${r.resource} ${r.file}`)).toEqual(['produces sqs:mergeShopSqs app/b.rb'])
+  })
+})

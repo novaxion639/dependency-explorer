@@ -23,7 +23,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
-import type { DiscoveredOverlay, Resource } from '@dependency-explorer/schema'
+import type { DiscoveredOverlay, Resource, ResourceRelation } from '@dependency-explorer/schema'
 import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService, tfRepoToService } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
@@ -34,7 +34,8 @@ import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extract
 import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
-import { findQueueSenders } from './extractors/queue-senders'
+import { findQueueSenders, walkFiles } from './extractors/queue-senders'
+import { tableRelations, messagingRelations } from './resource-relations'
 import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, checkPiiRefs, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult, type PiiCheckResult } from './flow-check'
 import { extractPiiFacts, type PiiFacts } from './extractors/pii'
 import { extractSwagger } from './extractors/swagger'
@@ -44,7 +45,7 @@ import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
 import { pinRepos, buildGraphs, applyModeError, type PinnedRepo, type PinSkip } from './pinned'
-import { checkCodeGrades, type Grade, type GradeFinding } from './code-grades'
+import { checkCodeGrades, loadRepoGraph, type Grade, type GradeFinding } from './code-grades'
 import { checkBranches } from './branch-check'
 import { extractRailsSchema } from './extractors/rails-schema'
 import { buildRegistry } from './resource-registry'
@@ -178,6 +179,7 @@ interface Report {
   branchCheck: ReturnType<typeof checkBranches>
   resourceCheck: { findings: ResourceFinding[]; modelLess: string[]; datasetOnly: number; total: number; byKind: Record<string, number> } | null
   liveResources: Resource[]
+  liveRelations: ResourceRelation[]
   codeGrades: { findings: GradeFinding[]; grades: Record<string, Grade>; distribution: Record<Grade, number>; backlog: string[] } | null
   ruleCheck: RuleCheckResult
   areaCheck: AreaCheckResult
@@ -232,6 +234,7 @@ function run(): Report {
     pinned: PIN ? { repos: PIN.pinned, skipped: PIN.skipped } : null,
     resourceCheck: null,
     liveResources: [],
+    liveRelations: [],
     scannedRepos: repos,
     connectionEvidence: {},
     candidates: [],
@@ -680,6 +683,23 @@ function run(): Report {
     services: connectivityMap.services,
   })
   report.liveResources = live
+  const readSources = (repo: string, files: string[]) =>
+    files.map(f => ({ file: path.relative(path.join(REPO_BASE, repo), f), source: fs.readFileSync(f, 'utf-8') }))
+  const monolithFiles = railsSchema
+    ? readSources('skello-app', ['app', 'lib'].flatMap(dir => walkFiles(path.join(REPO_BASE, 'skello-app', dir))).filter(f => f.endsWith('.rb')))
+    : []
+  const graphFile = path.join(REPO_BASE, 'skello-app', 'graphify-out', 'graph.json')
+  const monolithPin = PIN?.pinned.find(p => p.repo === 'skello-app')
+  const parsedGraph = monolithPin && fs.existsSync(graphFile) ? loadRepoGraph(JSON.parse(fs.readFileSync(graphFile, 'utf-8'))) : null
+  const monolithGraph = parsedGraph && parsedGraph.builtAt === monolithPin?.sha ? parsedGraph : null
+  const sourcesByRepo = new Map(repos.filter(repo => repo !== 'skello-app-front').map(repo => [repo, readSources(repo, [
+    ...['src', 'app', 'lib', 'serverless', 'config'].flatMap(d => walkFiles(path.join(REPO_BASE, repo, d))),
+    ...['serverless.ts', 'serverless.yml'].map(f => path.join(REPO_BASE, repo, f)).filter(f => fs.existsSync(f)),
+  ])]))
+  report.liveRelations = [
+    ...tableRelations(live, railsSchema?.models ?? [], monolithFiles, monolithGraph),
+    ...messagingRelations(live, serverlessByRepo, sourcesByRepo),
+  ]
   const resourceFacts = checkResources(resourceSurface.resources, live, railsSchema?.models ?? [], railsSchema?.tables ?? [])
   const byKind: Record<string, number> = {}
   for (const x of live) {
@@ -726,7 +746,7 @@ function writeOverlay(report: Report) {
     fs.writeFileSync(MONOLITH_ROUTES_PATH, JSON.stringify(surface, null, 2) + '\n')
     console.log(`  ${surface.length} monolith routes written: ${path.relative(process.cwd(), MONOLITH_ROUTES_PATH)}`)
   }
-  fs.writeFileSync(RESOURCES_PATH, JSON.stringify({ resources: report.liveResources, relations: [] }, null, 2) + '\n')
+  fs.writeFileSync(RESOURCES_PATH, JSON.stringify({ resources: report.liveResources, relations: report.liveRelations }, null, 2) + '\n')
   console.log(`  ${report.liveResources.length} resources written: ${path.relative(process.cwd(), RESOURCES_PATH)}`)
 }
 
@@ -973,6 +993,11 @@ function printMarkdown(r: Report) {
     console.log(`\n## 🗄 Resources (${rs.findings.length} findings)\n`)
     console.log(`${rs.total} resources — ${Object.entries(rs.byKind).map(([k, n]) => `${n} ${k}`).join(' · ')}; ${rs.datasetOnly} known from the dataset only.`)
     console.log(`Model-less tables: ${rs.modelLess.length ? rs.modelLess.join(', ') : '_none_'}`)
+    const relCounts: Record<string, number> = {}
+    for (const rel of r.liveRelations) {
+      relCounts[`${rel.relation} (${rel.grade})`] = (relCounts[`${rel.relation} (${rel.grade})`] ?? 0) + 1
+    }
+    console.log(`Relations: ${Object.entries(relCounts).map(([k, n]) => `${n} ${k}`).join(' · ') || '_none_'}`)
     if (rs.findings.length) {
       console.log(rs.findings.map(f => `- [${f.kind}] **${f.subject}**: ${f.detail}`).join('\n'))
     }
