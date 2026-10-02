@@ -265,7 +265,7 @@ const badging_review: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-badging-review",
       "type": "postgresql",
       "label": "skello_production — shifts, badgings, counters",
-      "resources": ["pg:skello_production.shifts", "pg:skello_production.badgings"],
+      "resources": ["pg:skello_production.shifts", "pg:skello_production.badgings", "pg:skello_production.planning_hours_data", "pg:skello_production.rcr_counters", "pg:skello_production.paid_leaves_counters"],
       "description": "Worked shifts created/updated from validated badgings + recomputed counter tables"
     },
     {
