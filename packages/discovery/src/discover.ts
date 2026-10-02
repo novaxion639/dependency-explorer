@@ -750,7 +750,7 @@ function writeOverlay(report: Report) {
     console.error('  resources.json not written: no skello-app graph at the pinned commit (🗄 readers-unavailable)')
     return
   }
-  fs.writeFileSync(RESOURCES_PATH, JSON.stringify({ resources: report.liveResources, relations: report.liveRelations }, null, 2) + '\n')
+  fs.writeFileSync(RESOURCES_PATH, JSON.stringify({ resources: report.liveResources, relations: report.liveRelations, pins: Object.fromEntries((PIN?.pinned ?? []).map(p => [p.repo, p.sha]).sort()) }, null, 2) + '\n')
   console.log(`  ${report.liveResources.length} resources written: ${path.relative(process.cwd(), RESOURCES_PATH)}`)
 }
 

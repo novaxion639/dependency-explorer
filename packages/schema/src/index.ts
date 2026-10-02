@@ -116,6 +116,7 @@ export type ResourceRelation = z.infer<typeof ResourceRelationSchema>
 export const ResourceSurfaceSchema = z.object({
   resources: z.array(ResourceSchema),
   relations: z.array(ResourceRelationSchema),
+  pins: z.record(z.string(), z.string()).default({}),
 })
 
 // ── Service ───────────────────────────────────────────────────────────────────

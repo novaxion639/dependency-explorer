@@ -17,6 +17,10 @@ describe('ResourcePage', () => {
     expect(html).toContain('aria-label="Writers"')
     expect(html).toContain('instance writes')
   })
+  it('links evidence to GitHub at the pinned commit', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
+    expect(html).toMatch(/href="https:\/\/github\.com\/skelloapp\/skello-app\/blob\/[0-9a-f]{40}\/db\/schema\.rb"/)
+  })
   it('renders a resource with no relations without throwing', () => {
     const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))
     expect(quiet, 'the registry holds at least one untouched resource (dataset-only stores)').toBeDefined()
