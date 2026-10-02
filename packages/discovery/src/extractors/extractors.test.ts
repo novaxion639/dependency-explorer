@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
 import { classifyAwsUsage } from './aws-clients'
-import { parseTerraform, parseTerraformLocals, applyTerraformLocals } from './terraform'
+import { parseTerraform, parseTerraformLocals, applyTerraformLocals, parseTerraformDataNames, parseTerraformLocalMaps, expandTerraformNames } from './terraform'
 import { parseEnvServiceUrls } from './frontend'
 import { classifyImports } from './typescript'
 import { parseSdkSource } from './sdk-registry'
@@ -545,5 +545,37 @@ describe('Terraform locals resolution', () => {
   it('never substitutes environment locals and terminates on cycles', () => {
     expect(applyTerraformLocals('svc-hris.${local.region}.${local.workspace}', locals)).toBe('svc-hris.${local.region}.${local.workspace}')
     expect(applyTerraformLocals('local.loop_a', locals)).toMatch(/\$\{local\.loop_[ab]\}/)
+  })
+})
+
+describe('Terraform data references and for_each', () => {
+  it('resolves data-block names and expands for_each over a locals map', () => {
+    const data = parseTerraformDataNames(`data "aws_sqs_queue" "generic_message" {
+  name = "\${local.project}-genericMessage-\${local.workspace}"
+}`)
+    const maps = parseTerraformLocalMaps(`locals {
+  s3_buckets = {
+    emails = {
+      name_suffix = "emails"
+    }
+    email-attachments = {
+      name_suffix = "attachments"
+    }
+  }
+}`)
+    const resources = parseTerraform(`resource "aws_sqs_queue" "generic_message" {
+  name = data.aws_sqs_queue.generic_message.name
+}
+
+resource "aws_s3_bucket" "buckets" {
+  for_each = local.s3_buckets
+
+  bucket = "\${local.application}.\${each.value.name_suffix}.\${local.workspace}"
+}`).resources
+    expect(expandTerraformNames(resources, data, maps).map(r => r.name)).toEqual([
+      '${local.project}-genericMessage-${local.workspace}',
+      '${local.application}.emails.${local.workspace}',
+      '${local.application}.attachments.${local.workspace}',
+    ])
   })
 })

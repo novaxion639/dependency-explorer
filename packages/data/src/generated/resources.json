@@ -2694,22 +2694,24 @@
       ]
     },
     {
-      "id": "s3:svc-communications-v2",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-communications-v2",
-      "owner": "svc-communications-v2",
-      "evidence": [
-        "svc-communications-v2-tf:terraform"
-      ]
-    },
-    {
       "id": "s3:svc-communications-v2.attachments",
       "kind": "bucket",
       "store": "s3",
       "name": "svc-communications-v2.attachments",
+      "owner": "svc-communications-v2",
       "evidence": [
-        "dataset:svc-communications-v2"
+        "dataset:svc-communications-v2",
+        "svc-communications-v2-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:svc-communications-v2.emails",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-communications-v2.emails",
+      "owner": "svc-communications-v2",
+      "evidence": [
+        "svc-communications-v2-tf:terraform"
       ]
     },
     {
@@ -6155,8 +6157,30 @@
       "kind": "queue",
       "store": "sqs",
       "name": "websocket-genericMessage",
+      "owner": "svc-websockets",
       "evidence": [
-        "dataset:svc-websockets"
+        "dataset:svc-websockets",
+        "websocket-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:websocket-genericMessageDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "websocket-genericMessageDlq",
+      "owner": "svc-websockets",
+      "evidence": [
+        "websocket-tf:terraform"
+      ]
+    },
+    {
+      "id": "sqs:websocket-pingShopIdAndDate",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "websocket-pingShopIdAndDate",
+      "owner": "svc-websockets",
+      "evidence": [
+        "websocket-tf:terraform"
       ]
     },
     {
@@ -17498,6 +17522,13 @@
       "relation": "produces",
       "service": "svc-skello-assistant",
       "file": "serverless/serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:websocket-pingShopIdAndDate",
+      "relation": "produces",
+      "service": "svc-kpis",
+      "file": "serverless.ts",
       "grade": "config"
     },
     {

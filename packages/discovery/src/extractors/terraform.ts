@@ -107,7 +107,8 @@ export function parseTerraform(content: string): TerraformFacts {
     if (OWNED_TF_TYPES.has(tfType!)) {
       const name = attr(block, 'name') ?? attr(block, 'bucket') ?? attr(block, 'identifier')
       const engine = ENGINE_TYPES.has(tfType ?? '') ? attr(block, 'engine') : undefined
-      resources.push({ tfType: tfType!, label: label!, ...(name ? { name } : {}), ...(engine ? { engine } : {}) })
+      const forEach = attr(block, 'for_each')?.match(/^local\.(\w+)$/)?.[1]
+      resources.push({ tfType: tfType!, label: label!, ...(name ? { name } : {}), ...(engine ? { engine } : {}), ...(forEach ? { forEach } : {}) })
     } else if (tfType === 'aws_dms_replication_task') {
       dmsTasks.push({
         label: label!,
@@ -184,6 +185,46 @@ export function applyTerraformLocals(value: string, locals: Record<string, strin
   })
 }
 
+export function parseTerraformDataNames(content: string): Record<string, string> {
+  const names: Record<string, string> = {}
+  for (const m of content.matchAll(/^data\s+"([a-z0-9_]+)"\s+"([\w-]+)"\s*\{/gm)) {
+    const name = topLevelAttr(blockAt(content, m.index), 'name')
+    if (m[1] && m[2] && name) {
+      names[`${m[1]}.${m[2]}`] = name
+    }
+  }
+  return names
+}
+
+export function parseTerraformLocalMaps(content: string): Record<string, Record<string, Record<string, string>>> {
+  const maps: Record<string, Record<string, Record<string, string>>> = {}
+  for (const block of content.matchAll(/^locals\s*\{([\s\S]*?)^\}/gm)) {
+    for (const map of (block[1] ?? '').matchAll(/^ {2}(\w+)\s*=\s*\{\n([\s\S]*?)^ {2}\}/gm)) {
+      const entries: Record<string, Record<string, string>> = {}
+      for (const entry of (map[2] ?? '').matchAll(/^ {4}([\w-]+)\s*=\s*\{\n([\s\S]*?)^ {4}\}/gm)) {
+        entries[entry[1] ?? ''] = Object.fromEntries([...(entry[2] ?? '').matchAll(/^ {6}(\w+)\s*=\s*"([^"]*)"/gm)].map(f => [f[1] ?? '', f[2] ?? '']))
+      }
+      if (map[1]) {
+        maps[map[1]] = entries
+      }
+    }
+  }
+  return maps
+}
+
+export function expandTerraformNames(resources: TfResource[], dataNames: Record<string, string>, maps: Record<string, Record<string, Record<string, string>>>): TfResource[] {
+  return resources.flatMap(r => {
+    const ref = r.name?.match(/^data\.([a-z0-9_]+)\.([\w-]+)\.name$/)
+    const named = ref ? { ...r, name: dataNames[`${ref[1]}.${ref[2]}`] ?? r.name } : r
+    const entries = named.forEach ? maps[named.forEach] : undefined
+    if (!entries || !named.name) {
+      return [named]
+    }
+    const template = named.name
+    return Object.entries(entries).map(([key, fields]) => ({ ...named, name: template.replace(/\$\{each\.value\.(\w+)\}/g, (whole, f: string) => fields[f] ?? whole).replace(/\$\{each\.key\}/g, key) }))
+  })
+}
+
 /** Scan a `<service>-tf` sibling checkout. Null when absent or empty. */
 export function extractTerraform(repoBase: string, tfRepo: string): TerraformFacts | null {
   const repoPath = path.join(repoBase, tfRepo)
@@ -197,26 +238,24 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
 
   const merged: TerraformFacts = { resources: [], dmsTasks: [], dmsEndpoints: [], iamActions: [] }
   const actions = new Set<string>()
-  for (const file of entries) {
-    let content: string
+  const contents = entries.flatMap(file => {
     try {
-      content = fs.readFileSync(path.join(repoPath, file), 'utf-8')
+      return [fs.readFileSync(path.join(repoPath, file), 'utf-8')]
     } catch {
-      continue
+      return []
     }
+  })
+  for (const content of contents) {
     const facts = parseTerraform(content)
     merged.resources.push(...facts.resources)
     merged.dmsTasks.push(...facts.dmsTasks)
     merged.dmsEndpoints.push(...facts.dmsEndpoints)
     facts.iamActions.forEach(x => actions.add(x))
   }
-  const locals = Object.assign({}, ...entries.map(file => {
-    try {
-      return parseTerraformLocals(fs.readFileSync(path.join(repoPath, file), 'utf-8'))
-    } catch {
-      return {}
-    }
-  }))
+  const locals = Object.assign({}, ...contents.map(parseTerraformLocals))
+  const dataNames = Object.assign({}, ...contents.map(parseTerraformDataNames))
+  const maps = Object.assign({}, ...contents.map(parseTerraformLocalMaps))
+  merged.resources = expandTerraformNames(merged.resources, dataNames, maps)
   merged.resources = merged.resources.map(r => ({
     ...r,
     ...(r.name ? { name: applyTerraformLocals(r.name, locals) } : {}),
