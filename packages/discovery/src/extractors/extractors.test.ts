@@ -366,6 +366,49 @@ export class ShopEntity {}`
 })
 
 describe('parseTerraform', () => {
+  it('reads terraform-aws-modules blocks by their top-level name attribute', () => {
+    const src = `
+module "dynamodb_svc_punch" {
+  source  = "terraform-aws-modules/dynamodb-table/aws"
+  version = "4.2.0"
+
+  attributes = [
+    { name = "id", type = "S" },
+  ]
+  name = "\${local.project}-\${local.workspace}"
+}
+
+module "s3_hris" {
+  source = "terraform-aws-modules/s3-bucket/aws"
+  bucket = "svc-hris.\${local.region}.\${local.workspace}"
+  tags = {
+    Name = "ignored"
+  }
+}
+
+module "db_aurora" {
+  source = "terraform-aws-modules/rds-aurora/aws"
+  name   = lower("\${local.project}-\${local.workspace}")
+  engine = "aurora-postgresql"
+}
+
+module "elasticache" {
+  source               = "terraform-aws-modules/elasticache/aws"
+  replication_group_id = "\${local.project}-valkey-\${local.workspace}"
+}
+
+module "role" {
+  source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
+  name   = "not-a-store"
+}`
+    expect(parseTerraform(src).resources).toEqual([
+      { tfType: 'aws_dynamodb_table', label: 'dynamodb_svc_punch', name: '${local.project}-${local.workspace}' },
+      { tfType: 'aws_s3_bucket', label: 's3_hris', name: 'svc-hris.${local.region}.${local.workspace}' },
+      { tfType: 'aws_rds_cluster', label: 'db_aurora', name: 'lower("${local.project}-${local.workspace}")', engine: 'aurora-postgresql' },
+      { tfType: 'aws_elasticache_replication_group', label: 'elasticache', name: '${local.project}-valkey-${local.workspace}' },
+    ])
+  })
+
   it('mines owned data resources with their name attribute', () => {
     const src = `
 resource "aws_dynamodb_table" "table" {

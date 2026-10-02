@@ -127,3 +127,21 @@ describe('buildRegistry owners', () => {
     expect(reg.map(r => `${r.id}:${r.owner}`)).toEqual(['kinesis:full-load:svc-documents-esignature'])
   })
 })
+
+describe('buildRegistry Terraform databases', () => {
+  const tfFacts = (resources: Array<{ tfType: string; label: string; name: string; engine?: string }>) => ({ resources, dmsTasks: [], dmsEndpoints: [], iamActions: [] })
+  it('registers Aurora PostgreSQL clusters and Valkey groups as databases, and folds the monolith cluster into skello_production', () => {
+    const reg = buildRegistry({
+      monolith: { tables: [], models: [] },
+      serverless: new Map(),
+      services: [],
+      terraform: [
+        { service: 'svc-requests', tfRepo: 'svc-requests-tf', facts: tfFacts([{ tfType: 'aws_rds_cluster', label: 'db', name: 'svcrequests-${local.workspace}', engine: 'aurora-postgresql' }]) },
+        { service: 'svc-x', tfRepo: 'svc-x-tf', facts: tfFacts([{ tfType: 'aws_rds_cluster', label: 'db', name: 'svcx-mysql', engine: 'aurora-mysql' }]) },
+        { service: 'skello-app', tfRepo: 'skello-app-tf', facts: tfFacts([{ tfType: 'aws_rds_cluster', label: 'db', name: 'skelloapp-${local.workspace}', engine: 'aurora-postgresql' }, { tfType: 'aws_elasticache_replication_group', label: 'cache', name: 'skelloApp-valkey-${local.workspace}' }]) },
+      ],
+    })
+    expect(reg.map(r => `${r.id}:${r.kind}:${r.owner}`)).toEqual(['pg:skello_production:database:skello-app', 'pg:svcrequests:database:svc-requests', 'redis:skelloApp-valkey:database:skello-app'])
+    expect(reg.find(r => r.id === 'pg:skello_production')?.evidence).toContain('skello-app-tf:terraform')
+  })
+})

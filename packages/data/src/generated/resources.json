@@ -32,8 +32,20 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcCommunicationsV2",
+      "owner": "svc-communications-v2",
       "evidence": [
-        "dataset:svc-communications-v2"
+        "dataset:svc-communications-v2",
+        "svc-communications-v2-tf:terraform"
+      ]
+    },
+    {
+      "id": "ddb:svcDocuments-V2",
+      "kind": "table",
+      "store": "dynamodb",
+      "name": "svcDocuments-V2",
+      "owner": "svc-documents-esignature",
+      "evidence": [
+        "svc-documents-esignature-tf:terraform"
       ]
     },
     {
@@ -77,8 +89,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcEvents",
+      "owner": "svc-events",
       "evidence": [
-        "dataset:svc-events"
+        "dataset:svc-events",
+        "svc-events-tf:terraform"
       ]
     },
     {
@@ -86,8 +100,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcFeatureFlags",
+      "owner": "svc-feature-flags",
       "evidence": [
-        "dataset:svc-feature-flags"
+        "dataset:svc-feature-flags",
+        "svc-feature-flags-tf:terraform"
       ]
     },
     {
@@ -95,8 +111,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcHiring",
+      "owner": "svc-hiring",
       "evidence": [
-        "dataset:svc-hiring"
+        "dataset:svc-hiring",
+        "svc-hiring-tf:terraform"
       ]
     },
     {
@@ -104,8 +122,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcHris",
+      "owner": "svc-hris",
       "evidence": [
-        "dataset:svc-hris"
+        "dataset:svc-hris",
+        "svc-hris-tf:terraform"
       ]
     },
     {
@@ -113,8 +133,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcIntelligence",
+      "owner": "svc-intelligence",
       "evidence": [
-        "dataset:svc-intelligence"
+        "dataset:svc-intelligence",
+        "svc-intelligence-tf:terraform"
       ]
     },
     {
@@ -140,8 +162,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcPayroll",
+      "owner": "svc-payroll",
       "evidence": [
-        "dataset:svc-payroll"
+        "dataset:svc-payroll",
+        "svc-payroll-tf:terraform"
       ]
     },
     {
@@ -149,8 +173,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcPos",
+      "owner": "svc-pos",
       "evidence": [
-        "dataset:svc-pos"
+        "dataset:svc-pos",
+        "svc-pos-tf:terraform"
       ]
     },
     {
@@ -158,8 +184,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcPunch",
+      "owner": "svc-punch",
       "evidence": [
-        "dataset:svc-punch"
+        "dataset:svc-punch",
+        "svc-punch-tf:terraform"
       ]
     },
     {
@@ -176,8 +204,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcUsers",
+      "owner": "svc-users",
       "evidence": [
-        "dataset:svc-users"
+        "dataset:svc-users",
+        "svc-users-tf:terraform"
       ]
     },
     {
@@ -185,8 +215,10 @@
       "kind": "table",
       "store": "dynamodb",
       "name": "svcWebsocketsV2",
+      "owner": "svc-websockets-v2",
       "evidence": [
-        "dataset:svc-websockets-v2"
+        "dataset:svc-websockets-v2",
+        "svc-websockets-v2-tf:terraform"
       ]
     },
     {
@@ -714,6 +746,7 @@
       "owner": "skello-app",
       "evidence": [
         "dataset:skello-app",
+        "skello-app-tf:terraform",
         "skello-app:db/schema.rb"
       ]
     },
@@ -2404,12 +2437,42 @@
       ]
     },
     {
+      "id": "pg:svcrequests",
+      "kind": "database",
+      "store": "postgresql",
+      "name": "svcrequests",
+      "owner": "svc-requests",
+      "evidence": [
+        "svc-requests-tf:terraform"
+      ]
+    },
+    {
       "id": "redis:skello-redis",
       "kind": "database",
       "store": "redis",
       "name": "skello-redis",
       "evidence": [
         "dataset:skello-app"
+      ]
+    },
+    {
+      "id": "redis:skelloApp-valkey",
+      "kind": "database",
+      "store": "redis",
+      "name": "skelloApp-valkey",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:medias",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "medias",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2-tf:terraform"
       ]
     },
     {
@@ -2443,6 +2506,16 @@
       ]
     },
     {
+      "id": "s3:skello-app.shifts-full-load",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "skello-app.shifts-full-load",
+      "owner": "svc-search",
+      "evidence": [
+        "svc-search-tf:terraform"
+      ]
+    },
+    {
       "id": "s3:skello-app.temporary-assets",
       "kind": "bucket",
       "store": "s3",
@@ -2455,12 +2528,32 @@
       ]
     },
     {
+      "id": "s3:skello-app.temporary-assets-v2",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "skello-app.temporary-assets-v2",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app-tf:terraform"
+      ]
+    },
+    {
       "id": "s3:skello-assets",
       "kind": "bucket",
       "store": "s3",
       "name": "skello-assets",
       "evidence": [
         "dataset:skello-app"
+      ]
+    },
+    {
+      "id": "s3:skello-dpae-data",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "skello-dpae-data",
+      "owner": "svc-employees",
+      "evidence": [
+        "svc-employees-tf:terraform"
       ]
     },
     {
@@ -2493,12 +2586,32 @@
       ]
     },
     {
+      "id": "s3:svc-automatic-scheduling-artifacts",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-automatic-scheduling-artifacts",
+      "owner": "svc-automatic-scheduling",
+      "evidence": [
+        "svc-automatic-scheduling-tf:terraform"
+      ]
+    },
+    {
       "id": "s3:svc-automatic-scheduling-sfn-ctx",
       "kind": "bucket",
       "store": "s3",
       "name": "svc-automatic-scheduling-sfn-ctx",
       "evidence": [
         "dataset:svc-automatic-scheduling"
+      ]
+    },
+    {
+      "id": "s3:svc-automatic-scheduling.assignment",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-automatic-scheduling.assignment",
+      "owner": "svc-automatic-scheduling",
+      "evidence": [
+        "svc-automatic-scheduling-tf:terraform"
       ]
     },
     {
@@ -2520,6 +2633,16 @@
       ]
     },
     {
+      "id": "s3:svc-documents",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-documents",
+      "owner": "svc-documents-esignature",
+      "evidence": [
+        "svc-documents-esignature-tf:terraform"
+      ]
+    },
+    {
       "id": "s3:svc-documents-v2",
       "kind": "bucket",
       "store": "s3",
@@ -2529,12 +2652,42 @@
       ]
     },
     {
+      "id": "s3:svc-documents-v2/lower",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "lower",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:svc-documents.replication",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-documents.replication",
+      "owner": "svc-documents-esignature",
+      "evidence": [
+        "svc-documents-esignature-tf:terraform"
+      ]
+    },
+    {
       "id": "s3:svc-enrollment.conventions",
       "kind": "bucket",
       "store": "s3",
       "name": "svc-enrollment.conventions",
       "evidence": [
         "dataset:svc-enrollment"
+      ]
+    },
+    {
+      "id": "s3:svc-enrollment/lower",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "lower",
+      "owner": "svc-enrollment",
+      "evidence": [
+        "svc-enrollment-tf:terraform"
       ]
     },
     {
@@ -2560,8 +2713,10 @@
       "kind": "bucket",
       "store": "s3",
       "name": "svc-hris",
+      "owner": "svc-hris",
       "evidence": [
-        "dataset:svc-hris"
+        "dataset:svc-hris",
+        "svc-hris-tf:terraform"
       ]
     },
     {
@@ -2583,12 +2738,32 @@
       ]
     },
     {
+      "id": "s3:svc-payroll.evp-data",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "svc-payroll.evp-data",
+      "owner": "svc-payroll",
+      "evidence": [
+        "svc-payroll-tf:terraform"
+      ]
+    },
+    {
       "id": "s3:svc-search",
       "kind": "bucket",
       "store": "s3",
       "name": "svc-search",
       "evidence": [
         "dataset:svc-search"
+      ]
+    },
+    {
+      "id": "s3:templates",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "templates",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2-tf:terraform"
       ]
     },
     {
@@ -2619,6 +2794,16 @@
       "owner": "svc-requests",
       "evidence": [
         "svc-requests:serverless"
+      ]
+    },
+    {
+      "id": "sns:events",
+      "kind": "topic",
+      "store": "sns",
+      "name": "events",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2-tf:terraform"
       ]
     },
     {
@@ -2707,6 +2892,16 @@
       "name": "svc-requests-sns",
       "evidence": [
         "dataset:svc-requests"
+      ]
+    },
+    {
+      "id": "sns:webhook",
+      "kind": "topic",
+      "store": "sns",
+      "name": "webhook",
+      "owner": "svc-communications-v2",
+      "evidence": [
+        "svc-communications-v2-tf:terraform"
       ]
     },
     {
@@ -3627,6 +3822,16 @@
       "owner": "svc-communications-v2",
       "evidence": [
         "svc-communications-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:extractDataFromDocumentSQS",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "extractDataFromDocumentSQS",
+      "owner": "svc-intelligence",
+      "evidence": [
+        "svc-intelligence-tf:terraform"
       ]
     },
     {
@@ -16492,6 +16697,19 @@
       "resource": "sqs:EmailWebhookSesSqs",
       "relation": "consumes",
       "service": "svc-communications-v2",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:extractDataFromDocumentSQS",
+      "relation": "consumes",
+      "service": "svc-intelligence",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:extractDataFromDocumentSQS",
+      "relation": "produces",
+      "service": "svc-documents-v2",
+      "file": "serverless.ts",
       "grade": "config"
     },
     {

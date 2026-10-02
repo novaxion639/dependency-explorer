@@ -21,6 +21,8 @@ export interface TfResource {
   label: string
   /** literal `name`/`bucket`/`identifier` inside the block when present */
   name?: string
+  engine?: string
+  forEach?: string
 }
 
 export interface TfDmsTask {
@@ -59,12 +61,32 @@ const OWNED_TF_TYPES = new Set([
   'aws_sns_topic',
 ])
 
+const MODULE_STORES: Record<string, { tfType: string; attr: string }> = {
+  'dynamodb-table': { tfType: 'aws_dynamodb_table', attr: 'name' },
+  's3-bucket': { tfType: 'aws_s3_bucket', attr: 'bucket' },
+  sqs: { tfType: 'aws_sqs_queue', attr: 'name' },
+  sns: { tfType: 'aws_sns_topic', attr: 'name' },
+  'rds-aurora': { tfType: 'aws_rds_cluster', attr: 'name' },
+  elasticache: { tfType: 'aws_elasticache_replication_group', attr: 'replication_group_id' },
+}
+const ENGINE_TYPES = new Set(['aws_rds_cluster', 'aws_db_instance'])
+
 const IAM_ACTION_RE = /"((?:dynamodb|s3|kinesis|firehose):[A-Za-z*][A-Za-z*]*)"/g
 
 function attr(block: string, key: string): string | undefined {
   const m = block.match(new RegExp(`\\b${key}\\s*=\\s*(?:"([^"]+)"|([^\\n]+))`))
   if (!m) return undefined
   return (m[1] ?? m[2])?.trim()
+}
+
+function topLevelAttr(block: string, key: string): string | undefined {
+  const m = block.match(new RegExp(`^ {2}${key}\\s*=\\s*(?:"([^"]+)"|([^\\n]+))`, 'm'))
+  return (m?.[1] ?? m?.[2])?.trim()
+}
+
+function blockAt(content: string, start: number): string {
+  const end = content.slice(start).search(/^\}/m)
+  return end === -1 ? content.slice(start) : content.slice(start, start + end + 1)
 }
 
 /** Parse one .tf file's content. Exported for tests. */
@@ -84,7 +106,8 @@ export function parseTerraform(content: string): TerraformFacts {
     const block = content.slice(m.index, nextResource === -1 ? m.index + 1600 : Math.min(nextResource, m.index + 1600))
     if (OWNED_TF_TYPES.has(tfType!)) {
       const name = attr(block, 'name') ?? attr(block, 'bucket') ?? attr(block, 'identifier')
-      resources.push({ tfType: tfType!, label: label!, ...(name ? { name } : {}) })
+      const engine = ENGINE_TYPES.has(tfType ?? '') ? attr(block, 'engine') : undefined
+      resources.push({ tfType: tfType!, label: label!, ...(name ? { name } : {}), ...(engine ? { engine } : {}) })
     } else if (tfType === 'aws_dms_replication_task') {
       dmsTasks.push({
         label: label!,
@@ -100,6 +123,17 @@ export function parseTerraform(content: string): TerraformFacts {
         endpointType: attr(block, 'endpoint_type'),
         engineName: attr(block, 'engine_name'),
       })
+    }
+  }
+
+  for (const mod of content.matchAll(/^module\s+"([\w-]+)"\s*\{/gm)) {
+    const block = blockAt(content, mod.index)
+    const kind = block.match(/^ {2}source\s*=\s*"terraform-aws-modules\/([\w-]+)\/aws"/m)?.[1]
+    const store = kind ? MODULE_STORES[kind] : undefined
+    const name = store ? topLevelAttr(block, store.attr) : undefined
+    if (store && name && mod[1]) {
+      const engine = topLevelAttr(block, 'engine')
+      resources.push({ tfType: store.tfType, label: mod[1], name, ...(engine ? { engine } : {}) })
     }
   }
 
@@ -166,7 +200,11 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
       return {}
     }
   }))
-  merged.resources = merged.resources.map(r => (r.name ? { ...r, name: applyTerraformLocals(r.name, locals) } : r))
+  merged.resources = merged.resources.map(r => ({
+    ...r,
+    ...(r.name ? { name: applyTerraformLocals(r.name, locals) } : {}),
+    ...(r.engine ? { engine: applyTerraformLocals(r.engine, locals) } : {}),
+  }))
   merged.iamActions = [...actions].sort()
   if (!merged.resources.length && !merged.dmsTasks.length && !merged.dmsEndpoints.length && !merged.iamActions.length) return null
   return merged
