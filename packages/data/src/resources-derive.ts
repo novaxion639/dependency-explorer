@@ -84,6 +84,6 @@ export function resourceImpact(id: string, map: ConnectivityMap, resources: Reso
 }
 
 export function resourceIdForDatabase(serviceName: string, db: { type: string; name: string }, resources: Resource[]): string | undefined {
-  const name = normalizeResourceName(db.name).name
+  const name = normalizeResourceName(db.name, db.type).name
   return resources.find(r => r.store === db.type && r.name === name && r.evidence.includes(`dataset:${serviceName}`))?.id
 }

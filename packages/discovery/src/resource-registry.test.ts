@@ -10,11 +10,16 @@ const sls = (over: Partial<ServerlessFacts>): ServerlessFacts => ({
 
 describe('normalizeResourceName', () => {
   it('strips env templates, prefixes and decorations', () => {
-    expect(normalizeResourceName('svcEvents-createActivityLogJob-{env}')).toEqual({ name: 'createActivityLogJob', ownerHint: 'svc-events' })
-    expect(normalizeResourceName('${prefix}-createActivityLogJob-${stage}')).toEqual({ name: 'createActivityLogJob' })
-    expect(normalizeResourceName('svcRequests-{env}')).toEqual({ name: 'svcRequests' })
-    expect(normalizeResourceName('svc-documents-v2.{env}')).toEqual({ name: 'svc-documents-v2' })
-    expect(normalizeResourceName('svc-search DB (direct read)')).toEqual({ name: 'svc-search' })
+    expect(normalizeResourceName('svcEvents-createActivityLogJob-{env}', 'sqs')).toEqual({ name: 'createActivityLogJob', ownerHint: 'svc-events' })
+    expect(normalizeResourceName('${prefix}-createActivityLogJob-${stage}', 'sqs')).toEqual({ name: 'createActivityLogJob' })
+    expect(normalizeResourceName('svcRequests-{env}', 'sqs')).toEqual({ name: 'svcRequests' })
+    expect(normalizeResourceName('svc-documents-v2.{env}', 'sqs')).toEqual({ name: 'svc-documents-v2' })
+    expect(normalizeResourceName('svc-search DB (direct read)', 'sqs')).toEqual({ name: 'svc-search' })
+  })
+  it('keeps the prefix of non-messaging names', () => {
+    expect(normalizeResourceName('svcDocuments-eSignature-V2-{env}', 'dynamodb')).toEqual({ name: 'svcDocuments-eSignature-V2' })
+    expect(normalizeResourceName('svcEmployees-restaure-${local.workspace}', 'dynamodb')).toEqual({ name: 'svcEmployees-restaure' })
+    expect(normalizeResourceName('svcPos-dataLake-{env}', 'kinesis')).toEqual({ name: 'dataLake', ownerHint: 'svc-pos' })
   })
 })
 

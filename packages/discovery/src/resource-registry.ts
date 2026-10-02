@@ -32,7 +32,7 @@ interface Draft { kind: Resource['kind']; store: Resource['store']; name: string
 export function buildRegistry(inputs: RegistryInputs): Resource[] {
   const drafts = new Map<string, Draft>()
   const add = (store: Resource['store'], rawName: string, kind: Resource['kind'], evidence: string, owner?: string) => {
-    const { name, ownerHint } = normalizeResourceName(rawName)
+    const { name, ownerHint } = normalizeResourceName(rawName, store)
     if (!isResourceName(name)) {
       return
     }
@@ -92,7 +92,7 @@ export function buildRegistry(inputs: RegistryInputs): Resource[] {
   }
   for (const svc of inputs.services) {
     for (const db of svc.databases ?? []) {
-      if (db.type === 'postgresql' && normalizeResourceName(db.name).name === MONOLITH_DB) {
+      if (db.type === 'postgresql' && normalizeResourceName(db.name, db.type).name === MONOLITH_DB) {
         drafts.get(`pg:${MONOLITH_DB}`)?.evidence.add(`dataset:${svc.name}`)
         continue
       }
