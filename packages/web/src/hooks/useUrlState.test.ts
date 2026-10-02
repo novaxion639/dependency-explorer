@@ -89,3 +89,15 @@ describe('detail=sequence', () => {
     expect(toQueryString(parseUrl('?flow=f&detail=sequence'))).toBe('flow=f&detail=sequence')
   })
 })
+
+describe('resources', () => {
+  it('parses and round-trips the index and a resource page', () => {
+    expect(parseUrl('?view=resources').view).toBe('resources')
+    const st = parseUrl('?resource=pg%3Askello_production.shifts')
+    expect(st.resource).toBe('pg:skello_production.shifts')
+    expect(toQueryString(st)).toBe('resource=pg%3Askello_production.shifts')
+  })
+  it('treats opening a resource as navigation', () => {
+    expect(isNavigation(parseUrl(''), { resource: 'sqs:jobs' })).toBe(true)
+  })
+})
