@@ -12,6 +12,10 @@ const map = ConnectivityMapSchema.parse({
 })
 
 describe('computeImpact', () => {
+  it('lists only flows that call the origin directly — a hub failing transitively is not a flow break', () => {
+    expect(computeImpact(map, [], 'api').flows).toEqual([{ flowId: 'f', name: 'F', step: 1, from: 'front', to: 'api' }])
+    expect(computeImpact(map, [{ resource: 'sqs:jobs', relation: 'produces', service: 'api', grade: 'code' }], 'sqs:jobs').flows).toEqual([{ flowId: 'f', name: 'F', step: 1, from: 'front', to: 'api' }])
+  })
   it('fails sync callers, degrades async producers and starves downstream consumers — never callees', () => {
     const r = computeImpact(map, [], 'worker')
     expect(r.entries.map(e => `${e.node}:${e.effect}:${e.hop}`).sort()).toEqual(['api:degrades:1', 'mailer:starves:1'])
@@ -20,7 +24,7 @@ describe('computeImpact', () => {
   it('propagates failure up the sync chain and lists the flow step that breaks', () => {
     const r = computeImpact(map, [], 'db-owner')
     expect(r.entries.map(e => `${e.node}:${e.effect}:${e.hop}`).sort()).toEqual(['api:fails:1', 'front:fails:2', 'mailer:starves:3', 'worker:starves:2'])
-    expect(r.flows).toEqual([{ flowId: 'f', name: 'F', step: 1, from: 'front', to: 'api' }])
+    expect(r.flows).toEqual([])
   })
   it('impacts writers and consumers of a failing resource', () => {
     const r = computeImpact(map, [

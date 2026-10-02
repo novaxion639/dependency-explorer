@@ -35,9 +35,9 @@ export function computeImpact(map: ConnectivityMap, relations: ResourceRelation[
   for (let next = queue.shift(); next; next = queue.shift()) {
     spread(next.node, next.effect, next.hop)
   }
-  const failing = new Set([origin, ...[...entries.values()].filter(e => e.effect === 'fails').map(e => e.node)])
+  const direct = new Set([origin, ...(isResource ? [...entries.values()].filter(e => e.hop === 1 && e.effect === 'fails').map(e => e.node) : [])])
   const flows = map.flows.flatMap(f => {
-    const index = f.steps.findIndex(s => failing.has(s.to))
+    const index = f.steps.findIndex(s => direct.has(s.to))
     const step = f.steps[index]
     return step ? [{ flowId: f.id, name: f.name, step: index + 1, from: step.from, to: step.to }] : []
   })
