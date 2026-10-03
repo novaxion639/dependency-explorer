@@ -19,6 +19,7 @@ import { HomePage } from './HomePage'
 import { MicroservicesPage } from './MicroservicesPage'
 import { fileIndex, flagRegistry, map, resourceIds, searchIndex } from './dataIndexes'
 import { validateUrlState } from './validateUrlState'
+import { presentKeyAction } from './presentMode'
 
 
 export function Explorer() {
@@ -35,6 +36,21 @@ export function Explorer() {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target instanceof HTMLElement ? e.target : null
+      const action = presentKeyAction({ key: e.key, metaKey: e.metaKey, ctrlKey: e.ctrlKey, altKey: e.altKey, targetTag: target?.tagName ?? '', targetEditable: target?.isContentEditable ?? false }, url.present)
+      if (action === 'toggle') {
+        patch({ present: !url.present })
+      }
+      if (action === 'exit') {
+        patch({ present: false })
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [patch, url.present])
 
   const openResource = useCallback((id: string) => patch({ page: 'resources', flow: null, detail: null, file: null, resource: id }), [patch])
   const selectService = useCallback((name: string) => patch(selectServicePatch(name)), [patch])
