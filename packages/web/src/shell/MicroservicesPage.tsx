@@ -22,10 +22,6 @@ export function MicroservicesPage({ url, patch, onOpenResource }: Props) {
     setListOpen(false)
     patch(selectServicePatch(name))
   }
-  const edgeConnection = url.edge
-    ? map.connections.find(c => edgeKey(c.from, c.to, c.protocol) === url.edge) ?? null
-    : null
-  const drawerService = url.drawer ? map.services.find(s => s.name === url.drawer) ?? null : null
   return (
     <div className={styles.page}>
       <ServiceSidebar services={map.services} teams={map.teams} selected={url.s} onSelect={select} search={search} onSearch={setSearch} open={listOpen} onClose={() => setListOpen(false)} />
@@ -41,11 +37,7 @@ export function MicroservicesPage({ url, patch, onOpenResource }: Props) {
                 onSelectService={select}
                 onOpenFlows={name => patch({ page: 'flows', flows: name, flow: null })}
                 blastRadius={null}
-                edgeConnection={edgeConnection}
                 onEdgeSelect={conn => patch({ edge: conn ? edgeKey(conn.from, conn.to, conn.protocol) : null })}
-                drawerService={drawerService}
-                onDrawerSelect={name => patch({ drawer: name, ep: null })}
-                highlightEndpointId={url.ep}
                 onOpenResource={onOpenResource}
               />
             </div>

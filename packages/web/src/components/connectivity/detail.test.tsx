@@ -1,0 +1,31 @@
+import { describe, it, expect } from 'vitest'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { connectivityMap } from '@dependency-explorer/data'
+import { EdgeDetail } from './EdgeDetail'
+import { EndpointList } from './EndpointList'
+
+const noop = () => {}
+
+describe('detail panel content', () => {
+  it('describes a connection without floating over the canvas', () => {
+    const conn = connectivityMap.connections.find(c => c.usedEndpoints.length > 0)
+    if (!conn) {
+      throw new Error('no connection with used endpoints')
+    }
+    const html = renderToStaticMarkup(<EdgeDetail connection={conn} map={connectivityMap} onSeeEndpoints={noop} onClose={noop} />)
+    expect(html).toContain(conn.from)
+    expect(html).toContain(conn.to)
+    expect(html).toContain(conn.protocol)
+    expect(html).not.toContain('position:fixed')
+  })
+  it('lists a service endpoints inline', () => {
+    const svc = connectivityMap.services.find(s => s.name === 'svc-punch')
+    if (!svc) {
+      throw new Error('svc-punch missing')
+    }
+    const html = renderToStaticMarkup(<EndpointList serviceName={svc.name} endpoints={svc.endpoints} highlightId={null} onClose={noop} />)
+    expect(html).toContain('svc-punch')
+    expect(html).toContain(svc.endpoints[0]?.path ?? '')
+    expect(html).not.toContain('position:fixed')
+  })
+})

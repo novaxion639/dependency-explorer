@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { selectServicePatch, useUrlState, type UrlState } from '../hooks/useUrlState'
+import { edgeKey, selectServicePatch, useUrlState, type UrlState } from '../hooks/useUrlState'
 import { SearchModal } from '../components/SearchModal'
 import { NotFoundBanner } from '../components/areas/NotFoundBanner'
 import { AreasHome } from '../components/areas/AreasHome'
 import { AreaPage } from '../components/areas/AreaPage'
 import { FlowView } from '../components/connectivity/FlowGraphModal'
+import { EdgeDetail } from '../components/connectivity/EdgeDetail'
+import { EndpointList } from '../components/connectivity/EndpointList'
 import { FlowListModal } from '../components/connectivity/FlowListModal'
 import { FlagModal } from '../components/connectivity/FlagModal'
 import { FileModal } from '../components/connectivity/FileModal'
@@ -57,6 +59,14 @@ export function Explorer() {
   const openResource = useCallback((id: string) => patch({ page: 'resources', flow: null, detail: null, file: null, resource: id }), [patch])
   const selectService = useCallback((name: string) => patch(selectServicePatch(name)), [patch])
   const selectedFlow = url.flow ? map.flows.find(f => f.id === url.flow) ?? null : null
+  const architecture = url.page === 'microservices' || url.page === 'monolith'
+  const edgeConnection = architecture && url.edge ? map.connections.find(c => edgeKey(c.from, c.to, c.protocol) === url.edge) ?? null : null
+  const drawerService = architecture && url.drawer ? map.services.find(s => s.name === url.drawer) ?? null : null
+  const panel = edgeConnection
+    ? <EdgeDetail connection={edgeConnection} map={map} onSeeEndpoints={name => patch({ drawer: name, ep: null, edge: null })} onClose={() => patch({ edge: null })} />
+    : drawerService
+      ? <EndpointList serviceName={drawerService.name} endpoints={drawerService.endpoints} recurringTasks={drawerService.recurringTasks} highlightId={url.ep} onClose={() => patch({ drawer: null, ep: null })} />
+      : null
 
   const content =
     url.page === 'home' ? <HomePage index={searchIndex} onNavigate={patch} />
@@ -75,7 +85,7 @@ export function Explorer() {
 
   return (
     <>
-      <AppShell url={url} onNavigate={patch} onSearch={() => setSearchOpen(true)} onTogglePresent={() => patch({ present: !url.present })} panel={null}>
+      <AppShell url={url} onNavigate={patch} onSearch={() => setSearchOpen(true)} onTogglePresent={() => patch({ present: !url.present })} panel={panel}>
         {url.notFound && <NotFoundBanner notFound={url.notFound} onDismiss={() => patch({ notFound: null })} />}
         {content}
       </AppShell>
