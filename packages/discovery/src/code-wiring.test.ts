@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, type WiredEdge } from './code-wiring'
+import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, type WiredEdge } from './code-wiring'
 
 const container = `
 const llmProviders: LlmProviders = {
@@ -80,5 +80,35 @@ describe('imports', () => {
     const caller = 'apps/vue-app/src/shared/store/modules/timeclock/badgings.js'
     expect(importsCallee(edge(caller, 'apps/vue-app/src/shared/utils/clients/punch_client.js', code), aliases, read)).toBe(true)
     expect(importsCallee(edge(caller, 'apps/vue-app/src/shared/utils/clients/http_client.js', code), aliases, read)).toBe(false)
+  })
+})
+
+const storeFiles = new Map([
+  ['apps/vue-app/src/shared/store/modules/index.js', [
+    "export { default as badgings } from './timeclock/badgings.js';",
+    "export { default as timeclockOnboarding } from './timeclock/onboarding.js';",
+    "export { default as onboarding } from './onboarding.js';",
+  ].join('\n')],
+])
+const readStore = (p: string) => storeFiles.get(p) ?? null
+
+describe('vuex and events', () => {
+  it('names the namespace a store module is registered under', () => {
+    expect(vuexNamespaceOf('apps/vue-app/src/shared/store/modules/timeclock/badgings.js', readStore)).toBe('badgings')
+    expect(vuexNamespaceOf('apps/vue-app/src/shared/store/modules/onboarding.js', readStore)).toBe('onboarding')
+    expect(vuexNamespaceOf('apps/vue-app/src/badgings/Badgings.vue', readStore)).toBeNull()
+  })
+  it('matches the namespace exactly', () => {
+    expect(usesVuexNamespace("...mapState('onboarding', ['currentShop'])", 'onboarding')).toBe(true)
+    expect(usesVuexNamespace("this.$store.dispatch('onboarding/save')", 'onboarding')).toBe(true)
+    expect(usesVuexNamespace("...mapState('timeclockOnboarding', ['x'])", 'onboarding')).toBe(false)
+    expect(usesVuexNamespace("dispatch('onboardingX/save')", 'onboarding')).toBe(false)
+  })
+  it('credits an emitted event the importing parent listens to', () => {
+    const modal = "this.$emit('download');"
+    const toolbar = "<StaffRegisterModal @download=\"downloadStaffRegister\" />\nimport StaffRegisterModal from './StaffRegisterModal';"
+    const e = edge('apps/vue-app/src/users/shared/components/StaffRegisterModal.vue', 'apps/vue-app/src/users/shared/components/Toolbar.vue', modal, toolbar)
+    expect(emitsToCallee(e, aliases)).toBe(true)
+    expect(emitsToCallee({ ...e, calleeSource: '<StaffRegisterModal @close="x" />\nimport StaffRegisterModal from \'./StaffRegisterModal\';' }, aliases)).toBe(false)
   })
 })

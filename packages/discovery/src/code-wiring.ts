@@ -132,3 +132,32 @@ export function importsCallee(e: WiredEdge, aliases: Alias[], read: Read): boole
     })
   })
 }
+
+const STORE_MODULES = /^(.*\/store\/modules)\//
+const MODULE_REGISTRATION = /export\s*\{\s*default\s+as\s+(\w+)\s*\}\s*from\s*['"]([^'"]+)['"]/g
+const EMITTED = /\$emit\(\s*['"]([\w:-]+)['"]/g
+
+function escape(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+export function vuexNamespaceOf(calleePath: string, read: Read): string | null {
+  const root = STORE_MODULES.exec(calleePath)?.[1]
+  const registry = root === undefined ? null : read(`${root}/index.js`)
+  if (root === undefined || registry === null) {
+    return null
+  }
+  return [...registry.matchAll(MODULE_REGISTRATION)].find(m => resolvesTo(path.posix.join(root, m[2] ?? ''), calleePath))?.[1] ?? null
+}
+
+export function usesVuexNamespace(code: string, ns: string): boolean {
+  const n = escape(ns)
+  return new RegExp(`\\bmap(?:State|Getters|Actions|Mutations)\\(\\s*['"]${n}['"]|\\b(?:dispatch|commit)\\(\\s*['"\`]${n}/|\\[\\s*['"]${n}/`).test(code)
+}
+
+export function emitsToCallee(e: WiredEdge, aliases: Alias[]): boolean {
+  const events = [...e.callerCode.matchAll(EMITTED)].map(m => m[1] ?? '')
+  return events.length > 0
+    && importsFileDirectly(e.calleeSource, e.calleePath, e.callerPath, aliases)
+    && events.some(ev => new RegExp(`(?:@|v-on:)${escape(ev)}=`).test(e.calleeSource))
+}
