@@ -1,11 +1,11 @@
-.frame { display: flex; flex-direction: column; gap: var(--space-2); flex: 1; min-height: 0; min-width: 0; }
+.frame { display: flex; flex-direction: column; gap: var(--space-2); flex: 1 0 auto; min-width: 0; }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
 .toolbar button { border: var(--line); border-radius: var(--radius-md); background: var(--card); padding: var(--space-1) var(--space-3); cursor: pointer; }
 .renderers { display: inline-flex; }
 .renderers button { border-radius: 0; }
 .renderers button + button { border-left: none; }
 .renderers button[aria-checked='true'] { background: var(--ink); color: var(--card); }
-.canvas { position: relative; flex: 1; min-height: 420px; border: 1px solid var(--rule); border-radius: var(--radius-lg); background: var(--paper); overflow: hidden; }
+.canvas { position: relative; flex: 1; min-height: max(420px, 62vh); border: 1px solid var(--rule); border-radius: var(--radius-lg); background: var(--paper); overflow: hidden; }
 .canvas > svg { display: block; }
 .legend { display: flex; flex-wrap: wrap; gap: var(--space-3); list-style: none; font-size: var(--text-xs); color: var(--ink-muted); }
 .legend li { display: inline-flex; align-items: center; gap: var(--space-1); }

@@ -44,6 +44,7 @@ export function toMermaid(model: DiagramModel, emphases: Emphases, read: (token:
       return
     }
     lines.push(`${indent}subgraph ${id(key)}["${text(g.label)}"]`)
+    lines.push(`${indent}  direction LR`)
     for (const m of g.members) {
       emitGroup(m, `${indent}  `)
     }

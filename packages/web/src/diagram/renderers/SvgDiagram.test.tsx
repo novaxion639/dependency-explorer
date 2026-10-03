@@ -37,6 +37,7 @@ describe('SvgDiagram', () => {
     const html = renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} />)
     expect(html).toContain('stroke-dasharray:6 4')
     expect(html).toContain('marker-end="url(#svc-arrow)"')
+    expect(html).toContain('markerUnits="userSpaceOnUse"')
   })
   it('names the impact effect of a node', () => {
     const html = renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, { spotlight: null, impact: new Map([['calls:svc-y', 'fails']]) })} onSelect={noop} />)

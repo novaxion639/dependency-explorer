@@ -31,7 +31,7 @@ describe('toReactFlow', () => {
     expect(flow.edges.map(e => e.data?.emphasis)).toEqual(['on', 'dim'])
   })
   it('puts an arrow on directed edges only', () => {
-    expect(flow.edges[0]?.markerEnd).toBeDefined()
+    expect(flow.edges[0]?.markerEnd).toMatchObject({ markerUnits: 'userSpaceOnUse' })
     expect(flow.edges[1]?.markerEnd).toBeUndefined()
     expect(flow.edges[0]).toMatchObject({ source: 'G', target: 'b', type: 'diagramEdge' })
   })
