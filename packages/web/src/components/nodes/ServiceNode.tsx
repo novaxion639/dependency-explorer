@@ -1,6 +1,18 @@
 import { Handle, Position } from '@xyflow/react'
-import type { ServiceNodeData } from '../../utils/buildConnectivityGraph'
+import type { RecurringTask } from '@dependency-explorer/data'
 import { CLAMP_TWO_LINES } from '../../utils/clamp'
+
+export interface ServiceNodeData {
+  name: string
+  description: string
+  type: string
+  isSelected: boolean
+  isCaller: boolean
+  isCallee: boolean
+  teamName?: string
+  recurringTasks?: RecurringTask[]
+  [key: string]: unknown
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ServiceNode({ data }: any) {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { parseUrl } from '../hooks/useUrlState'
+import { connectivityMap } from '@dependency-explorer/data'
+import { edgeKey, parseUrl } from '../hooks/useUrlState'
 import { validateUrlState } from './validateUrlState'
 
 describe('validateUrlState', () => {
@@ -13,5 +14,17 @@ describe('validateUrlState', () => {
   })
   it('opens the monolith page for skello-app', () => {
     expect(validateUrlState(parseUrl('?page=microservices&s=skello-app')).page).toBe('monolith')
+  })
+})
+
+describe('edge lists', () => {
+  it('drops an edge list with any unknown key', () => {
+    const [a, b] = connectivityMap.connections
+    if (!a || !b) {
+      throw new Error('dataset has fewer than two connections')
+    }
+    const pair = `${edgeKey(a.from, a.to, a.protocol)},${edgeKey(b.from, b.to, b.protocol)}`
+    expect(validateUrlState(parseUrl(`?page=microservices&edge=${pair}`)).edge).toBe(pair)
+    expect(validateUrlState(parseUrl(`?page=microservices&edge=${edgeKey(a.from, a.to, a.protocol)},svc-x~svc-y~sqs`)).edge).toBeNull()
   })
 })

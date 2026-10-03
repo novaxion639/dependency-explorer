@@ -180,3 +180,11 @@ describe('renderer', () => {
     expect(pagePatch('monolith')).not.toHaveProperty('renderer')
   })
 })
+
+describe('architecture permalinks', () => {
+  it('keeps the spotlit area on the architecture pages only', () => {
+    expect(toQueryString(parseUrl('?page=microservices&area=planning'))).toBe('page=microservices&area=planning')
+    expect(toQueryString(parseUrl('?page=monolith&area=planning'))).toBe('page=monolith&area=planning')
+    expect(toQueryString(parseUrl('?page=flows&area=planning'))).toBe('page=flows')
+  })
+})
