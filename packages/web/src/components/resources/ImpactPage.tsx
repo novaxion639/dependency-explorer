@@ -1,0 +1,81 @@
+import { useState } from 'react'
+import { allResourceRelations, connectivityMap, resourceSurface } from '@dependency-explorer/data'
+import { computeImpact } from '../../utils/impact'
+import styles from './ImpactPage.module.css'
+
+interface Props {
+  origin: string | null
+  initialFilter?: 'all' | 'sync'
+  onPick: (id: string) => void
+  onSelect: (node: string) => void
+  onOpenFlow: (id: string) => void
+}
+
+const ORIGINS = [...connectivityMap.services.map(s => s.name), ...resourceSurface.resources.map(r => r.id)]
+const KNOWN = new Set(ORIGINS)
+
+function Picker({ onPick }: { onPick: (id: string) => void }) {
+  return (
+    <section aria-label="Impact" className={styles.page}>
+      <h1>If something is down…</h1>
+      <p className={styles.muted}>Pick a service or a resource to see what depends on it, by hop.</p>
+      <input
+        className={styles.pick}
+        list="impact-origins"
+        aria-label="Service or resource"
+        placeholder="svc-requests · pg:skello_production.shifts · sqs:…"
+        onChange={e => {
+          if (KNOWN.has(e.target.value)) {
+            onPick(e.target.value)
+          }
+        }}
+      />
+      <datalist id="impact-origins">{ORIGINS.map(id => <option key={id} value={id} />)}</datalist>
+    </section>
+  )
+}
+
+export function ImpactPage({ origin, initialFilter = 'all', onPick, onSelect, onOpenFlow }: Props) {
+  const [filter, setFilter] = useState(initialFilter)
+  if (!origin) {
+    return <Picker onPick={onPick} />
+  }
+  const impact = computeImpact(connectivityMap, allResourceRelations, origin)
+  const entries = impact.entries.filter(e => filter === 'all' || (e.mode === 'sync' && e.effect === 'fails'))
+  const hops = [...new Set(entries.map(e => e.hop))].sort((a, b) => a - b)
+  return (
+    <section role="region" aria-label={`Impact of ${origin}`} className={styles.page}>
+      <h1>If {origin} is down</h1>
+      <div role="group" aria-label="Filter" className={styles.filter}>
+        {(['all', 'sync'] as const).map(f => (
+          <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>{f === 'all' ? 'All effects' : 'Hard failures (sync)'}</button>
+        ))}
+      </div>
+      {entries.length === 0 && <p className={styles.muted}>Nothing on the map depends on {origin}.</p>}
+      {hops.map(hop => (
+        <section key={hop} aria-label={`Hop ${hop}`}>
+          <h2 className={styles.hop}>Hop {hop}</h2>
+          <ul className={styles.entries}>
+            {entries.filter(e => e.hop === hop).map(e => (
+              <li key={e.node}>
+                <button type="button" onClick={() => onSelect(e.node)}>{e.node}</button>
+                <span className={styles.effect} data-effect={e.effect}>{e.effect === 'fails' && e.hop > 1 ? 'may fail' : e.effect}</span>
+                <span className={styles.muted}>via {e.via} ({e.mode})</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+      {impact.flows.length > 0 && (
+        <section aria-label="Affected flows">
+          <h2 className={styles.hop}>Affected flows</h2>
+          <ul className={styles.entries}>
+            {impact.flows.map(f => (
+              <li key={f.flowId}><button type="button" onClick={() => onOpenFlow(f.flowId)}>{f.name} — breaks at step {f.step}: {f.from} → {f.to}</button></li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </section>
+  )
+}
