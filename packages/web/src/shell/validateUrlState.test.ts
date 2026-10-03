@@ -47,3 +47,10 @@ describe('flow page keys', () => {
     expect([st.unit, st.chapter]).toEqual([null, null])
   })
 })
+
+describe('impact origin', () => {
+  it('flags an unknown impact origin', () => {
+    const st = validateUrlState(parseUrl('?page=impact&blast=svc-retired'))
+    expect([st.blast, st.notFound?.param, st.notFound?.value]).toEqual([null, 'blast', 'svc-retired'])
+  })
+})

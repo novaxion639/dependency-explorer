@@ -7,7 +7,7 @@ import styles from './AppShell.module.css'
 
 interface Props {
   url: UrlState
-  onNavigate: (patch: Partial<UrlState>) => void
+  onNavigate: (patch: Partial<UrlState>, opts?: { push?: boolean }) => void
   onSearch: () => void
   onTogglePresent: () => void
   panel: ReactNode | null

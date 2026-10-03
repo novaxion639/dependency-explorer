@@ -67,6 +67,7 @@ export function validateUrlState(st: UrlState): UrlState {
     }
   }
   if (next.blast && !serviceNames.has(next.blast) && !resourceIds.has(next.blast)) {
+    notFound = notFound ?? { param: 'blast', value: next.blast }
     next.blast = null
   }
   if (next.page === 'microservices' && next.s === 'skello-app') {

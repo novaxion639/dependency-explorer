@@ -15,9 +15,13 @@ describe('breadcrumb', () => {
     expect(labels('?page=resources&resource=pg:skello_production.shifts')).toEqual(['Resources', 'shifts'])
     expect(labels('?page=impact&blast=svc-requests')).toEqual(['Impact', 'svc-requests'])
   })
-  it('links every crumb but the last', () => {
+  it('links every crumb but the last and the Architecture heading', () => {
     const crumbs = breadcrumb(parseUrl('?page=microservices&s=svc-punch'))
-    expect(crumbs.map(c => c.patch === null)).toEqual([false, false, true])
+    expect(crumbs.map(c => c.patch === null)).toEqual([true, false, true])
     expect(crumbs[1]?.patch).toEqual(pagePatch('microservices'))
+  })
+  it('names Architecture without linking it', () => {
+    const crumbs = breadcrumb(parseUrl('?page=monolith'))
+    expect(crumbs.map(c => [c.label, c.patch === null])).toEqual([['Architecture', true], ['Monolith', true]])
   })
 })

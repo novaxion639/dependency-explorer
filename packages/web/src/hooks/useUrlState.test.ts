@@ -57,18 +57,33 @@ describe('toQueryString', () => {
 describe('isNavigation', () => {
   const base = parseUrl('?s=svc-punch')
 
-  it('treats page, area, service, flow and modal changes as navigation', () => {
+  it('pushes picks: a new page, area, service, flow, connection or impact origin', () => {
     expect(isNavigation(base, { page: 'areas' })).toBe(true)
     expect(isNavigation(base, { flow: 'shift-creation' })).toBe(true)
     expect(isNavigation(base, { s: 'svc-users' })).toBe(true)
-    expect(isNavigation({ ...base, flow: 'x' }, { flow: null })).toBe(true)
+    expect(isNavigation(base, { edge: 'a~b~rest' })).toBe(true)
+    expect(isNavigation(base, { blast: 'svc-a' })).toBe(true)
   })
 
-  it('treats toggles and unchanged values as in-place updates', () => {
-    expect(isNavigation(base, { blast: 'svc-a' })).toBe(false)
+  it('replaces closes, toggles and unchanged values', () => {
+    expect(isNavigation({ ...base, flow: 'x' }, { flow: null })).toBe(false)
+    expect(isNavigation({ ...base, edge: 'a~b~rest' }, { edge: null })).toBe(false)
+    expect(isNavigation({ ...base, drawer: 'svc-punch' }, { drawer: null, ep: null })).toBe(false)
     expect(isNavigation(base, { unit: 'cu-x' })).toBe(false)
     expect(isNavigation(base, { s: 'svc-punch' })).toBe(false)
     expect(isNavigation(base, { present: true })).toBe(false)
+  })
+})
+
+describe('page-scoped serialisation', () => {
+  it('writes only the keys the page uses', () => {
+    expect(toQueryString(parseUrl('?page=home&flow=shift-creation&blast=svc-users'))).toBe('')
+    expect(toQueryString(parseUrl('?page=impact&blast=svc-users&flow=x'))).toBe('page=impact&blast=svc-users')
+    expect(toQueryString(parseUrl('?page=flows&flow=x&unit=u&drawer=svc-punch&ep=e1&edge=a~b~rest'))).toBe('page=flows&flow=x&unit=u&drawer=svc-punch&ep=e1')
+  })
+  it('drops a child key without its parent', () => {
+    expect(toQueryString(parseUrl('?page=flows&unit=u&chapter=2'))).toBe('page=flows')
+    expect(toQueryString(parseUrl('?page=microservices&ep=e1'))).toBe('page=microservices')
   })
 })
 
@@ -86,9 +101,9 @@ describe('commitPatch', () => {
 
   it('writes history exactly once per navigation and returns the next state', () => {
     const { calls, history } = recorder()
-    const next = commitPatch(parseUrl('?s=svc-punch'), { flow: 'badging-review' }, undefined, history, '/')
+    const next = commitPatch(parseUrl('?s=svc-punch'), { page: 'flows', flow: 'badging-review' }, undefined, history, '/')
     expect(next.flow).toBe('badging-review')
-    expect(calls).toEqual([['push', '/?page=microservices&s=svc-punch&flow=badging-review']])
+    expect(calls).toEqual([['push', '/?page=flows&flow=badging-review']])
   })
 
   it('replaces in place for toggles and clears notFound', () => {
@@ -96,7 +111,7 @@ describe('commitPatch', () => {
     const prev = { ...parseUrl('?s=svc-punch&flow=x'), notFound: { param: 'area' as const, value: 'nope' } }
     const next = commitPatch(prev, { unit: 'cu-x' }, undefined, history, '/')
     expect(next.notFound).toBeNull()
-    expect(calls).toEqual([['replace', '/?page=flows&s=svc-punch&flow=x&unit=cu-x']])
+    expect(calls).toEqual([['replace', '/?page=flows&flow=x&unit=cu-x']])
   })
 })
 
