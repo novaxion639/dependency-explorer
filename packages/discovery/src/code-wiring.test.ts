@@ -24,22 +24,24 @@ const c = new C(d);
 const d = new D();
 `
 
+const asFile = (cls: string) => `src/${cls}.ts`
+
 describe('parseInjections', () => {
-  const injects = parseInjections(container)
+  const injects = parseInjections(container, asFile)
 
   it('follows constructor injection through an object literal two hops deep', () => {
-    expect(injectionReach(injects, ['DocumentManager'], ['BedrockLlmProvider'])).toBe(true)
+    expect(injectionReach(injects, [asFile('DocumentManager')], [asFile('BedrockLlmProvider')])).toBe(true)
   })
   it('follows a Map literal of injected managers', () => {
-    expect(injectionReach(injects, ['ProcessSkelloAppDataHandlerJob'], ['EmployeeSkelloAppManager'])).toBe(true)
+    expect(injectionReach(injects, [asFile('ProcessSkelloAppDataHandlerJob')], [asFile('EmployeeSkelloAppManager')])).toBe(true)
   })
   it('ends a declaration at its semicolon', () => {
-    expect([...(injects.get('UnrelatedManager') ?? [])]).toEqual([])
-    expect(injectionReach(injects, ['DocumentManager'], ['UnrelatedManager'])).toBe(false)
+    expect([...(injects.get(asFile('UnrelatedManager')) ?? [])]).toEqual([])
+    expect(injectionReach(injects, [asFile('DocumentManager')], [asFile('UnrelatedManager')])).toBe(false)
   })
   it('stops at two hops', () => {
-    expect(injectionReach(injects, ['A'], ['C'])).toBe(true)
-    expect(injectionReach(injects, ['A'], ['D'])).toBe(false)
+    expect(injectionReach(injects, [asFile('A')], [asFile('C')])).toBe(true)
+    expect(injectionReach(injects, [asFile('A')], [asFile('D')])).toBe(false)
   })
 })
 
@@ -58,7 +60,7 @@ const files = new Map([
 ])
 const read = (p: string) => files.get(p) ?? null
 const edge = (callerPath: string, calleePath: string, callerCode: string, calleeSource = ''): WiredEdge =>
-  ({ callerPath, calleePath, callerCode, calleeSource, callerClasses: [], calleeClasses: [] })
+  ({ callerPath, calleePath, callerCode, calleeSource, calleeClasses: [] })
 
 describe('imports', () => {
   it('reads Vite aliases relative to the config directory', () => {
@@ -136,11 +138,11 @@ describe('rails receivers', () => {
 })
 
 describe('wiredGrade', () => {
-  const wiring = { aliases, injects: parseInjections(container), associations: new Map([['amendments', 'ContractAmendment']]) }
+  const wiring = { aliases, injects: parseInjections(container, asFile), associations: new Map([['amendments', 'ContractAmendment']]) }
   const noFiles = () => null
 
   it('grades a container path graph and a resolved import import', () => {
-    expect(wiredGrade(wiring, { ...edge('src/Manager/DocumentManager.ts', 'src/Client/Llm/BedrockLlmProvider.ts', ''), callerClasses: ['DocumentManager'], calleeClasses: ['BedrockLlmProvider'] }, noFiles)).toBe('graph')
+    expect(wiredGrade(wiring, edge(asFile('DocumentManager'), asFile('BedrockLlmProvider'), ''), noFiles)).toBe('graph')
     expect(wiredGrade(wiring, edge('apps/vue-app/src/badgings/Badgings.vue', 'apps/vue-app/src/shared/store/modules/timeclock/badgings.js', "...mapState('badgings', ['users'])"), readStore)).toBe('import')
   })
   it('grades a Rails receiver text and ignores it outside Ruby', () => {
@@ -164,11 +166,48 @@ describe('loadWiring', () => {
       fs.writeFileSync(path.join(dir, rel), content)
     }
     write('apps/vue-app/vite.config.mjs', viteConfig)
-    write('src/container.ts', container)
+    write('tsconfig.json', '{ "compilerOptions": { "paths": { "~/*": ["src/*"] } } }')
+    write('src/container.ts', "import {ExtractionManager} from './Manager/ExtractionManager';\nimport {DocumentManager} from '~/Manager/DocumentManager';\nimport BedrockLlmProvider from '~/Client/Llm/BedrockLlmProvider';\n" + container)
+    write('src/Manager/ExtractionManager.ts', 'export class ExtractionManager {}\n')
+    write('src/Manager/DocumentManager.ts', 'export class DocumentManager {}\n')
+    write('src/Client/Llm/BedrockLlmProvider.ts', 'export default class BedrockLlmProvider {}\n')
     write('app/models/hr/contract.rb', "has_many :amendments, class_name: 'ContractAmendment'\n")
     const w = loadWiring(dir)
-    expect(w.aliases.map(a => a.prefix)).toEqual(['@app-js', '@skello-utils', '@app'])
-    expect(injectionReach(w.injects, ['DocumentManager'], ['BedrockLlmProvider'])).toBe(true)
+    expect(w.aliases.map(a => a.prefix)).toEqual(['~', '@app-js', '@skello-utils', '@app'])
+    expect(injectionReach(w.injects, ['src/Manager/DocumentManager.ts'], ['src/Client/Llm/BedrockLlmProvider.ts'])).toBe(true)
     expect(w.associations.get('amendments')).toBe('ContractAmendment')
+  })
+})
+
+describe('container injection by file', () => {
+  const files = new Map([
+    ['SkelloAppEmployeeRepository', 'src/Repository/SkelloAppEmployeeRepository.ts'],
+    ['LLMResponseRepository', 'src/Repository/DynamoDb/LLMResponseRepository.ts'],
+    ['LLMResponseManager', 'src/Manager/LLMResponseManager.ts'],
+    ['ImplementationProviderRegistry', 'src/Registry/ImplementationProviderRegistry.ts'],
+    ['AdditionImplementationProvider', 'src/Provider/AdditionImplementationProvider.ts'],
+    ['AdditionRepository', 'src/Repository/AdditionRepository.ts'],
+    ['IntegrationManager', 'src/Manager/IntegrationManager.ts'],
+  ])
+  const fileOf = (name: string) => files.get(name) ?? null
+  const injects = parseInjections(`
+const httpClient = new HttpClient(config);
+const employeeRepository = new SkelloAppEmployeeRepository(httpClient);
+const llmResponseRepository = new LLMResponseRepository(table);
+const llmResponseManager = new LLMResponseManager(llmResponseRepository);
+const registry = new ImplementationProviderRegistry({ ADDITION: new AdditionImplementationProvider(additionRepository) });
+const additionRepository = new AdditionRepository();
+const integrationManager = new IntegrationManager(registry);
+`, fileOf)
+
+  it('credits the file the container imports, never a same-named class elsewhere', () => {
+    expect(injectionReach(injects, ['src/Repository/SkelloAppEmployeeRepository.ts'], ['src/Client/HttpClient/index.ts'])).toBe(false)
+    expect(injectionReach(injects, ['src/Manager/LLMResponseManager.ts'], ['src/Repository/Mongo/LLMResponseRepository.ts'])).toBe(false)
+    expect(injectionReach(injects, ['src/Manager/LLMResponseManager.ts'], ['src/Repository/DynamoDb/LLMResponseRepository.ts'])).toBe(true)
+  })
+  it('gives a nested construction only its class, never its arguments', () => {
+    expect(injectionReach(injects, ['src/Registry/ImplementationProviderRegistry.ts'], ['src/Provider/AdditionImplementationProvider.ts'])).toBe(true)
+    expect(injectionReach(injects, ['src/Manager/IntegrationManager.ts'], ['src/Provider/AdditionImplementationProvider.ts'])).toBe(true)
+    expect(injectionReach(injects, ['src/Manager/IntegrationManager.ts'], ['src/Repository/AdditionRepository.ts'])).toBe(false)
   })
 })
