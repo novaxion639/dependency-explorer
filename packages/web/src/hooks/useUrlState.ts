@@ -201,9 +201,8 @@ export function commitPatch(
  * dataset (unknown service, retired flow id…) and records the first one in
  * `notFound` so stale shared links show where they went wrong.
  *
- * Picks (a navigation key taking a new value, or a page change) push a
- * history entry so Back undoes them; closes and toggles replace in place.
- * `opts.push` overrides the rule.
+ * Picks (a new navigation-key value or a page change) push history so Back
+ * undoes them; closes and toggles replace. `opts.push` overrides the rule.
  */
 export function useUrlState(validate: (st: UrlState) => UrlState) {
   const [state, setState] = useState<UrlState>(() => validate(parseUrl(window.location.search)))
