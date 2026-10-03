@@ -26,4 +26,8 @@ describe('ImpactPage', () => {
     const html = renderToStaticMarkup(<ImpactPage origin="svc-requests" onSelect={noop} onOpenFlow={noop} onPick={noop} />)
     expect(html).toContain('>may fail<')
   })
+  it('keeps the map folded until asked', () => {
+    const html = renderToStaticMarkup(<ImpactPage origin="svc-requests" onSelect={noop} onOpenFlow={noop} onPick={noop} />)
+    expect(html).toMatch(/aria-expanded="false"[^>]*>Show on the map</)
+  })
 })

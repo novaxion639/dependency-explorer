@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { allResourceRelations, connectivityMap, resourceSurface } from '@dependency-explorer/data'
 import { computeImpact } from '../../utils/impact'
+import type { Renderer } from '../../diagram/model'
+import { ImpactMap } from './ImpactMap'
 import styles from './ImpactPage.module.css'
 
 interface Props {
@@ -9,6 +11,8 @@ interface Props {
   onPick: (id: string) => void
   onSelect: (node: string) => void
   onOpenFlow: (id: string) => void
+  renderer?: Renderer
+  onRenderer?: (renderer: Renderer) => void
 }
 
 const ORIGINS = [...connectivityMap.services.map(s => s.name), ...resourceSurface.resources.map(r => r.id)]
@@ -35,8 +39,9 @@ function Picker({ onPick }: { onPick: (id: string) => void }) {
   )
 }
 
-export function ImpactPage({ origin, initialFilter = 'all', onPick, onSelect, onOpenFlow }: Props) {
+export function ImpactPage({ origin, initialFilter = 'all', onPick, onSelect, onOpenFlow, renderer = 'react-flow', onRenderer = () => {} }: Props) {
   const [filter, setFilter] = useState(initialFilter)
+  const [showMap, setShowMap] = useState(false)
   if (!origin) {
     return <Picker onPick={onPick} />
   }
@@ -51,6 +56,12 @@ export function ImpactPage({ origin, initialFilter = 'all', onPick, onSelect, on
           <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>{f === 'all' ? 'All effects' : 'Hard failures (sync)'}</button>
         ))}
       </div>
+      <button type="button" className={styles.mapToggle} aria-expanded={showMap} onClick={() => setShowMap(open => !open)}>{showMap ? 'Hide the map' : 'Show on the map'}</button>
+      {showMap && (
+        <div className={styles.map}>
+          <ImpactMap origin={origin} renderer={renderer} onRenderer={onRenderer} onSelectService={onSelect} />
+        </div>
+      )}
       {entries.length === 0 && <p className={styles.muted}>Nothing on the map depends on {origin}.</p>}
       {hops.map(hop => (
         <section key={hop} aria-label={`Hop ${hop}`}>

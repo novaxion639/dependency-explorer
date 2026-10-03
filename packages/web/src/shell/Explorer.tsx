@@ -85,7 +85,7 @@ export function Explorer() {
     : url.page === 'resources' ? (url.resource
       ? <ResourcePage id={url.resource} onOpenResource={openResource} onOpenFile={key => patch({ page: 'flows', resource: null, file: key })} onOpenFlow={id => patch({ page: 'flows', flow: id })} onSelectService={selectService} onBlast={id => patch({ page: 'impact', blast: id })} />
       : <ResourcesIndex onOpenResource={openResource} />)
-    : url.page === 'impact' ? <ImpactPage origin={url.blast} onPick={id => patch({ blast: id })} onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))} onOpenFlow={id => patch({ page: 'flows', flow: id })} />
+    : url.page === 'impact' ? <ImpactPage origin={url.blast} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onPick={id => patch({ blast: id })} onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))} onOpenFlow={id => patch({ page: 'flows', flow: id })} />
     : <OwnershipPage map={map} focusedTeam={url.team} onFocusTeam={team => patch({ team })} onSelectService={selectService} onOpenArea={id => patch({ page: 'areas', area: id, term: null })} />
 
   return (

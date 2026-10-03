@@ -1,4 +1,5 @@
 import type { ConnectivityMap, ResourceRelation } from '@dependency-explorer/data'
+import { serviceId } from '../diagram/layouts/ids'
 
 export type Effect = 'fails' | 'degrades' | 'starves'
 export interface ImpactEntry { node: string; hop: number; effect: Effect; via: string; mode: 'sync' | 'async' }
@@ -54,4 +55,10 @@ export function computeImpact(map: ConnectivityMap, relations: ResourceRelation[
     return step ? [{ flowId: f.id, name: f.name, step: index + 1, from: step.from, to: step.to }] : []
   })
   return { origin, entries: [...entries.values()].sort((a, b) => a.hop - b.hop || a.node.localeCompare(b.node)), flows }
+}
+
+export function impactMarks(result: ImpactResult): Map<string, Effect | 'origin'> {
+  const marks = new Map<string, Effect | 'origin'>(result.entries.map(e => [serviceId(e.node), e.effect]))
+  marks.set(serviceId(result.origin), 'origin')
+  return marks
 }
