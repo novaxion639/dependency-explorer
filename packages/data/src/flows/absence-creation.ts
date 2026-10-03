@@ -14,6 +14,13 @@ const absence_creation: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager records an absence (paid leave, sick day…) for an employee. Absences are shifts with an absence type: the same V3::Shifts::CreateService transaction runs with the absence branches active — sick-leave duration recomputation (feature-flagged), conflict resolution that unassigns overlapping work shifts (ShiftReplacementService), paid-leave counter updates — and the absence-only ActivityJob posts the audit event to svc-events. Labour-law entitlements are evaluated in-process (rules previously synced from svc-labour-laws). Nobody is notified at this point; employee notifications happen at planning publication.",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A manager records an absence", "summary": "The planning page posts a shift with an absence type to the usual shift endpoint.", "refs": ["skello-app-front", "cu-abs-controller"] },
+    { "title": "The absence is written", "summary": "One transaction saves the absence, recomputes sick-leave durations and moves overlapping work shifts aside, keeping them recoverable.", "refs": ["cu-abs-create-service", "cu-abs-sick-leave", "cu-abs-replacement", "pg-absence"] },
+    { "title": "Counters recompute", "summary": "Hours, RCR and paid-leave counters update for the absent employee.", "refs": ["cu-abs-tracker", "pg-absence"] },
+    { "title": "Side effects after commit", "summary": "Model callbacks queue the paid-leave counter job, the counter absences actually consume.", "refs": ["cu-abs-callbacks", "cu-abs-paid-leaves-job"] },
+    { "title": "The absence is audited", "summary": "A background job posts the absence activity to svc-events; nobody is notified until publication.", "refs": ["cu-abs-activity-job", "svc-events"] }
+  ],
   "links": [{"to": "shift-creation", "kind": "domain-related", "note": "an absence IS a shift kind \u2014 same V3::Shifts::CreateService path, absence-specific branches"}],
   "steps": [
     {

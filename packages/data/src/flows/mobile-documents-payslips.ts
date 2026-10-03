@@ -10,6 +10,12 @@ const mobile_documents_payslips: ServiceFlow = ServiceFlowSchema.parse({
   "description": "An employee browses folders (payslips are the pay_slips folder type — same document model as everything else), views, uploads and deletes documents from the phone. All document operations go DIRECT to svc-documents-v2 (same as the web — one of the flows where the two clients AGREE): folder/document reads, downloads via getDownloadUri, uploads as a two-step create-then-presigned-S3-PUT (FileSystem.uploadAsync — the phone writes S3 directly, the service only issues the URL), camera capture feeding the same upload path. The monolith is touched only for creator display names. Attendance-sheet signature reads (svc-documents-v2 signatures) feed the Home screen's pending-signature notifications. Dispatch/analysis of payslips is the payslip-dispatch flow; this is the consumption side.",
   "trigger": {"actor": "employee"},
   "primaryArea": "documents-esignature",
+  "chapters": [
+    { "title": "An employee opens documents", "summary": "The phone lists folders, payslips among them, and the documents inside.", "refs": ["skello-mobile", "cu-mdp-screen", "cu-mdp-folders"] },
+    { "title": "Documents come from svc-documents-v2", "summary": "Reads, downloads and deletes go straight to svc-documents-v2, just as on the web.", "refs": ["cu-mdp-api", "cu-mdp-client", "svc-documents-v2"] },
+    { "title": "Uploads go straight to S3", "summary": "The phone creates the document, then sends the file, from storage or the camera, directly to S3.", "refs": ["cu-mdp-api", "s3-docs-v2-mobile"] },
+    { "title": "Names and signatures fill in", "summary": "skello-app supplies creator names; pending attendance-sheet signatures feed the home screen.", "refs": ["skello-app", "svc-documents-v2"] }
+  ],
   "steps": [
     {
       "from": "skello-mobile",

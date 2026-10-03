@@ -15,6 +15,13 @@ const shift_swap: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager swaps two employees' shifts on the planning (drag-drop). The front sends the regular bulk shift update with the user_ids exchanged; V3::Shifts::UpdateService reassigns both rows in one transaction (labour-law compliance is evaluated in-process; stale employee ShiftSwap-request rows on the moved shifts are destroyed) and the usual counter/callback machinery runs. The swap-specific part lives in the FRONT: the store flags isSwappingUserShifts and posts an UPDATE_SWAP_USER_SHIFTS activity to svc-events itself. Nobody is notified — publication does that.",
   "trigger": {"actor": "manager", "role": "planner (drag-drop)"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A manager drags to swap", "summary": "The planning page sends the usual bulk shift update with the two employees exchanged.", "refs": ["skello-app-front", "cu-swap-store", "cu-swap-controller"] },
+    { "title": "Both shifts are reassigned", "summary": "One transaction moves both shifts and voids any swap requests attached to them.", "refs": ["cu-swap-service", "pg-skello-shifts-swap"] },
+    { "title": "Counters and callbacks run", "summary": "Counters recompute for both employees, and callbacks mark their weekly options stale.", "refs": ["cu-swap-tracker", "cu-swap-callbacks", "cu-swap-cb-job"] },
+    { "title": "The swap is logged", "summary": "The front posts the swap activity to svc-events itself.", "refs": ["cu-swap-store", "svc-events"] },
+    { "title": "The rows are replicated", "summary": "DMS copies both updated rows to svc-search.", "refs": ["pg-skello-shifts-swap", "svc-search"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

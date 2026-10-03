@@ -527,24 +527,7 @@ describe('flow chapters', () => {
       }
     }
   })
-  it('are authored for the planning and time & attendance reading paths', () => {
-    for (const id of ['planning-page-load', 'planning-period-lock', 'shift-creation', 'shift-publication', 'shift-update', 'week-copy', 'badging-review', 'employee-clock-in', 'mobile-clock-in', 'punchclock-device-setup']) {
-      expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
-    }
-  })
-  it('are authored for the leave and HR reading paths', () => {
-    for (const id of ['availability-submission', 'leave-request-approval', 'leave-request-cancellation', 'leave-request-lifecycle', 'contract-amendment', 'employee-archival', 'employee-hris-sync', 'employee-onboarding']) {
-      expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
-    }
-  })
-  it('are authored for the analytics, scheduling, billing and documents reading paths', () => {
-    for (const id of ['analytics-dashboard-load', 'bff-dashboard-load', 'auto-planning-generation', 'shift-replacement-search', 'assistant-freemium-credits', 'self-serve-signup', 'subscription-upgrade', 'document-generation-esignature', 'document-share']) {
-      expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
-    }
-  })
-  it('are authored for the payroll, missions, org admin and workload reading paths', () => {
-    for (const id of ['payslip-dispatch', 'mission-management', 'mobile-app-bootstrap', 'org-onboarding', 'payroll-export', 'planning-report-export', 'pos-revenue-ingestion', 'workload-plan-consultation', 'workload-plan-creation']) {
-      expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
-    }
+  it('are authored for every flow', () => {
+    expect(flows.filter(f => !f.chapters).map(f => f.id)).toEqual([])
   })
 })
