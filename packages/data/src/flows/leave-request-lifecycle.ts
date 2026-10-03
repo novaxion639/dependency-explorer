@@ -5,7 +5,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 // (SvcRequestsRepository); the monolith's V3::Api::LeaveRequestsController is
 // the MOBILE surface, proxying to the same API. svc-requests runs
 // CDC-as-event-bus on its own Aurora: a dedicated DMS task streams row changes
-// onto the svcRequests kinesis stream, DecodeAndPublishRequestJobHandler
+// onto the svcRequests kinesis stream, DecodeAndPublishRequestJob
 // republishes them to the SnsDispatch topic with computed `trigger` message
 // attributes, and filtered SQS subscriptions fan out to mail/notification
 // jobs. Earlier claims that the monolith emitted the audit event and the
@@ -14,7 +14,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
   "id": "leave-request-lifecycle",
   "name": "Leave Request Lifecycle",
-  "description": "An employee submits a leave request. The web front calls svc-requests directly; the mobile app takes the OPPOSITE route — client-verified 2026-07-18: skello-mobile POSTs /v3/api/leave_requests on the monolith (plus legacy api/v2 screens for manager approve/refuse), touching svc-requests directly only for getPreSelectedManager (the monolith v3 controller is that mobile proxy onto the same API). svc-requests persists the request in its own Aurora Postgres, sends an activity-log batch to svc-events (feature-flagged), and lets its CDC event spine do the notifying: a DMS task streams the row change onto the service's kinesis stream, DecodeAndPublishRequestJobHandler republishes to the SnsDispatch SNS topic with a computed trigger attribute, and the sendCreatedLeaveRequest mail + notification queues deliver the manager's email and in-app notification through svc-communications-v2.",
+  "description": "An employee submits a leave request. The web front calls svc-requests directly; the mobile app takes the OPPOSITE route — client-verified 2026-07-18: skello-mobile POSTs /v3/api/leave_requests on the monolith (plus legacy api/v2 screens for manager approve/refuse), touching svc-requests directly only for getPreSelectedManager (the monolith v3 controller is that mobile proxy onto the same API). svc-requests persists the request in its own Aurora Postgres, sends an activity-log batch to svc-events (feature-flagged), and lets its CDC event spine do the notifying: a DMS task streams the row change onto the service's kinesis stream, DecodeAndPublishRequestJob republishes to the SnsDispatch SNS topic with a computed trigger attribute, and the sendCreatedLeaveRequest mail + notification queues deliver the manager's email and in-app notification through svc-communications-v2.",
   "trigger": {"actor": "employee"},
   "primaryArea": "leave-requests",
   "chapters": [
@@ -117,16 +117,16 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-lrl-decode",
       "service": "svc-requests",
       "kind": "job",
-      "label": "DecodeAndPublishRequestJobHandler",
-      "path": "src/Handler/Job/DecodeAndPublishRequestJobHandler.ts",
+      "label": "DecodeAndPublishRequestJob",
+      "path": "src/Job/DecodeAndPublishRequestJob.ts",
       "description": "Consumes the service's own CDC kinesis stream, decodes before/after images and publishes to the SnsDispatch topic with computed trigger message attributes (created / accepted / refused / transferred / createShifts / sendToData)"
     },
     {
       "id": "cu-lrl-mail",
       "service": "svc-requests",
       "kind": "job",
-      "label": "SendCreatedLeaveRequestEmailJobHandler",
-      "path": "src/Handler/Job/Mails/SendCreatedLeaveRequestEmailJobHandler.ts",
+      "label": "SendCreatedLeaveRequestEmailJob",
+      "path": "src/Job/Mails/SendCreatedLeaveRequestEmailJob.ts",
       "description": "SQS consumer of the sendCreatedLeaveRequestMail-filtered SNS subscription"
     },
     {
@@ -141,8 +141,8 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-lrl-notif",
       "service": "svc-requests",
       "kind": "job",
-      "label": "SendCreatedLeaveRequestNotificationJobHandler",
-      "path": "src/Handler/Job/Notifications/SendCreatedLeaveRequestNotificationJobHandler.ts",
+      "label": "SendCreatedLeaveRequestNotificationJob",
+      "path": "src/Job/Notifications/SendCreatedLeaveRequestNotificationJob.ts",
       "description": "SQS consumer of the sendCreatedLeaveRequestNotification-filtered SNS subscription"
     },
     {

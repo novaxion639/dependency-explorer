@@ -91,9 +91,9 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-pd-bedrock",
       "service": "svc-intelligence",
       "kind": "manager",
-      "label": "BedrockManager",
-      "path": "src/Manager/BedrockManager.ts",
-      "description": "LLM extraction on AWS Bedrock (with ConvertPdfToImageManager preparing page images and GetPromptManager/LLMResponseManager around the call)"
+      "label": "BedrockLlmProvider",
+      "path": "src/Client/Llm/BedrockLlmProvider.ts",
+      "description": "LLM extraction on AWS Bedrock Converse — the PAYSLIPS provider (Claude Haiku 4.5) in ExtractionManager's provider map, reached from DocumentManager after ConvertPdfToImageManager prepares the page images"
     },
     {
       "id": "cu-pd-docs-repo",

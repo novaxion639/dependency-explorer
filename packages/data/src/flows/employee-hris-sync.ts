@@ -6,12 +6,12 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 // SyncManager pulls Skello's employees from svc-employees to MATCH/diff,
 // then dispatches UpsertEmployeeFromHrisDto messages onto svc-employees'
 // queue (UpsertEmployeeJob consumes). Sync errors get a DynamoDB-TTL'd
-// trail plus the generate-sync-error-reports schedule (S3 + email) —
-// the recurring task discovered in Layer 1.
+// trail plus the daily dispatch-sync-error-reports schedule, which fans
+// out one report per integration (S3 + email).
 const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
   "id": "employee-hris-sync",
   "name": "Employee HRIS Sync",
-  "description": "An organisation's HRIS (connected through the Kombo integration platform) syncs employees into Skello. Kombo webhooks (sync finished, data changed, integration lifecycle) land on svc-hris; SyncManager pulls the organisation's employees from svc-employees (getEmployeesByOrganisation — the matching/diff base), reads the HRIS-side data through KomboManager, and dispatches one UpsertEmployeeFromHrisDto per changed employee onto svc-employees' upsert queue, where UpsertEmployeeJob applies it. Failed upserts flow through a DLQ handler into SyncError entries (DynamoDB TTL), and the generate-sync-error-reports schedule (cron, Layer-1-discovered recurring task) builds the error report on S3 and mails it via SES directly.",
+  "description": "An organisation's HRIS (connected through the Kombo integration platform) syncs employees into Skello. Kombo webhooks (sync finished, data changed, integration lifecycle) land on svc-hris; SyncManager pulls the organisation's employees from svc-employees (getEmployeesByOrganisation — the matching/diff base), reads the HRIS-side data through KomboManager, and dispatches one UpsertEmployeeFromHrisDto per changed employee onto svc-employees' upsert queue, where UpsertEmployeeJob applies it. Failed upserts flow through a DLQ handler into SyncError entries (DynamoDB TTL), and the daily dispatch-sync-error-reports schedule fans out one message per Kombo integration, and ProcessSyncErrorReportHandler builds each integration's report on S3 and emails a presigned link.",
   "trigger": {"actor": "system", "role": "HRIS integration (Kombo)"},
   "primaryArea": "employees-hr",
   "chapters": [
@@ -81,9 +81,9 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-hs-report-job",
       "service": "svc-hris",
       "kind": "job",
-      "label": "GenerateSyncErrorsJobHandler",
-      "path": "src/Handler/Jobs/GenerateSyncErrorsJobHandler.ts",
-      "description": "The generate-sync-error-reports schedule (EventBridge cron) — builds the error report via SyncErrorManager (S3 + email)"
+      "label": "DispatchSyncErrorReportsJobHandler",
+      "path": "src/Handler/Jobs/DispatchSyncErrorReportsJobHandler.ts",
+      "description": "The dispatch-sync-error-reports schedule (EventBridge Scheduler, daily 12:00 Paris) — SyncErrorManager.dispatchPendingReports fans out one SQS message per Kombo integration; ProcessSyncErrorReportHandler then builds each report (S3 + email)"
     },
     {
       "id": "cu-hs-sync-error-mgr",

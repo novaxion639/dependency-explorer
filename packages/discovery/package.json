@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "discover:trace": "tsx src/trace.ts",
-    "repo-list": "tsx src/repo-list.ts"
+    "repo-list": "tsx src/repo-list.ts",
+    "discover:unit-paths": "tsx src/unit-paths-cli.ts"
   },
   "dependencies": {
     "@dependency-explorer/data": "workspace:*",

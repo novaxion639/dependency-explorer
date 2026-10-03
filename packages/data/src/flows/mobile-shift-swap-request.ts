@@ -47,9 +47,9 @@ const mobile_shift_swap_request: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-mss-received",
       "service": "skello-mobile",
       "kind": "component",
-      "label": "received swap requests (accept / refuse)",
-      "path": "src/v2/screens/ReceivedShiftSwapRequests/index.js",
-      "description": "GET /api/v1/requests/received + PATCH /api/v2/shift_swaps/:id"
+      "label": "swap request screen (accept / refuse)",
+      "path": "src/v2/screens/ShiftSwapEdit/index.js",
+      "description": "One received swap request: GET /api/v2/shift_swaps/:id/edit, then accept or refuse with PATCH /api/v2/shift_swaps/:id; the list itself comes from ShiftSwapRequests (GET /api/v2/shift_swaps?shop_id)"
     },
     {
       "id": "cu-mss-controller",

@@ -201,7 +201,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "mongo-jobs-trigger",
       "type": "mongodb",
-      "label": "automatic_scheduling_jobs",
+      "label": "automatic_assignment_jobs",
       "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Create job record (status: STARTED, websocketId: UUID)"
     },
@@ -215,7 +215,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "mongo-jobs-dataFetcher",
       "type": "mongodb",
-      "label": "automatic_scheduling_jobs",
+      "label": "automatic_assignment_jobs",
       "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → DATA_FETCHING"
     },
@@ -229,7 +229,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "mongo-jobs-eligibility",
       "type": "mongodb",
-      "label": "automatic_scheduling_jobs",
+      "label": "automatic_assignment_jobs",
       "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → ELIGIBILITY_COMPLIANCE_CHECK"
     },
@@ -243,7 +243,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "mongo-jobs-aggregate",
       "type": "mongodb",
-      "label": "automatic_scheduling_jobs",
+      "label": "automatic_assignment_jobs",
       "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → ELIGIBILITY_AGGREGATION"
     },
@@ -257,7 +257,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "mongo-jobs-assignShifts",
       "type": "mongodb",
-      "label": "automatic_scheduling_jobs",
+      "label": "automatic_assignment_jobs",
       "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → ASSIGNING"
     },
@@ -271,7 +271,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "mongo-jobs-finishJob",
       "type": "mongodb",
-      "label": "automatic_scheduling_jobs",
+      "label": "automatic_assignment_jobs",
       "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → FINISHED"
     },
