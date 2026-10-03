@@ -8,7 +8,7 @@ const areaName = new Map((connectivityMap.areas ?? []).map(a => [a.id, a.name]))
 const teamName = new Map((connectivityMap.teams ?? []).map(t => [t.id, t.name]))
 const resourceName = new Map(resourceSurface.resources.map(r => [r.id, r.name]))
 
-function linkAllButLast(crumbs: Array<{ label: string; patch: Partial<UrlState> }>): Crumb[] {
+function linkAllButLast(crumbs: Crumb[]): Crumb[] {
   return crumbs.map((c, i) => (i === crumbs.length - 1 ? { label: c.label, patch: null } : c))
 }
 
@@ -25,13 +25,13 @@ export function breadcrumb(st: UrlState): Crumb[] {
       ])
     case 'microservices':
       return linkAllButLast([
-        root('Architecture', 'microservices'),
+        { label: 'Architecture', patch: null },
         root('Microservices', 'microservices'),
         ...(st.s ? [{ label: st.s, patch: {} }] : []),
       ])
     case 'monolith':
       return linkAllButLast([
-        root('Architecture', 'microservices'),
+        { label: 'Architecture', patch: null },
         root('Monolith', 'monolith'),
         ...(st.s ? [{ label: 'Connections', patch: {} }] : []),
       ])

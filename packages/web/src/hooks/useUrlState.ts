@@ -53,14 +53,13 @@ export interface UrlState {
   file: string | null
   resource: string | null
   /** A permalink param that did not resolve — rendered as a banner, never serialized */
-  notFound: { param: 'area' | 'term' | 'flow' | 's' | 'resource'; value: string } | null
+  notFound: { param: 'area' | 'term' | 'flow' | 's' | 'resource' | 'blast'; value: string } | null
 }
 
 export const EDGE_SEP = '~'
 export const EDGE_LIST_SEP = ','
-const AREA_PAGES = new Set<Page>(['areas', 'microservices', 'monolith'])
 
-const NAVIGATION_KEYS = ['page', 'area', 's', 'team', 'flows', 'flow', 'drawer', 'flag', 'file', 'resource'] as const
+const NAVIGATION_KEYS = ['page', 'area', 's', 'team', 'flows', 'flow', 'edge', 'drawer', 'flag', 'file', 'resource', 'blast'] as const
 
 export function edgeKey(from: string, to: string, protocol: string): string {
   return [from, to, protocol].join(EDGE_SEP)
@@ -123,55 +122,34 @@ export function parseUrl(search: string): UrlState {
   }
 }
 
+type PageKey = 's' | 'area' | 'term' | 'team' | 'blast' | 'flows' | 'flow' | 'unit' | 'chapter' | 'edge' | 'drawer' | 'ep' | 'flag' | 'file' | 'resource'
+
+const KEY_ORDER: readonly PageKey[] = ['s', 'area', 'term', 'team', 'blast', 'flows', 'flow', 'unit', 'chapter', 'edge', 'drawer', 'ep', 'flag', 'file', 'resource']
+const ARCHITECTURE_KEYS: readonly PageKey[] = ['s', 'area', 'edge', 'drawer', 'ep']
+const PAGE_KEYS: Record<Page, readonly PageKey[]> = {
+  home: [],
+  areas: ['area', 'term'],
+  microservices: ARCHITECTURE_KEYS,
+  monolith: ARCHITECTURE_KEYS,
+  flows: ['flows', 'flow', 'unit', 'chapter', 'flag', 'file', 'drawer', 'ep'],
+  resources: ['resource'],
+  impact: ['blast'],
+  ownership: ['team'],
+}
+const PARENT_KEY: Partial<Record<PageKey, PageKey>> = { term: 'area', unit: 'flow', chapter: 'flow', ep: 'drawer' }
+
 export function toQueryString(state: UrlState): string {
   const p = new URLSearchParams()
   if (state.page !== 'home') {
     p.set('page', state.page)
   }
-  if (state.s) {
-    p.set('s', state.s)
-  }
-  if (AREA_PAGES.has(state.page) && state.area) {
-    p.set('area', state.area)
-    if (state.page === 'areas' && state.term) {
-      p.set('term', state.term)
+  const allowed = new Set(PAGE_KEYS[state.page])
+  for (const key of KEY_ORDER) {
+    const value = state[key]
+    const parent = PARENT_KEY[key]
+    if (value !== null && allowed.has(key) && (!parent || state[parent] !== null)) {
+      p.set(key, String(value))
     }
-  }
-  if (state.page === 'ownership' && state.team) {
-    p.set('team', state.team)
-  }
-  if (state.blast) {
-    p.set('blast', state.blast)
-  }
-  if (state.flows) {
-    p.set('flows', state.flows)
-  }
-  if (state.flow) {
-    p.set('flow', state.flow)
-    if (state.unit) {
-      p.set('unit', state.unit)
-    }
-    if (state.chapter) {
-      p.set('chapter', String(state.chapter))
-    }
-  }
-  if (state.edge) {
-    p.set('edge', state.edge)
-  }
-  if (state.drawer) {
-    p.set('drawer', state.drawer)
-    if (state.ep) {
-      p.set('ep', state.ep)
-    }
-  }
-  if (state.flag) {
-    p.set('flag', state.flag)
-  }
-  if (state.file) {
-    p.set('file', state.file)
-  }
-  if (state.resource) {
-    p.set('resource', state.resource)
   }
   if (state.renderer !== 'react-flow') {
     p.set('renderer', state.renderer)
@@ -195,7 +173,7 @@ export function canGoBack(state: unknown): boolean {
 }
 
 export function isNavigation(prev: UrlState, p: Partial<UrlState>): boolean {
-  return NAVIGATION_KEYS.some(k => k in p && p[k] !== prev[k])
+  return NAVIGATION_KEYS.some(k => k in p && p[k] !== prev[k] && p[k] !== null)
 }
 
 type HistoryWriter = Pick<History, 'pushState' | 'replaceState'> & { state?: unknown }
@@ -223,9 +201,9 @@ export function commitPatch(
  * dataset (unknown service, retired flow id…) and records the first one in
  * `notFound` so stale shared links show where they went wrong.
  *
- * Navigation-grade changes (NAVIGATION_KEYS) push a history entry so
- * back/forward behaves; everything else replaces in place. `opts.push`
- * overrides the rule.
+ * Picks (a navigation key taking a new value, or a page change) push a
+ * history entry so Back undoes them; closes and toggles replace in place.
+ * `opts.push` overrides the rule.
  */
 export function useUrlState(validate: (st: UrlState) => UrlState) {
   const [state, setState] = useState<UrlState>(() => validate(parseUrl(window.location.search)))
