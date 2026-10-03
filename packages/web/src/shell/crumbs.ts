@@ -30,7 +30,11 @@ export function breadcrumb(st: UrlState): Crumb[] {
         ...(st.s ? [{ label: st.s, patch: {} }] : []),
       ])
     case 'monolith':
-      return linkAllButLast([root('Architecture', 'microservices'), root('Monolith', 'monolith')])
+      return linkAllButLast([
+        root('Architecture', 'microservices'),
+        root('Monolith', 'monolith'),
+        ...(st.s ? [{ label: 'Connections', patch: {} }] : []),
+      ])
     case 'flows':
       return linkAllButLast([
         root('Flows', 'flows'),

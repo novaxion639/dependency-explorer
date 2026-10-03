@@ -15,6 +15,9 @@ describe('validateUrlState', () => {
   it('opens the monolith page for skello-app', () => {
     expect(validateUrlState(parseUrl('?page=microservices&s=skello-app')).page).toBe('monolith')
   })
+  it('sends another service off the monolith page to the microservices page', () => {
+    expect(validateUrlState(parseUrl('?page=monolith&s=svc-punch')).page).toBe('microservices')
+  })
 })
 
 describe('edge lists', () => {

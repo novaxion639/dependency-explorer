@@ -1,0 +1,11 @@
+.table { width: 100%; max-width: 880px; border-collapse: collapse; font-size: var(--text-sm); }
+.table th, .table td { text-align: left; padding: var(--space-1) var(--space-2); border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.table thead th { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); border-bottom: var(--line); }
+.table thead button { background: none; border: none; padding: 0; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; }
+.table th[aria-sort='descending'] button { color: var(--ink); text-decoration: underline; }
+.table tbody th button { background: none; border: none; padding: 0; font-weight: 600; text-align: left; cursor: pointer; text-decoration: underline; }
+.table td { width: 22%; }
+.bar { display: inline-block; height: 8px; max-width: calc(100% - 40px); background: var(--ink); vertical-align: middle; margin-right: var(--space-1); }
+.value { color: var(--ink-muted); font-size: var(--text-xs); }
+tr[data-unmapped='true'] th, tr[data-unmapped='true'] .value { color: var(--ink-muted); font-style: italic; }
+tr[data-unmapped='true'] .bar { background: var(--rule-strong); }

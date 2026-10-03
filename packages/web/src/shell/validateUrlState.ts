@@ -61,6 +61,9 @@ export function validateUrlState(st: UrlState): UrlState {
   if (next.page === 'microservices' && next.s === 'skello-app') {
     next.page = 'monolith'
   }
+  if (next.page === 'monolith' && next.s && next.s !== 'skello-app') {
+    next.page = 'microservices'
+  }
   next.notFound = notFound
   return next
 }

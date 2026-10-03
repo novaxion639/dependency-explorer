@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { ConnectivityMapSchema } from '@dependency-explorer/data'
-import { computeImpact } from './impact'
+import { allResourceRelations, connectivityMap, ConnectivityMapSchema } from '@dependency-explorer/data'
+import { computeImpact, impactMarks } from './impact'
 
 const conn = (from: string, to: string, communicationType: 'sync' | 'async') => ({ from, to, sdkPackage: 'x', description: 'd', usedEndpoints: [], communicationType, protocol: communicationType === 'sync' ? 'rest' : 'sqs', authType: 'internal' })
 const svc = (name: string) => ({ name, type: 'typescript-microservice', description: 'd', endpoints: [] })
@@ -51,5 +51,13 @@ describe('computeImpact effect ranking', () => {
       { resource: 'kinesis:bus', relation: 'writes', service: 'api', grade: 'code' },
     ], 'kinesis:bus')
     expect(r.entries.find(e => e.node === 'api')?.effect).toBe('fails')
+  })
+})
+
+describe('impactMarks', () => {
+  it('marks the origin and every impacted service by effect, keyed by map node id', () => {
+    const marks = impactMarks(computeImpact(connectivityMap, allResourceRelations, 'svc-requests'))
+    expect(marks.get('svc:svc-requests')).toBe('origin')
+    expect(marks.get('svc:skello-app')).toBe('fails')
   })
 })
