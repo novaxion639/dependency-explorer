@@ -22,7 +22,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { connectivityMap, monolithRoutes, resourceSurface } from '@dependency-explorer/data'
+import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
 import type { DiscoveredOverlay, Resource, ResourceRelation } from '@dependency-explorer/schema'
 import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService, tfRepoToService } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
@@ -253,7 +253,7 @@ function run(): Report {
     sdkUsage: [],
     sdkRegistryStats: null,
     flowCheck: checkFlows(connectivityMap),
-    codeGrades: PIN ? checkCodeGrades(connectivityMap, REPO_BASE, repo => PIN.pinned.find(p => p.repo === repo)?.sha ?? null, railsRoutes ? railsRoutes.routes : monolithRoutes) : null,
+    codeGrades: PIN ? checkCodeGrades(connectivityMap, REPO_BASE, repo => PIN.pinned.find(p => p.repo === repo)?.sha ?? null, railsRoutes ? railsRoutes.routes : []) : null,
     branchCheck: checkBranches(connectivityMap, REPO_BASE),
     codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE, railsRoutes ? new Set(railsRoutes.routes.map(r => r.controllerFile)) : undefined),
     ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),

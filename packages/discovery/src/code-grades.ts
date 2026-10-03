@@ -148,6 +148,10 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
     return graphs.get(repo) ?? null
   }
   const wirings = new Map<string, Wiring>()
+  const importedSources = (repo: string, fromPath: string, code: string): string[] => {
+    const read = readerFor(path.join(repoBase, repo))
+    return importedFiles(code, fromPath, wiringFor(repo).aliases, read).map(f => stripComments(read(f) ?? ''))
+  }
   const wiringFor = (repo: string): Wiring => {
     const cached = wirings.get(repo)
     if (cached) {
@@ -185,9 +189,7 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
         const empty: RepoGraph = { builtAt: '', fileEdges: new Map(), importEdges: new Map(), classesIn: new Map() }
         const textGrade = crossRepoGrade(gradeEdge(empty, from.path, to.path, source, to.label))
         const callerCode = stripComments(source)
-        const callerRead = readerFor(path.join(repoBase, from.service))
-        const imported = importedFiles(callerCode, from.path, wiringFor(from.service).aliases, callerRead).map(f => stripComments(callerRead(f) ?? ''))
-        const routed = to.service === MONOLITH ? routeGrade(callerCode, imported, to.path, routes) : null
+        const routed = to.service === MONOLITH ? routeGrade(callerCode, importedSources(from.service, from.path, callerCode), to.path, routes) : null
         record(key, flow.id, bestGrade(textGrade, routed), `${from.service}/${from.path} → ${to.service}/${to.path} (cross-repo)`)
         continue
       }
