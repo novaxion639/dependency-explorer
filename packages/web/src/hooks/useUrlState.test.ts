@@ -22,7 +22,7 @@ describe('parseUrl', () => {
   })
   it('infers the flows page from detail keys', () => {
     const st = parseUrl('?s=svc-punch&flow=shift-creation&detail=code')
-    expect([st.page, st.flow, st.detail, st.s]).toEqual(['flows', 'shift-creation', 'code', 'svc-punch'])
+    expect([st.page, st.flow, st.s]).toEqual(['flows', 'shift-creation', 'svc-punch'])
     expect(parseUrl('?file=svc-punch/src/a.ts').page).toBe('flows')
     expect(parseUrl('?flag=FEATUREDEV_X').page).toBe('flows')
     expect(parseUrl('?flows=svc-punch').page).toBe('flows')
@@ -45,7 +45,7 @@ describe('parseUrl', () => {
 
 describe('toQueryString', () => {
   it('round-trips the page form', () => {
-    for (const qs of ['', 'page=microservices&s=svc-punch', 'page=areas&area=planning&term=Poste', 'page=ownership&team=team-salsa', 'page=flows&flow=shift-creation&detail=code', 'page=impact&blast=svc-users', 'page=resources&resource=pg%3Askello_production.shifts', 'present=1']) {
+    for (const qs of ['', 'page=microservices&s=svc-punch', 'page=areas&area=planning&term=Poste', 'page=ownership&team=team-salsa', 'page=flows&flow=shift-creation&unit=cu-create-service&chapter=2', 'page=impact&blast=svc-users', 'page=resources&resource=pg%3Askello_production.shifts', 'present=1']) {
       expect(toQueryString(parseUrl(`?${qs}`))).toBe(qs)
     }
   })
@@ -66,7 +66,7 @@ describe('isNavigation', () => {
 
   it('treats toggles and unchanged values as in-place updates', () => {
     expect(isNavigation(base, { blast: 'svc-a' })).toBe(false)
-    expect(isNavigation(base, { detail: 'code' })).toBe(false)
+    expect(isNavigation(base, { unit: 'cu-x' })).toBe(false)
     expect(isNavigation(base, { s: 'svc-punch' })).toBe(false)
     expect(isNavigation(base, { present: true })).toBe(false)
   })
@@ -94,16 +94,16 @@ describe('commitPatch', () => {
   it('replaces in place for toggles and clears notFound', () => {
     const { calls, history } = recorder()
     const prev = { ...parseUrl('?s=svc-punch&flow=x'), notFound: { param: 'area' as const, value: 'nope' } }
-    const next = commitPatch(prev, { detail: 'code' }, undefined, history, '/')
+    const next = commitPatch(prev, { unit: 'cu-x' }, undefined, history, '/')
     expect(next.notFound).toBeNull()
-    expect(calls).toEqual([['replace', '/?page=flows&s=svc-punch&flow=x&detail=code']])
+    expect(calls).toEqual([['replace', '/?page=flows&s=svc-punch&flow=x&unit=cu-x']])
   })
 })
 
-describe('detail=sequence', () => {
-  it('parses and round-trips the sequence mode', () => {
-    expect(parseUrl('?flow=f&detail=sequence').detail).toBe('sequence')
-    expect(toQueryString(parseUrl('?flow=f&detail=sequence'))).toBe('page=flows&flow=f&detail=sequence')
+describe('legacy flow detail', () => {
+  it('opens legacy detail links on the flow page and drops the key', () => {
+    expect(parseUrl('?flow=shift-creation&detail=code').page).toBe('flows')
+    expect(toQueryString(parseUrl('?flow=shift-creation&detail=sequence'))).toBe('page=flows&flow=shift-creation')
   })
 })
 

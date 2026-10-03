@@ -51,9 +51,6 @@ export function validateUrlState(st: UrlState): UrlState {
   if (next.file && !fileIndex.has(next.file)) {
     next.file = null
   }
-  if (!next.flow) {
-    next.detail = null
-  }
   if (next.drawer && !serviceNames.has(next.drawer)) {
     next.drawer = null
   }

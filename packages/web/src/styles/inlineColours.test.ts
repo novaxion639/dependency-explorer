@@ -8,7 +8,6 @@ const LEGACY_DIAGRAM_FILES = new Set([
   'components/connectivity/CodeUnitDetailPanel.tsx',
   'components/connectivity/ConnectivityEdge.tsx',
   'components/connectivity/EdgeBadges.tsx',
-  'components/connectivity/FlowGraphModal.tsx',
   'components/connectivity/SequenceDiagram.tsx',
   'components/nodes/CodeUnitNode.tsx',
   'components/nodes/DatabaseNode.tsx',

@@ -6,7 +6,6 @@ import { NotFoundBanner } from '../components/areas/NotFoundBanner'
 import { AreasHome } from '../components/areas/AreasHome'
 import { AreaPage } from '../components/areas/AreaPage'
 import { AreaSlice } from '../components/areas/AreaSlice'
-import { FlowView } from '../components/connectivity/FlowGraphModal'
 import { EdgeDetail } from '../components/connectivity/EdgeDetail'
 import { EndpointList } from '../components/connectivity/EndpointList'
 import { ConnectionList } from '../components/connectivity/ConnectionList'
@@ -17,6 +16,8 @@ import { ResourcePage } from '../components/resources/ResourcePage'
 import { ResourcesIndex } from '../components/resources/ResourcesIndex'
 import { ImpactPage } from '../components/resources/ImpactPage'
 import { OwnershipPage } from '../components/ownership/OwnershipPage'
+import { FlowPage } from '../components/flows/FlowPage'
+import { UnitDetail } from '../components/flows/UnitDetail'
 import { AppShell } from './AppShell'
 import { HomePage } from './HomePage'
 import { MicroservicesPage } from './MicroservicesPage'
@@ -59,8 +60,11 @@ export function Explorer() {
   const edgeConnections = architecture && url.edge ? connectionsFor(url.edge) : []
   const [firstEdge] = edgeConnections
   const slice = architecture && url.area ? areaSlice(map, monolithRoutes, resourceSurface.resources, url.area) : null
-  const drawerService = architecture && url.drawer ? map.services.find(s => s.name === url.drawer) ?? null : null
-  const panel = edgeConnections.length > 1
+  const unitPanel = url.page === 'flows' && selectedFlow && url.unit
+    ? <UnitDetail flow={selectedFlow} id={url.unit} onOpenFlow={id => patch({ flow: id, unit: null, chapter: null })} onOpenResource={openResource} onClose={() => patch({ unit: null })} />
+    : null
+  const drawerService = (architecture || url.page === 'flows') && url.drawer ? map.services.find(s => s.name === url.drawer) ?? null : null
+  const panel = unitPanel ?? (edgeConnections.length > 1
     ? <ConnectionList connections={edgeConnections} onOpen={c => patch({ edge: edgeKey(c.from, c.to, c.protocol) })} onClose={() => patch({ edge: null })} />
     : firstEdge
       ? <EdgeDetail connection={firstEdge} map={map} onSeeEndpoints={name => patch({ drawer: name, ep: null, edge: null })} onClose={() => patch({ edge: null })} />
@@ -68,7 +72,7 @@ export function Explorer() {
         ? <EndpointList serviceName={drawerService.name} endpoints={drawerService.endpoints} recurringTasks={drawerService.recurringTasks} highlightId={url.ep} onClose={() => patch({ drawer: null, ep: null })} onOpenService={() => selectService(drawerService.name)} />
         : slice
           ? <AreaSlice slice={slice} onOpenArea={id => patch({ ...pagePatch('areas'), area: id })} onOpenResource={openResource} onSelectService={selectService} onOpenFlow={id => patch({ ...pagePatch('flows'), flow: id })} onClose={() => patch({ area: null })} />
-          : null
+          : null)
 
   const content =
     url.page === 'home' ? <HomePage index={searchIndex} onNavigate={patch} />
@@ -78,9 +82,9 @@ export function Explorer() {
     : url.page === 'microservices' ? <MicroservicesPage url={url} patch={patch} />
     : url.page === 'monolith' ? <MonolithPage url={url} patch={patch} />
     : url.page === 'flows' ? (selectedFlow
-      ? <FlowView flow={selectedFlow} map={map} detail={url.detail} onDetailChange={d => patch({ detail: d })} onOpenFlow={id => patch({ flow: id, detail: null })} onOpenArea={id => patch({ page: 'areas', area: id, term: null, flow: null, detail: null })} onOpenResource={openResource} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, detail: null }))} onClose={() => patch({ flow: null, detail: null })} />
+      ? <FlowPage flow={selectedFlow} url={url} patch={patch} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, unit: null, chapter: null }))} />
       : flagEntry ? <FlagPage entry={flagEntry} onSelectFlow={flow => patch({ flow: flow.id, flag: null })} />
-      : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, detail: 'code', file: null })} onOpenRoute={id => patch({ page: 'monolith', file: null, drawer: 'skello-app', ep: id })} onOpenResource={openResource} />
+      : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, file: null, unit: (flow.codeUnits ?? []).find(u => u.service === fileEntry.service && u.path === fileEntry.path)?.id ?? null })} onOpenRoute={id => patch({ page: 'monolith', file: null, drawer: 'skello-app', ep: id })} onOpenResource={openResource} />
       : <FlowsIndex service={url.flows} flows={map.flows} map={map} onSelectFlow={flow => patch({ flow: flow.id })} />)
     : url.page === 'resources' ? (url.resource
       ? <ResourcePage id={url.resource} onOpenResource={openResource} onOpenFile={key => patch({ page: 'flows', resource: null, file: key })} onOpenFlow={id => patch({ page: 'flows', flow: id })} onSelectService={selectService} onBlast={id => patch({ page: 'impact', blast: id })} />
