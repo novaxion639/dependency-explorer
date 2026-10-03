@@ -1,0 +1,22 @@
+.page { display: flex; flex-direction: column; gap: var(--space-2); max-width: 980px; }
+.head h1 { font-size: var(--text-xl); }
+.meta { font-size: var(--text-xs); color: var(--ink-muted); }
+.meta a { color: var(--ink); }
+.note { font-size: var(--text-sm); margin-top: var(--space-1); }
+.counts { font-size: var(--text-md); font-weight: 600; margin-top: var(--space-2); }
+.impact { margin-top: var(--space-1); font-size: var(--text-xs); font-weight: 600; padding: var(--space-1) var(--space-3); border: 1.5px solid var(--fails); color: var(--fails); background: var(--card); border-radius: var(--radius-md); cursor: pointer; }
+.hint { font-size: var(--text-xs); color: var(--ink-faint); }
+.section { margin-top: var(--space-3); }
+.section h2 { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); }
+.group { margin-top: var(--space-2); background: var(--card); border: 1.5px solid var(--rule-strong); border-radius: var(--radius-md); padding: var(--space-2); }
+.service { background: none; border: none; padding: 0; cursor: pointer; font-weight: 700; font-size: var(--text-sm); text-decoration: underline; }
+.count { font-size: var(--text-xs); color: var(--ink-muted); }
+.rels { list-style: none; margin-top: var(--space-1); overflow-x: auto; }
+.rels li { font-size: var(--text-xs); white-space: nowrap; }
+.grade { margin-right: var(--space-2); font-weight: 700; }
+.grade[data-grade='code'], .grade[data-grade='config'] { color: var(--ok); }
+.grade[data-grade='flow'] { background: var(--highlight); padding: 0 3px; }
+.file { background: none; border: none; padding: 0; cursor: pointer; font-family: var(--font-mono); font-size: var(--text-xs); text-decoration: underline; }
+.link { background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; font-size: inherit; }
+.chip { margin: var(--space-1) var(--space-1) 0 0; font-size: var(--text-xs); padding: 1px var(--space-2); border: 1px solid var(--ink); border-radius: var(--radius-sm); background: var(--card); cursor: pointer; }
+.flows { list-style: none; font-size: var(--text-sm); }
