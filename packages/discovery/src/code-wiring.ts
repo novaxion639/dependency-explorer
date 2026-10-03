@@ -161,3 +161,32 @@ export function emitsToCallee(e: WiredEdge, aliases: Alias[]): boolean {
     && importsFileDirectly(e.calleeSource, e.calleePath, e.callerPath, aliases)
     && events.some(ev => new RegExp(`(?:@|v-on:)${escape(ev)}=`).test(e.calleeSource))
 }
+
+const RECEIVER = /(?:@|\b)([a-z_][a-z0-9_]*)\.(?=[a-z_])/g
+const ASSOCIATION = /\b(?:has_many|has_one|belongs_to)\s+:(\w+)[^\n]*?class_name:\s*['"]([\w:]+)['"]/g
+
+function singular(word: string): string {
+  if (word.endsWith('ies')) {
+    return `${word.slice(0, -3)}y`
+  }
+  if (word.endsWith('s') && !word.endsWith('ss')) {
+    return word.slice(0, -1)
+  }
+  return word
+}
+
+function camelize(word: string): string {
+  return word.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')
+}
+
+export function parseAssociations(source: string): Array<[string, string]> {
+  return [...source.matchAll(ASSOCIATION)].map(m => [m[1] ?? '', m[2] ?? ''])
+}
+
+export function namesReceiverModel(callerCode: string, calleeClasses: string[], associations: Map<string, string>): boolean {
+  const declared = new Set(calleeClasses.flatMap(c => [c, c.split('::').pop() ?? c]))
+  return [...callerCode.matchAll(RECEIVER)].some(m => {
+    const word = m[1] ?? ''
+    return declared.has(camelize(singular(word))) || declared.has(associations.get(word) ?? '')
+  })
+}

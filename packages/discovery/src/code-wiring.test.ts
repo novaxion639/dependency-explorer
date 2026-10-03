@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, type WiredEdge } from './code-wiring'
+import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, type WiredEdge } from './code-wiring'
 
 const container = `
 const llmProviders: LlmProviders = {
@@ -110,5 +110,24 @@ describe('vuex and events', () => {
     const e = edge('apps/vue-app/src/users/shared/components/StaffRegisterModal.vue', 'apps/vue-app/src/users/shared/components/Toolbar.vue', modal, toolbar)
     expect(emitsToCallee(e, aliases)).toBe(true)
     expect(emitsToCallee({ ...e, calleeSource: '<StaffRegisterModal @close="x" />\nimport StaffRegisterModal from \'./StaffRegisterModal\';' }, aliases)).toBe(false)
+  })
+})
+
+describe('rails receivers', () => {
+  const associations = new Map(parseAssociations("class Contract < ApplicationRecord\n  has_many :amendments, class_name: 'ContractAmendment', dependent: :delete_all\n  belongs_to :user\nend\n"))
+
+  it('reads association class names', () => {
+    expect([...associations]).toEqual([['amendments', 'ContractAmendment']])
+  })
+  it('maps a receiver to the model its name singularizes to', () => {
+    expect(namesReceiverModel('@badgings.each do |badging|', ['Badging'], associations)).toBe(true)
+    expect(namesReceiverModel('shift.destroy!', ['Shift'], associations)).toBe(true)
+    expect(namesReceiverModel('companies.each(&:touch)', ['Company'], associations)).toBe(true)
+  })
+  it('maps an association receiver through its class name', () => {
+    expect(namesReceiverModel('new_amendment = @contract.amendments.build(', ['ContractAmendment'], associations)).toBe(true)
+  })
+  it('ignores receivers that name another model', () => {
+    expect(namesReceiverModel('params.require(:shift)', ['Shift'], associations)).toBe(false)
   })
 })
