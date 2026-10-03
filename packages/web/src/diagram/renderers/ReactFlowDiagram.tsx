@@ -81,8 +81,16 @@ function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<Diag
               }
             }}
           >
-            {edge.label}
-            {edge.condition && <span className={styles.pill}>if {edge.condition}</span>}
+            {edge.labelLines
+              ? edge.labelLines.map((line, i) => <span key={`${i}:${line}`} className={styles.labelLine}>{line}</span>)
+              : edge.label}
+            {edge.condition && (
+              <span className={styles.pill}>
+                {edge.conditionLines
+                  ? edge.conditionLines.map((line, i) => <span key={`${i}:${line}`} className={styles.labelLine}>{line}</span>)
+                  : `if ${edge.condition}`}
+              </span>
+            )}
           </button>
         </EdgeLabelRenderer>
       )}

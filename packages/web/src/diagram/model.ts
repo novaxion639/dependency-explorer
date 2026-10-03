@@ -45,6 +45,8 @@ export interface DiagramEdge {
   ref?: DiagramRef
   route?: RoutePoint[]
   labelBox?: Box
+  labelLines?: string[]
+  conditionLines?: string[]
 }
 export interface DiagramModel {
   id: string

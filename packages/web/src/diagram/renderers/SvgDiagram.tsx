@@ -1,11 +1,11 @@
 import type { KeyboardEvent, ReactNode } from 'react'
 import type { Emphases, Emphasis } from '../focus'
-import { edgeSegment, LINE_HEIGHT, PAD_X, PAD_Y, textWidth } from '../geometry'
+import { EDGE_LABEL_FONT, EDGE_LABEL_LINE, edgeSegment, LINE_HEIGHT, PAD_X, PAD_Y, textWidth } from '../geometry'
 import type { Box, DiagramModel, DiagramRef } from '../model'
 import { edgeName } from '../edgeName'
 import { DASH, EMPHASIS_WORD, NODE_DASH, nodeFill, PAINT, strokeWidth } from '../paint'
 
-const LABEL_FONT = 11
+const LABEL_FONT = EDGE_LABEL_FONT
 
 interface Props {
   model: DiagramModel
@@ -114,6 +114,21 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
         const to = boxes.get(e.to)
         if (!from || !to || (!e.label && !e.condition)) {
           return null
+        }
+        if (e.labelBox && e.labelLines) {
+          const box = e.labelBox
+          const paint = PAINT[emphases.edges.get(e.id) ?? 'normal']
+          const label = e.labelLines
+          const pill = e.conditionLines ?? []
+          const pillY = box.y + label.length * EDGE_LABEL_LINE
+          return (
+            <Clickable key={`label:${e.id}`} label={edgeName(from.label, to.label, e)} target={e.ref} onSelect={onSelect}>
+              {label.length > 0 && <rect x={box.x} y={box.y} width={box.w} height={label.length * EDGE_LABEL_LINE} rx={3} style={{ fill: 'var(--card)', stroke: 'var(--rule)', opacity: paint.opacity }} />}
+              {label.map((line, i) => <text key={`l${i}:${line}`} x={box.x + box.w / 2} y={box.y + 12 + i * EDGE_LABEL_LINE} textAnchor="middle" style={{ fill: paint.text, fontSize: LABEL_FONT, opacity: paint.opacity }}>{line}</text>)}
+              {pill.length > 0 && <rect x={box.x} y={pillY} width={box.w} height={pill.length * EDGE_LABEL_LINE} rx={8} style={{ fill: 'var(--highlight)', stroke: 'var(--ink)', opacity: paint.opacity }} />}
+              {pill.map((line, i) => <text key={`p${i}:${line}`} x={box.x + box.w / 2} y={pillY + 12 + i * EDGE_LABEL_LINE} textAnchor="middle" style={{ fill: 'var(--ink)', fontSize: LABEL_FONT, opacity: paint.opacity }}>{line}</text>)}
+            </Clickable>
+          )
         }
         const segment = edgeSegment(from, to, e.lane, e.lanes)
         const s = e.labelBox ? { lx: e.labelBox.x + e.labelBox.w / 2, ly: e.labelBox.y + 9 } : segment

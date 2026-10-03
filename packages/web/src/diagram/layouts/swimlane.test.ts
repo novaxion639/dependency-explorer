@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { connectivityMap as map, ServiceFlowSchema } from '@dependency-explorer/data'
 import { layoutProblems } from '../layoutProblems'
-import { overlaps } from '../geometry'
+import { overlaps, textWidth } from '../geometry'
 import type { Box, DiagramModel } from '../model'
 import { chapterFocus, infraNodeId, serviceNodeId, swimlanes, unitNodeId } from './swimlane'
 
@@ -153,5 +153,19 @@ describe('swimlane routes', () => {
         }
       })
     }
+  })
+  it('carries every edge label and condition in full, wrapped to fit between lanes', () => {
+    const squash = (t: string) => t.replace(/\s/g, '')
+    for (const f of map.flows) {
+      for (const e of nodeEdges(swimlanes(f))) {
+        expect(squash((e.labelLines ?? []).join('')), `${f.id} ${e.id}`).toBe(squash(e.label))
+        expect(squash((e.conditionLines ?? []).join('')), `${f.id} ${e.id}`).toBe(e.condition ? squash(`if ${e.condition}`) : '')
+        for (const line of [...(e.labelLines ?? []), ...(e.conditionLines ?? [])]) {
+          expect(textWidth(line, 11), `${f.id} ${e.id} ${line}`).toBeLessThanOrEqual(284)
+        }
+      }
+    }
+    const replacement = swimlanes(flow('shift-replacement-search'))
+    expect(replacement.edges.map(e => e.label)).toContain('GET /shifts/{shiftId}/employee_replacements')
   })
 })

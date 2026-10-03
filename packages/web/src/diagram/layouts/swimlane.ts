@@ -1,5 +1,5 @@
 import type { FlowCodeEdge, FlowCodeUnit, ServiceFlow } from '@dependency-explorer/data'
-import { fitLabel, linesHeight, overlaps, textWidth } from '../geometry'
+import { EDGE_LABEL_FONT, EDGE_LABEL_LINE, fitLabel, linesHeight, overlaps, textWidth, wrapText } from '../geometry'
 import { ALL_RENDERERS, type Box, type DiagramEdge, type DiagramGroup, type DiagramModel, type DiagramNode, type EdgeMode, type RoutePoint } from '../model'
 
 const FONT = 12
@@ -9,10 +9,9 @@ const PAD = 12
 const HEAD = 48
 const ROW_GAP = 64
 const NODE_W = LANE_W - 2 * PAD
-const LABEL_MAX = 34
-const LABEL_FONT = 11
-const LABEL_LINE = 17
 const LABEL_PAD = 8
+const LABEL_FRAME = 4
+const WRAP_W = LANE_GAP + 2 * PAD - 20
 const LABEL_MARGIN = 4
 const ARROW = 14
 const ARROW_CLEARANCE = 6
@@ -45,13 +44,9 @@ export function backgroundLane(service: string): string {
   return `lane:${service}:bg`
 }
 
-export function clip(text: string, max: number): string {
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text
-}
-
 function edgeText(label: string | undefined, crud: string[] | undefined): string {
   const letters = crud?.length ? ` [${crud.map(c => c.slice(0, 1).toUpperCase()).join('')}]` : ''
-  return `${clip(label ?? '', LABEL_MAX)}${letters}`.trim()
+  return `${label ?? ''}${letters}`.trim()
 }
 
 function edgeCondition(e: FlowCodeEdge): string | undefined {
@@ -171,14 +166,35 @@ export function swimlanes(flow: ServiceFlow): DiagramModel {
   const byId = new Map(nodes.map(n => [n.id, n]))
   const modelId = (id: string) => (units.has(id) ? unitNodeId(id) : infra.has(id) ? infraNodeId(id) : isLaneEndpoint(id) ? requestLane(id) : serviceNodeId(id))
 
+  const wrapped = (text: string) => wrapText(text, WRAP_W, EDGE_LABEL_FONT)
+  const labelHeight = (lines: number) => (lines > 0 ? lines * EDGE_LABEL_LINE + LABEL_FRAME : 0)
+  const heightOf = (label: string, condition?: string) => labelHeight(wrapped(label).length + (condition ? wrapped(`if ${condition}`).length : 0))
+  const directGap = new Map<number, number>()
+  const pairs = [
+    ...codeEdges.map(e => ({ from: e.from, to: e.to, h: heightOf(edgeText(e.label, e.crud), edgeCondition(e)) })),
+    ...infraLinks.map(e => ({ from: e.from, to: e.to, h: heightOf(edgeText(e.label, e.crud)) })),
+  ]
+  for (const p of pairs) {
+    const ra = rowOf.get(p.from)
+    const rb = rowOf.get(p.to)
+    if (ra === undefined || rb === undefined || rb <= ra || laneOf(p.from) !== laneOf(p.to)) {
+      continue
+    }
+    const between = order.some(id => id !== p.from && id !== p.to && laneOf(id) === laneOf(p.from) && (rowOf.get(id) ?? -1) > ra && (rowOf.get(id) ?? -1) < rb)
+    if (!between) {
+      directGap.set(ra, Math.max(directGap.get(ra) ?? 0, p.h + LABEL_MARGIN + ARROW + 2 * ARROW_CLEARANCE + 2))
+    }
+  }
+  const gapAfter = (row: number) => Math.max(ROW_GAP, directGap.get(row) ?? 0)
+
   const rows = Math.max(0, ...rowOf.values()) + 1
   const rowH = Array.from({ length: rows }, (_, r) => Math.max(0, ...order.filter(id => rowOf.get(id) === r).map(id => byId.get(modelId(id))?.h ?? 0)))
   const rowY: number[] = []
   rowH.reduce((y, h, r) => {
     rowY[r] = y
-    return y + h + ROW_GAP
+    return y + h + gapAfter(r)
   }, HEAD)
-  const height = HEAD + rowH.reduce((sum, h) => sum + h + ROW_GAP, 0) + PAD
+  const height = HEAD + rowH.reduce((sum, h, r) => sum + h + gapAfter(r), 0) + PAD
   for (const id of order) {
     const node = byId.get(modelId(id))
     const row = rowOf.get(id)
@@ -203,7 +219,10 @@ export function swimlanes(flow: ServiceFlow): DiagramModel {
     if (a === b) {
       return
     }
-    edges.push({ id: `e${edges.length}:${a}>${b}`, from: a, to: b, mode, weight: 1, label, directed: true, lane: 0, lanes: 1, ...(condition ? { condition: clip(condition, LABEL_MAX + 6) } : {}) })
+    edges.push({
+      id: `e${edges.length}:${a}>${b}`, from: a, to: b, mode, weight: 1, label, directed: true, lane: 0, lanes: 1, labelLines: wrapped(label),
+      ...(condition ? { condition, conditionLines: wrapped(`if ${condition}`) } : {}),
+    })
   }
   for (const e of codeEdges) {
     const mode: EdgeMode = infra.has(e.from) ? 'data-feed' : e.mode === 'async-job' || e.mode === 'async-event' ? 'async' : 'sync'
@@ -264,8 +283,8 @@ export function swimlanes(flow: ServiceFlow): DiagramModel {
     return box ? [box] : []
   })
   const labelSize = (e: DiagramEdge) => {
-    const lines = [e.label, e.condition ? `if ${e.condition}` : ''].filter(Boolean)
-    return { w: Math.max(0, ...lines.map(l => textWidth(l, LABEL_FONT))) + LABEL_PAD, h: lines.length * LABEL_LINE }
+    const lines = [...(e.labelLines ?? []), ...(e.conditionLines ?? [])]
+    return { w: Math.max(0, ...lines.map(l => textWidth(l, EDGE_LABEL_FONT))) + LABEL_PAD, h: labelHeight(lines.length) }
   }
   const placed: Box[] = []
   for (const { edge, source } of routed.filter(r => r.gutter === null && (r.edge.label || r.edge.condition))) {
