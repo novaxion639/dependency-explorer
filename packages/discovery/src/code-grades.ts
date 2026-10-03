@@ -186,8 +186,8 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
         const textGrade = crossRepoGrade(gradeEdge(empty, from.path, to.path, source, to.label))
         const callerCode = stripComments(source)
         const callerRead = readerFor(path.join(repoBase, from.service))
-        const sources = [callerCode, ...importedFiles(callerCode, from.path, wiringFor(from.service).aliases, callerRead).map(f => stripComments(callerRead(f) ?? ''))]
-        const routed = to.service === MONOLITH ? routeGrade(sources, to.path, routes) : null
+        const imported = importedFiles(callerCode, from.path, wiringFor(from.service).aliases, callerRead).map(f => stripComments(callerRead(f) ?? ''))
+        const routed = to.service === MONOLITH ? routeGrade(callerCode, imported, to.path, routes) : null
         record(key, flow.id, bestGrade(textGrade, routed), `${from.service}/${from.path} → ${to.service}/${to.path} (cross-repo)`)
         continue
       }

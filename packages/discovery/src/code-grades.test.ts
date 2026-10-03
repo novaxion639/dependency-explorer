@@ -210,11 +210,13 @@ describe('checkCodeGrades across repos through monolith routes', () => {
         { id: 'shifts', service: 'skello-app', kind: 'controller', label: 'ShiftsController', path: SHIFTS },
         { id: 'mgr', service: 'billing', kind: 'manager', label: 'SkelloManager', path: 'src/Manager/SkelloManager.ts' },
         { id: 'orgs', service: 'skello-app', kind: 'controller', label: 'OrganisationsController', path: ORGS },
+        { id: 'lookalike', service: 'billing', kind: 'service', label: 'Lookalike', path: SHIFTS },
       ],
       codeEdges: [
         { from: 'store', to: 'shifts', label: 'GET shifts', mode: 'sync' },
         { from: 'mgr', to: 'orgs', label: 'upserts', mode: 'sync' },
         { from: 'store', to: 'orgs', label: 'none', mode: 'sync' },
+        { from: 'store', to: 'lookalike', label: 'not the monolith', mode: 'sync' },
       ],
     }],
   })
@@ -228,5 +230,6 @@ describe('checkCodeGrades across repos through monolith routes', () => {
     expect(grades['f#store→shifts']).toBe('import')
     expect(grades['f#mgr→orgs']).toBe('text')
     expect(grades['f#store→orgs']).toBe('none')
+    expect(grades['f#store→lookalike']).toBe('none')
   })
 })
