@@ -22,9 +22,6 @@ const LEGACY_DIAGRAM_FILES = new Set([
 
 const PENDING_4A = new Set([
   'components/SearchModal.tsx',
-  'components/areas/AreaPage.tsx',
-  'components/areas/AreasHome.tsx',
-  'components/areas/NotFoundBanner.tsx',
   'components/connectivity/ServiceSidebar.tsx',
   'components/ownership/OwnershipPage.tsx',
   'components/resources/ResourcePage.tsx',
