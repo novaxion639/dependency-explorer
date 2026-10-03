@@ -236,7 +236,9 @@ export function chapterFocus(model: DiagramModel, flow: ServiceFlow, refs: strin
     }
     for (const lane of model.groups.filter(g => g.id === requestLane(name) || g.id === backgroundLane(name))) {
       focus.add(lane.id)
-      lane.members.forEach(m => focus.add(m))
+      if (name === ref) {
+        lane.members.forEach(m => focus.add(m))
+      }
     }
   }
   return focus
