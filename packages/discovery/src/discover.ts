@@ -35,7 +35,7 @@ import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders, walkFiles } from './extractors/queue-senders'
-import { tableRelations, messagingRelations, atlasRelations, dmsRelations } from './resource-relations'
+import { tableRelations, messagingRelations, atlasRelations, dmsRelations, dedupeRelations } from './resource-relations'
 import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, checkPiiRefs, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult, type PiiCheckResult } from './flow-check'
 import { extractPiiFacts, type PiiFacts } from './extractors/pii'
 import { extractSwagger } from './extractors/swagger'
@@ -50,7 +50,7 @@ import { checkBranches } from './branch-check'
 import { extractRailsSchema } from './extractors/rails-schema'
 import { buildRegistry } from './resource-registry'
 import { checkResources, type ResourceFinding } from './resource-check'
-import { findingKeys, diffBaseline, readBaseline, writeBaseline } from './baseline'
+import { findingKeys, diffBaseline, readBaseline, readBaselineRepos, unscannedRepos, writeBaseline } from './baseline'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const SOURCE_BASE = path.resolve(__dirname, '../../../../')
@@ -696,12 +696,12 @@ function run(): Report {
     ...['src', 'app', 'lib', 'serverless', 'config'].flatMap(d => walkFiles(path.join(REPO_BASE, repo, d))),
     ...['serverless.ts', 'serverless.yml'].map(f => path.join(REPO_BASE, repo, f)).filter(f => fs.existsSync(f)),
   ])]))
-  report.liveRelations = [
+  report.liveRelations = dedupeRelations([
     ...tableRelations(live, railsSchema?.models ?? [], monolithFiles, monolithGraph),
     ...messagingRelations(live, serverlessByRepo, sourcesByRepo),
     ...atlasRelations(report.terraform.filter(t => t.inMap), live),
     ...dmsRelations(report.terraform.filter(t => t.inMap), live),
-  ]
+  ])
   const resourceFacts = checkResources(resourceSurface.resources, live, railsSchema?.models ?? [], railsSchema?.tables ?? [], monolithGraph !== null)
   const byKind: Record<string, number> = {}
   for (const x of live) {
@@ -1147,6 +1147,10 @@ function printMarkdown(r: Report) {
   const keys = findingKeys({ ...r })
   const delta = diffBaseline(keys, readBaseline(BASELINE_PATH))
   console.log(`\n## 🧾 Baseline — ${delta.added.length} new · ${delta.resolved.length} resolved · ${delta.carried} carried\n`)
+  const unscanned = PIN ? unscannedRepos(readBaselineRepos(BASELINE_PATH), PIN.pinned.map(p => p.repo)) : []
+  if (unscanned.length) {
+    console.log(`⚠ Not scanned this run: ${unscanned.join(', ')} — their baseline findings are unverified, not resolved.\n`)
+  }
   if (delta.added.length) {
     console.log(`New:\n${delta.added.map(k => `- ${k}`).join('\n')}`)
   }
@@ -1175,6 +1179,7 @@ if (BASELINE_MODE) {
   writeBaseline(BASELINE_PATH, findingKeys({ ...report }), PIN ? PIN.pinned.map(p => p.repo) : report.scannedRepos)
   console.log(`\nBaseline written: ${path.relative(process.cwd(), BASELINE_PATH)}`)
 }
-if (FAIL_ON_NEW && diffBaseline(findingKeys({ ...report }), readBaseline(BASELINE_PATH)).added.length) {
+const unscannedNow = PIN ? unscannedRepos(readBaselineRepos(BASELINE_PATH), PIN.pinned.map(p => p.repo)) : []
+if (FAIL_ON_NEW && (diffBaseline(findingKeys({ ...report }), readBaseline(BASELINE_PATH)).added.length || unscannedNow.length)) {
   process.exitCode = 1
 }

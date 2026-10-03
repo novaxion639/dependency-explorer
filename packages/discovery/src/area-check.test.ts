@@ -125,3 +125,34 @@ describe('checkAreas', () => {
     expect(r.findings.some(f => f.detail.includes('svc-hiring'))).toBe(false)
   })
 })
+
+describe('checkAreas test-file filters', () => {
+  let dir = ''
+  const put = (rel: string, content = '') => {
+    const p = path.join(dir, rel)
+    fs.mkdirSync(path.dirname(p), { recursive: true })
+    fs.writeFileSync(p, content)
+  }
+  beforeAll(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'area-filters-'))
+    put('skello-app-front/src/a.tsx', 'export const a = 1')
+    put('skello-app-front/src/a.stories.tsx', 'export default {}')
+    put('skello-app-front/src/__mocks__/b.tsx', 'export const b = 1')
+    put('skello-app-front/src/mocks/c.tsx', 'export const c = 1')
+    put('skello-app-front/src/a.test.tsx', 'SEGMENT_WRITE_KEY')
+  })
+  afterAll(() => fs.rmSync(dir, { recursive: true, force: true }))
+
+  const front = ProductAreaSchema.parse({
+    id: 'front', name: 'Front', description: 'd', kind: 'product', color: '#6366f1',
+    codeLocations: [{ repo: 'skello-app-front', platform: 'web', globs: ['src/**'] }], readingPath: [], glossary: [],
+  })
+  const segment = ExternalSystemSchema.parse({ id: 'segment', name: 'Segment', description: 'd', category: 'other',
+    usedBy: [{ service: 'skello-app-front', evidence: { kind: 'env', literal: 'SEGMENT_WRITE_KEY' } }] })
+
+  it('counts neither stories nor mocks, and never takes evidence from a test file', () => {
+    const r = checkAreas({ areas: [front], externals: [segment], repoBase: dir, coverageRoots: { 'skello-app-front': ['src/**/*.tsx'] } })
+    expect(r.coverage['skello-app-front']?.total).toBe(1)
+    expect(r.findings.filter(f => f.kind === 'missing-external-evidence').map(f => f.subject)).toEqual(['segment'])
+  })
+})

@@ -72,6 +72,8 @@ export interface ServerlessFacts {
   ownedResources: OwnedResourceFact[]
   /** DLQ/retry wiring facts (🧯 failure-layer verification) */
   dlqWirings: DlqWiringFact[]
+  /** SQS queue names this service's sqs events read; null when an event's queue does not resolve */
+  sqsConsumers: string[] | null
   /** Named gateway authorizers declared on routes — both syntaxes: bare string per function, object form in split resource files (🔐) */
   authorizerNames: string[]
 }
@@ -274,6 +276,7 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
     ownedResources,
     dlqWirings,
     authorizerNames: [...authorizerNames].sort(),
+    sqsConsumers: null,
   }
 }
 
@@ -430,6 +433,29 @@ export function parseTerraformDlq(content: string): DlqWiringFact[] {
     })
   }
   return facts
+}
+
+const SQS_EVENT_LITERAL = /\bsqs:\s*(?:\{\s*arn:\s*)?(['"`])([^'"`]+)\1/g
+const SQS_EVENT_GETATT = /\bsqs:\s*\{\s*arn:\s*\{\s*['"`]?Fn::GetAtt['"`]?\s*:\s*\[\s*['"`]?([\w$.]+)['"`]?/g
+const SQS_EVENT_KEY = /(?:^|[\s{,[])sqs:\s*['"`{]/gm
+const SQS_QUEUE_RESOURCE = /\b([A-Za-z]\w*):\s*\{\s*Type:\s*['"`]AWS::SQS::Queue['"`][\s\S]{0,300}?QueueName:\s*['"`]([^'"`]+)['"`]/g
+
+function queueNameOf(raw: string): string {
+  const last = raw.replace(/\$\{[^}]*\}/g, '').split(':').pop() ?? ''
+  return stripTemplate(last)
+}
+
+export function parseSqsConsumers(content: string): string[] | null {
+  const byLogicalId = new Map([...content.matchAll(SQS_QUEUE_RESOURCE)].map(m => [m[1] ?? '', queueNameOf(m[2] ?? '')]))
+  const names = [
+    ...[...content.matchAll(SQS_EVENT_LITERAL)].map(m => queueNameOf(m[2] ?? '')),
+    ...[...content.matchAll(SQS_EVENT_GETATT)].map(m => byLogicalId.get(m[1] ?? '') ?? ''),
+  ]
+  const events = [...content.matchAll(SQS_EVENT_KEY)].length
+  if (names.length < events || names.includes('')) {
+    return null
+  }
+  return [...new Set(names)].sort()
 }
 
 /** Mine method/path literals from serverless TypeScript source. Exported for tests. */
@@ -597,7 +623,7 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
       queueNames.add(stripTemplate(m[1]) || m[1])
     }
   }
-  return { endpoints, queueNames: [...queueNames].sort(), streamConsumers, s3Triggers, schedules, ownedResources, dlqWirings: parseDlqStatic(content), authorizerNames: [...authorizerNames].sort() }
+  return { endpoints, queueNames: [...queueNames].sort(), streamConsumers, s3Triggers, schedules, ownedResources, dlqWirings: parseDlqStatic(content), authorizerNames: [...authorizerNames].sort(), sqsConsumers: parseSqsConsumers(content) }
 }
 
 function walkTsFiles(dir: string, out: string[] = []): string[] {
@@ -657,13 +683,16 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
   if (!sources.length) return null
 
   const merged: Omit<ServerlessFacts, 'source'> = {
-    endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [], ownedResources: [], dlqWirings: [], authorizerNames: [],
+    endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [], ownedResources: [], dlqWirings: [], authorizerNames: [], sqsConsumers: null,
   }
   const authorizerNames = new Set<string>()
   const queueNames = new Set<string>()
+  const contents: string[] = []
   for (const file of sources) {
     try {
-      const parsed = parseServerlessStatic(fs.readFileSync(file, 'utf-8'))
+      const content = fs.readFileSync(file, 'utf-8')
+      contents.push(content)
+      const parsed = parseServerlessStatic(content)
       merged.endpoints.push(...parsed.endpoints)
       parsed.queueNames.forEach(q => queueNames.add(q))
       merged.streamConsumers.push(...parsed.streamConsumers)
@@ -679,6 +708,7 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
   merged.queueNames = [...queueNames].sort()
   merged.dlqWirings.push(...tfWirings)
   merged.authorizerNames = [...authorizerNames].sort()
+  merged.sqsConsumers = parseSqsConsumers(contents.join('\n'))
 
   if (!merged.endpoints.length && !merged.queueNames.length
     && !merged.streamConsumers.length && !merged.s3Triggers.length

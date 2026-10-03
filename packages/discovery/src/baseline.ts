@@ -64,3 +64,8 @@ export function readBaselineRepos(file: string): string[] {
 export function writeBaseline(file: string, keys: string[], repos: string[]): void {
   fs.writeFileSync(file, JSON.stringify({ repos: [...repos].sort(), keys }, null, 2) + '\n')
 }
+
+export function unscannedRepos(baselineRepos: string[], scanned: string[]): string[] {
+  const now = new Set(scanned)
+  return baselineRepos.filter(repo => !now.has(repo))
+}

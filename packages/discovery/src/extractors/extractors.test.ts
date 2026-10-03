@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
+import { parseServerlessState, parseServerlessStatic, parseSqsConsumers, classifyStreamRef, stripTemplate } from './serverless'
 import { classifyAwsUsage } from './aws-clients'
 import { parseTerraform, parseTerraformLocals, applyTerraformLocals, parseTerraformDataNames, parseTerraformLocalMaps, expandTerraformNames, parseTerraformSsmValues, resolveDmsSources } from './terraform'
 import { parseEnvServiceUrls } from './frontend'
@@ -631,5 +631,36 @@ describe('resolveDmsSources', () => {
 }`)
     const tasks = [{ label: 't', source: 'data.aws_dms_endpoint.aurora.endpoint_arn' }, { label: 'u', source: 'aws_dms_endpoint.own.endpoint_arn' }]
     expect(resolveDmsSources(tasks, data).map(t => t.source)).toEqual(['skelloapp-database-aurora-${local.workspace}', 'aws_dms_endpoint.own.endpoint_arn'])
+  })
+})
+
+describe('terraform locals and blocks', () => {
+  it('never resolves a bare environment local into a resource name', () => {
+    expect(applyTerraformLocals('local.region', { region: 'eu-west-1' })).toBe('local.region')
+    expect(applyTerraformLocals('lower(local.aws_region)', { aws_region: 'EU-WEST-1' })).toBe('local.aws_region')
+  })
+  it('resolves a case call inside a template', () => {
+    expect(applyTerraformLocals('${lower(local.project)}-globalDms-${local.workspace}', { project: 'SkelloApp' })).toBe('skelloapp-globalDms-${local.workspace}')
+  })
+  it('reads a one-line data block without swallowing the next block', () => {
+    const names = parseTerraformDataNames('data "aws_region" "current" {}\ndata "aws_dms_endpoint" "x" {\n  endpoint_id = "y"\n}\n')
+    expect(names).toEqual({ 'aws_dms_endpoint.x': 'y' })
+  })
+})
+
+describe('parseSqsConsumers', () => {
+  it('names the queues sqs events read, by arn literal or by Fn::GetAtt on a declared queue, and only when every event resolves', () => {
+    const content = [
+      "fnA: { handler: 'a', events: [{ sqs: 'arn:aws:sqs:eu-west-1:123:mergeShopSqs-${sls:stage}' }] },",
+      "fnB: { handler: 'b', events: [{ sqs: { arn: { 'Fn::GetAtt': ['TransactionQueue', 'Arn'] }, batchSize: 25 } }] },",
+      "TransactionQueue: {\n  Type: 'AWS::SQS::Queue',\n  Properties: {\n    QueueName: 'svcPos-transaction-${sls:stage}',\n  },\n},",
+      "fnC: { handler: 'c', events: [{ sqs: { arn: { 'Fn::GetAtt': ['UndeclaredQueue', 'Arn'] } } }] },",
+    ].join('\n')
+    expect(parseSqsConsumers(content)).toBeNull()
+    expect(parseSqsConsumers(content.split('\n').filter(l => !l.includes('UndeclaredQueue')).join('\n'))).toEqual(['mergeShopSqs', 'svcPos-transaction'])
+  })
+  it('knows nothing when an sqs event names its queue through a parameter', () => {
+    expect(parseSqsConsumers("fn: { events: [{ sqs: { arn: '${self:custom.parameters.reportQueueArn}' } }] }")).toBeNull()
+    expect(parseSqsConsumers("const arn = 'arn:aws:sqs:eu-west-1:1:x'")).toEqual([])
   })
 })

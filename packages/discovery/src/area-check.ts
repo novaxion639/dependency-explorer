@@ -5,8 +5,8 @@ import { areasForFile, globToRegExp } from '@dependency-explorer/data'
 
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'tmp', 'coverage', 'graphify-out', 'vendor', '.serverless', 'ios', 'android', 'log', 'public', '.venv', 'venv', 'site-packages', '__pycache__'])
 const CODE_FILE = /\.(rb|ts|tsx|js|jsx|mjs|vue|py)$/
-const TEST_FILE = /(^|\/)(__tests__|spec|test)\/|[._](spec|test)\.[a-z]+$/
-const SOURCE_FILE = /\.(rb|ts|tsx|js|mjs|vue|yml|yaml|json)$|(^|\/)\.env\.example$/
+const TEST_FILE = /(^|\/)(__tests__|__mocks__|mocks|spec|test|stories)\/|[._](spec|test|stories)\.[a-z]+$/
+const SOURCE_FILE = /\.(rb|ts|tsx|js|jsx|mjs|vue|py|tf|yml|yaml|json)$|(^|\/)\.env\.example$/
 const MAX_SCANNED_BYTES = 1_000_000
 
 export const COVERAGE_ROOTS: Record<string, string[]> = {
@@ -71,15 +71,15 @@ function readSmall(file: string): string | null {
   return fs.statSync(file).size > MAX_SCANNED_BYTES ? null : fs.readFileSync(file, 'utf-8')
 }
 
-function evidenceFound(repoDir: string, files: string[], evidence: Evidence): boolean {
+function evidenceFound(repoDir: string, files: string[], evidence: Evidence, read: (file: string) => string | null): boolean {
   const candidates = evidence.kind === 'gem' ? files.filter(f => f === 'Gemfile')
     : evidence.kind === 'npm' ? files.filter(f => f === 'package.json')
-      : files.filter(f => SOURCE_FILE.test(f))
+      : files.filter(f => SOURCE_FILE.test(f) && !TEST_FILE.test(f))
   const needle = evidence.kind === 'gem' ? new RegExp(`gem ['"]${escapeRegExp(evidence.literal)}['"]`)
     : evidence.kind === 'npm' ? new RegExp(`"${escapeRegExp(evidence.literal)}"\\s*:`)
       : null
   return candidates.some(f => {
-    const content = readSmall(path.join(repoDir, f))
+    const content = read(path.join(repoDir, f))
     if (content === null) {
       return false
     }
@@ -95,6 +95,13 @@ export function checkAreas(input: {
 }): AreaCheckResult {
   const { areas, externals, repoBase, coverageRoots } = input
   const result: AreaCheckResult = { findings: [], coverage: {}, overlaps: [], areaFiles: {}, anchorsVerified: 0, evidenceVerified: 0, skippedRepos: [] }
+  const readCache = new Map<string, string | null>()
+  const read = (file: string): string | null => {
+    if (!readCache.has(file)) {
+      readCache.set(file, readSmall(file))
+    }
+    return readCache.get(file) ?? null
+  }
   const skipped = new Set<string>()
   const listings = new Map<string, string[] | null>()
   const filesOf = (repo: string): string[] | null => {
@@ -183,7 +190,7 @@ export function checkAreas(input: {
       if (!files) {
         continue
       }
-      if (evidenceFound(path.join(repoBase, use.service), files, use.evidence)) {
+      if (evidenceFound(path.join(repoBase, use.service), files, use.evidence, read)) {
         result.evidenceVerified++
       } else {
         result.findings.push({ kind: 'missing-external-evidence', subject: ext.id, detail: `${use.evidence.kind} "${use.evidence.literal}" not found in ${use.service}` })
