@@ -1,10 +1,11 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
-import { download, exportName, standaloneSvg, svgSize, svgToPng, withPositions } from './exportImage'
+import { download, exportName, standaloneSvg, svgSize, svgToPng } from './exportImage'
 import { emphasise, type FocusState } from './focus'
 import type { Point } from './geometry'
 import type { DiagramModel, DiagramRef, EdgeMode, Renderer } from './model'
 import { DASH, MODE_LABEL } from './paint'
-import { MermaidDiagram } from './renderers/MermaidDiagram'
+import { MermaidDiagram, renderedSvg, type MermaidRender } from './renderers/MermaidDiagram'
+import { moveNode, NO_PLACEMENT, placed, placedForExport, type Placement } from './placement'
 import { ReactFlowDiagram } from './renderers/ReactFlowDiagram'
 import { SvgDiagram } from './renderers/SvgDiagram'
 import { toMermaid } from './renderers/toMermaid'
@@ -45,21 +46,21 @@ function Legend({ notes, impact }: { notes: string[]; impact: boolean }) {
 export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename, notes = [], children }: Props) {
   const active: Renderer = model.renderers.includes(renderer) ? renderer : 'react-flow'
   const emphases = useMemo(() => emphasise(model, focus), [model, focus])
-  const [moved, setMoved] = useState<{ model: string; positions: Map<string, Point> }>({ model: model.id, positions: new Map() })
-  const positions = moved.model === model.id ? moved.positions : new Map<string, Point>()
-  const mermaidSvg = useRef<string | null>(null)
+  const [placement, setPlacement] = useState<Placement>(NO_PLACEMENT)
+  const display = useMemo(() => placed(model, placement), [model, placement])
+  const mermaidRender = useRef<MermaidRender | null>(null)
   const [copied, setCopied] = useState(false)
   const source = useMemo(() => (active === 'mermaid' ? toMermaid(model, emphases, readRootToken) : ''), [active, model, emphases])
 
   const onMove = useCallback((id: string, position: Point) => {
-    setMoved(prev => ({ model: model.id, positions: new Map(prev.model === model.id ? prev.positions : []).set(id, position) }))
+    setPlacement(prev => moveNode(prev, model.id, id, position))
   }, [model.id])
-  const onRendered = useCallback((svg: string) => {
-    mermaidSvg.current = svg
+  const onRendered = useCallback((render: MermaidRender) => {
+    mermaidRender.current = render
   }, [])
-  const standalone = () => standaloneSvg(withPositions(model, positions), emphases, readRootToken)
+  const standalone = () => standaloneSvg(placedForExport(model, placement), emphases, readRootToken)
   const exportPng = async () => {
-    const svg = active === 'mermaid' ? mermaidSvg.current : standalone()
+    const svg = active === 'mermaid' ? renderedSvg(mermaidRender.current, source) : standalone()
     if (svg) {
       download(exportName(filename, 'png'), await svgToPng(svg, svgSize(svg)))
     }
@@ -86,8 +87,8 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
         {children}
       </div>
       <div className={styles.canvas}>
-        {active === 'react-flow' && <ReactFlowDiagram key={model.id} model={model} emphases={emphases} onSelect={onSelect} onMove={onMove} />}
-        {active === 'svg' && <SvgDiagram model={model} emphases={emphases} onSelect={onSelect} />}
+        {active === 'react-flow' && <ReactFlowDiagram key={model.id} model={display} emphases={emphases} onSelect={onSelect} onMove={onMove} />}
+        {active === 'svg' && <SvgDiagram model={display} emphases={emphases} onSelect={onSelect} />}
         {active === 'mermaid' && <MermaidDiagram source={source} onRendered={onRendered} />}
       </div>
       <Legend notes={notes} impact={focus.impact !== null} />

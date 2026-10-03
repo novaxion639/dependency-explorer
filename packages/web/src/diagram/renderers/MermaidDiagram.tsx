@@ -3,8 +3,13 @@ import { renderMermaid } from './mermaidRuntime'
 import styles from './MermaidDiagram.module.css'
 
 interface Rendered { source: string; svg?: string; error?: string }
+export interface MermaidRender { source: string; svg: string }
 
-export function MermaidDiagram({ source, onRendered }: { source: string; onRendered: (svg: string) => void }) {
+export function renderedSvg(rendered: MermaidRender | null, source: string): string | null {
+  return rendered?.source === source ? rendered.svg : null
+}
+
+export function MermaidDiagram({ source, onRendered }: { source: string; onRendered: (render: MermaidRender) => void }) {
   const [rendered, setRendered] = useState<Rendered | null>(null)
   useEffect(() => {
     let live = true
@@ -12,7 +17,7 @@ export function MermaidDiagram({ source, onRendered }: { source: string; onRende
       svg => {
         if (live) {
           setRendered({ source, svg })
-          onRendered(svg)
+          onRendered({ source, svg })
         }
       },
       (error: unknown) => {
