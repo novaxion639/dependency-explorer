@@ -181,3 +181,52 @@ describe('checkCodeGrades with container wiring', () => {
     expect(checkCodeGrades(map, base, () => 'abc123').grades['f#d→b']).toBe('graph')
   })
 })
+
+describe('checkCodeGrades across repos through monolith routes', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'routes-'))
+  const write = (rel: string, content: string) => {
+    fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true })
+    fs.writeFileSync(path.join(base, rel), content)
+  }
+  const SHIFTS = 'app/controllers/v3/api/plannings/shifts_controller.rb'
+  const ORGS = 'app/controllers/v3/api/billing_automation/organisations_controller.rb'
+  write('front/src/store/shifts.js', "import { ENDPOINT_NAMESPACE } from './api/shift';\nimport { util } from './helpers';\nexport const load = () => fetchInChunks(params, `${ENDPOINT_NAMESPACE}`);\n")
+  write('front/src/store/api/shift.js', "export const ENDPOINT_NAMESPACE = '/v3/api/plannings/shifts';\n")
+  write('front/src/store/helpers/index.js', 'export const util = 1;\n')
+  write('billing/tsconfig.json', '{ "compilerOptions": { "paths": { "~/*": ["src/*"] } } }')
+  write('billing/src/Manager/SkelloManager.ts', "import {SkelloRepository} from '~/Repository/SkelloRepository';\n")
+  write('billing/src/Repository/SkelloRepository.ts', "export class SkelloRepository { upsert() { return this.put('/organisations/upsert', {}) } }\n")
+  const map = ConnectivityMapSchema.parse({
+    services: [
+      { name: 'skello-app', type: 'rails-monolith', description: 'd', endpoints: [] },
+      { name: 'front', type: 'typescript-microservice', description: 'd', endpoints: [] },
+      { name: 'billing', type: 'typescript-microservice', description: 'd', endpoints: [] },
+    ],
+    connections: [],
+    flows: [{
+      id: 'f', name: 'F', description: 'd', steps: [],
+      codeUnits: [
+        { id: 'store', service: 'front', kind: 'service', label: 'shifts store', path: 'src/store/shifts.js' },
+        { id: 'shifts', service: 'skello-app', kind: 'controller', label: 'ShiftsController', path: SHIFTS },
+        { id: 'mgr', service: 'billing', kind: 'manager', label: 'SkelloManager', path: 'src/Manager/SkelloManager.ts' },
+        { id: 'orgs', service: 'skello-app', kind: 'controller', label: 'OrganisationsController', path: ORGS },
+      ],
+      codeEdges: [
+        { from: 'store', to: 'shifts', label: 'GET shifts', mode: 'sync' },
+        { from: 'mgr', to: 'orgs', label: 'upserts', mode: 'sync' },
+        { from: 'store', to: 'orgs', label: 'none', mode: 'sync' },
+      ],
+    }],
+  })
+  const routes = [
+    { path: '/v3/api/plannings/shifts', controllerFile: SHIFTS },
+    { path: '/v3/api/billing_automation/organisations/upsert', controllerFile: ORGS },
+  ]
+
+  it('grades cross-repo edges through monolith routes', () => {
+    const { grades } = checkCodeGrades(map, base, () => 'abc123', routes)
+    expect(grades['f#store→shifts']).toBe('import')
+    expect(grades['f#mgr→orgs']).toBe('text')
+    expect(grades['f#store→orgs']).toBe('none')
+  })
+})
