@@ -1,0 +1,12 @@
+.home { max-width: 760px; margin: var(--space-6) auto; display: flex; flex-direction: column; gap: var(--space-4); padding: 0 var(--space-4); }
+.ask { width: 100%; border: var(--line); border-radius: var(--radius-lg); background: var(--card); padding: var(--space-3) var(--space-4); font-size: var(--text-lg); }
+.examples { display: flex; flex-wrap: wrap; gap: var(--space-2); color: var(--ink-muted); font-size: var(--text-sm); }
+.examples button { background: none; border: none; cursor: pointer; color: var(--ink-muted); text-decoration: underline; }
+.results { list-style: none; border: var(--line); border-radius: var(--radius-md); background: var(--card); }
+.results button { display: block; width: 100%; text-align: left; padding: var(--space-2) var(--space-3); background: none; border: none; border-bottom: 1px solid var(--rule); cursor: pointer; }
+.results span { color: var(--ink-muted); font-size: var(--text-xs); text-transform: uppercase; }
+.results small { display: block; color: var(--ink-muted); }
+.tiles { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); }
+.tiles button { width: 100%; height: 100%; text-align: left; border: var(--line); border-radius: var(--radius-md); background: var(--card); padding: var(--space-3); cursor: pointer; }
+.tiles b { display: block; font-size: var(--text-lg); }
+.tiles span { color: var(--ink-muted); font-size: var(--text-sm); }
