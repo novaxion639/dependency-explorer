@@ -7,7 +7,6 @@ import styles from './ImpactPage.module.css'
 
 interface Props {
   origin: string | null
-  initialFilter?: 'all' | 'sync'
   onPick: (id: string) => void
   onSelect: (node: string) => void
   onOpenFlow: (id: string) => void
@@ -39,8 +38,8 @@ function Picker({ onPick }: { onPick: (id: string) => void }) {
   )
 }
 
-export function ImpactPage({ origin, initialFilter = 'all', onPick, onSelect, onOpenFlow, renderer = 'react-flow', onRenderer = () => {} }: Props) {
-  const [filter, setFilter] = useState(initialFilter)
+export function ImpactPage({ origin, onPick, onSelect, onOpenFlow, renderer = 'react-flow', onRenderer = () => {} }: Props) {
+  const [filter, setFilter] = useState<'all' | 'sync'>('all')
   const [showMap, setShowMap] = useState(false)
   if (!origin) {
     return <Picker onPick={onPick} />
@@ -49,7 +48,7 @@ export function ImpactPage({ origin, initialFilter = 'all', onPick, onSelect, on
   const entries = impact.entries.filter(e => filter === 'all' || (e.mode === 'sync' && e.effect === 'fails'))
   const hops = [...new Set(entries.map(e => e.hop))].sort((a, b) => a - b)
   return (
-    <section role="region" aria-label={`Impact of ${origin}`} className={styles.page}>
+    <section aria-label={`Impact of ${origin}`} className={styles.page}>
       <h1>If {origin} is down</h1>
       <div role="group" aria-label="Filter" className={styles.filter}>
         {(['all', 'sync'] as const).map(f => (

@@ -1,5 +1,6 @@
 import type { ConnectivityMap, Platform, ProductArea } from '@dependency-explorer/data'
 import { areaFacts, getAreaFlows, getAreaServices } from '@dependency-explorer/data'
+import { plural } from '../../utils/plural'
 import styles from './AreasHome.module.css'
 
 const PLATFORM_ICONS: Partial<Record<Platform, string>> = { web: '🖥', mobile: '📱', tablet: '⏱', superadmin: '🛠' }
@@ -42,9 +43,9 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
                 </span>
                 <span className={styles.description}>{area.description}</span>
                 <span className={styles.facts}>
-                  <span>{getAreaFlows(area, map.flows, areas).length} flows</span>
-                  <span>{getAreaServices(area).length} repos</span>
-                  <span>{mappedFiles(area)} files</span>
+                  <span>{plural(getAreaFlows(area, map.flows, areas).length, 'flow')}</span>
+                  <span>{plural(getAreaServices(area).length, 'repo')}</span>
+                  <span>{plural(mappedFiles(area), 'file')}</span>
                   <span>{owners.length ? owners.join(', ') : 'owner unassigned'}</span>
                 </span>
               </button>

@@ -1,6 +1,7 @@
 import type { ResourceRelation } from '@dependency-explorer/data'
 import { allResourceRelations, connectivityMap, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
 import { evidenceHref } from '../../utils/evidenceLink'
+import { plural } from '../../utils/plural'
 import styles from './ResourcePage.module.css'
 
 const GRADE_BADGE: Record<ResourceRelation['grade'], { symbol: string; title: string }> = {
@@ -43,7 +44,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
           })}
         </p>
         {note?.description && <p className={styles.note}>{note.description}</p>}
-        <p className={styles.counts}>{counts.services} services · {counts.files} files · {counts.flows} flows</p>
+        <p className={styles.counts}>{plural(counts.services, 'service')} · {plural(counts.files, 'file')} · {plural(counts.flows, 'flow')}</p>
         <button type="button" className={styles.impact} onClick={() => onBlast(id)}>If this is down…</button>
       </header>
       {resource.model && (
