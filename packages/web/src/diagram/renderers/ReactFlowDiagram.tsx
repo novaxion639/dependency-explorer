@@ -59,11 +59,12 @@ function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<Diag
   return (
     <>
       <BaseEdge id={id} path={`M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`} markerEnd={markerEnd} style={{ stroke: paint.stroke, strokeWidth: strokeWidth(edge.weight), strokeDasharray: DASH[edge.mode], opacity: paint.opacity }} />
-      {edge.label && (
+      {(edge.label || edge.condition) && (
         <EdgeLabelRenderer>
           <button
             type="button"
             className={`${styles.edgeLabel} nodrag nopan`}
+            aria-label={`${edge.label}${edge.condition ? ` (if ${edge.condition})` : ''}`}
             style={{ transform: `translate(-50%, -50%) translate(${s.lx}px, ${s.ly}px)`, opacity: paint.opacity, color: paint.text }}
             onClick={() => {
               if (ref) {
@@ -72,6 +73,7 @@ function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<Diag
             }}
           >
             {edge.label}
+            {edge.condition && <span className={styles.pill}>if {edge.condition}</span>}
           </button>
         </EdgeLabelRenderer>
       )}

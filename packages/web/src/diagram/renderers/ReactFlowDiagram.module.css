@@ -9,3 +9,7 @@
 .groupLabel { font-weight: 600; }
 .handle { opacity: 0; pointer-events: none; }
 .edgeLabel { position: absolute; pointer-events: all; font-size: var(--text-xs); background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0 var(--space-1); cursor: pointer; }
+.node[data-kind='job'] { border-style: dashed; }
+.node[data-kind='store'] { background: var(--paper-2); }
+.group[data-kind='lane'] { background: var(--paper); border-style: dashed; border-color: var(--rule-strong); }
+.pill { display: block; margin-top: 2px; padding: 0 var(--space-2); border: 1px solid var(--ink); border-radius: 999px; background: var(--highlight); color: var(--ink); }

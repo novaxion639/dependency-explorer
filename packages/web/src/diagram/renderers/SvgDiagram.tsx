@@ -2,7 +2,7 @@ import type { KeyboardEvent, ReactNode } from 'react'
 import type { Emphases, Emphasis } from '../focus'
 import { edgeSegment, LINE_HEIGHT, PAD_X, PAD_Y, textWidth } from '../geometry'
 import type { Box, DiagramModel, DiagramRef } from '../model'
-import { DASH, EMPHASIS_WORD, nodeFill, PAINT, strokeWidth } from '../paint'
+import { DASH, EMPHASIS_WORD, NODE_DASH, nodeFill, PAINT, strokeWidth } from '../paint'
 
 const LABEL_FONT = 11
 
@@ -61,10 +61,10 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
       {model.groups.map(g => {
         const emphasis = emphases.groups.get(g.id) ?? 'normal'
         const paint = PAINT[emphasis]
-        const fill = emphasis === 'on' ? 'var(--highlight)' : g.kind === 'band' ? 'var(--paper)' : 'var(--paper-2)'
+        const fill = emphasis === 'on' ? 'var(--highlight)' : g.kind === 'group' ? 'var(--paper-2)' : 'var(--paper)'
         return (
           <Clickable key={g.id} label={g.label} target={g.ref} onSelect={onSelect}>
-            <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={6} style={{ fill, stroke: paint.stroke, strokeWidth: 1, opacity: paint.opacity }} />
+            <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={6} style={{ fill, stroke: paint.stroke, strokeWidth: 1, strokeDasharray: g.kind === 'lane' ? '4 4' : undefined, opacity: paint.opacity }} />
             <text x={g.x + PAD_X} y={baseline(g, g.fontSize, 0)} style={{ fill: paint.text, fontSize: g.fontSize, fontWeight: 600, opacity: paint.opacity }}>{g.label}</text>
           </Clickable>
         )
@@ -94,7 +94,7 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
         return (
           <g key={n.id}>
             <Clickable label={spoken(n.label, emphasis)} target={n.ref} onSelect={onSelect}>
-              <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={4} style={{ fill, stroke: paint.stroke, strokeWidth: n.kind === 'subject' ? 2.5 : 1.5, strokeDasharray: n.kind === 'unmapped' ? '6 4' : undefined, opacity: paint.opacity }} />
+              <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={4} style={{ fill, stroke: paint.stroke, strokeWidth: n.kind === 'subject' ? 2.5 : 1.5, strokeDasharray: NODE_DASH[n.kind], opacity: paint.opacity }} />
               {text.map((line, i) => (
                 <text key={`${i}:${line}`} x={n.x + PAD_X} y={baseline(n, n.fontSize, i)} style={{ fill: paint.text, fontSize: n.fontSize, fontWeight: i === 0 ? 600 : 400, opacity: paint.opacity }}>{line}</text>
               ))}
@@ -110,16 +110,19 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
       {model.edges.map(e => {
         const from = boxes.get(e.from)
         const to = boxes.get(e.to)
-        if (!from || !to || !e.label) {
+        if (!from || !to || (!e.label && !e.condition)) {
           return null
         }
         const s = edgeSegment(from, to, e.lane, e.lanes)
         const paint = PAINT[emphases.edges.get(e.id) ?? 'normal']
-        const w = textWidth(e.label, LABEL_FONT) + 8
+        const pill = e.condition ? `if ${e.condition}` : ''
+        const w = Math.max(textWidth(e.label, LABEL_FONT), textWidth(pill, LABEL_FONT)) + 8
         return (
-          <Clickable key={`label:${e.id}`} label={`${from.label} → ${to.label}: ${e.label}`} target={e.ref} onSelect={onSelect}>
-            <rect x={s.lx - w / 2} y={s.ly - 9} width={w} height={16} rx={3} style={{ fill: 'var(--card)', stroke: 'var(--rule)', opacity: paint.opacity }} />
-            <text x={s.lx} y={s.ly + 3} textAnchor="middle" style={{ fill: paint.text, fontSize: LABEL_FONT, opacity: paint.opacity }}>{e.label}</text>
+          <Clickable key={`label:${e.id}`} label={`${from.label} → ${to.label}: ${e.label}${pill ? ` (${pill})` : ''}`} target={e.ref} onSelect={onSelect}>
+            {e.label && <rect x={s.lx - w / 2} y={s.ly - 9} width={w} height={16} rx={3} style={{ fill: 'var(--card)', stroke: 'var(--rule)', opacity: paint.opacity }} />}
+            {e.label && <text x={s.lx} y={s.ly + 3} textAnchor="middle" style={{ fill: paint.text, fontSize: LABEL_FONT, opacity: paint.opacity }}>{e.label}</text>}
+            {pill && <rect x={s.lx - w / 2} y={s.ly + 8} width={w} height={16} rx={8} style={{ fill: 'var(--highlight)', stroke: 'var(--ink)', opacity: paint.opacity }} />}
+            {pill && <text x={s.lx} y={s.ly + 20} textAnchor="middle" style={{ fill: 'var(--ink)', fontSize: LABEL_FONT, opacity: paint.opacity }}>{pill}</text>}
           </Clickable>
         )
       })}

@@ -46,4 +46,15 @@ describe('SvgDiagram', () => {
   it('renders no buttons without a select handler', () => {
     expect(renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} />)).not.toContain('role="button"')
   })
+  it('draws a condition as an "if" pill and dashes background jobs', () => {
+    const withCondition: DiagramModel = {
+      ...model,
+      nodes: model.nodes.map(n => (n.id === 'calls:svc-y' ? { ...n, kind: 'job' as const } : n)),
+      edges: model.edges.map(e => ({ ...e, mode: 'sync' as const, condition: 'absence shifts only' })),
+    }
+    const html = renderToStaticMarkup(<SvgDiagram model={withCondition} emphases={emphasise(withCondition, NO_FOCUS)} onSelect={noop} />)
+    expect(html).toContain('>if absence shifts only<')
+    expect(html).toContain('aria-label="svc-x → Calls · 1: SQS ×2 (if absence shifts only)"')
+    expect(html).toContain('stroke-dasharray:6 4')
+  })
 })

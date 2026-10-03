@@ -39,4 +39,10 @@ describe('emphasise', () => {
     expect(e.groups.get('G')).toBe('normal')
     expect([e.edges.get('e2'), e.edges.get('e1')]).toEqual(['normal', 'dim'])
   })
+  it('focuses a chapter: its members stay, the rest dims, groups stay as context', () => {
+    const e = emphasise(model, { spotlight: null, impact: null, chapter: new Set(['n3', 'n4']) })
+    expect([e.nodes.get('n3'), e.nodes.get('n4'), e.nodes.get('n1')]).toEqual(['normal', 'normal', 'dim'])
+    expect(e.groups.get('G')).toBe('normal')
+    expect([e.edges.get('e2'), e.edges.get('e1')]).toEqual(['normal', 'dim'])
+  })
 })
