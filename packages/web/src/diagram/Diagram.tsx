@@ -76,9 +76,27 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
   return (
     <section className={styles.frame} aria-label={model.title}>
       <div role="toolbar" aria-label="Diagram tools" className={styles.toolbar}>
-        <div role="radiogroup" aria-label="Renderer" className={styles.renderers}>
+        <div
+          role="radiogroup"
+          aria-label="Renderer"
+          className={styles.renderers}
+          onKeyDown={e => {
+            const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0
+            if (step === 0) {
+              return
+            }
+            e.preventDefault()
+            const list = model.renderers
+            const index = (list.indexOf(active) + step + list.length) % list.length
+            const next = list[index]
+            if (next) {
+              onRenderer(next)
+              e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')[index]?.focus()
+            }
+          }}
+        >
           {model.renderers.map(r => (
-            <button key={r} type="button" role="radio" aria-checked={r === active} onClick={() => onRenderer(r)}>{RENDERER_LABEL[r]}</button>
+            <button key={r} type="button" role="radio" aria-checked={r === active} tabIndex={r === active ? 0 : -1} onClick={() => onRenderer(r)}>{RENDERER_LABEL[r]}</button>
           ))}
         </div>
         <button type="button" onClick={() => { void exportPng() }}>Export PNG</button>

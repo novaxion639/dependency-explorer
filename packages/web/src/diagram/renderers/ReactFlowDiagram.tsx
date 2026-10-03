@@ -5,9 +5,11 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { Emphases } from '../focus'
+import { edgeName } from '../edgeName'
 import { edgeSegment, type Point } from '../geometry'
 import type { Box, DiagramModel, DiagramRef } from '../model'
 import { DASH, nodeFill, PAINT, strokeWidth } from '../paint'
+import { enteredNodeId } from './nodeKey'
 import { DiagramSelectContext } from './selectContext'
 import { toReactFlow, type DiagramFlowEdge, type DiagramFlowNode, type DiagramGroupType, type DiagramNodeType } from './toReactFlow'
 import styles from './ReactFlowDiagram.module.css'
@@ -45,10 +47,15 @@ function boxOf(n: InternalNode): Box {
   return { x: n.internals.positionAbsolute.x, y: n.internals.positionAbsolute.y, w: n.measured.width ?? n.width ?? 0, h: n.measured.height ?? n.height ?? 0 }
 }
 
+function nodeLabel(n: InternalNode<DiagramFlowNode>): string {
+  const data = n.internals.userNode.data
+  return 'group' in data ? data.group.label : data.node.label
+}
+
 function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<DiagramFlowEdge>) {
   const select = useContext(DiagramSelectContext)
-  const from = useInternalNode(source)
-  const to = useInternalNode(target)
+  const from = useInternalNode<DiagramFlowNode>(source)
+  const to = useInternalNode<DiagramFlowNode>(target)
   if (!from || !to || !data) {
     return null
   }
@@ -64,7 +71,7 @@ function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<Diag
           <button
             type="button"
             className={`${styles.edgeLabel} nodrag nopan`}
-            aria-label={`${edge.label}${edge.condition ? ` (if ${edge.condition})` : ''}`}
+            aria-label={edgeName(nodeLabel(from), nodeLabel(to), edge)}
             style={{ transform: `translate(-50%, -50%) translate(${s.lx}px, ${s.ly}px)`, opacity: paint.opacity, color: paint.text }}
             onClick={() => {
               if (ref) {
@@ -121,6 +128,14 @@ export function ReactFlowDiagram({ model, emphases, onSelect, onMove }: Props) {
         edgeTypes={edgeTypes}
         onNodeClick={(_, n) => {
           const ref = refOf(n)
+          if (ref) {
+            onSelect(ref)
+          }
+        }}
+        onKeyDown={e => {
+          const id = enteredNodeId(e.key, e.target)
+          const n = id ? nodes.find(x => x.id === id) : undefined
+          const ref = n ? refOf(n) : undefined
           if (ref) {
             onSelect(ref)
           }

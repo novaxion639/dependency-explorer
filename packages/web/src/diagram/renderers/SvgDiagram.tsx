@@ -2,6 +2,7 @@ import type { KeyboardEvent, ReactNode } from 'react'
 import type { Emphases, Emphasis } from '../focus'
 import { edgeSegment, LINE_HEIGHT, PAD_X, PAD_Y, textWidth } from '../geometry'
 import type { Box, DiagramModel, DiagramRef } from '../model'
+import { edgeName } from '../edgeName'
 import { DASH, EMPHASIS_WORD, NODE_DASH, nodeFill, PAINT, strokeWidth } from '../paint'
 
 const LABEL_FONT = 11
@@ -118,7 +119,7 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
         const pill = e.condition ? `if ${e.condition}` : ''
         const w = Math.max(textWidth(e.label, LABEL_FONT), textWidth(pill, LABEL_FONT)) + 8
         return (
-          <Clickable key={`label:${e.id}`} label={`${from.label} → ${to.label}: ${e.label}${pill ? ` (${pill})` : ''}`} target={e.ref} onSelect={onSelect}>
+          <Clickable key={`label:${e.id}`} label={edgeName(from.label, to.label, e)} target={e.ref} onSelect={onSelect}>
             {e.label && <rect x={s.lx - w / 2} y={s.ly - 9} width={w} height={16} rx={3} style={{ fill: 'var(--card)', stroke: 'var(--rule)', opacity: paint.opacity }} />}
             {e.label && <text x={s.lx} y={s.ly + 3} textAnchor="middle" style={{ fill: paint.text, fontSize: LABEL_FONT, opacity: paint.opacity }}>{e.label}</text>}
             {pill && <rect x={s.lx - w / 2} y={s.ly + 8} width={w} height={16} rx={8} style={{ fill: 'var(--highlight)', stroke: 'var(--ink)', opacity: paint.opacity }} />}
