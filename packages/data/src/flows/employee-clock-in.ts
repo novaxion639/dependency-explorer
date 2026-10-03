@@ -20,7 +20,7 @@ const employee_clock_in: ServiceFlow = ServiceFlowSchema.parse({
     { "title": "The punch lands on the tablet", "summary": "The punch is written to on-device SQLite first, then the app tries to send it to svc-punch.", "refs": ["cu-eci-card", "cu-eci-upsert", "sqlite-tablet"] },
     { "title": "svc-punch stores the punch", "summary": "svc-punch writes one paired clock-in-out record and precomputes its auto-close at the shop's closing hour.", "refs": ["svc-punch", "cu-eci-controller", "cu-eci-manager", "dynamo-svc-punch-tablet"] },
     { "title": "Unsent punches catch up", "summary": "Every 15 minutes, on reconnect or on focus, the tablet refreshes settings and resends queued punches in chunks of 25.", "refs": ["cu-eci-sync", "cu-eci-queue"] },
-    { "title": "skello-app checks lateness", "summary": "Each sync updates the shop's settings, which triggers skello-app's lateness SMS job.", "refs": ["svc-punch", "skello-app"] }
+    { "title": "skello-app checks lateness", "summary": "Each sync updates the shop's settings, which triggers skello-app's lateness SMS job.", "refs": ["cu-eci-sync", "dynamo-svc-punch-tablet"] }
   ],
   "links": [{"to": "badging-review", "kind": "continuation", "note": "tablet punches materialize as monolith badgings at review time"}, {"to": "mobile-clock-in", "kind": "same-journey", "note": "the same punch journey on the phone; the lateness-callback code layer lives there"}],
   "steps": [

@@ -14,7 +14,7 @@ const mobile_documents_payslips: ServiceFlow = ServiceFlowSchema.parse({
     { "title": "An employee opens documents", "summary": "The phone lists folders, payslips among them, and the documents inside.", "refs": ["skello-mobile", "cu-mdp-screen", "cu-mdp-folders"] },
     { "title": "Documents come from svc-documents-v2", "summary": "Reads, downloads and deletes go straight to svc-documents-v2, just as on the web.", "refs": ["cu-mdp-api", "cu-mdp-client", "svc-documents-v2"] },
     { "title": "Uploads go straight to S3", "summary": "The phone creates the document, then sends the file, from storage or the camera, directly to S3.", "refs": ["cu-mdp-api", "s3-docs-v2-mobile"] },
-    { "title": "Names and signatures fill in", "summary": "skello-app supplies creator names; pending attendance-sheet signatures feed the home screen.", "refs": ["skello-app", "svc-documents-v2"] }
+    { "title": "Names and signatures fill in", "summary": "skello-app supplies creator names; pending attendance-sheet signatures feed the home screen.", "refs": ["cu-mdp-client", "svc-documents-v2"] }
   ],
   "steps": [
     {

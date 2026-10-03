@@ -19,7 +19,7 @@ const subscription_upgrade: ServiceFlow = ServiceFlowSchema.parse({
     { "title": "A manager asks for an upsell", "summary": "The settings page sends the request straight to svc-billing-automation, which records it and hands the interest to sales in Salesforce.", "refs": ["skello-app-front", "svc-billing-automation", "cu-up-upsell-manager", "dynamo-billing"] },
     { "title": "The subscription changes", "summary": "Chargebee holds the subscription; billing's step functions process each change, churn included.", "refs": ["cu-up-chargebee-manager", "cu-up-lifecycle-handler"] },
     { "title": "skello-app gets the new state", "summary": "Billing writes organisation, shop and license changes, and churn deletions, back into skello-app.", "refs": ["cu-up-skello-manager", "skello-app", "cu-up-mono-api", "pg-skello-billing"] },
-    { "title": "The client is pinged and emailed", "summary": "A final step pings the browser over the legacy websockets, and emails go out through svc-communications-v2.", "refs": ["cu-up-ws-job", "svc-websockets", "svc-communications-v2"] }
+    { "title": "The client is pinged and emailed", "summary": "A final step pings the browser over the legacy websockets, and emails go out through svc-communications-v2.", "refs": ["cu-up-ws-job", "svc-websockets"] }
   ],
   "steps": [
     {

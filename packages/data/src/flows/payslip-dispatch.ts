@@ -21,7 +21,7 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
     { "title": "Analysis is requested", "summary": "A stream listener builds the analysis requests and batch-sends them to svc-intelligence's queue.", "refs": ["cu-pd-analyze-listener", "cu-pd-extract-mgr", "svc-intelligence"] },
     { "title": "AI reads the payslips", "summary": "svc-intelligence fetches the document, turns its pages into images and extracts each employee's payslip on Bedrock.", "refs": ["cu-pd-handler", "cu-pd-doc-manager", "cu-pd-docs-repo", "cu-pd-bedrock", "dynamo-intelligence", "mongo-intelligence-pd"] },
     { "title": "The user sees progress", "summary": "Each stored model response triggers a progress or completion push over the legacy websockets.", "refs": ["dynamo-intelligence", "cu-pd-notify-handler", "cu-pd-notify", "svc-websockets"] },
-    { "title": "Employees get their payslips", "summary": "Per-employee documents and their document-ready notice go out from svc-documents-v2 through svc-communications-v2.", "refs": ["svc-documents-v2", "svc-communications-v2"] }
+    { "title": "Employees get their payslips", "summary": "Per-employee documents and their document-ready notice go out from svc-documents-v2 through svc-communications-v2.", "refs": ["svc-documents-v2"] }
   ],
   "links": [{"to": "mobile-documents-payslips", "kind": "continuation", "note": "dispatched payslips are what employees consume from the mobile Documents tab"}],
   "steps": [

@@ -137,7 +137,7 @@ export function swimlanes(flow: ServiceFlow): DiagramModel {
     const store = infra.get(id)
     if (store) {
       const resource = store.resources?.[0]
-      return { id: infraNodeId(id), kind: 'store', label: fitLabel(store.label, NODE_W, FONT), detail: [store.type], stores: [], fontSize: FONT, x: 0, y: 0, w: NODE_W, h: linesHeight(2, FONT), ...(resource ? { ref: { type: 'resource' as const, id: resource } } : {}) }
+      return { id: infraNodeId(id), kind: 'store', label: fitLabel(store.label, NODE_W, FONT), detail: [store.type], stores: [], fontSize: FONT, x: 0, y: 0, w: NODE_W, h: linesHeight(2, FONT), ref: resource ? { type: 'resource', id: resource } : { type: 'unit', id } }
     }
     return { id: serviceNodeId(id), kind: 'service', label: fitLabel(id, NODE_W, FONT), detail: [], stores: [], fontSize: FONT, x: 0, y: 0, w: NODE_W, h: linesHeight(1, FONT), ref: { type: 'service', name: id } }
   }

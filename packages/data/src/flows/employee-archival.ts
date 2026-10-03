@@ -14,7 +14,7 @@ const employee_archival: ServiceFlow = ServiceFlowSchema.parse({
     { "title": "The employee is archived", "summary": "skello-app stamps the archive, clears a past-dated email and deletes pending future swaps, leaves and holiday settings.", "refs": ["cu-ea-archive-service", "cu-ea-history-model", "pg-skello-archival"] },
     { "title": "Future shifts are cleared", "summary": "A background job backs up future shifts, then unassigns or deletes them and recomputes planning hours.", "refs": ["cu-ea-shifts-job", "redis-skello-archival", "pg-skello-archival"] },
     { "title": "Other records follow", "summary": "Jobs remove availabilities, recalculate paid leave, flag the user in Intercom and log the activity to svc-events.", "refs": ["cu-ea-avail-job", "cu-ea-paidleaves-job", "cu-ea-intercom-job", "cu-ea-activitylog", "svc-events"] },
-    { "title": "Services learn of the archive", "summary": "The users change stream updates svc-users and svc-search, and svc-punch revokes the employee's badge rights.", "refs": ["cu-ea-svcusers-job", "cu-ea-svcpunch-job", "cu-ea-svcsearch-job", "cu-ea-svcsearch-repo", "svc-users", "svc-punch", "svc-search"] }
+    { "title": "Services learn of the archive", "summary": "The users change stream updates svc-users and svc-search, and svc-punch's user copies, which govern badge eligibility.", "refs": ["cu-ea-svcusers-job", "cu-ea-svcpunch-job", "cu-ea-svcsearch-job", "cu-ea-svcsearch-repo", "svc-users", "svc-punch", "svc-search"] }
   ],
   "links": [
     { "to": "employee-onboarding", "kind": "domain-related", "note": "the lifecycle inverse — V3::Users::UnarchiveService is the in-repo mirror of this flow" }
