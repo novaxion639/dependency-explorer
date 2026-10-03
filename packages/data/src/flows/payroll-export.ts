@@ -14,6 +14,12 @@ const payroll_export: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager configures the Pay Partners integration (variable pay elements and export template — the front's svc_payroll_client) and triggers a sync. svc-payroll's orchestrator loads the provider config, template mappings and company mappings (provider today: A3 Innuva Nomina, Spain), pulls employee data from svc-hris, processes EVPs through ready/failure handlers, and on finalisation notifies the manager through svc-communications-v2. Sync state and per-run EVP results live in the service's DynamoDB.",
   "trigger": {"actor": "manager", "role": "payroll"},
   "primaryArea": "payroll-reports",
+  "chapters": [
+    { "title": "A manager sets up Pay Partners", "summary": "The front reads variable pay elements and the export template from svc-payroll, then triggers a sync.", "refs": ["skello-app-front", "svc-payroll"] },
+    { "title": "The sync run starts", "summary": "svc-payroll loads the provider config and mappings, records the run and pulls employee data from svc-hris.", "refs": ["cu-pe-orchestrator", "dynamo-payroll", "svc-hris"] },
+    { "title": "Pay elements are processed", "summary": "Each ready variable pay element is stored with the run; failures go to a separate handler.", "refs": ["cu-pe-evp-ready", "dynamo-payroll"] },
+    { "title": "The manager hears the outcome", "summary": "The run is closed and a success or failure notice goes out through svc-communications-v2.", "refs": ["cu-pe-finalize", "dynamo-payroll", "svc-communications-v2"] }
+  ],
   "links": [{"to": "planning-report-export", "kind": "domain-related", "note": "shared svc-reports PAM export machinery"}],
   "steps": [
     {

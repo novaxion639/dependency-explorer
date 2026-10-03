@@ -542,4 +542,9 @@ describe('flow chapters', () => {
       expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
     }
   })
+  it('are authored for the payroll, missions, org admin and workload reading paths', () => {
+    for (const id of ['payslip-dispatch', 'mission-management', 'mobile-app-bootstrap', 'org-onboarding', 'payroll-export', 'planning-report-export', 'pos-revenue-ingestion', 'workload-plan-consultation', 'workload-plan-creation']) {
+      expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
+    }
+  })
 })

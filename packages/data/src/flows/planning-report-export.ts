@@ -14,6 +14,12 @@ const planning_report_export: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager exports the planning/payroll Excel report. ReportsController#excel_report saves the user's report preferences, resolves the date interval and enqueues the export: ExportExcelParallelJob (Sidekiq, batch-mode feature flag) or ExportReportJob. The job builds the workbook with Report::XlsxCreator from PostgreSQL planning data, uploads it to the temporary-assets S3 bucket and streams progress + the presigned download URL over the monolith's own ActionCable channel. svc-reports is NOT in the generation path — it provides payroll-export configuration (PAM configs via Microservices::ReportService) used by the payroll-integration transforms on the same controller.",
   "trigger": {"actor": "manager"},
   "primaryArea": "payroll-reports",
+  "chapters": [
+    { "title": "A manager exports the report", "summary": "skello-app saves the report preferences, resolves the dates and queues the export job.", "refs": ["skello-app-front", "cu-exp-controller"] },
+    { "title": "The workbook is built", "summary": "A background job builds the Excel workbook from the period's planning data, in batch mode behind a feature flag.", "refs": ["cu-exp-parallel-job", "cu-exp-job", "cu-exp-xlsx", "pg-report-export"] },
+    { "title": "The file is handed over", "summary": "The workbook is uploaded to S3, and its download link streams back over skello-app's own websocket channel.", "refs": ["cu-exp-job", "s3-temporary-assets", "skello-app"] },
+    { "title": "Payroll exports read svc-reports", "summary": "Payroll-integration exports fetch their configuration from svc-reports.", "refs": ["cu-exp-controller", "svc-reports"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

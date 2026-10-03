@@ -9,6 +9,14 @@ const mission_management: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager runs temp-work missions. CRUD lives ENTIRELY in svc-shops (MissionController → MissionManager → its own Mongo `missions` collection) — the monolith's missions controller only exports the xlsx report (shifts from its Postgres, mission name fetched back from svc-shops) and purges missions on shop teardown (Shops::PurgeShopMissionsJob). The details view's 'additional infos' fan out across three services: svc-shops reads the shop timezone from svc-search's shared rawShop collection (hard dependency — missing timezone throws) and the mission's shifts from the shared shifts collection, computes planned/worked/ongoing hours in-memory against now-in-shop-timezone, and asks svc-employees for active-contract wages to flag the first employee missing hourly_wage_with_costs (null/0 counts as missing). The KPIs tab reads svc-kpis-v2 separately. Bulk CSV import batches at 100; the xlsx export batches at 500.",
   "trigger": { "actor": "manager", "role": "can_read_missions / can_download_mission_report (monolith) · MissionAction permissions (svc-shops); shop gated by is_missions_enabled" },
   "primaryArea": "missions",
+  "chapters": [
+    { "title": "A manager manages missions", "summary": "The front creates and edits missions directly in svc-shops, which checks the permission for each action.", "refs": ["skello-app-front", "cu-mm-front-store", "cu-mm-front-client", "svc-shops", "cu-mm-controller"] },
+    { "title": "Missions live in svc-shops", "summary": "svc-shops keeps missions in its own MongoDB collection.", "refs": ["cu-mm-manager", "cu-mm-repo", "mongo-shops-missions"] },
+    { "title": "Mission hours are computed", "summary": "svc-shops reads the shop timezone and mission shifts from svc-search's shared database and sorts hours into planned, worked and ongoing.", "refs": ["cu-mm-rawshop-repo", "cu-mm-shift-repo", "mongo-search-shared", "svc-search", "cu-mm-hours"] },
+    { "title": "Missing wages are flagged", "summary": "svc-shops asks svc-employees for active contracts and flags the first employee with no hourly wage.", "refs": ["cu-mm-wage", "svc-employees"] },
+    { "title": "The report is exported", "summary": "skello-app builds the xlsx report from its own shifts, fetching the mission name from svc-shops.", "refs": ["skello-app", "cu-mm-mono-controller", "cu-mm-mono-gen", "cu-mm-mono-exporter"] },
+    { "title": "Shop teardown purges missions", "summary": "When a shop is torn down, a skello-app job asks svc-shops to purge its missions.", "refs": ["cu-mm-purge-job", "svc-shops"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

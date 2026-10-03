@@ -11,6 +11,11 @@ const workload_plan_creation: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A planner saves a workload forecast. The V2 surface (WorkloadPlanV2Controller#deleteAndUpsert) batch-replaces the plan rows in the service's MongoDB. No KPI call happens here (corrected 2026-07-11: the svc-kpis-v2 calibration belongs to the consultation path's dynamic rule generation).",
   "trigger": {"actor": "manager"},
   "primaryArea": "workload-forecasting",
+  "chapters": [
+    { "title": "A planner saves the forecast", "summary": "The front sends the whole forecast to svc-workload-plan through its V2 client.", "refs": ["skello-app-front", "svc-workload-plan"] },
+    { "title": "Permission is checked", "summary": "svc-workload-plan checks the planner may replace the shop's workload plans.", "refs": ["cu-wpcr-controller-v2"] },
+    { "title": "The plans are replaced", "summary": "The shop's plan rows are deleted and rewritten in one batch in MongoDB; no KPI call happens here.", "refs": ["cu-wpcr-manager-v2", "mongo-workload-cr"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

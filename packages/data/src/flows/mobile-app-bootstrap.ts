@@ -10,6 +10,13 @@ const mobile_app_bootstrap: ServiceFlow = ServiceFlowSchema.parse({
   "description": "The skello-mobile launch path. Pre-auth: mobile config (GET /v3/api/mobile/config — an UNAUTHENTICATED monolith endpoint driving version gates) and feature flags (unauthenticated svc-feature-flags GET /features). Sign-in: email/password hits POST /v3/login on the MONOLITH (auth.skello.io host) with includedAuthorizations [punchClock]; SSO runs through svc-users pre-authentication capability checks; multi-org accounts swap to an employee-scoped token (svc-users POST /token-employee). Tokens are chunked into expo-secure-store (2000-byte chunks beating the 2048 SecureStore limit) with single-flight refresh; INVALID_TOKEN forces logout. Session bootstrap then pulls current_user, memberships and holiday settings from the monolith, and the main tab navigator registers the Expo push token as a device token on svc-communications-v2 (with retry). Home banners come from the mobile-only v3/api/mobile/banners surface.",
   "trigger": {"actor": "employee", "role": "any mobile user"},
   "primaryArea": "org-admin",
+  "chapters": [
+    { "title": "The app checks before sign-in", "summary": "Feature flags and the mobile version gate load without authentication.", "refs": ["skello-mobile", "cu-mab-flags", "svc-feature-flags", "cu-mab-config", "skello-app"] },
+    { "title": "The employee signs in", "summary": "Email and password go to skello-app; SSO capability checks go to svc-users.", "refs": ["cu-mab-signin", "cu-mab-auth", "skello-app", "svc-users"] },
+    { "title": "Tokens are kept safe", "summary": "Tokens are chunked into secure storage and refreshed one at a time; an invalid token logs the user out.", "refs": ["cu-mab-auth"] },
+    { "title": "The organisation is chosen", "summary": "Multi-organisation accounts swap to an employee token from svc-users.", "refs": ["cu-mab-orgswitch", "svc-users"] },
+    { "title": "The session starts", "summary": "The app loads the user, memberships and holiday settings, then registers its push token with svc-communications-v2.", "refs": ["cu-mab-bootstrap", "skello-app", "cu-mab-push", "svc-communications-v2"] }
+  ],
   "steps": [
     {
       "from": "skello-mobile",
