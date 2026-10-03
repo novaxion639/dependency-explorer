@@ -12,7 +12,6 @@ const FORMAT_SUFFIX = /\(\.:format\)$/
 const PARAM = ':p'
 const SPECIFIER_LEAD = /(?:\bfrom|\bimport\s*\(?|\brequire\s*\(|\b(?:vi|jest)\.mock\s*\()\s*$/
 const SPECIFIER_WINDOW = 40
-const WHOLE_INTERPOLATION = /^\$\{[^}]*\}$/
 const ANY_INTERPOLATION = /\$\{[^}]*\}/
 const DOT_SEGMENT = /^\.{1,2}$/
 const NAMED_IMPORT = /import\s*\{([^}]*)\}\s*from/g
@@ -42,13 +41,13 @@ function escapeRegExp(s: string): string {
 }
 
 function urlSegment(s: string): UrlSegment | null {
-  if (WHOLE_INTERPOLATION.test(s)) {
-    return PARAM
-  }
   if (!ANY_INTERPOLATION.test(s)) {
     return URL_SEGMENT.test(s) && !DOT_SEGMENT.test(s) ? s : null
   }
   const pieces = s.split(ANY_INTERPOLATION)
+  if (pieces.every(p => p === '')) {
+    return PARAM
+  }
   return pieces.every(p => p === '' || URL_SEGMENT.test(p)) ? new RegExp(`^${pieces.map(escapeRegExp).join('.*')}$`) : null
 }
 
@@ -92,7 +91,10 @@ function matchesTail(route: string[], url: UrlSegment[]): boolean {
 export function routeGrade(callerCode: string, imported: string[], calleePath: string, routes: ReadonlyArray<RouteRef>): 'import' | 'text' | null {
   const parsed = routes.map(r => ({ controllerFile: r.controllerFile, segments: routeSegments(r.path) }))
   const fullMatch = (u: UrlRef, r: { segments: string[] }) => u.absolute && r.segments.length === u.segments.length && matchesTail(r.segments, u.segments)
-  const fullPath = (u: UrlRef) => parsed.some(r => r.controllerFile === calleePath && fullMatch(u, r))
+  const fullPath = (u: UrlRef) => {
+    const owners = new Set(parsed.filter(r => fullMatch(u, r)).map(r => r.controllerFile))
+    return owners.has(calleePath) && (owners.size === 1 || !u.segments.some(s => s instanceof RegExp))
+  }
   const uniqueTail = (u: UrlRef) => {
     if (parsed.some(r => fullMatch(u, r))) {
       return false

@@ -26,6 +26,7 @@ const routes = [
   { path: '/:page/:id', controllerFile: NOTIFICATIONS },
   { path: '/v3/api/users/:id', controllerFile: V3_USERS },
   { path: '/v3/api/shops/:id', controllerFile: SHOPS },
+  { path: '/v3/api/shops', controllerFile: SHOPS },
   { path: '/v3/login', controllerFile: LOGIN },
   { path: '/v3/api/reports/export_custom_integration', controllerFile: REPORTS },
   { path: '/v3/api/reports/:id', controllerFile: REPORT_FILES },
@@ -91,5 +92,13 @@ describe('routeGrade', () => {
   })
   it('reads past escaped quotes', () => {
     expect(routeGrade("toast('can\\'t'); this.put('/organisations/upsert', {})", [], BILLING_ORGS, routes)).toBe('text')
+  })
+  it('reads a segment made only of interpolations as a parameter', () => {
+    expect(routeGrade("router.push(`/${urlId}${shopTurnoverPath}`)", [], ROOT_COUNTERS, routes)).toBeNull()
+    expect(routeGrade("httpClient.get(`/v3/api/shops/${id}${query}`)", [], SHOPS, routes)).toBe('import')
+  })
+  it('verifies through a mixed segment only when one controller owns every match', () => {
+    expect(routeGrade("httpClient.get(`/v3/api/${resource}s`)", [], V3_USERS, routes)).toBeNull()
+    expect(routeGrade("httpClient.get(`/v3/api/${resource}s`)", [], SHOPS, routes)).toBeNull()
   })
 })
