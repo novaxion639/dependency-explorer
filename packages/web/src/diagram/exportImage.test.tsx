@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { emphasise, NO_FOCUS } from './focus'
 import type { DiagramModel } from './model'
-import { exportName, standaloneSvg, svgSize, withPositions } from './exportImage'
+import { exportName, pngScale, standaloneSvg, svgSize, withPositions } from './exportImage'
 import { inlineTokens } from './tokens'
 
 const model: DiagramModel = {
@@ -32,5 +32,17 @@ describe('export', () => {
   })
   it('date-stamps export file names', () => {
     expect(exportName('service_svc-punch', 'png')).toMatch(/^service_svc-punch_\d{4}-\d{2}-\d{2}\.png$/)
+  })
+})
+
+describe('pngScale', () => {
+  it('exports at 2× while the canvas fits', () => {
+    expect(pngScale({ width: 1000, height: 800 })).toBe(2)
+  })
+  it("caps the PNG scale to Safari's canvas area", () => {
+    const size = { width: 6000, height: 4000 }
+    const scale = pngScale(size)
+    expect(Math.floor(size.width * scale) * Math.floor(size.height * scale)).toBeLessThanOrEqual(16_777_216)
+    expect(scale).toBeGreaterThan(0.8)
   })
 })

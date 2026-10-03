@@ -40,20 +40,30 @@ export function withPositions(model: DiagramModel, positions: ReadonlyMap<string
   }
 }
 
-export async function svgToPng(svg: string, size: { width: number; height: number }): Promise<string> {
+// Safari refuses canvases above 16,777,216 pixels (4096²).
+const MAX_CANVAS_PIXELS = 16_777_216
+
+export function pngScale(size: { width: number; height: number }): number {
+  return Math.min(PNG_SCALE, Math.sqrt(MAX_CANVAS_PIXELS / (size.width * size.height)))
+}
+
+export async function svgToPng(svg: string, size: { width: number; height: number }, background: string): Promise<string> {
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
   try {
     const img = new Image()
     img.src = url
     await img.decode()
+    const scale = pngScale(size)
     const canvas = document.createElement('canvas')
-    canvas.width = size.width * PNG_SCALE
-    canvas.height = size.height * PNG_SCALE
+    canvas.width = Math.floor(size.width * scale)
+    canvas.height = Math.floor(size.height * scale)
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('Canvas 2D is unavailable')
     }
-    ctx.scale(PNG_SCALE, PNG_SCALE)
+    ctx.fillStyle = background
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.scale(scale, scale)
     ctx.drawImage(img, 0, 0, size.width, size.height)
     return canvas.toDataURL('image/png')
   } finally {
