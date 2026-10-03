@@ -72,6 +72,11 @@ describe('swimlanes', () => {
     })
     expect(swimlanes(odd).nodes.find(n => n.id === infraNodeId('db'))?.ref).toEqual({ type: 'unit', id: 'db' })
   })
+  it('focuses only the lanes of a role-suffixed service ref, never its units', () => {
+    const focus = chapterFocus(m, shift, ['skello-app (data)'])
+    expect(focus.has('lane:skello-app')).toBe(true)
+    expect(focus.has(unitNodeId('cu-create-service'))).toBe(false)
+  })
   it('focuses a chapter, expanding a service that owns units to its lanes', () => {
     expect([...chapterFocus(m, shift, ['skello-app-front', 'cu-create-service', 'pg-skello-shifts'])].sort())
       .toEqual([infraNodeId('pg-skello-shifts'), serviceNodeId('skello-app-front'), unitNodeId('cu-create-service')].sort())

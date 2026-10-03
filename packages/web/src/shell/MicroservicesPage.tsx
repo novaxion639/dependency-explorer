@@ -5,7 +5,7 @@ import { ServiceSidebar } from '../components/connectivity/ServiceSidebar'
 import { FlowsPanel } from '../components/connectivity/FlowsPanel'
 import { Diagram } from '../diagram/Diagram'
 import { NO_FOCUS, type FocusState } from '../diagram/focus'
-import { refPatch } from '../diagram/refPatch'
+import { refPatch, selectPatch } from '../diagram/refPatch'
 import { areaEdges, areaGraph, areaSteps, defaultMinWeight } from '../diagram/layouts/areaGraph'
 import { areaId } from '../diagram/layouts/ids'
 import { overviewMap } from '../diagram/layouts/overview'
@@ -51,7 +51,12 @@ function Overview({ url, patch }: Props) {
       focus={focus}
       renderer={url.renderer}
       onRenderer={renderer => patch({ renderer })}
-      onSelect={ref => patch(refPatch(ref))}
+      onSelect={ref => {
+        const next = selectPatch(ref, url.present)
+        if (next) {
+          patch(next)
+        }
+      }}
       filename="microservices"
       notes={url.present ? ['← → step through the areas'] : ['select an area to draw its connections']}
     >
@@ -75,7 +80,12 @@ function ServiceView({ service, url, patch, onSelectService }: Props & { service
         focus={NO_FOCUS}
         renderer={url.renderer}
         onRenderer={renderer => patch({ renderer })}
-        onSelect={ref => patch(refPatch(ref))}
+        onSelect={ref => {
+          const next = selectPatch(ref, url.present)
+          if (next) {
+            patch(next)
+          }
+        }}
         filename={`service_${service.name}`}
         notes={url.present ? MARKS : []}
       />

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { presentKeyAction, onPresentKey, presentStepKey, stepThrough } from './presentMode'
 
-const key = (k: string, over: Partial<Parameters<typeof presentKeyAction>[0]> = {}) => ({ key: k, metaKey: false, ctrlKey: false, altKey: false, targetTag: 'BODY', targetEditable: false, ...over })
+const key = (k: string, over: Partial<Parameters<typeof presentKeyAction>[0]> = {}) => ({ key: k, metaKey: false, ctrlKey: false, altKey: false, targetTag: 'BODY', targetEditable: false, repeat: false, defaultPrevented: false, ...over })
 
 describe('presentKeyAction', () => {
   it('toggles on P and exits on Escape', () => {
@@ -56,5 +56,15 @@ describe('stepThrough', () => {
     expect([stepThrough(ids, 'a', 'next'), stepThrough(ids, 'c', 'next'), stepThrough(ids, 'a', 'prev')]).toEqual(['b', 'a', 'c'])
     expect(stepThrough(ids, 'gone', 'next')).toBe('a')
     expect(stepThrough([], null, 'next')).toBeNull()
+  })
+})
+
+describe('repeats and consumed keys', () => {
+  it('ignores auto-repeat for the present toggle', () => {
+    expect(presentKeyAction(key('p', { repeat: true }), false)).toBeNull()
+  })
+  it('never steps on a key another handler consumed, such as React Flow moving a selected node', () => {
+    expect(presentStepKey(key('ArrowRight', { defaultPrevented: true }))).toBeNull()
+    expect(presentStepKey(key('ArrowRight'))).toBe('next')
   })
 })

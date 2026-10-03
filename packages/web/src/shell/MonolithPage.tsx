@@ -6,7 +6,7 @@ import { Diagram } from '../diagram/Diagram'
 import type { FocusState } from '../diagram/focus'
 import { areaId } from '../diagram/layouts/ids'
 import { MONOLITH, monolithRows, monolithTreemap } from '../diagram/layouts/monolith'
-import { refPatch } from '../diagram/refPatch'
+import { selectPatch } from '../diagram/refPatch'
 import { map } from './dataIndexes'
 import { MicroservicesPage } from './MicroservicesPage'
 import styles from './MonolithPage.module.css'
@@ -37,7 +37,12 @@ export function MonolithPage({ url, patch }: Props) {
             focus={focus}
             renderer={url.renderer}
             onRenderer={renderer => patch({ renderer })}
-            onSelect={ref => patch(refPatch(ref))}
+            onSelect={ref => {
+              const next = selectPatch(ref, url.present)
+              if (next) {
+                patch(next)
+              }
+            }}
             filename="monolith"
             notes={['block size = files in skello-app', 'hatched = not mapped to an area yet']}
           />
