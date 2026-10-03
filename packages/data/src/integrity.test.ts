@@ -532,4 +532,9 @@ describe('flow chapters', () => {
       expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
     }
   })
+  it('are authored for the leave and HR reading paths', () => {
+    for (const id of ['availability-submission', 'leave-request-approval', 'leave-request-cancellation', 'leave-request-lifecycle', 'contract-amendment', 'employee-archival', 'employee-hris-sync', 'employee-onboarding']) {
+      expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
+    }
+  })
 })

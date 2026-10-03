@@ -9,6 +9,14 @@ const contract_amendment: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager amends an employee's contract hours (temporary with ends_at, permanent, or cyclic via team schedules). Hard-gated by the shop feature 'contracts_amendments' (IllegalOperation otherwise). CreateService is NOT transactional — it hand-rolls compensation: if the conditional svc-employees annualization sync fails, it destroys the new amendment and restores the previous amendment's ends_at. A permanent amendment auto-closes the previous overlapping non-cyclic one (before_create end_previous_amendment). after_commit fans out three async effects: PlanningHoursData reset (counter/payroll hours), user.touch cache bust, and the contracts-timeline cache rebuild that microservices read. Cyclic amendments bulk-edit through a single transactional upsert_all. Activity reaches svc-events only under FEATUREDEV_SVC_EVENTS_WRITE.",
   "trigger": { "actor": "manager", "role": "can_create_amendment (Pundit on highest_license)" },
   "primaryArea": "employees-hr",
+  "chapters": [
+    { "title": "A manager amends a contract", "summary": "The contract page posts the amendment; skello-app refuses it unless the shop has the amendments feature.", "refs": ["skello-app-front", "cu-ca-modal", "cu-ca-store", "skello-app", "cu-ca-controller"] },
+    { "title": "The amendment is saved", "summary": "The amendment is saved, and a permanent one closes the previous overlapping amendment.", "refs": ["cu-ca-create-service", "cu-ca-model", "pg-skello-amendments"] },
+    { "title": "Annualization syncs", "summary": "An annualization config goes to svc-employees; if that fails, the amendment is removed and the previous end date restored.", "refs": ["cu-ca-employee-client", "svc-employees"] },
+    { "title": "Cyclic amendments update in bulk", "summary": "Amendments that follow team schedules are written together in one transaction.", "refs": ["cu-ca-bulk-service"] },
+    { "title": "Hours and caches recompute", "summary": "Background jobs reset planning hours, recompute the week and rebuild the contracts timeline that microservices read.", "refs": ["cu-ca-recalc-job", "cu-ca-reset-job", "cu-ca-timeline-job", "redis-skello-amendments", "pg-skello-amendments"] },
+    { "title": "The change is audited", "summary": "An audit job records the amendment and, behind a feature flag, posts it to svc-events.", "refs": ["cu-ca-activity-job", "cu-ca-event-client", "svc-events"] }
+  ],
   "links": [
     { "to": "employee-onboarding", "kind": "domain-related", "note": "shares PlanningHoursData recompute, contracts-timeline cache rebuild and the ActivityJob → svc-events audit path" }
   ],

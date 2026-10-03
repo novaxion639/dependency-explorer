@@ -12,6 +12,12 @@ const availability_submission: ServiceFlow = ServiceFlowSchema.parse({
   "description": "An employee declares availability/unavailability slots (one-off on a date, or weekly recurring) from the employee surface (api/v2 — shared by web and mobile: skello-mobile's legacy v2 screens create/edit on the same endpoints, client-verified 2026-07-18). Submissions land as pending; the manager reviews them in the pending list and manages availabilities from the planning side (v3 API on web, api/v1 PATCH on mobile). Fully monolith-internal: rows in PostgreSQL consumed by planning display and shift-assignment tooling — no cross-service hop. One of the flows where web and mobile CONVERGE on the same legacy surface.",
   "trigger": {"actor": "employee"},
   "primaryArea": "leave-requests",
+  "chapters": [
+    { "title": "An employee declares availability", "summary": "From the web or the phone, the employee sends a one-off or weekly slot to the same skello-app endpoints.", "refs": ["skello-app-front", "skello-mobile", "cu-avs-mobile-screen", "cu-avs-employee-api"] },
+    { "title": "The slot is stored as pending", "summary": "skello-app turns the slot into dates and a recurrence and saves it as a pending availability.", "refs": ["cu-avs-employee-api", "pg-skello-availabilities"] },
+    { "title": "A manager reviews pending slots", "summary": "The manager's pending list reads the availability requests waiting for review.", "refs": ["cu-avs-pending", "pg-skello-availabilities"] },
+    { "title": "Managers add slots from the planning", "summary": "From the planning, managers list and create availabilities for their employees.", "refs": ["cu-avs-v3-controller", "cu-avs-create-service", "pg-skello-availabilities"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

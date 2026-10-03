@@ -14,6 +14,13 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
   "description": "An organisation's HRIS (connected through the Kombo integration platform) syncs employees into Skello. Kombo webhooks (sync finished, data changed, integration lifecycle) land on svc-hris; SyncManager pulls the organisation's employees from svc-employees (getEmployeesByOrganisation — the matching/diff base), reads the HRIS-side data through KomboManager, and dispatches one UpsertEmployeeFromHrisDto per changed employee onto svc-employees' upsert queue, where UpsertEmployeeJob applies it. Failed upserts flow through a DLQ handler into SyncError entries (DynamoDB TTL), and the generate-sync-error-reports schedule (cron, Layer-1-discovered recurring task) builds the error report on S3 and mails it via SES directly.",
   "trigger": {"actor": "system", "role": "HRIS integration (Kombo)"},
   "primaryArea": "employees-hr",
+  "chapters": [
+    { "title": "The HRIS reports a finished sync", "summary": "A Kombo webhook reaches svc-hris, which starts a sync run for the organisation.", "refs": ["svc-hris", "cu-hs-webhook", "cu-hs-webhook-manager"] },
+    { "title": "Both sides are compared", "summary": "svc-hris reads the organisation's employees from svc-employees and the HRIS data through Kombo, tracking the session.", "refs": ["cu-hs-sync-manager", "svc-employees", "cu-hs-kombo-manager", "dynamo-hris"] },
+    { "title": "Changes are queued", "summary": "One upsert message per changed employee goes onto svc-employees' queue.", "refs": ["cu-hs-dispatcher", "sqs-hris-upsert"] },
+    { "title": "svc-employees applies them", "summary": "A job in svc-employees applies each employee upsert.", "refs": ["cu-hs-upsert-job", "dynamo-employees"] },
+    { "title": "Failures become a report", "summary": "Failed upserts become short-lived sync errors; a scheduled job builds the error report on S3 and emails it.", "refs": ["cu-hs-dlq", "dynamo-hris", "cu-hs-report-job", "cu-hs-sync-error-mgr"] }
+  ],
   "steps": [
     {
       "from": "svc-hris",

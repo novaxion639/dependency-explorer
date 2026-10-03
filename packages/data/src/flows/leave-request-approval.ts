@@ -15,6 +15,13 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager accepts or refuses a leave request from the web front, directly against svc-requests (PATCH — the monolith has no update proxy). The status change lands in the service's Aurora, its CDC stream carries it to DecodeAndPublishRequestJobHandler, and the SnsDispatch topic fans out: sendAccepted/RefusedLeaveRequest mail + notification queues deliver the employee's email and in-app notification via svc-communications-v2; on acceptance the createShifts trigger additionally runs CreateShiftsJobHandler → SkelloAppManager, the strangler write-back that creates the absence shifts in the monolith planning (with RetryCreateShiftsJobHandler as the DLQ retry path).",
   "trigger": {"actor": "manager"},
   "primaryArea": "leave-requests",
+  "chapters": [
+    { "title": "A manager accepts or refuses", "summary": "The web front sends the decision straight to svc-requests; skello-app is not in the request path.", "refs": ["skello-app-front", "cu-lra-front-client", "svc-requests", "cu-lra-api"] },
+    { "title": "The decision is saved", "summary": "svc-requests rejects requests no longer pending or for archived staff, saves the status and logs the activity when asked.", "refs": ["cu-lra-manager", "pg-requests-approval", "svc-events"] },
+    { "title": "The change fans out", "summary": "The database change stream reaches a job that publishes mail, notification and shift triggers on one topic.", "refs": ["kinesis-requests-cdc-approval", "cu-lra-decode", "sns-dispatch-lra"] },
+    { "title": "The employee hears back", "summary": "Email and notification jobs build the decision messages and send them through svc-communications-v2.", "refs": ["cu-lra-mail", "cu-lra-email-mgr", "cu-lra-notif", "cu-lra-notif-mgr", "svc-communications-v2"] },
+    { "title": "Absence shifts are created", "summary": "On acceptance, a job posts the absence shifts to skello-app, which writes them under a lock and reports dropped days.", "refs": ["cu-lra-create-shifts", "cu-lra-skello-mgr", "skello-app", "cu-lra-mono-shifts"] }
+  ],
   "links": [{"to": "shift-creation", "kind": "writes-back-to", "note": "CreateShiftsJobHandler POSTs /private/shifts \u2014 the shift-creation domain action through a private strangler entry point, not the modeled /v3/shifts path"}],
   "steps": [
     {

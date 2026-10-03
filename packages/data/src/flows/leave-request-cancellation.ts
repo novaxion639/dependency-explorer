@@ -13,6 +13,11 @@ const leave_request_cancellation: ServiceFlow = ServiceFlowSchema.parse({
   "description": "An employee (or manager) cancels a leave request — the web front calls svc-requests directly, the monolith v3 controller proxies the same DELETE for mobile. The request row is deleted in the service's Aurora; the change flows through the CDC stream into DecodeAndPublishRequestJobHandler like every row change, but NO SNS subscription matches a deletion: there is no cancellation trigger, and the createShifts FilterPolicy excludes deleted rows. Cancellation notifies nobody — the earlier 'notify manager or employee of cancellation' path never existed in code.",
   "trigger": {"actor": "employee"},
   "primaryArea": "leave-requests",
+  "chapters": [
+    { "title": "A leave request is cancelled", "summary": "The web calls svc-requests directly; on mobile, skello-app relays the same delete.", "refs": ["skello-app-front", "cu-lrc-front-client", "skello-app", "cu-lrc-mono-proxy"] },
+    { "title": "The request is deleted", "summary": "svc-requests loads the request, answering 404 when it is gone, and deletes the row.", "refs": ["svc-requests", "cu-lrc-api", "cu-lrc-manager", "pg-requests-cancel"] },
+    { "title": "Nobody is notified", "summary": "The change stream publishes the deletion, but no subscription matches it: no email, notification or shift change follows.", "refs": ["kinesis-requests-cdc-cancel", "cu-lrc-decode", "sns-dispatch-cancel"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

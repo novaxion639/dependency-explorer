@@ -17,6 +17,13 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
   "description": "An employee submits a leave request. The web front calls svc-requests directly; the mobile app takes the OPPOSITE route — client-verified 2026-07-18: skello-mobile POSTs /v3/api/leave_requests on the monolith (plus legacy api/v2 screens for manager approve/refuse), touching svc-requests directly only for getPreSelectedManager (the monolith v3 controller is that mobile proxy onto the same API). svc-requests persists the request in its own Aurora Postgres, sends an activity-log batch to svc-events (feature-flagged), and lets its CDC event spine do the notifying: a DMS task streams the row change onto the service's kinesis stream, DecodeAndPublishRequestJobHandler republishes to the SnsDispatch SNS topic with a computed trigger attribute, and the sendCreatedLeaveRequest mail + notification queues deliver the manager's email and in-app notification through svc-communications-v2.",
   "trigger": {"actor": "employee"},
   "primaryArea": "leave-requests",
+  "chapters": [
+    { "title": "An employee asks for leave", "summary": "On the web the request goes straight to svc-requests; the mobile form asks svc-requests for the preselected manager.", "refs": ["skello-app-front", "cu-lrl-front-client", "skello-mobile", "cu-lrl-mob-form"] },
+    { "title": "Mobile goes through skello-app", "summary": "The phone sends the request to skello-app, which relays it to svc-requests.", "refs": ["cu-lrl-mob-api", "skello-app", "cu-lrl-mono-proxy"] },
+    { "title": "svc-requests saves the request", "summary": "The request is validated and saved in svc-requests' own database; an activity log goes to svc-events behind a feature flag.", "refs": ["svc-requests", "cu-lrl-api", "cu-lrl-manager", "pg-requests", "cu-lrl-activity", "svc-events"] },
+    { "title": "The change fans out", "summary": "The database change stream reaches a job that publishes the creation triggers on one topic.", "refs": ["kinesis-requests-cdc", "cu-lrl-decode", "sns-dispatch-lrl"] },
+    { "title": "The manager is told", "summary": "Email and notification jobs tell the manager through svc-communications-v2.", "refs": ["cu-lrl-mail", "cu-lrl-email-mgr", "cu-lrl-notif", "cu-lrl-notif-mgr", "svc-communications-v2"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",
