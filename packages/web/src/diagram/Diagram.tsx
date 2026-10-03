@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { download, exportName, standaloneSvg, svgSize, svgToPng } from './exportImage'
+import { CopyMermaid } from './CopyMermaid'
 import { emphasise, type FocusState } from './focus'
 import type { Point } from './geometry'
 import type { DiagramModel, DiagramRef, EdgeMode, Renderer } from './model'
@@ -49,7 +50,6 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
   const [placement, setPlacement] = useState<Placement>(NO_PLACEMENT)
   const display = useMemo(() => placed(model, placement), [model, placement])
   const mermaidRender = useRef<MermaidRender | null>(null)
-  const [copied, setCopied] = useState(false)
   const source = useMemo(() => (active === 'mermaid' ? toMermaid(model, emphases, readRootToken) : ''), [active, model, emphases])
 
   const onMove = useCallback((id: string, position: Point) => {
@@ -62,15 +62,11 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
   const exportPng = async () => {
     const svg = active === 'mermaid' ? renderedSvg(mermaidRender.current, source) : standalone()
     if (svg) {
-      download(exportName(filename, 'png'), await svgToPng(svg, svgSize(svg)))
+      download(exportName(filename, 'png'), await svgToPng(svg, svgSize(svg), readRootToken('--paper')))
     }
   }
   const exportSvg = () => {
     download(exportName(filename, 'svg'), `data:image/svg+xml;charset=utf-8,${encodeURIComponent(standalone())}`)
-  }
-  const copySource = async () => {
-    await navigator.clipboard.writeText(source)
-    setCopied(true)
   }
 
   return (
@@ -101,7 +97,7 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
         </div>
         <button type="button" onClick={() => { void exportPng() }}>Export PNG</button>
         {active === 'svg' && <button type="button" onClick={exportSvg}>Export SVG</button>}
-        {active === 'mermaid' && <button type="button" onClick={() => { void copySource() }}>{copied ? 'Copied' : 'Copy Mermaid'}</button>}
+        {active === 'mermaid' && <CopyMermaid source={source} />}
         {children}
       </div>
       <div className={styles.canvas}>

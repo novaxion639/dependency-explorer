@@ -25,4 +25,9 @@ describe('MicroservicesPage', () => {
     expect(page('?page=microservices&s=svc-punch&renderer=svg')).toContain('svc-punch — grouped by how they talk')
     expect(page('?page=microservices&s=svc-punch&renderer=svg&present=1')).toContain('svc-punch — neighbours by product area')
   })
+  it('gives the overview the room of the services list while a panel is open', () => {
+    expect(page('?page=microservices')).toContain('aria-label="Services"')
+    expect(page('?page=microservices&area=planning')).not.toContain('aria-label="Services"')
+    expect(page('?page=microservices&s=svc-punch&drawer=svc-users')).toContain('aria-label="Services"')
+  })
 })

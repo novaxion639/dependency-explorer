@@ -59,7 +59,8 @@ export function toMermaid(model: DiagramModel, emphases: Emphases, read: (token:
   model.edges.forEach((e, i) => {
     const arrow = e.directed ? ARROW[e.mode].directed : ARROW[e.mode].plain
     lines.push(`  ${id(e.from)} ${arrow}|"${text(e.condition ? `${e.label} · if ${e.condition}` : e.label)}"| ${id(e.to)}`)
-    lines.push(`  linkStyle ${i} stroke-width:${strokeWidth(e.weight)}px${e.mode === 'data-feed' ? ',stroke-dasharray:2 4' : ''}`)
+    const dim = emphases.edges.get(e.id) === 'dim' ? ',opacity:0.45' : ''
+    lines.push(`  linkStyle ${i} stroke-width:${strokeWidth(e.weight)}px${e.mode === 'data-feed' ? ',stroke-dasharray:2 4' : ''}${dim}`)
   })
   for (const { emphasis, style } of CLASSES) {
     const members = [...emphases.nodes, ...emphases.groups].filter(([, value]) => value === emphasis).map(([key]) => id(key))

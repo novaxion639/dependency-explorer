@@ -51,4 +51,9 @@ describe('toMermaid', () => {
     const text = toMermaid(withCondition, emphasise(withCondition, NO_FOCUS), read)
     expect(text).toContain('g1 -.->|"SQS ×4 · if absence shifts only"| n1')
   })
+  it('dims edges outside the focus', () => {
+    const dimmed = { nodes: new Map(), groups: new Map(), edges: new Map(model.edges.map(e => [e.id, 'dim' as const])) }
+    expect(toMermaid(model, dimmed, read)).toMatch(/linkStyle 0 [^\n]*opacity:0\.45/)
+    expect(toMermaid(model, emphasise(model, NO_FOCUS), read)).not.toMatch(/linkStyle[^\n]*opacity/)
+  })
 })
