@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import { ProductAreaSchema, ServiceFlowSchema, ExternalSystemSchema, ConnectivityMapSchema } from '@dependency-explorer/schema'
-import { getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getServiceLane, areasForFile, getCrossAreaEdges, buildContextLanes } from './areas-derive'
+import { getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getSharedExternals, getServiceLane, areasForFile, getCrossAreaEdges, buildContextLanes } from './areas-derive'
 
+const yousign = ExternalSystemSchema.parse({
+  id: 'yousign', name: 'Yousign', description: 'd', category: 'e-signature',
+  usedBy: [{ service: 'svc-shifts', evidence: { kind: 'env', literal: 'YOUSIGN_API_KEY' } }],
+})
+const stripe = ExternalSystemSchema.parse({
+  id: 'stripe', name: 'Stripe', description: 'd', category: 'payment',
+  usedBy: [{ service: 'skello-app', evidence: { kind: 'gem', literal: 'stripe' } }],
+})
 const planning = ProductAreaSchema.parse({
   id: 'planning', name: 'Planning', description: 'd', kind: 'product', color: '#6366f1',
   codeLocations: [
@@ -59,20 +67,16 @@ describe('area derivation', () => {
   })
 
   it('lists externals used by an area service', () => {
-    const yousign = ExternalSystemSchema.parse({
-      id: 'yousign', name: 'Yousign', description: 'd', category: 'e-signature',
-      usedBy: [{ service: 'svc-shifts', evidence: { kind: 'env', literal: 'YOUSIGN_API_KEY' } }],
-    })
     expect(getAreaExternals(planning, [yousign]).map(e => e.id)).toEqual(['yousign'])
     expect(getAreaExternals(timeAttendance, [yousign])).toEqual([])
   })
 
   it('never attributes a shared host repo\'s externals to an area that only claims part of it', () => {
-    const stripe = ExternalSystemSchema.parse({
-      id: 'stripe', name: 'Stripe', description: 'd', category: 'payment',
-      usedBy: [{ service: 'skello-app', evidence: { kind: 'gem', literal: 'stripe' } }],
-    })
     expect(getAreaExternals(planning, [stripe])).toEqual([])
+  })
+
+  it('lists externals no area claims as shared', () => {
+    expect(getSharedExternals([planning], [stripe, yousign]).map(e => e.id)).toEqual(['stripe'])
   })
 
   it('aggregates connections crossing into other areas', () => {

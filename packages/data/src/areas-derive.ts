@@ -50,6 +50,10 @@ export function getAreaExternals(area: ProductArea, externals: ExternalSystem[])
   return externals.filter(e => e.usedBy.some(u => claimsWholeRepo(area, u.service)))
 }
 
+export function getSharedExternals(areas: ProductArea[], externals: ExternalSystem[]): ExternalSystem[] {
+  return externals.filter(e => areas.every(a => getAreaExternals(a, [e]).length === 0))
+}
+
 export function getServiceLane(service: string, areas: ProductArea[]): ProductArea | undefined {
   return areas.find(a => a.kind === 'product' && claimsWholeRepo(a, service))
     ?? areas.find(a => claimsWholeRepo(a, service))

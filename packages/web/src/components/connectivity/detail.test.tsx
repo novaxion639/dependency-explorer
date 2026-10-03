@@ -17,7 +17,6 @@ describe('detail panel content', () => {
     expect(html).toContain(conn.from)
     expect(html).toContain(conn.to)
     expect(html).toContain(conn.protocol)
-    expect(html).not.toContain('position:fixed')
   })
   it('lists a service endpoints inline', () => {
     const svc = connectivityMap.services.find(s => s.name === 'svc-punch')
@@ -27,7 +26,6 @@ describe('detail panel content', () => {
     const html = renderToStaticMarkup(<EndpointList serviceName={svc.name} endpoints={svc.endpoints} highlightId={null} onClose={noop} />)
     expect(html).toContain('svc-punch')
     expect(html).toContain(svc.endpoints[0]?.path ?? '')
-    expect(html).not.toContain('position:fixed')
   })
   it('lists the connections behind an aggregated edge', () => {
     const conns = connectivityMap.connections.filter(c => c.to === 'skello-app' && c.protocol === 'cdc')

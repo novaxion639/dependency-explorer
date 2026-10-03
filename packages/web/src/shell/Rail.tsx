@@ -29,10 +29,10 @@ export function Rail({ page, onNavigate }: Props) {
   return (
     <nav aria-label="Modules" className={styles.rail}>
       {RAIL.map(group => (
-        <section key={group.title} aria-label={group.title}>
+        <div key={group.title} role="group" aria-label={group.title}>
           <h2 className={styles.group}>{group.title}</h2>
           <ul>{group.items.map(item => <Item key={item.label} item={item} page={page} onNavigate={onNavigate} />)}</ul>
-        </section>
+        </div>
       ))}
     </nav>
   )

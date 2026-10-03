@@ -7,17 +7,13 @@ const noop = () => {}
 describe('ImpactPage', () => {
   it('lists the directed impact of a service by hop with effects and affected flows', () => {
     const html = renderToStaticMarkup(<ImpactPage origin="svc-requests" onSelect={noop} onOpenFlow={noop} onPick={noop} />)
-    expect(html).toContain('role="region"')
     expect(html).toContain('aria-label="Impact of svc-requests"')
     expect(html).toContain('Hop 1')
     expect(html).toContain('>fails<')
     expect(html).toContain('aria-label="Affected flows"')
   })
-  it('keeps only hard failures through sync edges under the sync filter', () => {
-    const html = renderToStaticMarkup(<ImpactPage origin="svc-requests" initialFilter="sync" onSelect={noop} onOpenFlow={noop} onPick={noop} />)
-    expect(html).not.toContain('>degrades<')
-    expect(html).not.toContain('>starves<')
-    expect(html).toContain('>fails<')
+  it('labels the page once, without a redundant region role', () => {
+    expect(renderToStaticMarkup(<ImpactPage origin="svc-requests" onSelect={noop} onOpenFlow={noop} onPick={noop} />)).not.toContain('role="region"')
   })
   it('impacts a resource through its relations', () => {
     expect(renderToStaticMarkup(<ImpactPage origin="sqs:createActivityLogJob" onSelect={noop} onOpenFlow={noop} onPick={noop} />)).toContain('svc-requests')

@@ -10,20 +10,24 @@ interface Props {
   onClose: () => void
 }
 
+const RESULTS_ID = 'search-results'
+const optionId = (i: number) => `search-option-${i}`
+
 export function SearchModal({ index, onNavigate, onClose }: Props) {
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
 
   const results = useMemo(() => searchEntries(index, query), [index, query])
 
   useEffect(() => setCursor(0), [query])
-  useEffect(() => inputRef.current?.focus(), [])
-
-  // Keep the active row visible while arrowing through the list
   useEffect(() => {
-    listRef.current?.querySelector(`[data-idx="${cursor}"]`)?.scrollIntoView({ block: 'nearest' })
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    inputRef.current?.focus()
+    return () => opener?.focus()
+  }, [])
+  useEffect(() => {
+    document.getElementById(optionId(cursor))?.scrollIntoView({ block: 'nearest' })
   }, [cursor])
 
   const choose = (entry: SearchEntry) => onNavigate(entry.patch)
@@ -41,39 +45,48 @@ export function SearchModal({ index, onNavigate, onClose }: Props) {
     } else if (e.key === 'Escape') {
       e.preventDefault()
       onClose()
+    } else if (e.key === 'Tab') {
+      e.preventDefault()
     }
   }
 
   return (
     <>
       <div className={styles.backdrop} onClick={onClose} />
-      <div className={styles.palette} role="dialog" aria-label="Search" onKeyDown={onKeyDown}>
+      <div className={styles.palette} role="dialog" aria-modal="true" aria-label="Search" onKeyDown={onKeyDown}>
         <input
           ref={inputRef}
+          role="combobox"
+          aria-label="Search"
+          aria-expanded={results.length > 0}
+          aria-controls={RESULTS_ID}
+          aria-activedescendant={results[cursor] ? optionId(cursor) : undefined}
           className={styles.input}
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Search services, endpoints, connections, flows, queues…"
         />
-        <div ref={listRef} className={styles.results}>
+        <div className={styles.results}>
+          <div id={RESULTS_ID} role="listbox" aria-label="Results">
+            {results.map((r, i) => (
+              <div
+                key={`${r.type}:${r.label}:${i}`}
+                id={optionId(i)}
+                role="option"
+                aria-selected={i === cursor}
+                className={styles.row}
+                onClick={() => choose(r)}
+                onMouseEnter={() => setCursor(i)}
+              >
+                <span className={styles.type}>{r.type}</span>
+                <span className={styles.text}>
+                  <b>{r.label}</b>
+                  <small>{r.sublabel}</small>
+                </span>
+              </div>
+            ))}
+          </div>
           {query && results.length === 0 && <p className={styles.empty}>No match for “{query}”.</p>}
-          {results.map((r, i) => (
-            <div
-              key={`${r.type}:${r.label}:${i}`}
-              data-idx={i}
-              role="option"
-              aria-selected={i === cursor}
-              className={styles.row}
-              onClick={() => choose(r)}
-              onMouseEnter={() => setCursor(i)}
-            >
-              <span className={styles.type}>{r.type}</span>
-              <span className={styles.text}>
-                <b>{r.label}</b>
-                <small>{r.sublabel}</small>
-              </span>
-            </div>
-          ))}
           {!query && (
             <p className={styles.hint}>
               Type to search across {index.length.toLocaleString()} entries — services, endpoints,

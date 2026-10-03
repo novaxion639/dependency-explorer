@@ -3,15 +3,12 @@ import { ReactFlow, Background, BackgroundVariant, type Edge, type Node, type No
 import '@xyflow/react/dist/style.css'
 import type { ConnectivityMap, Platform } from '@dependency-explorer/data'
 import { areaFacts, getAreaExternals, getAreaFlows, getCrossAreaEdges } from '@dependency-explorer/data'
+import { plural } from '../../utils/plural'
 import styles from './AreaPage.module.css'
 
 const PLATFORM_ORDER: Platform[] = ['monolith', 'web', 'mobile', 'tablet', 'superadmin', 'backend']
 const PLATFORM_LABEL: Record<Platform, string> = { monolith: 'Monolith', web: 'Web', mobile: 'Mobile', tablet: 'Tablet', superadmin: 'Superadmin', backend: 'Services' }
 const OPEN_GLOB_LIMIT = 8
-
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? '' : 's'}`
-}
 
 interface Props {
   map: ConnectivityMap
