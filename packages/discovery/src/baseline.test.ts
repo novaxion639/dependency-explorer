@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import { stableDetail, findingKeys, diffBaseline, readBaseline, readBaselineRepos, writeBaseline } from './baseline'
+import { stableDetail, findingKeys, diffBaseline, readBaseline, readBaselineRepos, writeBaseline, unscannedRepos } from './baseline'
 
 describe('stableDetail', () => {
   it('drops hashes, numbers and line suffixes so keys survive re-runs', () => {
@@ -50,5 +50,12 @@ describe('baseline file', () => {
     writeBaseline(file, ['k1'], ['svc-b', 'common-dms-tf'])
     expect(readBaseline(file)).toEqual(['k1'])
     expect(readBaselineRepos(file)).toEqual(['common-dms-tf', 'svc-b'])
+  })
+})
+
+describe('unscannedRepos', () => {
+  it('names the baseline repos this run did not scan, so their findings never read as resolved', () => {
+    expect(unscannedRepos(['skello-app', 'svc-punch', 'svc-users'], ['skello-app', 'svc-users'])).toEqual(['svc-punch'])
+    expect(unscannedRepos(['skello-app'], ['skello-app', 'svc-new'])).toEqual([])
   })
 })

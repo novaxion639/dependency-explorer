@@ -19,12 +19,12 @@ const UNCOUNTED_STRINGS = /'[^']*'|"[^"]*"|\/[^/\s]+\//g
 const IGNORED = /^(constraints|concern|draw|devise_for|Dir\.glob|\w+\s*=)/
 
 function opt(line: string, key: string): string | null {
-  const m = line.match(new RegExp(`\\b${key}:\\s*['":]([\\w/:.()*-]+)['"]?`))
+  const m = line.match(new RegExp(`(?:\\b${key}:|:${key}\\s*=>)\\s*['":]([\\w/:.()*-]+)['"]?`))
   return m?.[1] ?? null
 }
 
 function list(line: string, key: string): Set<string> | null {
-  const m = line.match(new RegExp(`\\b${key}:\\s*(?:%[iw]\\[([^\\]]*)\\]|\\[([^\\]]*)\\]|:(\\w+))`))
+  const m = line.match(new RegExp(`(?:\\b${key}:|:${key}\\s*=>)\\s*(?:%[iw][\\[(]([^\\])]*)[\\])]|\\[([^\\]]*)\\]|:(\\w+))`))
   if (!m) {
     return null
   }
@@ -136,26 +136,28 @@ export function parseRoutesContent(content: string): { routes: RailsRoute[]; unp
       continue
     }
 
-    const res = t.match(/^(resources|resource)\s+:(\w+)/)
+    const res = t.match(/^(resources|resource)\s+((?::\w+\s*,\s*)*:\w+)/)
     if (res) {
       const singular = res[1] === 'resource'
-      const name = res[2] ?? ''
-      const seg = opt(t, 'path') ?? name
-      const param = `:${opt(t, 'param') ?? 'id'}`
-      const controller = opt(t, 'controller') ?? (singular ? pluralize(name) : name)
+      const names = (res[2] ?? '').split(/\s*,\s*/).map(s => s.slice(1))
       const resModule = opt(t, 'module')
       const moduleParts = resModule ? [...f.module, resModule] : f.module
       const allowed = list(t, 'only')
       const excluded = list(t, 'except')
-      for (const [verb, suffix, action] of singular ? REST.singular : REST.plural) {
-        if ((!allowed || allowed.has(action)) && !excluded?.has(action)) {
-          emit(verb, [...f.path, seg, suffix.replace(':id', param)], controller, action, moduleParts)
+      names.forEach((name, i) => {
+        const seg = opt(t, 'path') ?? name
+        const param = `:${opt(t, 'param') ?? 'id'}`
+        const controller = opt(t, 'controller') ?? (singular ? pluralize(name) : name)
+        for (const [verb, suffix, action] of singular ? REST.singular : REST.plural) {
+          if ((!allowed || allowed.has(action)) && !excluded?.has(action)) {
+            emit(verb, [...f.path, seg, suffix.replace(':id', param)], controller, action, moduleParts)
+          }
         }
-      }
-      if (block) {
-        const nested = singular ? [...f.path, seg] : [...f.path, seg, `:${singularize(name)}_${param.slice(1)}`]
-        stack.push({ path: nested, module: moduleParts, controller, memberOf: singular ? null : param, methodScope: singular })
-      }
+        if (block && i === names.length - 1) {
+          const nested = singular ? [...f.path, seg] : [...f.path, seg, `:${singularize(name)}_${param.slice(1)}`]
+          stack.push({ path: nested, module: moduleParts, controller, memberOf: singular ? null : param, methodScope: singular })
+        }
+      })
       continue
     }
 

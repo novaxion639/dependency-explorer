@@ -56,11 +56,14 @@ export function loadRepoGraph(graphJson: unknown): RepoGraph | null {
   return { builtAt: str(graphJson.built_at_commit), fileEdges, importEdges, classesIn }
 }
 
+const STRING_OR_COMMENT = /("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\/\*[\s\S]*?\*\/|(^|[^:\\])\/\/.*$|(^|\s)#(?![{!]).*$/gm
+
 export function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:'"\\])\/\/.*$/gm, '$1')
-    .replace(/(^|\s)#(?![{!]).*$/gm, '$1')
+  return source.replace(STRING_OR_COMMENT, (_whole, literal: string | undefined, slashLead: string | undefined, hashLead: string | undefined) => literal ?? slashLead ?? hashLead ?? '')
+}
+
+export function crossRepoGrade(grade: Grade): Grade {
+  return grade === 'none' ? 'none' : 'text'
 }
 
 function escape(s: string): string {
@@ -160,7 +163,7 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
       }
       if (from.service !== to.service) {
         const empty: RepoGraph = { builtAt: '', fileEdges: new Map(), importEdges: new Map(), classesIn: new Map() }
-        record(key, flow.id, gradeEdge(empty, from.path, to.path, source, to.label), `${from.service}/${from.path} → ${to.service}/${to.path} (cross-repo)`)
+        record(key, flow.id, crossRepoGrade(gradeEdge(empty, from.path, to.path, source, to.label)), `${from.service}/${from.path} → ${to.service}/${to.path} (cross-repo)`)
         continue
       }
       const graph = graphFor(from.service)

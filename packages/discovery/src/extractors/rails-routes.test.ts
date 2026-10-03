@@ -162,3 +162,21 @@ describe('parseRoutesContent constructs from the real routes.rb', () => {
     expect(unparsed).toEqual([])
   })
 })
+
+describe('route options', () => {
+  const routes = parseRoutesContent(`
+Rails.application.routes.draw do
+  resources :alphas, :betas, :only => [:index]
+  resources :gammas, only: %i(show)
+  resources :deltas, :controller => 'other_deltas', only: [:index]
+end
+`).routes.map(x => `${x.verb} ${x.path} ${x.controller}#${x.action}`)
+
+  it('reads hash-rocket options, %i() lists and several names on one line', () => {
+    expect(routes).toContain('GET /alphas alphas#index')
+    expect(routes).toContain('GET /betas betas#index')
+    expect(routes).toContain('GET /gammas/:id gammas#show')
+    expect(routes).toContain('GET /deltas other_deltas#index')
+    expect(routes.some(r => r.startsWith('GET /alphas/:id'))).toBe(false)
+  })
+})

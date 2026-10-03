@@ -3,7 +3,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { ConnectivityMapSchema } from '@dependency-explorer/schema'
-import { loadRepoGraph, gradeEdge, stripComments, checkCodeGrades } from './code-grades'
+import { loadRepoGraph, gradeEdge, stripComments, checkCodeGrades, crossRepoGrade } from './code-grades'
 
 const graphJson = {
   built_at_commit: 'abc123',
@@ -48,6 +48,13 @@ describe('gradeEdge', () => {
   })
   it('strips ruby, js line and block comments', () => {
     expect(stripComments('a # ruby\nb // js\n/* c */ d')).toBe('a \nb \n d')
+  })
+  it('keeps comment markers inside string literals', () => {
+    expect(stripComments("const g = 'src/**/*.ts'\nfoo() // x")).toBe("const g = 'src/**/*.ts'\nfoo() ")
+    expect(stripComments('x = "foo #bar" # note')).toBe('x = "foo #bar" ')
+  })
+  it('grades a cross-repo edge text at best', () => {
+    expect([crossRepoGrade('graph'), crossRepoGrade('import'), crossRepoGrade('text'), crossRepoGrade('none')]).toEqual(['text', 'text', 'text', 'none'])
   })
 })
 
