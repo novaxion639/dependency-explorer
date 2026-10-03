@@ -5,7 +5,7 @@
 .renderers button { border-radius: 0; }
 .renderers button + button { border-left: none; }
 .renderers button[aria-checked='true'] { background: var(--ink); color: var(--card); }
-.canvas { position: relative; flex: 1; min-height: max(420px, 62vh); border: 1px solid var(--rule); border-radius: var(--radius-lg); background: var(--paper); overflow: hidden; }
+.canvas { position: relative; flex: 1; min-height: var(--canvas-min, max(420px, 62vh)); border: 1px solid var(--rule); border-radius: var(--radius-lg); background: var(--paper); overflow: hidden; }
 .canvas > svg { display: block; }
 .legend { display: flex; flex-wrap: wrap; gap: var(--space-3); list-style: none; font-size: var(--text-xs); color: var(--ink-muted); }
 .legend li { display: inline-flex; align-items: center; gap: var(--space-1); }

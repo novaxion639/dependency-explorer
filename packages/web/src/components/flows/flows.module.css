@@ -33,3 +33,10 @@
 @media (max-width: 767px) {
   .story { grid-template-columns: 1fr; }
 }
+
+@media (min-width: 768px) {
+  .page:has(> .story) { min-height: 0; }
+  .story { grid-template-rows: minmax(0, 1fr); }
+  .chapters { overflow-y: auto; }
+  .storyDiagram { --canvas-min: 360px; }
+}
