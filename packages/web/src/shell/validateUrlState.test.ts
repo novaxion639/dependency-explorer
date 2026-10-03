@@ -31,3 +31,19 @@ describe('edge lists', () => {
     expect(validateUrlState(parseUrl(`?page=microservices&edge=${edgeKey(a.from, a.to, a.protocol)},svc-x~svc-y~sqs`)).edge).toBeNull()
   })
 })
+
+describe('flow page keys', () => {
+  it('drops a unit that is not part of the flow', () => {
+    expect(validateUrlState(parseUrl('?page=flows&flow=shift-creation&unit=cu-create-service')).unit).toBe('cu-create-service')
+    expect(validateUrlState(parseUrl('?page=flows&flow=shift-creation&unit=pg-skello-shifts')).unit).toBe('pg-skello-shifts')
+    expect(validateUrlState(parseUrl('?page=flows&flow=shift-creation&unit=cu-from-another-flow')).unit).toBeNull()
+  })
+  it("drops a chapter beyond the flow's chapters", () => {
+    expect(validateUrlState(parseUrl('?page=flows&flow=planning-template&chapter=99')).chapter).toBeNull()
+    expect(validateUrlState(parseUrl('?page=flows&flow=planning-template&chapter=1')).chapter).toBe(1)
+  })
+  it('drops both without a flow', () => {
+    const st = validateUrlState(parseUrl('?page=flows&unit=cu-create-service&chapter=1'))
+    expect([st.unit, st.chapter]).toEqual([null, null])
+  })
+})

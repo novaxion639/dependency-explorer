@@ -188,3 +188,24 @@ describe('architecture permalinks', () => {
     expect(toQueryString(parseUrl('?page=flows&area=planning'))).toBe('page=flows')
   })
 })
+
+describe('flow page keys', () => {
+  it('reads and writes the unit and chapter of the open flow', () => {
+    const st = parseUrl('?page=flows&flow=shift-creation&unit=cu-create-service&chapter=2')
+    expect([st.unit, st.chapter]).toEqual(['cu-create-service', 2])
+    expect(toQueryString(st)).toBe('page=flows&flow=shift-creation&unit=cu-create-service&chapter=2')
+  })
+  it('ignores a chapter that is not a positive whole number', () => {
+    for (const c of ['0', '-1', '1.5', 'two']) {
+      expect(parseUrl(`?flow=f&chapter=${c}`).chapter, c).toBeNull()
+    }
+  })
+  it('replaces history for unit and chapter changes', () => {
+    const base = parseUrl('?page=flows&flow=f')
+    expect(isNavigation(base, { unit: 'u' })).toBe(false)
+    expect(isNavigation(base, { chapter: 2 })).toBe(false)
+  })
+  it('clears them with every page change', () => {
+    expect(pagePatch('flows')).toMatchObject({ unit: null, chapter: null })
+  })
+})
