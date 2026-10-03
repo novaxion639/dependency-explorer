@@ -57,7 +57,7 @@ describe('resourceImpact', () => {
 
 describe('resourceIdForDatabase', () => {
   it('resolves a service database to its registry resource', () => {
-    expect(resourceIdForDatabase('svc-requests', { type: 'postgresql', name: 'svc_requests' }, resourceSurface.resources)).toBe('pg:svc_requests')
+    expect(resourceIdForDatabase('svc-requests', { type: 'postgresql', name: 'svcrequests-{env}' }, resourceSurface.resources)).toBe('pg:svcrequests')
     expect(resourceIdForDatabase('svc-requests', { type: 'sqs', name: 'not-a-queue' }, resourceSurface.resources)).toBeUndefined()
   })
 })

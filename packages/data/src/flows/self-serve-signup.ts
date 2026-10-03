@@ -154,7 +154,7 @@ const self_serve_signup: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-signup",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "Sidekiq broker for the mailer jobs"
     }
   ],

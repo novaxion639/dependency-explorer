@@ -132,7 +132,7 @@ const week_copy: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-week-copy",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "Sidekiq broker for the per-week overflow jobs and the per-shift creation callback jobs"
     }
   ],

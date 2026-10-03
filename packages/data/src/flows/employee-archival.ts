@@ -175,7 +175,7 @@ const employee_archival: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-archival",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "Sidekiq broker for the archival job fan-out"
     }
   ],

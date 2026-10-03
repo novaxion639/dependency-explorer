@@ -32,11 +32,11 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
         },
         {
           "type": "s3",
-          "name": "svc-billing-automation.{env}"
+          "name": "svc-billing-automation-invoices.{env}"
         },
         {
           "type": "sns",
-          "name": "svc-billing-automation-sns"
+          "name": "skelloNotifications-pipelines-{env}"
         }
       ]
     },
@@ -73,11 +73,11 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
         },
         {
           "type": "s3",
-          "name": "svc-billing-automation.{env}"
+          "name": "svc-billing-automation-invoices.{env}"
         },
         {
           "type": "sns",
-          "name": "svc-billing-automation-sns"
+          "name": "skelloNotifications-pipelines-{env}"
         }
       ]
     },
@@ -107,7 +107,7 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
         },
         {
           "type": "s3",
-          "name": "svc-billing-automation.{env}"
+          "name": "svc-billing-automation-invoices.{env}"
         }
       ]
     },
@@ -144,11 +144,11 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
         },
         {
           "type": "s3",
-          "name": "svc-billing-automation.{env}"
+          "name": "svc-billing-automation-invoices.{env}"
         },
         {
           "type": "sns",
-          "name": "svc-billing-automation-sns"
+          "name": "skelloNotifications-pipelines-{env}"
         }
       ]
     },
@@ -178,11 +178,11 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
         },
         {
           "type": "s3",
-          "name": "svc-billing-automation.{env}"
+          "name": "svc-billing-automation-invoices.{env}"
         },
         {
           "type": "sns",
-          "name": "svc-billing-automation-sns"
+          "name": "skelloNotifications-pipelines-{env}"
         }
       ]
     },
@@ -219,11 +219,11 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
         },
         {
           "type": "s3",
-          "name": "svc-billing-automation.{env}"
+          "name": "svc-billing-automation-invoices.{env}"
         },
         {
           "type": "sns",
-          "name": "svc-billing-automation-sns"
+          "name": "skelloNotifications-pipelines-{env}"
         }
       ]
     },
@@ -245,7 +245,7 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
         },
         {
           "type": "s3",
-          "name": "svc-billing-automation.{env}"
+          "name": "svc-billing-automation-invoices.{env}"
         }
       ]
     },
@@ -1099,7 +1099,7 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
     },
     {
       "type": "s3",
-      "name": "svc-billing-automation.{env}",
+      "name": "svc-billing-automation-invoices.{env}",
       "description": "Contract documents and export files"
     },
     {
@@ -1109,7 +1109,7 @@ const svc_billing_automation: ConnectivityService = ConnectivityServiceSchema.pa
     },
     {
       "type": "sns",
-      "name": "svc-billing-automation-sns",
+      "name": "skelloNotifications-pipelines-{env}",
       "description": "Contract lifecycle change notifications"
     }
   ]

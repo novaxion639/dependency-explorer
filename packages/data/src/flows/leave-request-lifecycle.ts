@@ -283,7 +283,7 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-requests",
       "type": "postgresql",
       "label": "svc-requests Aurora",
-      "resources": ["pg:svc_requests"],
+      "resources": ["pg:svcrequests"],
       "description": "The service's own Postgres (TypeORM entities) — leave request rows"
     },
     {

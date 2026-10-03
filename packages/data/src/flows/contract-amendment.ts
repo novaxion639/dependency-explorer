@@ -174,7 +174,7 @@ const contract_amendment: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-amendments",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "Sidekiq broker (default + hours_counter queues)"
     }
   ],

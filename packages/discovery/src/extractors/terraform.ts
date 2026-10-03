@@ -308,6 +308,8 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
     return { ...r, database: applyTerraformLocals((parameter && ssmValues[parameter]) || r.database, locals) }
   })
   merged.iamActions = [...actions].sort()
-  if (!merged.resources.length && !merged.mongoRoles.length && !merged.dmsTasks.length && !merged.dmsEndpoints.length && !merged.iamActions.length) return null
+  if (!merged.resources.length && !merged.mongoRoles.length && !merged.dmsTasks.length && !merged.dmsEndpoints.length && !merged.iamActions.length) {
+    return null
+  }
   return merged
 }

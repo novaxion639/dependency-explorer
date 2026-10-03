@@ -28,15 +28,11 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "dynamodb",
-          "name": "svcEmployees-{env}"
+          "name": "svcEmployees-restaure-{env}"
         },
         {
           "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
+          "name": "svc-search"
         }
       ]
     },
@@ -62,15 +58,11 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "dynamodb",
-          "name": "svcEmployees-{env}"
+          "name": "svcEmployees-restaure-{env}"
         },
         {
           "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
+          "name": "svc-search"
         }
       ]
     },
@@ -96,11 +88,11 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "dynamodb",
-          "name": "svcEmployees-{env}"
+          "name": "svcEmployees-restaure-{env}"
         },
         {
           "type": "mongodb",
-          "name": "svc-employees"
+          "name": "svc-search"
         }
       ]
     },
@@ -126,15 +118,11 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "dynamodb",
-          "name": "svcEmployees-{env}"
+          "name": "svcEmployees-restaure-{env}"
         },
         {
           "type": "mongodb",
-          "name": "svc-employees"
-        },
-        {
-          "type": "kinesis",
-          "name": "svc-employees-stream"
+          "name": "svc-search"
         }
       ]
     },
@@ -550,28 +538,18 @@ const svc_employees: ConnectivityService = ConnectivityServiceSchema.parse({
   "databases": [
     {
       "type": "dynamodb",
-      "name": "svcEmployees-{env}",
+      "name": "svcEmployees-restaure-{env}",
       "description": "Employee profiles and absence configs"
     },
     {
       "type": "s3",
-      "name": "sstCodesBucket",
+      "name": "skello-dpae-data-{env}",
       "description": "SST codes reference bucket (SstS3Client get/put/head; refreshed by the monthly SstRefresh schedule, cron(0 8 1 * ? *)). Surfaced by the AWS client-usage discovery pass, 2026-07-11."
     },
     {
       "type": "mongodb",
-      "name": "svc-employees",
-      "description": "Legacy employee data store (migration in progress)"
-    },
-    {
-      "type": "sqs",
-      "name": "svc-employees-dlq",
-      "description": "Dead-letter queue for failed employee events"
-    },
-    {
-      "type": "kinesis",
-      "name": "svc-employees-stream",
-      "description": "Employee change event stream for downstream consumers"
+      "name": "svc-search",
+      "description": "Shared svc-search database, read-only (Atlas read role; SSM svcSearch/MONGO_DB_NAME)"
     }
   ]
 })

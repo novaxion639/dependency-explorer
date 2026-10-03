@@ -29,11 +29,11 @@ const svc_documents_esignature: ConnectivityService = ConnectivityServiceSchema.
       "awsCalls": [
         {
           "type": "dynamodb",
-          "name": "svcDocumentsEsignature-{env}"
+          "name": "svcDocuments-eSignature-V2-{env}"
         },
         {
           "type": "s3",
-          "name": "svc-esignature.{env}"
+          "name": "svc-documents.{env}"
         }
       ]
     },
@@ -51,11 +51,11 @@ const svc_documents_esignature: ConnectivityService = ConnectivityServiceSchema.
       "awsCalls": [
         {
           "type": "dynamodb",
-          "name": "svcDocumentsEsignature-{env}"
+          "name": "svcDocuments-eSignature-V2-{env}"
         },
         {
           "type": "s3",
-          "name": "svc-esignature.{env}"
+          "name": "svc-documents.{env}"
         }
       ]
     },
@@ -81,11 +81,11 @@ const svc_documents_esignature: ConnectivityService = ConnectivityServiceSchema.
       "awsCalls": [
         {
           "type": "dynamodb",
-          "name": "svcDocumentsEsignature-{env}"
+          "name": "svcDocuments-eSignature-V2-{env}"
         },
         {
           "type": "s3",
-          "name": "svc-esignature.{env}"
+          "name": "svc-documents.{env}"
         }
       ]
     },
@@ -103,11 +103,11 @@ const svc_documents_esignature: ConnectivityService = ConnectivityServiceSchema.
       "awsCalls": [
         {
           "type": "dynamodb",
-          "name": "svcDocumentsEsignature-{env}"
+          "name": "svcDocuments-eSignature-V2-{env}"
         },
         {
           "type": "s3",
-          "name": "svc-esignature.{env}"
+          "name": "svc-documents.{env}"
         }
       ]
     }
@@ -115,18 +115,13 @@ const svc_documents_esignature: ConnectivityService = ConnectivityServiceSchema.
   "databases": [
     {
       "type": "dynamodb",
-      "name": "svcDocumentsEsignature-{env}",
+      "name": "svcDocuments-eSignature-V2-{env}",
       "description": "E-signature requests and signatory state"
     },
     {
       "type": "s3",
-      "name": "svc-esignature.{env}",
+      "name": "svc-documents.{env}",
       "description": "Signed document storage"
-    },
-    {
-      "type": "sqs",
-      "name": "svc-esignature-dlq",
-      "description": "Failed signature event retry queue"
     }
   ]
 })

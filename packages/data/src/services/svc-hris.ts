@@ -255,11 +255,6 @@ const svc_hris: ConnectivityService = ConnectivityServiceSchema.parse({
       "type": "s3",
       "name": "svc-hris.{env}",
       "description": "Employee data exports and import files"
-    },
-    {
-      "type": "sqs",
-      "name": "svc-hris-sync-dlq",
-      "description": "Failed HRIS sync retry queue"
     }
   ]
 })

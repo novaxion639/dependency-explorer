@@ -32,7 +32,7 @@ const svc_events: ConnectivityService = ConnectivityServiceSchema.parse({
         },
         {
           "type": "s3",
-          "name": "svc-events.{env}"
+          "name": "skello-app.temporary-assets.{env}"
         }
       ]
     },
@@ -54,7 +54,7 @@ const svc_events: ConnectivityService = ConnectivityServiceSchema.parse({
         },
         {
           "type": "s3",
-          "name": "svc-events.{env}"
+          "name": "skello-app.temporary-assets.{env}"
         }
       ]
     },
@@ -101,8 +101,8 @@ const svc_events: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "type": "s3",
-      "name": "svc-events.{env}",
-      "description": "Event payload archive"
+      "name": "skello-app.temporary-assets.{env}",
+      "description": "skello-app's temporary-assets bucket — activity-log downloads are written here (S3_TEMPORARY_ASSETS_BUCKET)"
     }
   ]
 })

@@ -62,6 +62,18 @@ const NON_SENDERS = new Set(['skello-app-front'])
 const SQS_EVENT = /\bsqs:\s*(\{|['"`])/
 const DLQ_NAME = /dlq/i
 const IDENTIFIER_LITERAL = /(['"`])([^'"`\s]+)\1/g
+const SSM_PATH = /^\//
+const ARN_SERVICE = /^arn:aws:([a-z0-9-]+):/
+const ARN_SERVICES_BY_STORE: Record<string, string[]> = { sqs: ['sqs'], sns: ['sns'], kinesis: ['kinesis', 'firehose'] }
+
+function camelStem(repo: string): string {
+  return repo.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase())
+}
+
+function namesResource(literal: string, store: string): boolean {
+  const arnService = literal.match(ARN_SERVICE)?.[1]
+  return !SSM_PATH.test(literal) && (!arnService || (ARN_SERVICES_BY_STORE[store] ?? []).includes(arnService))
+}
 
 export function messagingRelations(resources: Resource[], serverless: Map<string, ServerlessFacts>, sources: Map<string, Array<{ file: string; source: string }>>): ResourceRelation[] {
   const out: ResourceRelation[] = []
@@ -84,6 +96,7 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
       ownersOfName.set(`${r.store}:${r.name}`, new Set([...(ownersOfName.get(`${r.store}:${r.name}`) ?? []), r.owner]))
     }
   }
+  const serviceStems = new Set([...sources.keys(), ...serverless.keys()].map(camelStem))
   const literalCache = new Map<string, string[]>()
   const literalsOf = (repo: string, f: { file: string; source: string }) => {
     const key = `${repo}/${f.file}`
@@ -99,14 +112,14 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
     if (r.kind === 'queue' && r.owner && !isDeadLetter(r.name) && (sources.get(r.owner) ?? []).some(f => f.file.includes('serverless') && SQS_EVENT.test(f.source))) {
       out.push({ resource: r.id, relation: 'consumes', service: r.owner, grade: 'config' })
     }
-    if (['queue', 'topic', 'stream'].includes(r.kind) && r.name.length >= MIN_LITERAL) {
+    if (['queue', 'topic', 'stream'].includes(r.kind) && r.name.length >= MIN_LITERAL && !serviceStems.has(r.name)) {
       for (const [repo, files] of sources) {
         if (repo === r.owner || NON_SENDERS.has(repo) || consumersOf.get(r.id)?.has(repo) || ownersOfName.get(`${r.store}:${r.name}`)?.has(repo)) {
           continue
         }
         const token = new RegExp(`(?<![A-Za-z0-9_])${escape(r.name)}(?![A-Za-z0-9_])`)
         for (const f of files) {
-          if (literalsOf(repo, f).some(l => token.test(l))) {
+          if (literalsOf(repo, f).some(l => namesResource(l, r.store) && token.test(l))) {
             out.push({ resource: r.id, relation: 'produces', service: repo, file: f.file, grade: f.file.includes('serverless') ? 'config' : 'code' })
           }
         }

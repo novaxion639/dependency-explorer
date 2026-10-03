@@ -105,7 +105,7 @@ const svc_automatic_scheduling: ConnectivityService = ConnectivityServiceSchema.
   "databases": [
     {
       "type": "mongodb",
-      "name": "automatic_scheduling_jobs",
+      "name": "svc-automatic-scheduling",
       "description": "Tracks auto-scheduling job lifecycle (status, input params, error details)"
     },
     {
@@ -120,13 +120,8 @@ const svc_automatic_scheduling: ConnectivityService = ConnectivityServiceSchema.
     },
     {
       "type": "s3",
-      "name": "svc-automatic-scheduling-sfn-ctx",
+      "name": "svc-automatic-scheduling.assignment.{env}",
       "description": "Stores Step Function execution context JSON between steps (written by dataFetcher, read by eligibility / aggregate / solver / assignShifts)"
-    },
-    {
-      "type": "sqs",
-      "name": "svcAutomaticScheduling-autoAssignMetrics",
-      "description": "Receives job-completion metrics events from the finishJob SFN step; consumed by handleAutoAssignMetrics Lambda"
     },
     {
       "type": "sqs",

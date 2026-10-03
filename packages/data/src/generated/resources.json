@@ -1,24 +1,6 @@
 {
   "resources": [
     {
-      "id": "ddb:skello-dynamodb",
-      "kind": "table",
-      "store": "dynamodb",
-      "name": "skello-dynamodb",
-      "evidence": [
-        "dataset:skello-app"
-      ]
-    },
-    {
-      "id": "ddb:svcBff",
-      "kind": "table",
-      "store": "dynamodb",
-      "name": "svcBff",
-      "evidence": [
-        "dataset:svc-bff"
-      ]
-    },
-    {
       "id": "ddb:svcBillingAutomation",
       "kind": "table",
       "store": "dynamodb",
@@ -47,16 +29,8 @@
       "name": "svcDocuments-eSignature-V2",
       "owner": "svc-documents-esignature",
       "evidence": [
+        "dataset:svc-documents-esignature",
         "svc-documents-esignature-tf:terraform"
-      ]
-    },
-    {
-      "id": "ddb:svcDocumentsEsignature",
-      "kind": "table",
-      "store": "dynamodb",
-      "name": "svcDocumentsEsignature",
-      "evidence": [
-        "dataset:svc-documents-esignature"
       ]
     },
     {
@@ -71,21 +45,13 @@
       ]
     },
     {
-      "id": "ddb:svcEmployees",
-      "kind": "table",
-      "store": "dynamodb",
-      "name": "svcEmployees",
-      "evidence": [
-        "dataset:svc-employees"
-      ]
-    },
-    {
       "id": "ddb:svcEmployees-restaure",
       "kind": "table",
       "store": "dynamodb",
       "name": "svcEmployees-restaure",
       "owner": "svc-employees",
       "evidence": [
+        "dataset:svc-employees",
         "svc-employees-tf:terraform"
       ]
     },
@@ -167,15 +133,6 @@
       ]
     },
     {
-      "id": "ddb:svcModularisation",
-      "kind": "table",
-      "store": "dynamodb",
-      "name": "svcModularisation",
-      "evidence": [
-        "dataset:svc-modularisation"
-      ]
-    },
-    {
       "id": "ddb:svcPayroll",
       "kind": "table",
       "store": "dynamodb",
@@ -226,6 +183,7 @@
       "name": "svcUsers",
       "owner": "svc-users",
       "evidence": [
+        "dataset:skello-app",
         "dataset:svc-users",
         "svc-users-tf:terraform"
       ]
@@ -249,15 +207,6 @@
       "owner": "svc-websockets",
       "evidence": [
         "websocket-tf:terraform"
-      ]
-    },
-    {
-      "id": "ddb:workloadPlan",
-      "kind": "table",
-      "store": "dynamodb",
-      "name": "workloadPlan",
-      "evidence": [
-        "dataset:svc-workload-plan"
       ]
     },
     {
@@ -455,15 +404,6 @@
       "owner": "svc-documents-v2",
       "evidence": [
         "svc-documents-v2-tf:terraform"
-      ]
-    },
-    {
-      "id": "kinesis:svc-employees-stream",
-      "kind": "stream",
-      "store": "kinesis",
-      "name": "svc-employees-stream",
-      "evidence": [
-        "dataset:svc-employees"
       ]
     },
     {
@@ -698,21 +638,13 @@
       ]
     },
     {
-      "id": "mongo:automatic_scheduling_jobs",
-      "kind": "database",
-      "store": "mongodb",
-      "name": "automatic_scheduling_jobs",
-      "evidence": [
-        "dataset:svc-automatic-scheduling"
-      ]
-    },
-    {
       "id": "mongo:svc-automatic-scheduling",
       "kind": "database",
       "store": "mongodb",
       "name": "svc-automatic-scheduling",
       "owner": "svc-automatic-scheduling",
       "evidence": [
+        "dataset:svc-automatic-scheduling",
         "svc-automatic-scheduling-tf:terraform"
       ]
     },
@@ -724,15 +656,6 @@
       "owner": "svc-documents-v2",
       "evidence": [
         "svc-documents-v2-tf:terraform"
-      ]
-    },
-    {
-      "id": "mongo:svc-employees",
-      "kind": "database",
-      "store": "mongodb",
-      "name": "svc-employees",
-      "evidence": [
-        "dataset:svc-employees"
       ]
     },
     {
@@ -765,7 +688,9 @@
       "owner": "svc-search",
       "evidence": [
         "dataset:svc-bff-planning",
+        "dataset:svc-employees",
         "dataset:svc-search",
+        "dataset:svc-shifts",
         "svc-automatic-scheduling-tf:terraform",
         "svc-employees-tf:terraform",
         "svc-kpis-v2-tf:terraform",
@@ -782,7 +707,6 @@
       "name": "svc-shifts",
       "owner": "svc-shifts",
       "evidence": [
-        "dataset:svc-shifts",
         "svc-shifts-tf:terraform"
       ]
     },
@@ -2511,30 +2435,13 @@
       ]
     },
     {
-      "id": "pg:svc_requests",
-      "kind": "database",
-      "store": "postgresql",
-      "name": "svc_requests",
-      "evidence": [
-        "dataset:svc-requests"
-      ]
-    },
-    {
-      "id": "pg:svc-kpis",
-      "kind": "database",
-      "store": "postgresql",
-      "name": "svc-kpis",
-      "evidence": [
-        "dataset:svc-kpis"
-      ]
-    },
-    {
       "id": "pg:svckpis-aurora",
       "kind": "database",
       "store": "postgresql",
       "name": "svckpis-aurora",
       "owner": "svc-kpis",
       "evidence": [
+        "dataset:svc-kpis",
         "svc-kpi-tf:terraform"
       ]
     },
@@ -2545,16 +2452,8 @@
       "name": "svcrequests",
       "owner": "svc-requests",
       "evidence": [
+        "dataset:svc-requests",
         "svc-requests-tf:terraform"
-      ]
-    },
-    {
-      "id": "redis:skello-redis",
-      "kind": "database",
-      "store": "redis",
-      "name": "skello-redis",
-      "evidence": [
-        "dataset:skello-app"
       ]
     },
     {
@@ -2564,6 +2463,7 @@
       "name": "skelloApp-valkey",
       "owner": "skello-app",
       "evidence": [
+        "dataset:skello-app",
         "skello-app-tf:terraform"
       ]
     },
@@ -2604,6 +2504,7 @@
       "name": "skello-app.shifts-full-load",
       "owner": "svc-search",
       "evidence": [
+        "dataset:svc-search",
         "svc-search-tf:terraform"
       ]
     },
@@ -2615,6 +2516,7 @@
       "owner": "skello-app",
       "evidence": [
         "dataset:svc-documents-v2",
+        "dataset:svc-events",
         "skello-app-tf:terraform",
         "svc-reports:serverless"
       ]
@@ -2630,31 +2532,14 @@
       ]
     },
     {
-      "id": "s3:skello-assets",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "skello-assets",
-      "evidence": [
-        "dataset:skello-app"
-      ]
-    },
-    {
       "id": "s3:skello-dpae-data",
       "kind": "bucket",
       "store": "s3",
       "name": "skello-dpae-data",
       "owner": "svc-employees",
       "evidence": [
+        "dataset:svc-employees",
         "svc-employees-tf:terraform"
-      ]
-    },
-    {
-      "id": "s3:sstCodesBucket",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "sstCodesBucket",
-      "evidence": [
-        "dataset:svc-employees"
       ]
     },
     {
@@ -2688,31 +2573,14 @@
       ]
     },
     {
-      "id": "s3:svc-automatic-scheduling-sfn-ctx",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-automatic-scheduling-sfn-ctx",
-      "evidence": [
-        "dataset:svc-automatic-scheduling"
-      ]
-    },
-    {
       "id": "s3:svc-automatic-scheduling.assignment",
       "kind": "bucket",
       "store": "s3",
       "name": "svc-automatic-scheduling.assignment",
       "owner": "svc-automatic-scheduling",
       "evidence": [
+        "dataset:svc-automatic-scheduling",
         "svc-automatic-scheduling-tf:terraform"
-      ]
-    },
-    {
-      "id": "s3:svc-billing-automation",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-billing-automation",
-      "evidence": [
-        "dataset:svc-billing-automation"
       ]
     },
     {
@@ -2722,6 +2590,7 @@
       "name": "svc-billing-automation-invoices",
       "owner": "svc-billing-automation",
       "evidence": [
+        "dataset:svc-billing-automation",
         "svc-billing-automation-tf:terraform"
       ]
     },
@@ -2763,6 +2632,7 @@
       "name": "svc-documents",
       "owner": "svc-documents-esignature",
       "evidence": [
+        "dataset:svc-documents-esignature",
         "svc-documents-esignature-tf:terraform"
       ]
     },
@@ -2839,24 +2709,6 @@
       ]
     },
     {
-      "id": "s3:svc-esignature",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-esignature",
-      "evidence": [
-        "dataset:svc-documents-esignature"
-      ]
-    },
-    {
-      "id": "s3:svc-events",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-events",
-      "evidence": [
-        "dataset:svc-events"
-      ]
-    },
-    {
       "id": "s3:svc-hris",
       "kind": "bucket",
       "store": "s3",
@@ -2865,15 +2717,6 @@
       "evidence": [
         "dataset:svc-hris",
         "svc-hris-tf:terraform"
-      ]
-    },
-    {
-      "id": "s3:svc-intelligence",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-intelligence",
-      "evidence": [
-        "dataset:svc-intelligence"
       ]
     },
     {
@@ -2893,6 +2736,7 @@
       "name": "svc-intelligence-textract",
       "owner": "svc-intelligence",
       "evidence": [
+        "dataset:svc-intelligence",
         "svc-intelligence-tf:terraform"
       ]
     },
@@ -2917,31 +2761,14 @@
       ]
     },
     {
-      "id": "s3:svc-payroll-evp-data",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-payroll-evp-data",
-      "evidence": [
-        "dataset:svc-payroll"
-      ]
-    },
-    {
       "id": "s3:svc-payroll.evp-data",
       "kind": "bucket",
       "store": "s3",
       "name": "svc-payroll.evp-data",
       "owner": "svc-payroll",
       "evidence": [
+        "dataset:svc-payroll",
         "svc-payroll-tf:terraform"
-      ]
-    },
-    {
-      "id": "s3:svc-search",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-search",
-      "evidence": [
-        "dataset:svc-search"
       ]
     },
     {
@@ -2971,6 +2798,7 @@
       "name": "dispatch",
       "owner": "svc-requests",
       "evidence": [
+        "dataset:svc-requests",
         "svc-requests:serverless"
       ]
     },
@@ -3045,6 +2873,15 @@
       ]
     },
     {
+      "id": "sns:skelloNotifications-pipelines",
+      "kind": "topic",
+      "store": "sns",
+      "name": "skelloNotifications-pipelines",
+      "evidence": [
+        "dataset:svc-billing-automation"
+      ]
+    },
+    {
       "id": "sns:SnsTrackerComputation",
       "kind": "topic",
       "store": "sns",
@@ -3052,24 +2889,6 @@
       "owner": "svc-trackers",
       "evidence": [
         "svc-trackers:serverless"
-      ]
-    },
-    {
-      "id": "sns:svc-billing-automation-sns",
-      "kind": "topic",
-      "store": "sns",
-      "name": "svc-billing-automation-sns",
-      "evidence": [
-        "dataset:svc-billing-automation"
-      ]
-    },
-    {
-      "id": "sns:svc-requests-sns",
-      "kind": "topic",
-      "store": "sns",
-      "name": "svc-requests-sns",
-      "evidence": [
-        "dataset:svc-requests"
       ]
     },
     {
@@ -3250,16 +3069,6 @@
       "owner": "svc-documents-v2",
       "evidence": [
         "svc-documents-v2:serverless"
-      ]
-    },
-    {
-      "id": "sqs:autoAssignMetrics",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "autoAssignMetrics",
-      "owner": "svc-automatic-scheduling",
-      "evidence": [
-        "dataset:svc-automatic-scheduling"
       ]
     },
     {
@@ -5154,15 +4963,6 @@
       ]
     },
     {
-      "id": "sqs:skello-sqs-events",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "skello-sqs-events",
-      "evidence": [
-        "dataset:skello-app"
-      ]
-    },
-    {
       "id": "sqs:skelloApp-puma-documentsV2-workflow",
       "kind": "queue",
       "store": "sqs",
@@ -5513,24 +5313,6 @@
       ]
     },
     {
-      "id": "sqs:svc-documents-v2-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "svc-documents-v2-dlq",
-      "evidence": [
-        "dataset:svc-documents-v2"
-      ]
-    },
-    {
-      "id": "sqs:svc-employees-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "svc-employees-dlq",
-      "evidence": [
-        "dataset:svc-employees"
-      ]
-    },
-    {
       "id": "sqs:svc-employees/full-load",
       "kind": "queue",
       "store": "sqs",
@@ -5551,24 +5333,6 @@
       ]
     },
     {
-      "id": "sqs:svc-esignature-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "svc-esignature-dlq",
-      "evidence": [
-        "dataset:svc-documents-esignature"
-      ]
-    },
-    {
-      "id": "sqs:svc-hris-sync-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "svc-hris-sync-dlq",
-      "evidence": [
-        "dataset:svc-hris"
-      ]
-    },
-    {
       "id": "sqs:svc-hris/triggerFirehoseStreamSqsDlq",
       "kind": "queue",
       "store": "sqs",
@@ -5576,15 +5340,6 @@
       "owner": "svc-hris",
       "evidence": [
         "svc-hris:serverless"
-      ]
-    },
-    {
-      "id": "sqs:svc-intelligence-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "svc-intelligence-dlq",
-      "evidence": [
-        "dataset:svc-intelligence"
       ]
     },
     {
@@ -5618,15 +5373,6 @@
       ]
     },
     {
-      "id": "sqs:svc-punch-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "svc-punch-dlq",
-      "evidence": [
-        "dataset:svc-punch"
-      ]
-    },
-    {
       "id": "sqs:svc-punch/mergeShop",
       "kind": "queue",
       "store": "sqs",
@@ -5647,15 +5393,6 @@
       ]
     },
     {
-      "id": "sqs:svc-search-index-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "svc-search-index-dlq",
-      "evidence": [
-        "dataset:svc-search"
-      ]
-    },
-    {
       "id": "sqs:svc-trackers/mergeShop",
       "kind": "queue",
       "store": "sqs",
@@ -5663,15 +5400,6 @@
       "owner": "svc-trackers",
       "evidence": [
         "svc-trackers:serverless"
-      ]
-    },
-    {
-      "id": "sqs:svc-workload-plan-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "svc-workload-plan-dlq",
-      "evidence": [
-        "dataset:svc-workload-plan"
       ]
     },
     {
@@ -16360,223 +16088,6 @@
       "grade": "code"
     },
     {
-      "resource": "kinesis:eSignature",
-      "relation": "produces",
-      "service": "svc-documents-v2",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:eSignature-V2",
-      "relation": "produces",
-      "service": "svc-documents-v2",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcBillingAutomation",
-      "relation": "produces",
-      "service": "skello-app",
-      "file": "app/controllers/v3/api/billing_automation/organisations_controller.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "kinesis:svcBillingAutomation",
-      "relation": "produces",
-      "service": "svc-modularisation",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcBillingAutomation",
-      "relation": "produces",
-      "service": "svc-skello-assistant",
-      "file": "serverless/serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcBillingAutomation",
-      "relation": "produces",
-      "service": "svc-users",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-billing-automation",
-      "file": "serverless/provider/index.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-documents-v2",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-employees",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-enrollment",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-events",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-hiring",
-      "file": "serverless/custom/index.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-hris",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-intercom-bot",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-payroll",
-      "file": "serverless/custom/index.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-requests",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcCommunicationsV2",
-      "relation": "produces",
-      "service": "svc-users",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcDocumentsV2",
-      "relation": "produces",
-      "service": "svc-bff",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcDocumentsV2",
-      "relation": "produces",
-      "service": "svc-documents-esignature",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcDocumentsV2",
-      "relation": "produces",
-      "service": "svc-intelligence",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcDocumentsV2",
-      "relation": "produces",
-      "service": "svc-punch",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcDocumentsV2",
-      "relation": "produces",
-      "service": "svc-skello-assistant",
-      "file": "serverless/serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcDocumentsV2",
-      "relation": "produces",
-      "service": "svc-users",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcEmployees",
-      "relation": "produces",
-      "service": "svc-hris",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcEmployees",
-      "relation": "produces",
-      "service": "svc-intercom-bot",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcEmployees",
-      "relation": "produces",
-      "service": "svc-shops",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcEmployees",
-      "relation": "produces",
-      "service": "svc-users",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcIntelligence",
-      "relation": "produces",
-      "service": "svc-documents-v2",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcIntelligence",
-      "relation": "produces",
-      "service": "svc-skello-assistant",
-      "file": "serverless/serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcIntelligence",
-      "relation": "produces",
-      "service": "svc-users",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:svcReports",
-      "relation": "produces",
-      "service": "svc-users",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
       "resource": "sns:activityPredictionSettingsChanged",
       "relation": "produces",
       "service": "svc-kpis-v2",
@@ -16640,6 +16151,20 @@
       "grade": "config"
     },
     {
+      "resource": "sns:skelloNotifications-pipelines",
+      "relation": "produces",
+      "service": "svc-billing-automation",
+      "file": "src/container.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sns:skelloNotifications-pipelines",
+      "relation": "produces",
+      "service": "svc-billing-automation",
+      "file": "serverless/resources/iam/lambdaExecutionRole.ts",
+      "grade": "config"
+    },
+    {
       "resource": "sqs:ActivateSignatureRequestSQS",
       "relation": "consumes",
       "service": "svc-documents-v2",
@@ -16697,12 +16222,6 @@
       "resource": "sqs:analyseDocumentSQS",
       "relation": "consumes",
       "service": "svc-intelligence",
-      "grade": "config"
-    },
-    {
-      "resource": "sqs:autoAssignMetrics",
-      "relation": "consumes",
-      "service": "svc-automatic-scheduling",
       "grade": "config"
     },
     {

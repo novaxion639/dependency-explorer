@@ -36,7 +36,7 @@ const svc_intelligence: ConnectivityService = ConnectivityServiceSchema.parse({
         },
         {
           "type": "s3",
-          "name": "svc-intelligence.{env}"
+          "name": "svc-intelligence-textract.{env}"
         }
       ]
     },
@@ -70,7 +70,7 @@ const svc_intelligence: ConnectivityService = ConnectivityServiceSchema.parse({
         },
         {
           "type": "s3",
-          "name": "svc-intelligence.{env}"
+          "name": "svc-intelligence-textract.{env}"
         }
       ]
     },
@@ -131,13 +131,8 @@ const svc_intelligence: ConnectivityService = ConnectivityServiceSchema.parse({
     },
     {
       "type": "s3",
-      "name": "svc-intelligence.{env}",
-      "description": "Model artefacts and training datasets"
-    },
-    {
-      "type": "sqs",
-      "name": "svc-intelligence-dlq",
-      "description": "Failed inference job retry queue"
+      "name": "svc-intelligence-textract.{env}",
+      "description": "Textract staging bucket (SSM TEMP_BUCKET_NAME)"
     }
   ]
 })

@@ -61,7 +61,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "sfn-assignShifts",
       "to": "sfn-finishJob",
-      "action": "SFN step 6 — mark FINISHED, enqueue metrics, send final WebSocket notification"
+      "action": "SFN step 6 — mark FINISHED, send final WebSocket notification"
     },
     {
       "from": "skello-app (assign)",
@@ -195,7 +195,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-jobs-trigger",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
-      "resources": ["mongo:automatic_scheduling_jobs"],
+      "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Create job record (status: STARTED, websocketId: UUID)"
     },
     {
@@ -209,7 +209,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-jobs-dataFetcher",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
-      "resources": ["mongo:automatic_scheduling_jobs"],
+      "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → DATA_FETCHING"
     },
     {
@@ -223,7 +223,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-jobs-eligibility",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
-      "resources": ["mongo:automatic_scheduling_jobs"],
+      "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → ELIGIBILITY_COMPLIANCE_CHECK"
     },
     {
@@ -237,7 +237,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-jobs-aggregate",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
-      "resources": ["mongo:automatic_scheduling_jobs"],
+      "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → ELIGIBILITY_AGGREGATION"
     },
     {
@@ -251,7 +251,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-jobs-assignShifts",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
-      "resources": ["mongo:automatic_scheduling_jobs"],
+      "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → ASSIGNING"
     },
     {
@@ -265,7 +265,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "mongo-jobs-finishJob",
       "type": "mongodb",
       "label": "automatic_scheduling_jobs",
-      "resources": ["mongo:automatic_scheduling_jobs"],
+      "resources": ["mongo:svc-automatic-scheduling"],
       "description": "Update job status → FINISHED"
     },
     {
@@ -274,13 +274,6 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "label": "websocket-topicMessage",
       "resources": ["sqs:websocket-topicMessage"],
       "description": "Send FINISHED notification to frontend WebSocket channel"
-    },
-    {
-      "id": "sqs-metrics",
-      "type": "sqs",
-      "label": "autoAssignMetrics",
-      "resources": ["sqs:autoAssignMetrics"],
-      "description": "Job-completion metrics consumed by handleAutoAssignMetrics Lambda"
     },
     {
       "id": "pg-skello-read",
@@ -363,12 +356,6 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "to": "mongo-jobs-finishJob",
       "label": "update status (FINISHED)",
       "crud": ["update"]
-    },
-    {
-      "from": "sfn-finishJob",
-      "to": "sqs-metrics",
-      "label": "enqueue job metrics",
-      "crud": ["create"]
     },
     {
       "from": "sfn-finishJob",

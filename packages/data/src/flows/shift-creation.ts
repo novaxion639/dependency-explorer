@@ -267,7 +267,7 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "redis-skello-shifts",
       "type": "redis",
       "label": "skello-redis",
-      "resources": ["redis:skello-redis"],
+      "resources": ["redis:skelloApp-valkey"],
       "description": "First-shift cache (after_save) and the Sidekiq broker carrying every async-job edge of this flow"
     },
     {

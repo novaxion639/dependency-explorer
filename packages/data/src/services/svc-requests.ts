@@ -20,7 +20,7 @@ const svc_requests: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "postgresql",
-          "name": "svc_requests"
+          "name": "svcrequests-{env}"
         }
       ]
     },
@@ -46,11 +46,11 @@ const svc_requests: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "postgresql",
-          "name": "svc_requests"
+          "name": "svcrequests-{env}"
         },
         {
           "type": "sns",
-          "name": "svc-requests-sns"
+          "name": "svcRequests-dispatch-{env}"
         }
       ]
     },
@@ -83,11 +83,11 @@ const svc_requests: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "postgresql",
-          "name": "svc_requests"
+          "name": "svcrequests-{env}"
         },
         {
           "type": "sns",
-          "name": "svc-requests-sns"
+          "name": "svcRequests-dispatch-{env}"
         }
       ]
     },
@@ -113,11 +113,11 @@ const svc_requests: ConnectivityService = ConnectivityServiceSchema.parse({
       "awsCalls": [
         {
           "type": "postgresql",
-          "name": "svc_requests"
+          "name": "svcrequests-{env}"
         },
         {
           "type": "sns",
-          "name": "svc-requests-sns"
+          "name": "svcRequests-dispatch-{env}"
         }
       ]
     },
@@ -151,12 +151,12 @@ const svc_requests: ConnectivityService = ConnectivityServiceSchema.parse({
   "databases": [
     {
       "type": "postgresql",
-      "name": "svc_requests",
+      "name": "svcrequests-{env}",
       "description": "Leave requests and availability rules (relational)"
     },
     {
       "type": "sns",
-      "name": "svc-requests-sns",
+      "name": "svcRequests-dispatch-{env}",
       "description": "Request state change notifications"
     }
   ]

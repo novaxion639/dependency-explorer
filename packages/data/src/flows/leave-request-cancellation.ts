@@ -131,7 +131,7 @@ const leave_request_cancellation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-requests-cancel",
       "type": "postgresql",
       "label": "svc-requests Aurora",
-      "resources": ["pg:svc_requests"],
+      "resources": ["pg:svcrequests"],
       "description": "Leave request row removed"
     },
     {

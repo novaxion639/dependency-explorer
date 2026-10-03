@@ -175,7 +175,7 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "id": "dynamo-employees-onboarding",
       "type": "dynamodb",
       "label": "SvcEmployees ({env})",
-      "resources": ["ddb:svcEmployees"],
+      "resources": ["ddb:svcEmployees-restaure"],
       "description": "svc-employees' own store — DPAE submission state and step-function follow-up"
     }
   ],

@@ -10,7 +10,7 @@ export function checkResources(committed: Resource[], live: Resource[], models: 
     ...committed.filter(x => !liveIds.has(x.id)).map(x => ({ subject: x.id, kind: 'resource-gone' as const, detail: `${x.id} has no evidence at the pinned commit — pnpm discover:apply drops it` })),
     ...live.filter(x => !committedIds.has(x.id)).map(x => ({ subject: x.id, kind: 'resource-new' as const, detail: `${x.id} (${x.evidence.join(', ')}) is not in resources.json — pnpm discover:apply adds it` })),
     ...models.filter(m => !tables.includes(m.table)).map(m => ({ subject: m.className, kind: 'model-without-table' as const, detail: `${m.file} maps to "${m.table}", absent from db/schema.rb` })),
-    ...live.filter(x => x.evidence.every(e => e.startsWith('dataset:'))).map(x => ({ subject: x.id, kind: 'resource-unverified' as const, detail: `${x.id} is declared only by the dataset (${x.evidence.join(', ')}) — no code or config at the pinned commit names it` })),
+    ...live.filter(x => x.evidence.every(e => e.startsWith('dataset:'))).map(x => ({ subject: x.id, kind: 'resource-unverified' as const, detail: `${x.id} is declared only by the dataset (${x.evidence.join(', ')}) — no serverless, Terraform or schema declaration at the pinned commit` })),
     ...(tables.length && !readersAvailable ? [{ subject: 'skello-app', kind: 'readers-unavailable' as const, detail: 'no skello-app graph built at the pinned commit — table readers cannot be derived; discover:apply refuses to write resources.json' }] : []),
   ]
   const mapped = new Set(models.map(m => m.table))
