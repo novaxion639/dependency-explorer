@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo } from 'react'
 import {
   Background, BackgroundVariant, BaseEdge, Controls, EdgeLabelRenderer, Handle, Position, ReactFlow,
-  useInternalNode, useNodesState, type EdgeProps, type InternalNode, type NodeProps,
+  useInternalNode, useNodesState, useReactFlow, useStore, type EdgeProps, type InternalNode, type NodeProps,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { Emphases } from '../focus'
@@ -79,6 +79,16 @@ function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<Diag
   )
 }
 
+function FitOnResize() {
+  const { fitView } = useReactFlow()
+  const width = useStore(s => s.width)
+  const height = useStore(s => s.height)
+  useEffect(() => {
+    void fitView()
+  }, [width, height, fitView])
+  return null
+}
+
 const nodeTypes = { diagramNode: DiagramNodeView, diagramGroup: DiagramGroupView }
 const edgeTypes = { diagramEdge: DiagramEdgeView }
 
@@ -122,6 +132,7 @@ export function ReactFlowDiagram({ model, emphases, onSelect, onMove }: Props) {
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--rule)" />
         <Controls showInteractive={false} />
+        <FitOnResize />
       </ReactFlow>
     </DiagramSelectContext.Provider>
   )
