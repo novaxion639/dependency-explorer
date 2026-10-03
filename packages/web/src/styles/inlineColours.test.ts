@@ -20,18 +20,13 @@ const LEGACY_DIAGRAM_FILES = new Set([
   'utils/buildFlowGraph.ts',
 ])
 
-const PENDING_4A = new Set([
-  'components/SearchModal.tsx',
-  'components/connectivity/ServiceSidebar.tsx',
-])
-
 const offenders = Object.entries(sources).filter(([, src]) => COLOUR_LITERAL.test(src)).map(([path]) => path.replace(/^\.\.\//, '')).sort()
 
 describe('inline colour literals', () => {
-  it('appear only in legacy diagram files and files still pending migration', () => {
-    expect(offenders.filter(f => !LEGACY_DIAGRAM_FILES.has(f) && !PENDING_4A.has(f))).toEqual([])
+  it('appear only in legacy diagram files', () => {
+    expect(offenders.filter(f => !LEGACY_DIAGRAM_FILES.has(f))).toEqual([])
   })
   it('lists only files that still carry literals, so each list shrinks as files migrate', () => {
-    expect([...LEGACY_DIAGRAM_FILES, ...PENDING_4A].filter(f => !offenders.includes(f)).sort()).toEqual([])
+    expect([...LEGACY_DIAGRAM_FILES].filter(f => !offenders.includes(f)).sort()).toEqual([])
   })
 })
