@@ -31,7 +31,7 @@ export function toReactFlow(model: DiagramModel, emphases: Emphases): { nodes: D
     source: edge.from,
     target: edge.to,
     type: 'diagramEdge',
-    ...(edge.directed ? { markerEnd: { type: MarkerType.ArrowClosed, width: 16, height: 16, color: 'var(--ink)' } } : {}),
+    ...(edge.directed ? { markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, markerUnits: 'userSpaceOnUse', color: 'var(--ink)' } } : {}),
     data: { edge, emphasis: emphases.edges.get(edge.id) ?? 'normal' },
   }))
   return { nodes: [...groups, ...nodes], edges }

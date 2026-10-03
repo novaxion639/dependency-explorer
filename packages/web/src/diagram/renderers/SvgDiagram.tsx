@@ -49,7 +49,7 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
       style={{ fontFamily: 'var(--font-sans)', background: 'var(--paper)' }}
     >
       <defs>
-        <marker id={`${prefix}-arrow`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <marker id={`${prefix}-arrow`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" style={{ fill: 'var(--ink)' }} />
         </marker>
         <pattern id={`${prefix}-hatch`} width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">

@@ -9,6 +9,7 @@ import type { Renderer } from '../diagram/model'
  *   (no params)                          home (question-first landing)
  *   ?page=areas&area=planning&term=Poste product area page, glossary term highlighted
  *   ?page=microservices                  microservices overview
+ *   ?page=microservices&area=planning    overview, area spotlit (also on monolith)
  *   ?page=microservices&s=svc-users      one service
  *   ?page=monolith                       skello-app
  *   ?page=flows&flow=shift-creation      flow page (&detail=code | sequence)
@@ -18,7 +19,7 @@ import type { Renderer } from '../diagram/model'
  *   ?page=resources&resource=pg:…        resource page (change impact)
  *   ?page=impact&blast=svc-users         impact of a failing service or resource
  *   ?page=ownership&team=team-salsa      ownership, team focused
- *   &edge=from~to~protocol · &drawer=svc · &ep=id   detail panel content
+ *   &edge=from~to~protocol[,…] · &drawer=svc · &ep=id   detail panel content
  *   &present=1                           present mode
  *   &renderer=svg | mermaid              diagram renderer (React Flow by default)
  *
@@ -55,6 +56,8 @@ export interface UrlState {
 }
 
 export const EDGE_SEP = '~'
+export const EDGE_LIST_SEP = ','
+const AREA_PAGES = new Set<Page>(['areas', 'microservices', 'monolith'])
 
 const NAVIGATION_KEYS = ['page', 'area', 's', 'team', 'flows', 'flow', 'drawer', 'flag', 'file', 'resource'] as const
 
@@ -122,9 +125,9 @@ export function toQueryString(state: UrlState): string {
   if (state.s) {
     p.set('s', state.s)
   }
-  if (state.page === 'areas' && state.area) {
+  if (AREA_PAGES.has(state.page) && state.area) {
     p.set('area', state.area)
-    if (state.term) {
+    if (state.page === 'areas' && state.term) {
       p.set('term', state.term)
     }
   }

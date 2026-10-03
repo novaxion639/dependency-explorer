@@ -5,17 +5,14 @@ const COLOUR_LITERAL = /#[0-9a-fA-F]{3,8}\b|rgba?\(/
 
 const LEGACY_DIAGRAM_FILES = new Set([
   'components/ExportPngButton.tsx',
-  'components/areas/SystemContext.tsx',
   'components/connectivity/CodeUnitDetailPanel.tsx',
   'components/connectivity/ConnectivityEdge.tsx',
-  'components/connectivity/ConnectivityGraph.tsx',
   'components/connectivity/EdgeBadges.tsx',
   'components/connectivity/FlowGraphModal.tsx',
   'components/connectivity/SequenceDiagram.tsx',
   'components/nodes/CodeUnitNode.tsx',
   'components/nodes/DatabaseNode.tsx',
   'components/nodes/ServiceNode.tsx',
-  'utils/buildConnectivityGraph.ts',
   'utils/buildFlowCodeGraph.ts',
   'utils/buildFlowGraph.ts',
 ])

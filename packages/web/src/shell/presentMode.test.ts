@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { presentKeyAction, onPresentKey } from './presentMode'
+import { presentKeyAction, onPresentKey, presentStepKey, stepThrough } from './presentMode'
 
 const key = (k: string, over: Partial<Parameters<typeof presentKeyAction>[0]> = {}) => ({ key: k, metaKey: false, ctrlKey: false, altKey: false, targetTag: 'BODY', targetEditable: false, ...over })
 
@@ -34,5 +34,27 @@ describe('onPresentKey', () => {
     let stopped = false
     onPresentKey({ ...key('Escape'), stopPropagation: () => { stopped = true } }, false, () => {})
     expect(stopped).toBe(false)
+  })
+})
+
+describe('presentStepKey', () => {
+  it('steps forward and back with the arrow keys', () => {
+    expect([presentStepKey(key('ArrowRight')), presentStepKey(key('ArrowDown'))]).toEqual(['next', 'next'])
+    expect([presentStepKey(key('ArrowLeft')), presentStepKey(key('ArrowUp'))]).toEqual(['prev', 'prev'])
+    expect(presentStepKey(key('a'))).toBeNull()
+  })
+  it('ignores arrows typed into fields or with a modifier', () => {
+    expect(presentStepKey(key('ArrowRight', { targetTag: 'INPUT' }))).toBeNull()
+    expect(presentStepKey(key('ArrowRight', { altKey: true }))).toBeNull()
+  })
+})
+
+describe('stepThrough', () => {
+  const ids = ['a', 'b', 'c']
+  it('starts at either end and wraps around', () => {
+    expect([stepThrough(ids, null, 'next'), stepThrough(ids, null, 'prev')]).toEqual(['a', 'c'])
+    expect([stepThrough(ids, 'a', 'next'), stepThrough(ids, 'c', 'next'), stepThrough(ids, 'a', 'prev')]).toEqual(['b', 'a', 'c'])
+    expect(stepThrough(ids, 'gone', 'next')).toBe('a')
+    expect(stepThrough([], null, 'next')).toBeNull()
   })
 })

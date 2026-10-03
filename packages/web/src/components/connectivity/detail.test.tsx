@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { connectivityMap } from '@dependency-explorer/data'
 import { EdgeDetail } from './EdgeDetail'
 import { EndpointList } from './EndpointList'
+import { ConnectionList } from './ConnectionList'
 
 const noop = () => {}
 
@@ -27,5 +28,17 @@ describe('detail panel content', () => {
     expect(html).toContain('svc-punch')
     expect(html).toContain(svc.endpoints[0]?.path ?? '')
     expect(html).not.toContain('position:fixed')
+  })
+  it('lists the connections behind an aggregated edge', () => {
+    const conns = connectivityMap.connections.filter(c => c.to === 'skello-app' && c.protocol === 'cdc')
+    const html = renderToStaticMarkup(<ConnectionList connections={conns} onOpen={noop} onClose={noop} />)
+    expect(html).toContain('aria-label="Connections"')
+    expect(html).toContain(`${conns.length} connections`)
+    expect(html).toContain('svc-search → skello-app')
+  })
+  it('opens the service whose endpoints are listed', () => {
+    const svc = connectivityMap.services.find(s => s.name === 'svc-punch')
+    const html = renderToStaticMarkup(<EndpointList serviceName="svc-punch" endpoints={svc?.endpoints ?? []} highlightId={null} onClose={noop} onOpenService={noop} />)
+    expect(html).toContain('Open svc-punch →')
   })
 })

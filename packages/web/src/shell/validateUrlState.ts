@@ -1,4 +1,4 @@
-import { EDGE_SEP, type UrlState } from '../hooks/useUrlState'
+import { EDGE_LIST_SEP, edgeKey, type UrlState } from '../hooks/useUrlState'
 import { areaById, fileIndex, flagRegistry, map, resourceIds } from './dataIndexes'
 
 export function validateUrlState(st: UrlState): UrlState {
@@ -44,8 +44,8 @@ export function validateUrlState(st: UrlState): UrlState {
     next.drawer = null
   }
   if (next.edge) {
-    const [from, to, protocol] = next.edge.split(EDGE_SEP)
-    if (!map.connections.some(c => c.from === from && c.to === to && c.protocol === protocol)) {
+    const known = new Set(map.connections.map(c => edgeKey(c.from, c.to, c.protocol)))
+    if (!next.edge.split(EDGE_LIST_SEP).every(k => known.has(k))) {
       next.edge = null
     }
   }

@@ -11,6 +11,7 @@ export async function renderMermaid(source: string): Promise<string> {
     look: 'classic',
     layout: 'dagre',
     htmlLabels: false,
+    flowchart: { wrappingWidth: 280 },
     themeVariables: {
       fontFamily: readRootToken('--font-sans'),
       primaryColor: readRootToken('--card'),

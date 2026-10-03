@@ -7,6 +7,7 @@ import { AreaPage } from '../components/areas/AreaPage'
 import { FlowView } from '../components/connectivity/FlowGraphModal'
 import { EdgeDetail } from '../components/connectivity/EdgeDetail'
 import { EndpointList } from '../components/connectivity/EndpointList'
+import { ConnectionList } from '../components/connectivity/ConnectionList'
 import { FlowsIndex } from '../components/connectivity/FlowsIndex'
 import { FlagPage } from '../components/connectivity/FlagPage'
 import { FilePage } from '../components/connectivity/FilePage'
@@ -17,9 +18,9 @@ import { OwnershipPage } from '../components/ownership/OwnershipPage'
 import { AppShell } from './AppShell'
 import { HomePage } from './HomePage'
 import { MicroservicesPage } from './MicroservicesPage'
-import { fileIndex, flagRegistry, map, resourceIds, searchIndex } from './dataIndexes'
+import { connectionsFor, fileIndex, flagRegistry, map, resourceIds, searchIndex } from './dataIndexes'
 import { validateUrlState } from './validateUrlState'
-import { onPresentKey } from './presentMode'
+import { keyInfo, onPresentKey } from './presentMode'
 
 
 export function Explorer() {
@@ -39,8 +40,7 @@ export function Explorer() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const target = e.target instanceof HTMLElement ? e.target : null
-      onPresentKey({ key: e.key, metaKey: e.metaKey, ctrlKey: e.ctrlKey, altKey: e.altKey, targetTag: target?.tagName ?? '', targetEditable: target?.isContentEditable ?? false, stopPropagation: () => e.stopPropagation() }, url.present, patch)
+      onPresentKey({ ...keyInfo(e), stopPropagation: () => e.stopPropagation() }, url.present, patch)
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
@@ -52,20 +52,23 @@ export function Explorer() {
   const flagEntry = url.flag ? flagRegistry.get(url.flag) : undefined
   const fileEntry = url.file ? fileIndex.get(url.file) : undefined
   const architecture = url.page === 'microservices' || url.page === 'monolith'
-  const edgeConnection = architecture && url.edge ? map.connections.find(c => edgeKey(c.from, c.to, c.protocol) === url.edge) ?? null : null
+  const edgeConnections = architecture && url.edge ? connectionsFor(url.edge) : []
+  const [firstEdge] = edgeConnections
   const drawerService = architecture && url.drawer ? map.services.find(s => s.name === url.drawer) ?? null : null
-  const panel = edgeConnection
-    ? <EdgeDetail connection={edgeConnection} map={map} onSeeEndpoints={name => patch({ drawer: name, ep: null, edge: null })} onClose={() => patch({ edge: null })} />
-    : drawerService
-      ? <EndpointList serviceName={drawerService.name} endpoints={drawerService.endpoints} recurringTasks={drawerService.recurringTasks} highlightId={url.ep} onClose={() => patch({ drawer: null, ep: null })} />
-      : null
+  const panel = edgeConnections.length > 1
+    ? <ConnectionList connections={edgeConnections} onOpen={c => patch({ edge: edgeKey(c.from, c.to, c.protocol) })} onClose={() => patch({ edge: null })} />
+    : firstEdge
+      ? <EdgeDetail connection={firstEdge} map={map} onSeeEndpoints={name => patch({ drawer: name, ep: null, edge: null })} onClose={() => patch({ edge: null })} />
+      : drawerService
+        ? <EndpointList serviceName={drawerService.name} endpoints={drawerService.endpoints} recurringTasks={drawerService.recurringTasks} highlightId={url.ep} onClose={() => patch({ drawer: null, ep: null })} onOpenService={() => selectService(drawerService.name)} />
+        : null
 
   const content =
     url.page === 'home' ? <HomePage index={searchIndex} onNavigate={patch} />
     : url.page === 'areas' ? (url.area
       ? <AreaPage map={map} areaId={url.area} term={url.term} onBack={() => patch({ area: null, term: null })} onOpenFlow={id => patch({ page: 'flows', flow: id })} onOpenArea={id => patch({ area: id, term: null })} onSelectService={selectService} />
       : <AreasHome map={map} onOpenArea={id => patch({ area: id, term: null })} onOpenContext={() => patch({ page: 'microservices', s: null })} />)
-    : url.page === 'microservices' || url.page === 'monolith' ? <MicroservicesPage url={url.page === 'monolith' ? { ...url, s: 'skello-app' } : url} patch={patch} onOpenResource={openResource} />
+    : url.page === 'microservices' || url.page === 'monolith' ? <MicroservicesPage url={url.page === 'monolith' ? { ...url, s: 'skello-app' } : url} patch={patch} />
     : url.page === 'flows' ? (selectedFlow
       ? <FlowView flow={selectedFlow} map={map} detail={url.detail} onDetailChange={d => patch({ detail: d })} onOpenFlow={id => patch({ flow: id, detail: null })} onOpenArea={id => patch({ page: 'areas', area: id, term: null, flow: null, detail: null })} onOpenResource={openResource} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, detail: null }))} onClose={() => patch({ flow: null, detail: null })} />
       : flagEntry ? <FlagPage entry={flagEntry} onSelectFlow={flow => patch({ flow: flow.id, flag: null })} />

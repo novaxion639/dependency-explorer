@@ -9,6 +9,7 @@ interface Props {
   recurringTasks?: RecurringTask[]
   highlightId?: string | null
   onClose: () => void
+  onOpenService?: () => void
 }
 
 function Label({ children }: { children: ReactNode }) {
@@ -22,7 +23,7 @@ function statusClass(code: string): string {
   return code.startsWith('4') ? styles.warn : styles.err
 }
 
-export function EndpointList({ serviceName, endpoints, recurringTasks, highlightId, onClose }: Props) {
+export function EndpointList({ serviceName, endpoints, recurringTasks, highlightId, onClose, onOpenService }: Props) {
   const [open, setOpen] = useState<string | null>(highlightId ?? endpoints[0]?.id ?? null)
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export function EndpointList({ serviceName, endpoints, recurringTasks, highlight
         </div>
         <button type="button" aria-label="Close" onClick={onClose}>×</button>
       </header>
+      {onOpenService && <button type="button" className={styles.open} onClick={onOpenService}>Open {serviceName} →</button>}
 
       {recurringTasks && recurringTasks.length > 0 && (
         <section className={styles.tasks}>

@@ -29,7 +29,7 @@ describe('toMermaid', () => {
 
   it('nests groups as subgraphs', () => {
     expect(source).toContain('subgraph g0["Platform"]')
-    expect(source).toMatch(/subgraph g1\["Documents & e-signature"\]\n\s+n0\["svc-a"\]\n\s+end\n\s+end/)
+    expect(source).toMatch(/subgraph g1\["Documents & e-signature"\]\n\s+direction LR\n\s+n0\["svc-a"\]\n\s+end\n\s+end/)
   })
   it('styles edges by mode and weight', () => {
     expect(source).toContain('g1 -.->|"SQS ×4"| n1')
