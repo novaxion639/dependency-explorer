@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { connectivityMap as map, ServiceFlowSchema } from '@dependency-explorer/data'
 import { layoutProblems } from '../layoutProblems'
+import { overlaps } from '../geometry'
+import type { Box, DiagramModel } from '../model'
 import { chapterFocus, infraNodeId, serviceNodeId, swimlanes, unitNodeId } from './swimlane'
 
 function flow(id: string) {
@@ -83,5 +85,73 @@ describe('swimlanes', () => {
     const lanes = chapterFocus(m, shift, ['skello-app'])
     expect(lanes.has('lane:skello-app')).toBe(true)
     expect(lanes.has(unitNodeId('cu-activity-job'))).toBe(true)
+  })
+})
+
+const ARROW = 14
+
+function arrowBox(route: Array<{ x: number; y: number }>): Box | null {
+  const q = route[route.length - 1]
+  const p = route[route.length - 2]
+  if (!p || !q) {
+    return null
+  }
+  const dx = Math.sign(q.x - p.x)
+  const dy = Math.sign(q.y - p.y)
+  const tail = { x: q.x - dx * ARROW, y: q.y - dy * ARROW }
+  return { x: Math.min(q.x, tail.x) - 5, y: Math.min(q.y, tail.y) - 5, w: Math.abs(q.x - tail.x) + 10, h: Math.abs(q.y - tail.y) + 10 }
+}
+
+function crosses(a: { x: number; y: number }, b: { x: number; y: number }, box: Box): boolean {
+  return Math.min(a.x, b.x) < box.x + box.w && Math.max(a.x, b.x) > box.x && Math.min(a.y, b.y) < box.y + box.h && Math.max(a.y, b.y) > box.y
+}
+
+function nodeEdges(model: DiagramModel) {
+  const nodeIds = new Set(model.nodes.map(n => n.id))
+  return model.edges.filter(e => nodeIds.has(e.from) && nodeIds.has(e.to))
+}
+
+describe('swimlane routes', () => {
+  it('routes every node-to-node edge orthogonally, never through another node', () => {
+    for (const f of map.flows) {
+      const model = swimlanes(f)
+      for (const e of nodeEdges(model)) {
+        const route = e.route ?? []
+        expect(route.length, `${f.id} ${e.id}`).toBeGreaterThanOrEqual(2)
+        route.slice(1).forEach((q, i) => {
+          const p = route[i] ?? q
+          expect(p.x === q.x || p.y === q.y, `${f.id} ${e.id} diagonal`).toBe(true)
+          for (const n of model.nodes.filter(n => n.id !== e.from && n.id !== e.to)) {
+            expect(crosses(p, q, n), `${f.id} ${e.id} crosses ${n.id}`).toBe(false)
+          }
+        })
+      }
+    }
+  })
+  it('keeps every edge label clear of nodes, other labels and arrowheads', () => {
+    for (const f of map.flows) {
+      const model = swimlanes(f)
+      const labelled = nodeEdges(model).filter(e => e.label || e.condition)
+      const arrows = nodeEdges(model).flatMap(e => {
+        const box = arrowBox(e.route ?? [])
+        return box ? [{ id: e.id, box }] : []
+      })
+      labelled.forEach((e, i) => {
+        const box = e.labelBox
+        expect(box, `${f.id} ${e.id} has a label box`).toBeDefined()
+        if (!box) {
+          return
+        }
+        for (const n of model.nodes) {
+          expect(overlaps(box, n), `${f.id} ${e.id} label over ${n.id}`).toBe(false)
+        }
+        for (const other of labelled.slice(i + 1)) {
+          expect(other.labelBox && overlaps(box, other.labelBox), `${f.id} ${e.id} label over ${other.id} label`).toBeFalsy()
+        }
+        for (const a of arrows) {
+          expect(overlaps(box, a.box), `${f.id} ${e.id} label over ${a.id} arrow`).toBe(false)
+        }
+      })
+    }
   })
 })

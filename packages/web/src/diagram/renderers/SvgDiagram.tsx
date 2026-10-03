@@ -79,9 +79,10 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
         const s = edgeSegment(from, to, e.lane, e.lanes)
         const paint = PAINT[emphases.edges.get(e.id) ?? 'normal']
         return (
-          <line
+          <polyline
             key={e.id}
-            x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
+            points={(e.route ?? [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]).map(p => `${p.x},${p.y}`).join(' ')}
+            fill="none"
             markerEnd={e.directed ? `url(#${prefix}-arrow)` : undefined}
             style={{ stroke: paint.stroke, strokeWidth: strokeWidth(e.weight), strokeDasharray: DASH[e.mode], opacity: paint.opacity }}
           />
@@ -114,7 +115,8 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
         if (!from || !to || (!e.label && !e.condition)) {
           return null
         }
-        const s = edgeSegment(from, to, e.lane, e.lanes)
+        const segment = edgeSegment(from, to, e.lane, e.lanes)
+        const s = e.labelBox ? { lx: e.labelBox.x + e.labelBox.w / 2, ly: e.labelBox.y + 9 } : segment
         const paint = PAINT[emphases.edges.get(e.id) ?? 'normal']
         const pill = e.condition ? `if ${e.condition}` : ''
         const w = Math.max(textWidth(e.label, LABEL_FONT), textWidth(pill, LABEL_FONT)) + 8

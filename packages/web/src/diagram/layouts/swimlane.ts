@@ -1,15 +1,24 @@
 import type { FlowCodeEdge, FlowCodeUnit, ServiceFlow } from '@dependency-explorer/data'
-import { fitLabel, linesHeight } from '../geometry'
-import { ALL_RENDERERS, type DiagramEdge, type DiagramGroup, type DiagramModel, type DiagramNode, type EdgeMode } from '../model'
+import { fitLabel, linesHeight, overlaps, textWidth } from '../geometry'
+import { ALL_RENDERERS, type Box, type DiagramEdge, type DiagramGroup, type DiagramModel, type DiagramNode, type EdgeMode, type RoutePoint } from '../model'
 
 const FONT = 12
 const LANE_W = 250
-const LANE_GAP = 16
+const LANE_GAP = 280
 const PAD = 12
-const HEAD = 32
-const ROW_GAP = 22
+const HEAD = 48
+const ROW_GAP = 64
 const NODE_W = LANE_W - 2 * PAD
 const LABEL_MAX = 34
+const LABEL_FONT = 11
+const LABEL_LINE = 17
+const LABEL_PAD = 8
+const LABEL_MARGIN = 4
+const ARROW = 14
+const ARROW_CLEARANCE = 6
+const TRACK = 8
+const TRACKS = Math.floor(LANE_GAP / TRACK) - 2
+const CHANNEL = 19
 
 export const STORES_LANE = 'lane:stores'
 export const OTHERS_LANE = 'lane:others'
@@ -187,12 +196,6 @@ export function swimlanes(flow: ServiceFlow): DiagramModel {
     }
     return lane.endsWith(':bg') ? `${lane.slice(5, -3)} · background` : lane.slice(5)
   }
-  const groups: DiagramGroup[] = laneOrder.map((lane, i) => ({
-    id: lane, kind: 'lane', label: fitLabel(laneLabel(lane), LANE_W, FONT), fontSize: FONT,
-    members: order.filter(id => !isLaneEndpoint(id) && laneOf(id) === lane).map(modelId),
-    x: i * (LANE_W + LANE_GAP), y: 0, w: LANE_W, h: height,
-  }))
-
   const edges: DiagramEdge[] = []
   const push = (from: string, to: string, mode: EdgeMode, label: string, condition?: string) => {
     const a = modelId(from)
@@ -209,9 +212,107 @@ export function swimlanes(flow: ServiceFlow): DiagramModel {
   for (const e of infraLinks) {
     push(e.from, e.to, 'sync', edgeText(e.label, e.crud))
   }
+
+  const laneIndex = new Map(order.filter(id => !isLaneEndpoint(id)).map(id => [modelId(id), laneOrder.indexOf(laneOf(id))]))
+  const laneX = (i: number) => i * (LANE_W + LANE_GAP)
+  const tracks = new Map<number, number>()
+  const trackX = (gutter: number) => {
+    const k = tracks.get(gutter) ?? 0
+    tracks.set(gutter, k + 1)
+    return laneX(gutter) + LANE_W + TRACK * (1 + (k % TRACKS))
+  }
+  const route = (a: DiagramNode, b: DiagramNode): { points: RoutePoint[]; gutter: number | null } => {
+    const la = laneIndex.get(a.id) ?? 0
+    const lb = laneIndex.get(b.id) ?? 0
+    const ya = a.y + a.h / 2
+    const yb = b.y + b.h / 2
+    if (la === lb) {
+      const between = nodes.some(n => n !== a && n !== b && laneIndex.get(n.id) === la && n.y > Math.min(a.y, b.y) && n.y < Math.max(a.y, b.y))
+      if (b.y > a.y && !between) {
+        const x = a.x + a.w / 2
+        return { points: [{ x, y: a.y + a.h }, { x, y: b.y }], gutter: null }
+      }
+      const gx = trackX(la)
+      return { points: [{ x: a.x + a.w, y: ya }, { x: gx, y: ya }, { x: gx, y: yb }, { x: b.x + b.w, y: yb }], gutter: la }
+    }
+    const right = lb > la
+    const first = right ? la : la - 1
+    const last = right ? lb - 1 : lb
+    const start = right ? a.x + a.w : a.x
+    const end = right ? b.x : b.x + b.w
+    const x1 = trackX(first)
+    if (first === last) {
+      return { points: [{ x: start, y: ya }, { x: x1, y: ya }, { x: x1, y: yb }, { x: end, y: yb }], gutter: first }
+    }
+    const x2 = trackX(last)
+    const channel = b.y - CHANNEL
+    return { points: [{ x: start, y: ya }, { x: x1, y: ya }, { x: x1, y: channel }, { x: x2, y: channel }, { x: x2, y: yb }, { x: end, y: yb }], gutter: first }
+  }
+
+  const routed = edges.flatMap(e => {
+    const a = byId.get(e.from)
+    const b = byId.get(e.to)
+    if (!a || !b) {
+      return []
+    }
+    const r = route(a, b)
+    e.route = r.points
+    return [{ edge: e, source: a, gutter: r.gutter }]
+  })
+  const arrows = routed.flatMap(({ edge }) => {
+    const box = arrowBox(edge.route ?? [])
+    return box ? [box] : []
+  })
+  const labelSize = (e: DiagramEdge) => {
+    const lines = [e.label, e.condition ? `if ${e.condition}` : ''].filter(Boolean)
+    return { w: Math.max(0, ...lines.map(l => textWidth(l, LABEL_FONT))) + LABEL_PAD, h: lines.length * LABEL_LINE }
+  }
+  const placed: Box[] = []
+  for (const { edge, source } of routed.filter(r => r.gutter === null && (r.edge.label || r.edge.condition))) {
+    const { w, h } = labelSize(edge)
+    edge.labelBox = { x: source.x + source.w / 2 - w / 2, y: source.y + source.h + LABEL_MARGIN, w, h }
+    placed.push(edge.labelBox)
+  }
+  const gutterLabels = routed
+    .filter(r => r.gutter !== null && (r.edge.label || r.edge.condition))
+    .map(r => ({ ...r, desired: r.source.y + r.source.h / 2 }))
+    .sort((p, q) => p.desired - q.desired)
+  for (const { edge, gutter, desired } of gutterLabels) {
+    const { w, h } = labelSize(edge)
+    const x = laneX(gutter ?? 0) + LANE_W + LANE_GAP / 2 - w / 2
+    let y = desired - h / 2
+    for (let hit = [...placed, ...arrows].find(o => overlaps({ x, y, w, h }, o)); hit; hit = [...placed, ...arrows].find(o => overlaps({ x, y, w, h }, o))) {
+      y = hit.y + hit.h + LABEL_MARGIN
+    }
+    edge.labelBox = { x, y, w, h }
+    placed.push(edge.labelBox)
+  }
+
+  const bottom = Math.max(height, ...placed.map(b => b.y + b.h + PAD))
+  const lanes = laneOrder.length + (tracks.has(laneOrder.length - 1) ? 1 : 0)
+  const groups: DiagramGroup[] = laneOrder.map((lane, i) => ({
+    id: lane, kind: 'lane', label: fitLabel(laneLabel(lane), LANE_W, FONT), fontSize: FONT,
+    members: order.filter(id => !isLaneEndpoint(id) && laneOf(id) === lane).map(modelId),
+    x: laneX(i), y: 0, w: LANE_W, h: bottom,
+  }))
   return {
-    id: `flow:${flow.id}`, title: `${flow.name} — swimlanes`, width: laneOrder.length * (LANE_W + LANE_GAP) - LANE_GAP, height,
+    id: `flow:${flow.id}`, title: `${flow.name} — swimlanes`, width: lanes * (LANE_W + LANE_GAP) - LANE_GAP, height: bottom,
     nodes, groups, edges, renderers: ALL_RENDERERS,
+  }
+}
+
+function arrowBox(route: RoutePoint[]): Box | null {
+  const q = route[route.length - 1]
+  const p = route[route.length - 2]
+  if (!p || !q) {
+    return null
+  }
+  const tail = { x: q.x - Math.sign(q.x - p.x) * ARROW, y: q.y - Math.sign(q.y - p.y) * ARROW }
+  return {
+    x: Math.min(q.x, tail.x) - ARROW_CLEARANCE,
+    y: Math.min(q.y, tail.y) - ARROW_CLEARANCE,
+    w: Math.abs(q.x - tail.x) + 2 * ARROW_CLEARANCE,
+    h: Math.abs(q.y - tail.y) + 2 * ARROW_CLEARANCE,
   }
 }
 
