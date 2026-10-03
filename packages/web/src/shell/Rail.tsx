@@ -1,4 +1,4 @@
-import type { Page, UrlState } from '../hooks/useUrlState'
+import { pagePatch, type Page, type UrlState } from '../hooks/useUrlState'
 import { RAIL, type RailItem } from './railModules'
 import styles from './Rail.module.css'
 
@@ -9,7 +9,7 @@ function Item({ item, page, onNavigate }: { item: RailItem; page: Page; onNaviga
   return (
     <li>
       {target ? (
-        <button type="button" className={styles.item} aria-current={page === target ? 'page' : undefined} onClick={() => onNavigate({ page: target })}>
+        <button type="button" className={styles.item} aria-current={page === target ? 'page' : undefined} onClick={() => onNavigate(pagePatch(target))}>
           <span>{item.label}</span>
           <small>{item.hint}</small>
         </button>

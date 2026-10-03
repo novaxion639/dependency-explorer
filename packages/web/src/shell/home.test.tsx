@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { connectivityMap, monolithRoutes, resourceSurface } from '@dependency-explorer/data'
 import { buildSearchIndex } from '../utils/searchIndex'
 import { HOME_TILES } from './home'
+import { pagePatch } from '../hooks/useUrlState'
 import { HomePage } from './HomePage'
 
 describe('HomePage', () => {
@@ -13,7 +14,7 @@ describe('HomePage', () => {
       expect(html, title).toContain(title)
     }
   })
-  it('sends each tile to its module', () => {
-    expect(HOME_TILES.map(t => t.patch.page)).toEqual(['monolith', 'microservices', 'flows', 'impact'])
+  it('sends each tile to the top level of its module', () => {
+    expect(HOME_TILES.map(t => t.patch)).toEqual([pagePatch('monolith'), pagePatch('microservices'), pagePatch('flows'), pagePatch('impact')])
   })
 })

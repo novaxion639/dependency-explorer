@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { edgeKey, selectServicePatch, useUrlState } from '../hooks/useUrlState'
+import { canGoBack, edgeKey, pagePatch, selectServicePatch, useUrlState } from '../hooks/useUrlState'
 import { SearchModal } from '../components/SearchModal'
 import { NotFoundBanner } from '../components/areas/NotFoundBanner'
 import { AreasHome } from '../components/areas/AreasHome'
@@ -19,6 +19,7 @@ import { HomePage } from './HomePage'
 import { MicroservicesPage } from './MicroservicesPage'
 import { fileIndex, flagRegistry, map, resourceIds, searchIndex } from './dataIndexes'
 import { validateUrlState } from './validateUrlState'
+import { onPresentKey } from './presentMode'
 
 
 export function Explorer() {
@@ -36,7 +37,16 @@ export function Explorer() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const openResource = useCallback((id: string) => patch({ page: 'resources', flow: null, detail: null, file: null, resource: id }), [patch])
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target instanceof HTMLElement ? e.target : null
+      onPresentKey({ key: e.key, metaKey: e.metaKey, ctrlKey: e.ctrlKey, altKey: e.altKey, targetTag: target?.tagName ?? '', targetEditable: target?.isContentEditable ?? false, stopPropagation: () => e.stopPropagation() }, url.present, patch)
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [patch, url.present])
+
+  const openResource = useCallback((id: string) => patch({ ...pagePatch('resources'), resource: id }), [patch])
   const selectService = useCallback((name: string) => patch(selectServicePatch(name)), [patch])
   const selectedFlow = url.flow ? map.flows.find(f => f.id === url.flow) ?? null : null
   const flagEntry = url.flag ? flagRegistry.get(url.flag) : undefined
@@ -57,7 +67,7 @@ export function Explorer() {
       : <AreasHome map={map} onOpenArea={id => patch({ area: id, term: null })} onOpenContext={() => patch({ page: 'microservices', s: null })} />)
     : url.page === 'microservices' || url.page === 'monolith' ? <MicroservicesPage url={url.page === 'monolith' ? { ...url, s: 'skello-app' } : url} patch={patch} onOpenResource={openResource} />
     : url.page === 'flows' ? (selectedFlow
-      ? <FlowView flow={selectedFlow} map={map} detail={url.detail} onDetailChange={d => patch({ detail: d })} onOpenFlow={id => patch({ flow: id, detail: null })} onOpenArea={id => patch({ page: 'areas', area: id, term: null, flow: null, detail: null })} onOpenResource={openResource} onBack={() => window.history.back()} onClose={() => patch({ flow: null, detail: null })} />
+      ? <FlowView flow={selectedFlow} map={map} detail={url.detail} onDetailChange={d => patch({ detail: d })} onOpenFlow={id => patch({ flow: id, detail: null })} onOpenArea={id => patch({ page: 'areas', area: id, term: null, flow: null, detail: null })} onOpenResource={openResource} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, detail: null }))} onClose={() => patch({ flow: null, detail: null })} />
       : flagEntry ? <FlagPage entry={flagEntry} onSelectFlow={flow => patch({ flow: flow.id, flag: null })} />
       : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, detail: 'code', file: null })} onOpenRoute={id => patch({ page: 'monolith', file: null, drawer: 'skello-app', ep: id })} onOpenResource={openResource} />
       : <FlowsIndex service={url.flows} flows={map.flows} map={map} onSelectFlow={flow => patch({ flow: flow.id })} />)

@@ -1,5 +1,5 @@
 import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
-import type { UrlState } from '../hooks/useUrlState'
+import { pagePatch, type UrlState } from '../hooks/useUrlState'
 
 export interface Crumb { label: string; patch: Partial<UrlState> | null }
 
@@ -13,27 +13,27 @@ function linkAllButLast(crumbs: Array<{ label: string; patch: Partial<UrlState> 
 }
 
 export function breadcrumb(st: UrlState): Crumb[] {
-  const root = (label: string, page: UrlState['page'], reset: Partial<UrlState>) => ({ label, patch: { page, ...reset } })
+  const root = (label: string, page: UrlState['page']) => ({ label, patch: pagePatch(page) })
   switch (st.page) {
     case 'home':
       return []
     case 'areas':
       return linkAllButLast([
-        root('Product areas', 'areas', { area: null, term: null }),
-        ...(st.area ? [{ label: areaName.get(st.area) ?? st.area, patch: { page: 'areas' as const, area: st.area, term: null } }] : []),
+        root('Product areas', 'areas'),
+        ...(st.area ? [{ label: areaName.get(st.area) ?? st.area, patch: { ...pagePatch('areas'), area: st.area } }] : []),
         ...(st.term ? [{ label: st.term, patch: {} }] : []),
       ])
     case 'microservices':
       return linkAllButLast([
-        root('Architecture', 'microservices', { s: null, edge: null, drawer: null, ep: null }),
-        root('Microservices', 'microservices', { s: null, edge: null, drawer: null, ep: null }),
+        root('Architecture', 'microservices'),
+        root('Microservices', 'microservices'),
         ...(st.s ? [{ label: st.s, patch: {} }] : []),
       ])
     case 'monolith':
-      return linkAllButLast([root('Architecture', 'microservices', { s: null }), root('Monolith', 'monolith', {})])
+      return linkAllButLast([root('Architecture', 'microservices'), root('Monolith', 'monolith')])
     case 'flows':
       return linkAllButLast([
-        root('Flows', 'flows', { flow: null, flows: null, file: null, flag: null, detail: null }),
+        root('Flows', 'flows'),
         ...(st.flow ? [{ label: flowName.get(st.flow) ?? st.flow, patch: {} }] : []),
         ...(st.file ? [{ label: st.file, patch: {} }] : []),
         ...(st.flag ? [{ label: st.flag, patch: {} }] : []),
@@ -41,12 +41,12 @@ export function breadcrumb(st: UrlState): Crumb[] {
       ])
     case 'resources':
       return linkAllButLast([
-        root('Resources', 'resources', { resource: null }),
+        root('Resources', 'resources'),
         ...(st.resource ? [{ label: resourceName.get(st.resource) ?? st.resource, patch: {} }] : []),
       ])
     case 'impact':
-      return linkAllButLast([root('Impact', 'impact', { blast: null }), ...(st.blast ? [{ label: st.blast, patch: {} }] : [])])
+      return linkAllButLast([root('Impact', 'impact'), ...(st.blast ? [{ label: st.blast, patch: {} }] : [])])
     case 'ownership':
-      return linkAllButLast([root('Ownership', 'ownership', { team: null }), ...(st.team ? [{ label: teamName.get(st.team) ?? st.team, patch: {} }] : [])])
+      return linkAllButLast([root('Ownership', 'ownership'), ...(st.team ? [{ label: teamName.get(st.team) ?? st.team, patch: {} }] : [])])
   }
 }

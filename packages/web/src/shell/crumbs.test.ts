@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseUrl } from '../hooks/useUrlState'
 import { breadcrumb } from './crumbs'
+import { pagePatch } from '../hooks/useUrlState'
 
 const labels = (qs: string) => breadcrumb(parseUrl(qs)).map(c => c.label)
 
@@ -16,6 +17,6 @@ describe('breadcrumb', () => {
   it('links every crumb but the last', () => {
     const crumbs = breadcrumb(parseUrl('?page=microservices&s=svc-punch'))
     expect(crumbs.map(c => c.patch === null)).toEqual([false, false, true])
-    expect(crumbs[1]?.patch).toEqual({ page: 'microservices', s: null, edge: null, drawer: null, ep: null })
+    expect(crumbs[1]?.patch).toEqual(pagePatch('microservices'))
   })
 })

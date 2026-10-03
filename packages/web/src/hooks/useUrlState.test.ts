@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseUrl, toQueryString, isNavigation, commitPatch, selectServicePatch } from './useUrlState'
+import { parseUrl, toQueryString, isNavigation, commitPatch, selectServicePatch, pagePatch, canGoBack } from './useUrlState'
 
 describe('parseUrl', () => {
   it('lands on home with no params', () => {
@@ -132,6 +132,38 @@ describe('selectServicePatch', () => {
     expect(selectServicePatch('skello-app').page).toBe('monolith')
   })
   it('leaves a resource page for the service view', () => {
-    expect(selectServicePatch('svc-a')).toEqual({ s: 'svc-a', page: 'microservices', resource: null, edge: null, drawer: null, ep: null })
+    expect(selectServicePatch('svc-a')).toMatchObject({ s: 'svc-a', page: 'microservices', resource: null, edge: null, drawer: null, ep: null })
+  })
+})
+
+describe('pagePatch', () => {
+  function recorder() {
+    const calls: Array<[string, unknown, string]> = []
+    return {
+      calls,
+      history: {
+        pushState: (data: unknown, _unused: string, url?: string | URL | null) => { calls.push(['push', data, String(url)]) },
+        replaceState: (data: unknown, _unused: string, url?: string | URL | null) => { calls.push(['replace', data, String(url)]) },
+      },
+    }
+  }
+  it('leaves a deep page for home without carrying its keys', () => {
+    const { calls, history } = recorder()
+    commitPatch(parseUrl('?page=flows&s=svc-punch&flow=shift-creation&file=a&flag=F'), pagePatch('home'), undefined, history, '/')
+    expect(calls.map(c => c[2])).toEqual(['/'])
+  })
+  it('opens a module at its top level', () => {
+    const { calls, history } = recorder()
+    commitPatch(parseUrl('?page=monolith&s=skello-app&edge=a~b~rest'), pagePatch('microservices'), undefined, history, '/')
+    expect(calls.map(c => c[2])).toEqual(['/?page=microservices'])
+  })
+  it('marks in-app history entries so Back knows it stays in the app', () => {
+    const { calls, history } = recorder()
+    commitPatch(parseUrl(''), { page: 'flows', flow: 'shift-creation' }, undefined, history, '/')
+    expect(canGoBack(calls[0]?.[1])).toBe(true)
+    expect(canGoBack(null)).toBe(false)
+  })
+  it('opens a service without the previous page detail keys', () => {
+    expect(selectServicePatch('svc-a')).toMatchObject({ flow: null, file: null, flag: null, flows: null, blast: null })
   })
 })
