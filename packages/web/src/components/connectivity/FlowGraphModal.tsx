@@ -547,39 +547,12 @@ function StepLegend({ flow, ruleById, onRuleClick }: {
   )
 }
 
-export function FlowGraphModal(props: Props) {
+export function FlowView(props: Props) {
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        onClick={props.onClose}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 200,
-          background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(3px)',
-        }}
-      />
-
-      {/* Modal container */}
-      <div
-        style={{
-          position: 'fixed',
-          top: '4vh', left: '4vw',
-          width: '92vw', height: '92vh',
-          zIndex: 201,
-          background: '#13151f',
-          border: '1px solid #2e3250',
-          borderRadius: 14,
-          boxShadow: '0 32px 80px rgba(0,0,0,0.8)',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        <ReactFlowProvider>
-          <FlowInner {...props} />
-        </ReactFlowProvider>
-      </div>
-    </>
+    <div className="legacy-canvas">
+      <ReactFlowProvider>
+        <FlowInner {...props} />
+      </ReactFlowProvider>
+    </div>
   )
 }

@@ -25,7 +25,6 @@ const PENDING_4A = new Set([
   'components/areas/AreaPage.tsx',
   'components/areas/AreasHome.tsx',
   'components/areas/NotFoundBanner.tsx',
-  'components/connectivity/ConnectivityPage.tsx',
   'components/connectivity/EdgePopup.tsx',
   'components/connectivity/EndpointDrawer.tsx',
   'components/connectivity/FileModal.tsx',
