@@ -1,5 +1,5 @@
 import type { ConnectivityMap, ServiceConnection } from '@dependency-explorer/data'
-import { DB_COLORS } from '../nodes/DatabaseNode'
+import { STORE_META } from '../storeTypes'
 import styles from './EdgeDetail.module.css'
 
 interface Props {
@@ -42,7 +42,7 @@ export function EdgeDetail({ connection, map, onSeeEndpoints, onClose }: Props) 
               <span className={styles.method}>{ep.method}</span> <code>{ep.path}</code>
               <p>{ep.description}</p>
               {(ep.awsCalls ?? []).length > 0 && (
-                <p className={styles.calls}>{(ep.awsCalls ?? []).map(c => `${DB_COLORS[c.type]?.icon ?? '💾'} ${c.name}`).join(' · ')}</p>
+                <p className={styles.calls}>{(ep.awsCalls ?? []).map(c => `${STORE_META[c.type]?.icon ?? '💾'} ${c.name}`).join(' · ')}</p>
               )}
             </li>
           ))}

@@ -15,9 +15,8 @@ describe('Paper theme', () => {
   it('scales the type set in present mode', () => {
     expect(theme).toMatch(/\[data-present='true'\]\s*\{[^}]*--text-md/)
   })
-  it('paints the page in Paper and keeps the dark palette inside .legacy-canvas only', () => {
+  it('paints the page in Paper with no dark palette left', () => {
     expect(base).toMatch(/body\s*\{[^}]*background:\s*var\(--paper\)/)
-    expect(base.slice(0, base.indexOf('.legacy-canvas'))).not.toMatch(/#0f1117/)
-    expect(base).toMatch(/\.legacy-canvas\s*\{[^}]*--bg:\s*#0f1117/)
+    expect(base).not.toMatch(/legacy-canvas|#0f1117/)
   })
 })

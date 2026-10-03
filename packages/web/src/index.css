@@ -15,33 +15,6 @@ body {
 button { font: inherit; color: inherit; }
 code { font-family: var(--font-mono); }
 
-.legacy-canvas {
-  --bg: #0f1117;
-  --surface: #1a1d27;
-  --surface2: #242736;
-  --border: #2e3250;
-  --text: #e2e8f0;
-  --text-muted: #64748b;
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  background: var(--bg);
-  color: var(--text);
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 320px;
-  overflow: hidden;
-}
-.legacy-canvas .react-flow__renderer { background: var(--bg) !important; }
-.legacy-canvas .react-flow__controls-button {
-  background: var(--surface2) !important;
-  border-color: var(--border) !important;
-  color: var(--text) !important;
-  fill: var(--text) !important;
-}
-.legacy-canvas .react-flow__controls-button:hover { background: var(--border) !important; }
-.legacy-canvas .react-flow__minimap-mask { fill: #0f111788 !important; }
-
 .mobile-only { display: none; }
 
 @media (max-width: 767px) {

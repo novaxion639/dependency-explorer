@@ -12,9 +12,6 @@ describe('AppShell layout', () => {
     expect(mobile).toMatch(/\.content\s*\{[^}]*overflow-y:\s*auto/)
     expect(mobile).not.toMatch(/\.body\s*\{[^}]*overflow-y:\s*auto/)
   })
-  it('keeps the legacy canvas tall enough to read when the panel is open', () => {
-    expect(readFileSync(new URL('../index.css', import.meta.url), 'utf-8')).toMatch(/\.legacy-canvas\s*\{[^}]*min-height:\s*320px/)
-  })
   it('opens the mobile rail inside the body, above the canvas, never over the header', () => {
     expect(css).toMatch(/\.body\s*\{[^}]*position:\s*relative/)
     expect(mobile).toMatch(/\.railSlot\s*\{[^}]*position:\s*absolute[^}]*inset:\s*0/)

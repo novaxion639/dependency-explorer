@@ -1,7 +1,7 @@
 import type { ServiceFlow, ConnectivityMap } from '@dependency-explorer/data'
 import { getFlowAreas } from '@dependency-explorer/data'
 import { AreaChip } from '../areas/AreaChip'
-import { DB_COLORS } from '../nodes/DatabaseNode'
+import { STORE_META } from '../storeTypes'
 import styles from './FlowsPanel.module.css'
 
 interface Props {
@@ -37,7 +37,7 @@ function FlowCard({ flow, selectedService, map, onSelectService, onOpen }: { flo
             const cruds = [...new Set((flow.infraEdges ?? []).filter(e => e.to === infra.id).flatMap(e => e.crud ?? []))]
             return (
               <li key={infra.id} title={infra.description}>
-                {DB_COLORS[infra.type]?.icon ?? '💾'} {infra.label}
+                {STORE_META[infra.type]?.icon ?? '💾'} {infra.label}
                 {cruds.length > 0 && <b> {cruds.map(c => c.charAt(0).toUpperCase()).join('')}</b>}
               </li>
             )
