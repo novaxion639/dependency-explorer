@@ -162,15 +162,23 @@ export function toQueryString(state: UrlState): string {
   return p.toString()
 }
 
+export function pagePatch(page: Page): Partial<UrlState> {
+  return { page, s: null, area: null, term: null, team: null, blast: null, flows: null, flow: null, detail: null, edge: null, drawer: null, ep: null, flag: null, file: null, resource: null }
+}
+
 export function selectServicePatch(name: string): Partial<UrlState> {
-  return { s: name, page: servicePage(name), resource: null, edge: null, drawer: null, ep: null }
+  return { ...pagePatch(servicePage(name)), s: name }
+}
+
+export function canGoBack(state: unknown): boolean {
+  return typeof state === 'object' && state !== null && 'inApp' in state
 }
 
 export function isNavigation(prev: UrlState, p: Partial<UrlState>): boolean {
   return NAVIGATION_KEYS.some(k => k in p && p[k] !== prev[k])
 }
 
-type HistoryWriter = Pick<History, 'pushState' | 'replaceState'>
+type HistoryWriter = Pick<History, 'pushState' | 'replaceState'> & { state?: unknown }
 
 export function commitPatch(
   prev: UrlState,
@@ -183,9 +191,9 @@ export function commitPatch(
   const qs = toQueryString(next)
   const url = qs ? `${pathname}?${qs}` : pathname
   if (opts?.push ?? isNavigation(prev, p)) {
-    history.pushState(null, '', url)
+    history.pushState({ inApp: true }, '', url)
   } else {
-    history.replaceState(null, '', url)
+    history.replaceState(history.state ?? null, '', url)
   }
   return next
 }

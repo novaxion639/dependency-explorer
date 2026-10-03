@@ -29,7 +29,7 @@ code { font-family: var(--font-mono); }
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0;
+  min-height: 320px;
   overflow: hidden;
 }
 .legacy-canvas .react-flow__renderer { background: var(--bg) !important; }
