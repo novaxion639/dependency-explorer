@@ -396,6 +396,13 @@ export const FlowBranchSchema = z.object({
 })
 export type FlowBranch = z.infer<typeof FlowBranchSchema>
 
+export const FlowChapterSchema = z.object({
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  refs: z.array(z.string()).min(1),
+})
+export type FlowChapter = z.infer<typeof FlowChapterSchema>
+
 export const ServiceFlowSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -412,6 +419,7 @@ export const ServiceFlowSchema = z.object({
   codeUnits: z.array(FlowCodeUnitSchema).optional(),
   codeEdges: z.array(FlowCodeEdgeSchema).optional(),
   branches: z.array(FlowBranchSchema).optional(),
+  chapters: z.array(FlowChapterSchema).min(1).optional(),
 })
 
 // ── Team ─────────────────────────────────────────────────────────────────────
