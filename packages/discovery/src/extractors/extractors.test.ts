@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
+import { parseServerlessState, parseServerlessStatic, parseSqsConsumers, classifyStreamRef, stripTemplate } from './serverless'
 import { classifyAwsUsage } from './aws-clients'
 import { parseTerraform, parseTerraformLocals, applyTerraformLocals, parseTerraformDataNames, parseTerraformLocalMaps, expandTerraformNames, parseTerraformSsmValues, resolveDmsSources } from './terraform'
 import { parseEnvServiceUrls } from './frontend'
@@ -645,5 +645,17 @@ describe('terraform locals and blocks', () => {
   it('reads a one-line data block without swallowing the next block', () => {
     const names = parseTerraformDataNames('data "aws_region" "current" {}\ndata "aws_dms_endpoint" "x" {\n  endpoint_id = "y"\n}\n')
     expect(names).toEqual({ 'aws_dms_endpoint.x': 'y' })
+  })
+})
+
+describe('parseSqsConsumers', () => {
+  it('names the queues sqs events read, by arn literal or by Fn::GetAtt on a declared queue', () => {
+    const content = [
+      "fnA: { handler: 'a', events: [{ sqs: 'arn:aws:sqs:eu-west-1:123:mergeShopSqs-${sls:stage}' }] },",
+      "fnB: { handler: 'b', events: [{ sqs: { arn: { 'Fn::GetAtt': ['TransactionQueue', 'Arn'] }, batchSize: 25 } }] },",
+      "TransactionQueue: {\n  Type: 'AWS::SQS::Queue',\n  Properties: {\n    QueueName: 'svcPos-transaction-${sls:stage}',\n  },\n},",
+      "fnC: { handler: 'c', events: [{ sqs: { arn: { 'Fn::GetAtt': ['UndeclaredQueue', 'Arn'] } } }] },",
+    ].join('\n')
+    expect(parseSqsConsumers(content)).toEqual(['mergeShopSqs', 'svcPos-transaction'])
   })
 })

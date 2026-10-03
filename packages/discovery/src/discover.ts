@@ -35,7 +35,7 @@ import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders, walkFiles } from './extractors/queue-senders'
-import { tableRelations, messagingRelations, atlasRelations, dmsRelations } from './resource-relations'
+import { tableRelations, messagingRelations, atlasRelations, dmsRelations, dedupeRelations } from './resource-relations'
 import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, checkPiiRefs, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult, type PiiCheckResult } from './flow-check'
 import { extractPiiFacts, type PiiFacts } from './extractors/pii'
 import { extractSwagger } from './extractors/swagger'
@@ -696,12 +696,12 @@ function run(): Report {
     ...['src', 'app', 'lib', 'serverless', 'config'].flatMap(d => walkFiles(path.join(REPO_BASE, repo, d))),
     ...['serverless.ts', 'serverless.yml'].map(f => path.join(REPO_BASE, repo, f)).filter(f => fs.existsSync(f)),
   ])]))
-  report.liveRelations = [
+  report.liveRelations = dedupeRelations([
     ...tableRelations(live, railsSchema?.models ?? [], monolithFiles, monolithGraph),
     ...messagingRelations(live, serverlessByRepo, sourcesByRepo),
     ...atlasRelations(report.terraform.filter(t => t.inMap), live),
     ...dmsRelations(report.terraform.filter(t => t.inMap), live),
-  ]
+  ])
   const resourceFacts = checkResources(resourceSurface.resources, live, railsSchema?.models ?? [], railsSchema?.tables ?? [], monolithGraph !== null)
   const byKind: Record<string, number> = {}
   for (const x of live) {

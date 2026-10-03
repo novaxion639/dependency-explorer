@@ -109,16 +109,24 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
     return found
   }
   for (const r of resources) {
-    if (r.kind === 'queue' && r.owner && !isDeadLetter(r.name) && (sources.get(r.owner) ?? []).some(f => f.file.includes('serverless') && SQS_EVENT.test(f.source))) {
+    const ownerFacts = r.owner ? serverless.get(r.owner) : undefined
+    const readsByEvent = ownerFacts?.sqsConsumers.length
+      ? ownerFacts.sqsConsumers.includes(r.name)
+      : (sources.get(r.owner ?? '') ?? []).some(f => f.file.includes('serverless') && SQS_EVENT.test(f.source))
+    if (r.kind === 'queue' && r.owner && !isDeadLetter(r.name) && readsByEvent) {
       out.push({ resource: r.id, relation: 'consumes', service: r.owner, grade: 'config' })
     }
     if (['queue', 'topic', 'stream'].includes(r.kind) && r.name.length >= MIN_LITERAL && !serviceStems.has(r.name)) {
       for (const [repo, files] of sources) {
-        if (repo === r.owner || NON_SENDERS.has(repo) || consumersOf.get(r.id)?.has(repo) || ownersOfName.get(`${r.store}:${r.name}`)?.has(repo)) {
+        const siblingOwner = repo !== r.owner && (ownersOfName.get(`${r.store}:${r.name}`)?.has(repo) ?? false)
+        if (NON_SENDERS.has(repo) || consumersOf.get(r.id)?.has(repo) || siblingOwner) {
           continue
         }
         const token = new RegExp(`(?<![A-Za-z0-9_])${escape(r.name)}(?![A-Za-z0-9_])`)
         for (const f of files) {
+          if (repo === r.owner && f.file.includes('serverless')) {
+            continue
+          }
           if (literalsOf(repo, f).some(l => namesResource(l, r.store) && token.test(l))) {
             out.push({ resource: r.id, relation: 'produces', service: repo, file: f.file, grade: f.file.includes('serverless') ? 'config' : 'code' })
           }
@@ -166,10 +174,33 @@ export function atlasRelations(terraform: Array<{ service: string; facts: Terraf
   return out
 }
 
-const MONOLITH_DMS_SOURCE = /skelloapp/
+const MONOLITH = 'skello-app'
+
+function compactName(repo: string): string {
+  return repo.replace(/[^a-z0-9]/gi, '').toLowerCase()
+}
+
+function dmsSourceRepo(source: string | undefined, repos: string[], fallback: string): string {
+  const compact = compactName(source ?? '')
+  const matches = repos.filter(repo => compact.includes(compactName(repo)))
+  return matches.sort((a, b) => compactName(b).length - compactName(a).length)[0] ?? fallback
+}
+
+export function dedupeRelations(rels: ResourceRelation[]): ResourceRelation[] {
+  const seen = new Set<string>()
+  return rels.filter(r => {
+    const key = [r.resource, r.relation, r.service, r.file ?? '', r.target ?? ''].join('|')
+    if (seen.has(key)) {
+      return false
+    }
+    seen.add(key)
+    return true
+  })
+}
 
 export function dmsRelations(terraform: Array<{ service: string; facts: TerraformFacts }>, resources: Resource[]): ResourceRelation[] {
   const out: ResourceRelation[] = []
+  const repos = [...new Set([MONOLITH, ...resources.flatMap(r => (r.owner ? [r.owner] : [])), ...terraform.map(t => t.service)])]
   for (const t of terraform) {
     const streamByEndpoint = new Map(t.facts.dmsEndpoints.flatMap(e => (e.streamLabel ? [[e.label, e.streamLabel] as const] : [])))
     const nameByLabel = new Map(t.facts.resources.filter(r => r.tfType === 'aws_kinesis_stream' && r.name).map(r => [r.label, normalizeResourceName(r.name ?? '', 'kinesis').name]))
@@ -177,7 +208,7 @@ export function dmsRelations(terraform: Array<{ service: string; facts: Terrafor
       const endpoint = task.target?.match(/aws_dms_endpoint\.([\w-]+)/)?.[1]
       const name = nameByLabel.get(streamByEndpoint.get(endpoint ?? '') ?? '')
       const stream = resources.find(r => r.store === 'kinesis' && r.name === name && (!r.owner || r.owner === t.service))
-      const service = MONOLITH_DMS_SOURCE.test(task.source ?? '') ? 'skello-app' : t.service
+      const service = dmsSourceRepo(task.source, repos, t.service)
       if (stream && !out.some(r => r.resource === stream.id && r.service === service)) {
         out.push({ resource: stream.id, relation: 'produces', service, grade: 'config' })
       }

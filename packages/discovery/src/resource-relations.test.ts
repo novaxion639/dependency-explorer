@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tableWriters, tableRelations, messagingRelations, atlasRelations, dmsRelations } from './resource-relations'
+import { tableWriters, tableRelations, messagingRelations, atlasRelations, dmsRelations, dedupeRelations } from './resource-relations'
 import type { ServerlessFacts } from './extractors/serverless'
 import { loadRepoGraph } from './code-grades'
 import type { Resource } from '@dependency-explorer/schema'
@@ -57,7 +57,7 @@ describe('tableRelations', () => {
 
 const sls = (over: Partial<ServerlessFacts>): ServerlessFacts => ({
   source: 'static-scan', endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [],
-  ownedResources: [], dlqWirings: [], authorizerNames: [], ...over,
+  ownedResources: [], dlqWirings: [], authorizerNames: [], sqsConsumers: [], ...over,
 })
 
 describe('messagingRelations', () => {
@@ -202,5 +202,47 @@ describe('messagingRelations literal kinds', () => {
 
   it('ignores service-stem names, SSM paths and ARNs of another AWS service', () => {
     expect(rels).toEqual(['kinesis:documentEvents svc-hris'])
+  })
+})
+
+describe('messagingRelations per-queue consumers and owner producers', () => {
+  const queue = (name: string, owner: string): Resource => ({ id: `sqs:${name}`, kind: 'queue', store: 'sqs', name, owner, evidence: [] })
+  const resources = [queue('createActivityLogJob', 'svc-events'), queue('archiveEventsJob', 'svc-events')]
+  const sources = new Map([
+    ['svc-events', [
+      { file: 'serverless/functions/queues.ts', source: "events: [{ sqs: { arn: 'x' } }] QueueName: 'archiveEventsJob'" },
+      { file: 'src/Manager/ArchiveManager.ts', source: "sendMessage({ queue: 'archiveEventsJob' })" },
+    ]],
+  ])
+
+  it('credits the owner as consumer of the queues its events read, when those are known', () => {
+    const serverless = new Map([['svc-events', sls({ sqsConsumers: ['createActivityLogJob'] })]])
+    const consumes = messagingRelations(resources, serverless, sources).filter(r => r.relation === 'consumes').map(r => r.resource)
+    expect(consumes).toEqual(['sqs:createActivityLogJob'])
+  })
+  it('credits the owner as producer when its code, not its serverless config, names its queue', () => {
+    const produces = messagingRelations(resources, new Map(), sources).filter(r => r.relation === 'produces').map(r => `${r.resource} ${r.service} ${r.file}`)
+    expect(produces).toEqual(['sqs:archiveEventsJob svc-events src/Manager/ArchiveManager.ts'])
+  })
+})
+
+describe('dmsRelations sources', () => {
+  it('credits the repo whose database the DMS source endpoint reads', () => {
+    const facts = {
+      resources: [{ tfType: 'aws_kinesis_stream', label: 's', name: 'svckpis-svckpisv2-user-kpis-settings-cdc' }],
+      dmsTasks: [{ label: 't', source: 'svckpis-source-user-kpis-settings', target: 'aws_dms_endpoint.k.endpoint_arn' }],
+      dmsEndpoints: [{ label: 'k', streamLabel: 's' }],
+      iamActions: [], mongoRoles: [],
+    }
+    const stream: Resource = { id: 'kinesis:svckpis-svckpisv2-user-kpis-settings-cdc', kind: 'stream', store: 'kinesis', name: 'svckpis-svckpisv2-user-kpis-settings-cdc', owner: 'svc-kpis-v2', evidence: [] }
+    const kpis: Resource = { id: 'pg:svc-kpis', kind: 'database', store: 'postgresql', name: 'svc-kpis', owner: 'svc-kpis', evidence: [] }
+    expect(dmsRelations([{ service: 'svc-kpis-v2', facts }], [stream, kpis]).map(r => r.service)).toEqual(['svc-kpis'])
+  })
+})
+
+describe('dedupeRelations', () => {
+  it('keeps one row per resource, relation, service, file and target', () => {
+    const row = { resource: 'kinesis:skelloapp-bus', relation: 'consumes' as const, service: 'svc-search', grade: 'config' as const }
+    expect(dedupeRelations([row, { ...row }, { ...row, service: 'svc-users' }])).toEqual([row, { ...row, service: 'svc-users' }])
   })
 })

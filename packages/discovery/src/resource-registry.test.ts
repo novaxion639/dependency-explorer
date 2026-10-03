@@ -5,7 +5,7 @@ import type { ServerlessFacts } from './extractors/serverless'
 
 const sls = (over: Partial<ServerlessFacts>): ServerlessFacts => ({
   source: 'static-scan', endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [],
-  ownedResources: [], dlqWirings: [], authorizerNames: [], ...over,
+  ownedResources: [], dlqWirings: [], authorizerNames: [], sqsConsumers: [], ...over,
 })
 
 describe('normalizeResourceName', () => {
