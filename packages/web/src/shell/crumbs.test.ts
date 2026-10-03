@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { parseUrl } from '../hooks/useUrlState'
-import { breadcrumb } from './breadcrumb'
+import { breadcrumb } from './crumbs'
 
 const labels = (qs: string) => breadcrumb(parseUrl(qs)).map(c => c.label)
 

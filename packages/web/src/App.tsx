@@ -1,9 +1,5 @@
-import { ConnectivityPage } from './components/connectivity/ConnectivityPage'
+import { Explorer } from './shell/Explorer'
 
 export default function App() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
-      <ConnectivityPage />
-    </div>
-  )
+  return <Explorer />
 }

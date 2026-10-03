@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -23,10 +23,8 @@ import { ResourceOpenContext, nodeResources } from '../nodes/resourceOpenContext
 import type { DatabaseType } from '@dependency-explorer/data'
 import { ConnectivityEdge } from './ConnectivityEdge'
 import { FloatingDbEdge } from './FloatingDbEdge'
-import { EdgePopup } from './EdgePopup'
-import { EndpointDrawer } from './EndpointDrawer'
 import { ExportPngButton } from '../ExportPngButton'
-import type { ConnectivityMap, ConnectivityService, ServiceConnection } from '@dependency-explorer/data'
+import type { ConnectivityMap, ServiceConnection } from '@dependency-explorer/data'
 
 const nodeTypes = { serviceNode: ServiceNode, databaseNode: DatabaseNode }
 const edgeTypes = { connectivityEdge: ConnectivityEdge, floatingDbEdge: FloatingDbEdge }
@@ -37,24 +35,14 @@ interface Props {
   onSelectService: (name: string) => void
   onOpenFlows: (serviceName: string) => void
   blastRadius?: Map<string, number> | null
-  /** Connection whose detail popup is open — owned by the page so it can live in the permalink */
-  edgeConnection: ServiceConnection | null
   onEdgeSelect: (conn: ServiceConnection | null) => void
-  /** Service whose endpoint drawer is open — owned by the page so it can live in the permalink */
-  drawerService: ConnectivityService | null
-  onDrawerSelect: (serviceName: string | null) => void
-  /** Endpoint to open + scroll to inside the drawer (?ep= permalink param) */
-  highlightEndpointId?: string | null
   onOpenResource: (id: string) => void
 }
 
-function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnection, onEdgeSelect, drawerService, onDrawerSelect, highlightEndpointId, onOpenResource }: Props) {
+function FlowInner({ map, selectedService, onOpenFlows, blastRadius, onEdgeSelect, onOpenResource }: Props) {
   const { fitView } = useReactFlow()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
-  // Screen position of the last edge click; a popup restored from a permalink
-  // has no click origin and renders at a fixed spot instead.
-  const [clickPos, setClickPos] = useState<{ x: number; y: number } | null>(null)
   const graphRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -83,7 +71,6 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
       evt.stopPropagation()
       const conn = (edge.data as { connection: ServiceConnection } | undefined)?.connection
       if (!conn) return
-      setClickPos({ x: evt.clientX + 10, y: evt.clientY + 10 })
       onEdgeSelect(conn)
     },
     [onEdgeSelect],
@@ -182,30 +169,6 @@ function FlowInner({ map, selectedService, onOpenFlows, blastRadius, edgeConnect
         )}
       </div>
 
-      {/* Endpoint drawer */}
-      {drawerService && (
-        <EndpointDrawer
-          serviceName={drawerService.name}
-          endpoints={drawerService.endpoints}
-          recurringTasks={drawerService.recurringTasks}
-          highlightId={highlightEndpointId ?? null}
-          onClose={() => onDrawerSelect(null)}
-        />
-      )}
-
-      {/* Edge popup */}
-      {edgeConnection && (
-        <EdgePopup
-          connection={edgeConnection}
-          map={map}
-          position={clickPos ?? { x: Math.max(20, window.innerWidth / 2 - 160), y: 100 }}
-          onClose={() => onEdgeSelect(null)}
-          onSeeMore={(_endpoints, name) => {
-            onDrawerSelect(name)
-            onEdgeSelect(null)
-          }}
-        />
-      )}
     </div>
   )
 }

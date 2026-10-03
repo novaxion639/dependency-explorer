@@ -1,0 +1,4 @@
+.crumbs ol { display: flex; flex-wrap: wrap; gap: var(--space-1); list-style: none; font-size: var(--text-sm); color: var(--ink-muted); }
+.crumbs li + li::before { content: '›'; margin-right: var(--space-1); }
+.crumbs button { background: none; border: none; cursor: pointer; color: var(--ink-muted); text-decoration: underline; }
+.crumbs [aria-current='page'] { color: var(--ink); font-weight: 600; }
