@@ -24,9 +24,6 @@ const PENDING_4A = new Set([
   'components/SearchModal.tsx',
   'components/connectivity/ServiceSidebar.tsx',
   'components/ownership/OwnershipPage.tsx',
-  'components/resources/ResourcePage.tsx',
-  'components/resources/ResourcesIndex.tsx',
-  'components/resources/ServiceStores.tsx',
 ])
 
 const offenders = Object.entries(sources).filter(([, src]) => COLOUR_LITERAL.test(src)).map(([path]) => path.replace(/^\.\.\//, '')).sort()
