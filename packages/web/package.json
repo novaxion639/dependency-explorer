@@ -11,16 +11,21 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@dagrejs/dagre": "3.1.1",
     "@dependency-explorer/data": "workspace:*",
     "@xyflow/react": "^12.10.2",
+    "d3-hierarchy": "3.1.2",
     "html-to-image": "^1.11.13",
+    "mermaid": "12.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@types/d3-hierarchy": "3.1.7",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "26.1.0",
     "typescript": "~5.7.2",
     "vite": "^6.2.0",
     "vitest": "^3.2.0"

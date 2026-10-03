@@ -1,0 +1,11 @@
+.node { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 6px 8px; border: 1.5px solid var(--ink); border-radius: var(--radius-md); background: var(--card); line-height: 1.35; overflow: hidden; white-space: nowrap; cursor: pointer; }
+.node[data-kind='subject'] { border-width: 2.5px; }
+.node[data-kind='unmapped'] { border-style: dashed; background: repeating-linear-gradient(45deg, var(--paper), var(--paper) 6px, var(--paper-2) 6px, var(--paper-2) 12px); }
+.node span { color: inherit; }
+.store { background: none; border: none; padding: 0; text-align: left; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
+.group { width: 100%; height: 100%; border: 1px solid var(--ink); border-radius: var(--radius-lg); background: var(--paper-2); padding: 6px 8px; cursor: pointer; }
+.group[data-kind='band'] { background: var(--paper); }
+.group[data-on='true'] { background: var(--highlight); }
+.groupLabel { font-weight: 600; }
+.handle { opacity: 0; pointer-events: none; }
+.edgeLabel { position: absolute; pointer-events: all; font-size: var(--text-xs); background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0 var(--space-1); cursor: pointer; }
