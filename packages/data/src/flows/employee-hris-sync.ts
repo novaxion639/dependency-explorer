@@ -11,7 +11,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
   "id": "employee-hris-sync",
   "name": "Employee HRIS Sync",
-  "description": "An organisation's HRIS (connected through the Kombo integration platform) syncs employees into Skello. Kombo webhooks (sync finished, data changed, integration lifecycle) land on svc-hris; SyncManager pulls the organisation's employees from svc-employees (getEmployeesByOrganisation — the matching/diff base), reads the HRIS-side data through KomboManager, and dispatches one UpsertEmployeeFromHrisDto per changed employee onto svc-employees' upsert queue, where UpsertEmployeeJob applies it. Failed upserts flow through a DLQ handler into SyncError entries (DynamoDB TTL), and the daily dispatch-sync-error-reports schedule fans out one message per Kombo integration, and ProcessSyncErrorReportHandler builds each integration's report on S3 and emails a presigned link.",
+  "description": "An organisation's HRIS (connected through the Kombo integration platform) syncs employees into Skello. Kombo webhooks (sync finished, data changed, integration lifecycle) land on svc-hris; SyncManager pulls the organisation's employees from svc-employees (getEmployeesByOrganisation — the matching/diff base), reads the HRIS-side data through KomboManager, and dispatches one UpsertEmployeeFromHrisDto per changed employee onto svc-employees' upsert queue, where UpsertEmployeeJob applies it. Failed upserts flow through a DLQ handler into SyncError entries (DynamoDB TTL), and the daily dispatch-sync-error-reports schedule fans out one message per Kombo integration, and ProcessSyncErrorReportHandler builds each integration's report on S3 and emails a 24-hour download link through svc-communications-v2.",
   "trigger": {"actor": "system", "role": "HRIS integration (Kombo)"},
   "primaryArea": "employees-hr",
   "chapters": [
@@ -91,7 +91,7 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "manager",
       "label": "SyncErrorManager",
       "path": "src/Manager/SyncErrorManager.ts",
-      "description": "Aggregates the TTL'd sync errors into the report — stored on S3, delivered by email (SES, presigned link)"
+      "description": "Aggregates the TTL'd sync errors into the report — stored on S3, emailed through svc-communications-v2 as a 24-hour token-redirect link"
     },
     {
       "id": "cu-hs-upsert-job",
