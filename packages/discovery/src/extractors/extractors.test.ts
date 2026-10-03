@@ -649,13 +649,18 @@ describe('terraform locals and blocks', () => {
 })
 
 describe('parseSqsConsumers', () => {
-  it('names the queues sqs events read, by arn literal or by Fn::GetAtt on a declared queue', () => {
+  it('names the queues sqs events read, by arn literal or by Fn::GetAtt on a declared queue, and only when every event resolves', () => {
     const content = [
       "fnA: { handler: 'a', events: [{ sqs: 'arn:aws:sqs:eu-west-1:123:mergeShopSqs-${sls:stage}' }] },",
       "fnB: { handler: 'b', events: [{ sqs: { arn: { 'Fn::GetAtt': ['TransactionQueue', 'Arn'] }, batchSize: 25 } }] },",
       "TransactionQueue: {\n  Type: 'AWS::SQS::Queue',\n  Properties: {\n    QueueName: 'svcPos-transaction-${sls:stage}',\n  },\n},",
       "fnC: { handler: 'c', events: [{ sqs: { arn: { 'Fn::GetAtt': ['UndeclaredQueue', 'Arn'] } } }] },",
     ].join('\n')
-    expect(parseSqsConsumers(content)).toEqual(['mergeShopSqs', 'svcPos-transaction'])
+    expect(parseSqsConsumers(content)).toBeNull()
+    expect(parseSqsConsumers(content.split('\n').filter(l => !l.includes('UndeclaredQueue')).join('\n'))).toEqual(['mergeShopSqs', 'svcPos-transaction'])
+  })
+  it('knows nothing when an sqs event names its queue through a parameter', () => {
+    expect(parseSqsConsumers("fn: { events: [{ sqs: { arn: '${self:custom.parameters.reportQueueArn}' } }] }")).toBeNull()
+    expect(parseSqsConsumers("const arn = 'arn:aws:sqs:eu-west-1:1:x'")).toEqual([])
   })
 })

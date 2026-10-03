@@ -110,8 +110,9 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
   }
   for (const r of resources) {
     const ownerFacts = r.owner ? serverless.get(r.owner) : undefined
-    const readsByEvent = ownerFacts?.sqsConsumers.length
-      ? ownerFacts.sqsConsumers.includes(r.name)
+    const knownConsumers = ownerFacts?.sqsConsumers
+    const readsByEvent = knownConsumers
+      ? knownConsumers.includes(r.name)
       : (sources.get(r.owner ?? '') ?? []).some(f => f.file.includes('serverless') && SQS_EVENT.test(f.source))
     if (r.kind === 'queue' && r.owner && !isDeadLetter(r.name) && readsByEvent) {
       out.push({ resource: r.id, relation: 'consumes', service: r.owner, grade: 'config' })
@@ -180,8 +181,16 @@ function compactName(repo: string): string {
   return repo.replace(/[^a-z0-9]/gi, '').toLowerCase()
 }
 
+function productionBranch(source: string): string {
+  const m = source.match(/([!=]=)\s*"prod"\s*\?\s*(.+?)\s*:\s*(.+)$/)
+  if (!m) {
+    return source
+  }
+  return (m[1] === '!=' ? m[3] : m[2]) ?? source
+}
+
 function dmsSourceRepo(source: string | undefined, repos: string[], fallback: string): string {
-  const compact = compactName(source ?? '')
+  const compact = compactName(productionBranch(source ?? ''))
   const matches = repos.filter(repo => compact.includes(compactName(repo)))
   return matches.sort((a, b) => compactName(b).length - compactName(a).length)[0] ?? fallback
 }

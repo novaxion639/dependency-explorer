@@ -57,7 +57,7 @@ describe('tableRelations', () => {
 
 const sls = (over: Partial<ServerlessFacts>): ServerlessFacts => ({
   source: 'static-scan', endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [],
-  ownedResources: [], dlqWirings: [], authorizerNames: [], sqsConsumers: [], ...over,
+  ownedResources: [], dlqWirings: [], authorizerNames: [], sqsConsumers: null, ...over,
 })
 
 describe('messagingRelations', () => {
@@ -237,6 +237,16 @@ describe('dmsRelations sources', () => {
     const stream: Resource = { id: 'kinesis:svckpis-svckpisv2-user-kpis-settings-cdc', kind: 'stream', store: 'kinesis', name: 'svckpis-svckpisv2-user-kpis-settings-cdc', owner: 'svc-kpis-v2', evidence: [] }
     const kpis: Resource = { id: 'pg:svc-kpis', kind: 'database', store: 'postgresql', name: 'svc-kpis', owner: 'svc-kpis', evidence: [] }
     expect(dmsRelations([{ service: 'svc-kpis-v2', facts }], [stream, kpis]).map(r => r.service)).toEqual(['svc-kpis'])
+  })
+  it('reads the production branch of a conditional source endpoint', () => {
+    const facts = {
+      resources: [{ tfType: 'aws_kinesis_stream', label: 'full', name: 'fullload' }],
+      dmsTasks: [{ label: 'f', source: 'local.workspace != "prod" ? aws_dms_endpoint.svc_requests_aurora[0].endpoint_arn : data.aws_dms_endpoint.skelloapp_rds[0].endpoint_arn', target: 'aws_dms_endpoint.k.endpoint_arn' }],
+      dmsEndpoints: [{ label: 'k', streamLabel: 'full' }],
+      iamActions: [], mongoRoles: [],
+    }
+    const stream: Resource = { id: 'kinesis:svc-requests/fullload', kind: 'stream', store: 'kinesis', name: 'fullload', owner: 'svc-requests', evidence: [] }
+    expect(dmsRelations([{ service: 'svc-requests', facts }], [stream]).map(r => r.service)).toEqual(['skello-app'])
   })
 })
 
