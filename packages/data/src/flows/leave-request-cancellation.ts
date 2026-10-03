@@ -10,7 +10,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const leave_request_cancellation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "leave-request-cancellation",
   "name": "Leave Request Cancellation",
-  "description": "An employee (or manager) cancels a leave request — the web front calls svc-requests directly, the monolith v3 controller proxies the same DELETE for mobile. The request row is deleted in the service's Aurora; the change flows through the CDC stream into DecodeAndPublishRequestJobHandler like every row change, but NO SNS subscription matches a deletion: there is no cancellation trigger, and the createShifts FilterPolicy excludes deleted rows. Cancellation notifies nobody — the earlier 'notify manager or employee of cancellation' path never existed in code.",
+  "description": "An employee (or manager) cancels a leave request — the web front calls svc-requests directly, the monolith v3 controller proxies the same DELETE for mobile. The request row is deleted in the service's Aurora; the change flows through the CDC stream into DecodeAndPublishRequestJob like every row change, but NO SNS subscription matches a deletion: there is no cancellation trigger, and the createShifts FilterPolicy excludes deleted rows. Cancellation notifies nobody — the earlier 'notify manager or employee of cancellation' path never existed in code.",
   "trigger": {"actor": "employee"},
   "primaryArea": "leave-requests",
   "chapters": [
@@ -67,8 +67,8 @@ const leave_request_cancellation: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-lrc-decode",
       "service": "svc-requests",
       "kind": "job",
-      "label": "DecodeAndPublishRequestJobHandler",
-      "path": "src/Handler/Job/DecodeAndPublishRequestJobHandler.ts",
+      "label": "DecodeAndPublishRequestJob",
+      "path": "src/Job/DecodeAndPublishRequestJob.ts",
       "description": "Receives the deletion via CDC (subject REMOVE / deletedAt set) — but computes no matching trigger, so the SNS message fans out to nothing except the data-lake export"
     }
   ],

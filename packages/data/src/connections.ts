@@ -1275,7 +1275,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "communicationType": "sync",
     "protocol": "rest",
     "authType": "api-key",
-    "description": "Strangler write-back: approved leave requests create absence shifts in the monolith (CreateShiftsJobHandler → SkelloAppManager; SSM skelloApp/SKELLO_APP_API_URL + SKELLO_APP_REQUESTS_API_KEY — the POST /private/shifts edge the 2026-03 SvcRequests board drew)",
+    "description": "Strangler write-back: approved leave requests create absence shifts in the monolith (CreateShiftsJob → SkelloAppManager; SSM skelloApp/SKELLO_APP_API_URL + SKELLO_APP_REQUESTS_API_KEY — the POST /private/shifts edge the 2026-03 SvcRequests board drew)",
     "usedEndpoints": []
   },
   {

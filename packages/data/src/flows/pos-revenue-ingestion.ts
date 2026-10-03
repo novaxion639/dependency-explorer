@@ -42,8 +42,8 @@ const pos_revenue_ingestion: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-pri-dispatch-mgr",
       "service": "svc-pos",
       "kind": "manager",
-      "label": "IntegrationDispatcherManager",
-      "path": "src/Manager/IntegrationDispatcherManager.ts",
+      "label": "JobDispatcherManager",
+      "path": "src/Manager/JobDispatcherManager.ts",
       "description": "Cron-fired — builds one IntegrationJobEvent per active integration, batchSend to SQS"
     },
     {

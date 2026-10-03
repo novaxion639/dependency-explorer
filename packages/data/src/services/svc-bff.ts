@@ -24,8 +24,7 @@ const svc_bff: ConnectivityService = ConnectivityServiceSchema.parse({
       "response": {
         "201": "Created",
         "400": "Validation error"
-      },
-      "awsCalls": []
+      }
     },
     {
       "id": "api-bulk-update-kpis",
@@ -45,8 +44,7 @@ const svc_bff: ConnectivityService = ConnectivityServiceSchema.parse({
       "response": {
         "201": "Created",
         "400": "Validation error"
-      },
-      "awsCalls": []
+      }
     },
     {
       "id": "api-get-payroll-anomalies",
@@ -101,8 +99,7 @@ const svc_bff: ConnectivityService = ConnectivityServiceSchema.parse({
       "params": [],
       "response": {}
     }
-  ],
-  "databases": []
+  ]
 })
 
 export default svc_bff

@@ -7,12 +7,12 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 // 'svc-events → comms' notification step and 'request-notify-dispatch'
 // lambda never existed: the fan-out is svc-requests' own CDC → SnsDispatch
 // with accepted/refused triggers, and acceptance ALSO fires the createShifts
-// trigger → CreateShiftsJobHandler → SkelloAppManager write-back that
+// trigger → CreateShiftsJob → SkelloAppManager write-back that
 // creates the absence shifts in the monolith (POST /private/shifts).
 const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
   "id": "leave-request-approval",
   "name": "Leave Request Approval / Rejection",
-  "description": "A manager accepts or refuses a leave request from the web front, directly against svc-requests (PATCH — the monolith has no update proxy). The status change lands in the service's Aurora, its CDC stream carries it to DecodeAndPublishRequestJobHandler, and the SnsDispatch topic fans out: sendAccepted/RefusedLeaveRequest mail + notification queues deliver the employee's email and in-app notification via svc-communications-v2; on acceptance the createShifts trigger additionally runs CreateShiftsJobHandler → SkelloAppManager, the strangler write-back that creates the absence shifts in the monolith planning (with RetryCreateShiftsJobHandler as the DLQ retry path).",
+  "description": "A manager accepts or refuses a leave request from the web front, directly against svc-requests (PATCH — the monolith has no update proxy). The status change lands in the service's Aurora, its CDC stream carries it to DecodeAndPublishRequestJob, and the SnsDispatch topic fans out: sendAccepted/RefusedLeaveRequest mail + notification queues deliver the employee's email and in-app notification via svc-communications-v2; on acceptance the createShifts trigger additionally runs CreateShiftsJob → SkelloAppManager, the strangler write-back that creates the absence shifts in the monolith planning (with RetryCreateShiftsJob as the DLQ retry path).",
   "trigger": {"actor": "manager"},
   "primaryArea": "leave-requests",
   "chapters": [
@@ -22,7 +22,7 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
     { "title": "The employee hears back", "summary": "Email and notification jobs build the decision messages and send them through svc-communications-v2.", "refs": ["cu-lra-mail", "cu-lra-email-mgr", "cu-lra-notif", "cu-lra-notif-mgr", "svc-communications-v2"] },
     { "title": "Absence shifts are created", "summary": "On acceptance, a job posts the absence shifts to skello-app, which writes them under a lock and reports dropped days.", "refs": ["cu-lra-create-shifts", "cu-lra-skello-mgr", "skello-app", "cu-lra-mono-shifts"] }
   ],
-  "links": [{"to": "shift-creation", "kind": "writes-back-to", "note": "CreateShiftsJobHandler POSTs /private/shifts \u2014 the shift-creation domain action through a private strangler entry point, not the modeled /v3/shifts path"}],
+  "links": [{"to": "shift-creation", "kind": "writes-back-to", "note": "CreateShiftsJob POSTs /private/shifts \u2014 the shift-creation domain action through a private strangler entry point, not the modeled /v3/shifts path"}],
   "steps": [
     {
       "from": "skello-app-front",
@@ -37,7 +37,7 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-requests",
       "to": "skello-app",
-      "action": "POST /private/shifts — create absence shifts on acceptance (CreateShiftsJobHandler write-back)"
+      "action": "POST /private/shifts — create absence shifts on acceptance (CreateShiftsJob write-back)"
     },
     {
       "from": "svc-requests",
@@ -82,16 +82,16 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-lra-decode",
       "service": "svc-requests",
       "kind": "job",
-      "label": "DecodeAndPublishRequestJobHandler",
-      "path": "src/Handler/Job/DecodeAndPublishRequestJobHandler.ts",
+      "label": "DecodeAndPublishRequestJob",
+      "path": "src/Job/DecodeAndPublishRequestJob.ts",
       "description": "CDC consumer — computes accepted/refused mail+notification triggers and, for accepted requests, the createShifts trigger"
     },
     {
       "id": "cu-lra-mail",
       "service": "svc-requests",
       "kind": "job",
-      "label": "SendProcessedLeaveRequestEmailJobHandler",
-      "path": "src/Handler/Job/Mails/SendProcessedLeaveRequestEmailJobHandler.ts",
+      "label": "SendProcessedLeaveRequestEmailJob",
+      "path": "src/Job/Mails/SendProcessedLeaveRequestEmailJob.ts",
       "description": "Consumes BOTH the sendAccepted- and sendRefused-LeaveRequestMail queues (two SNS subscriptions, one handler)"
     },
     {
@@ -106,8 +106,8 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-lra-notif",
       "service": "svc-requests",
       "kind": "job",
-      "label": "SendProcessedLeaveRequestNotificationJobHandler",
-      "path": "src/Handler/Job/Notifications/SendProcessedLeaveRequestNotificationJobHandler.ts",
+      "label": "SendProcessedLeaveRequestNotificationJob",
+      "path": "src/Job/Notifications/SendProcessedLeaveRequestNotificationJob.ts",
       "description": "Consumes the accepted/refused notification queues"
     },
     {
@@ -122,9 +122,9 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-lra-create-shifts",
       "service": "svc-requests",
       "kind": "job",
-      "label": "CreateShiftsJobHandler",
-      "path": "src/Handler/Job/CreateShiftsJobHandler.ts",
-      "description": "Consumes the createShifts-filtered queue (accepted, not deleted); RetryCreateShiftsJobHandler replays its DLQ"
+      "label": "CreateShiftsJob",
+      "path": "src/Job/CreateShiftsJob.ts",
+      "description": "Consumes the createShifts-filtered queue (accepted, not deleted); RetryCreateShiftsJob replays its DLQ"
     },
     {
       "id": "cu-lra-skello-mgr",

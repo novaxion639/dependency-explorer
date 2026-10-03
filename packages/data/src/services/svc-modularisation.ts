@@ -16,11 +16,9 @@ const svc_modularisation: ConnectivityService = ConnectivityServiceSchema.parse(
       "response": {
         "200": "Success response",
         "404": "Not found"
-      },
-      "awsCalls": []
+      }
     }
-  ],
-  "databases": []
+  ]
 })
 
 export default svc_modularisation
