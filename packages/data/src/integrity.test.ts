@@ -527,4 +527,7 @@ describe('flow chapters', () => {
       }
     }
   })
+  it('are authored for every flow', () => {
+    expect(flows.filter(f => !f.chapters).map(f => f.id)).toEqual([])
+  })
 })

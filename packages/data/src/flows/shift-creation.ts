@@ -11,6 +11,14 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A planner creates a shift on the planning page. The monolith validates params, persists the shift to PostgreSQL within a transaction, runs sync tracker updates, then AR commit callbacks fan out three Sidekiq jobs (weekly-option staleness, shift data, paid-leave counters). For absence shifts only, an ActivityJob posts an audit event to svc-events. Labour law compliance is NOT checked at creation — alerts are fetched separately via GET /alerts. The created row also reaches svc-search's raw_shifts replica via DMS CDC, powering auto-scheduling and BFF reads.",
   "trigger": {"actor": "manager", "role": "planner (can_create_shifts!)"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A manager saves a shift", "summary": "The planning page posts the new shift to skello-app, which checks the planner may create shifts.", "refs": ["skello-app-front", "cu-shifts-controller"] },
+    { "title": "The shift is written", "summary": "One transaction validates the shift and writes it, moving clashing shifts aside when an absence lands on them.", "refs": ["cu-create-service", "cu-sick-leave-service", "cu-replacement-service", "pg-skello-shifts"] },
+    { "title": "Counters recompute", "summary": "Hours, RCR and paid-leave counters update for every employee assigned to the shift.", "refs": ["cu-tracker-service", "pg-skello-counters"] },
+    { "title": "Side effects after commit", "summary": "Model callbacks refresh the shift cache and queue three background jobs for weekly options, shift data and paid leave.", "refs": ["cu-shift-callbacks", "redis-skello-shifts", "cu-shift-callback-job", "cu-shift-data-job", "cu-paid-leaves-job"] },
+    { "title": "Absences are audited", "summary": "For absence shifts only, a background job posts an audit event to svc-events.", "refs": ["cu-activity-job", "svc-events", "dynamo-events-shift"] },
+    { "title": "The row is replicated", "summary": "DMS copies the new row to svc-search, where auto-scheduling and the BFF read it.", "refs": ["pg-skello-shifts", "svc-search"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

@@ -12,6 +12,13 @@ const planning_template: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager saves the current week's planning as a reusable template, or applies one to populate a week. Save = TemplatesController#create snapshots the shop's shifts. Apply = the first 5 selected weeks run synchronously through V3::Templates::ApplyService (shift creation with in-process labour-law compliance, skipped-postes reporting, counter updates via CombinedTrackerUpdateService); any further weeks are enqueued one CreateFromTemplateJob each — the same sync/async split as week-copy. Nobody is notified; publication does that.",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A manager saves a template", "summary": "The planning page saves the current week's shifts as a named template.", "refs": ["skello-app-front", "cu-tpl-controller", "pg-templates"] },
+    { "title": "A template is applied", "summary": "The first five selected weeks fill inside the request; each further week gets its own background job.", "refs": ["cu-tpl-controller", "cu-tpl-async-job"] },
+    { "title": "Shifts are created from it", "summary": "The template's shifts are created on the target week, and postes that could not be used are reported.", "refs": ["cu-tpl-apply", "pg-templates"] },
+    { "title": "Counters recompute", "summary": "Hours, RCR and paid-leave counters update for the employees receiving shifts.", "refs": ["cu-tpl-tracker", "pg-templates"] },
+    { "title": "The rows are replicated", "summary": "DMS copies the new shifts to svc-search.", "refs": ["pg-templates", "svc-search"] }
+  ],
   "links": [{"to": "week-copy", "kind": "domain-related", "note": "template application reuses the week-copy engine"}],
   "steps": [
     {

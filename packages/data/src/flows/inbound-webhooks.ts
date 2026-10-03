@@ -11,6 +11,11 @@ const inbound_webhooks: ServiceFlow = ServiceFlowSchema.parse({
   "description": "Third parties POST into the monolith's v3/api/webhooks namespace — the platform's only webhook surface (INBOUND; no outbound webhook subscription/delivery system exists in deployed code). Salesforce sends SOAP/XML notifications to cancel a shop or link a coach: token-authenticated against ENV SALESFORCE_TOKEN, parsed synchronously, Shop updated, fixed <Ack>true</Ack> XML returned. Zapier posts demo-form requests: Bearer-authenticated against ENV ZAPIER_DEMO_TOKEN, a User email lookup returns the account status. Both controllers inherit ActionController::Base directly (outside the app's session auth) and are fully synchronous — no jobs enqueued.",
   "trigger": { "actor": "system", "role": "Salesforce (SOAP notifications) / Zapier (demo form)" },
   "primaryArea": "billing",
+  "chapters": [
+    { "title": "A third party calls in", "summary": "Salesforce and Zapier post to skello-app's webhook endpoints, which sit outside the app's session login.", "refs": ["skello-app (webhooks)", "skello-app"] },
+    { "title": "Salesforce cancels or links a shop", "summary": "A token-checked SOAP notification cancels a shop or links its coach, then gets a fixed acknowledgement.", "refs": ["cu-iw-salesforce", "cu-iw-cancel-service", "pg-skello-webhooks"] },
+    { "title": "Zapier checks a demo request", "summary": "A bearer-checked demo form looks up the user by email and returns the account status.", "refs": ["cu-iw-demo", "pg-skello-webhooks"] }
+  ],
   "steps": [
     {
       "from": "skello-app (webhooks)",

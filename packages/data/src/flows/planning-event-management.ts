@@ -10,6 +10,11 @@ const planning_event_management: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager creates, edits or deletes a planning event (notes, closures, milestones) shown on the planning grid. Plain monolith CRUD: V3::Api::Plannings::EventsController writes Event rows directly (no service object), and its index action assembles the grid overlay — events for the period plus holidays (V3::HolidaySettings::QueryService) and employee birthdays. No notifications, no cross-service hop.",
   "trigger": {"actor": "manager"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A manager manages an event", "summary": "The planning grid sends a new, edited or deleted note, closure or milestone to skello-app.", "refs": ["skello-app-front", "cu-evt-controller"] },
+    { "title": "The event is saved", "summary": "skello-app writes the event row directly, with no service object and no notification.", "refs": ["cu-evt-controller", "pg-planning-events"] },
+    { "title": "The grid overlay loads", "summary": "Reading a period merges events with the shop's holidays and employee birthdays.", "refs": ["cu-evt-controller", "cu-evt-holidays", "pg-planning-events"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

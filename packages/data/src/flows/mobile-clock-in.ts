@@ -13,6 +13,12 @@ const mobile_clock_in: ServiceFlow = ServiceFlowSchema.parse({
   "description": "An employee clocks in from the Skello mobile app. The phone calls svc-punch DIRECTLY (clocks-in-out, badgedFrom: mobile_app) — the monolith is not in the request path. GPS capture is best-effort and NEVER blocks the punch (BR-15285); a client-generated inUuid plus svc-punch's same-second dedup guard make retries idempotent. svc-punch precomputes the auto-close timestamp at write time (calculateOutAuto = shop closing time in the shop's timezone, rolled +1 day for overnight shops) — there is NO auto-close cron anywhere; 'closedByBackend' is derived as out === outAuto. Clock-out and pauses PATCH the same record from the in-progress screen. Mobile punching is gated per-user (settings.mobileClocksInOutActivatedUsers, maintained through the settings/mobile surface and recalculated via the SnsMobilePermissions topic when settings change). Each mobile badge also bumps lastMobileBadgeDate on the shop's SETTING row — svc-punch's own table stream picks that up and calls the monolith's lateness SMS job (the sixth service→monolith callback).",
   "trigger": {"actor": "employee", "role": "mobile badging permission (svc-punch replicated user)"},
   "primaryArea": "time-attendance",
+  "chapters": [
+    { "title": "An employee clocks in on the phone", "summary": "The employee picks a shift and shop and swipes; GPS is captured when available but never blocks the punch.", "refs": ["skello-mobile", "cu-mci-screen"] },
+    { "title": "The phone calls svc-punch directly", "summary": "The app posts the punch to svc-punch with its own id, so retries never double it; skello-app is not involved.", "refs": ["cu-mci-api", "cu-mci-client", "svc-punch"] },
+    { "title": "svc-punch stores the punch", "summary": "The record is written with its precomputed auto-close time; clock-out and pauses update the same record.", "refs": ["cu-mci-controller", "cu-mci-manager", "dynamo-svc-punch"] },
+    { "title": "Lateness is checked", "summary": "The badge moves the shop's settings row; its stream calls skello-app, which queues a job texting planners about late staff.", "refs": ["cu-mci-lateness", "cu-mci-sac", "skello-app", "cu-mci-private", "cu-mci-latejob", "redis-skello-lateness"] }
+  ],
   "links": [{"to": "badging-review", "kind": "continuation", "note": "mobile punches reviewed in the same time-management tab"}],
   "steps": [
     {

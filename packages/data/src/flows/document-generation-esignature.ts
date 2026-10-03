@@ -15,6 +15,13 @@ const document_generation_esignature: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager triggers an e-signature (per-document, or attendance sheets in bulk). RequestEsignaturesController enqueues one Esignatures::TriggerWorkflowJob per signer; the job generates the PDF through svc-documents-v2 (attendance-sheet GenerateService / document fetch), uploads it to S3, and orchestrates Yousign directly — upload, signature-request creation, activation (YousignClientService). The follow-up panel polls signature state through the LEGACY svc-documents-esignature (POST /documents_status, with document info from the documents-v1 surface) — the live call that keeps that service on decommission watch. Separately, uploading a document to an employee (Users::DocumentsController#create) notifies them through comms-v2 (NEW_DOCUMENT email + mobile notification).",
   "trigger": {"actor": "manager", "role": "HR"},
   "primaryArea": "documents-esignature",
+  "chapters": [
+    { "title": "A manager requests signatures", "summary": "The front starts an e-signature for one document or for attendance sheets in bulk; one background job runs per signer.", "refs": ["skello-app-front", "skello-app", "cu-des-esign-controller"] },
+    { "title": "The PDF is produced", "summary": "The job generates the attendance sheet or fetches the document through svc-documents-v2, then stages the PDF on S3.", "refs": ["cu-des-workflow-job", "cu-des-generate", "svc-documents-v2", "s3-des-pdfs"] },
+    { "title": "Yousign collects the signature", "summary": "skello-app uploads the PDF to Yousign, creates the signature request and activates it.", "refs": ["cu-des-yousign"] },
+    { "title": "The follow-up panel polls", "summary": "The follow-up panel reads signature status from the legacy svc-documents-esignature, the call that keeps it alive.", "refs": ["cu-des-docs-controller", "svc-documents-esignature"] },
+    { "title": "Uploads notify the employee", "summary": "Uploading a document for an employee sends them an email and a mobile notification through svc-communications-v2.", "refs": ["cu-des-docs-controller", "svc-communications-v2"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

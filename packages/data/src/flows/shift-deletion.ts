@@ -12,6 +12,13 @@ const shift_deletion: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A planner deletes a shift. The monolith destroys the row and synchronously recomputes the user's counters inside the transaction; after destruction, AR callbacks clean the first-shift cache, drop any future PredictedShift, and enqueue a Sidekiq job that deletes the shift's attached documents in svc-documents-v2. Deleting does NOT emit a svc-events activity nor notify the employee. (Corrected 2026-06-12.)",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A planner deletes a shift", "summary": "The planning page sends the delete; skello-app checks the planner may create shifts.", "refs": ["skello-app-front", "cu-del-controller"] },
+    { "title": "The shift is destroyed", "summary": "One transaction destroys the shift and recomputes the employee's counters straight away.", "refs": ["cu-del-service", "pg-skello-shifts-del", "cu-del-tracker", "pg-skello-counters-del"] },
+    { "title": "Clean-up after destroy", "summary": "Callbacks reload the shift cache and drop the shift's prediction when it was in the future.", "refs": ["cu-del-callbacks", "redis-skello-del", "pg-skello-shifts-del"] },
+    { "title": "Attached documents are deleted", "summary": "A background job deletes the shift's documents in svc-documents-v2.", "refs": ["cu-del-docs-job", "svc-documents-v2"] },
+    { "title": "The removal is replicated", "summary": "DMS removes the row from svc-search's replica.", "refs": ["pg-skello-shifts-del", "svc-search"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

@@ -16,6 +16,13 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
   "description": "An employer's bulk payslip document is processed by svc-intelligence's AI extraction pipeline. The request originates in svc-documents-v2: the document write hits its own DynamoDB stream, AnalyzeDocumentListenerJob batch-sends ExtractDataFromDocumentDto messages to svc-intelligence's queue. The extraction job fetches the document content back from svc-documents-v2, converts PDF pages to images, and runs LLM extraction on Bedrock to identify per-employee payslips (analysisType defaults to PAYSLIPS; field-accuracy limits documented in the service's payslip-limitations doc). When the LLMResponse lands in the intelligence DynamoDB table, its stream triggers NotifyUser, which pushes progress/completion to the client over the LEGACY websockets genericMessage queue; per-employee document delivery and the 'document ready' employee notification ride the existing svc-documents-v2 → comms-v2 path.",
   "trigger": {"actor": "manager", "role": "payroll"},
   "primaryArea": "documents-esignature",
+  "chapters": [
+    { "title": "A payslip file is stored", "summary": "Writing the bulk payslip document in svc-documents-v2 fires that service's own change stream.", "refs": ["svc-documents-v2", "dynamo-docs-v2-pd"] },
+    { "title": "Analysis is requested", "summary": "A stream listener builds the analysis requests and batch-sends them to svc-intelligence's queue.", "refs": ["cu-pd-analyze-listener", "cu-pd-extract-mgr", "svc-intelligence"] },
+    { "title": "AI reads the payslips", "summary": "svc-intelligence fetches the document, turns its pages into images and extracts each employee's payslip on Bedrock.", "refs": ["cu-pd-handler", "cu-pd-doc-manager", "cu-pd-docs-repo", "cu-pd-bedrock", "dynamo-intelligence", "mongo-intelligence-pd"] },
+    { "title": "The user sees progress", "summary": "Each stored model response triggers a progress or completion push over the legacy websockets.", "refs": ["dynamo-intelligence", "cu-pd-notify-handler", "cu-pd-notify", "svc-websockets"] },
+    { "title": "Employees get their payslips", "summary": "Per-employee documents and their document-ready notice go out from svc-documents-v2 through svc-communications-v2.", "refs": ["svc-documents-v2", "svc-communications-v2"] }
+  ],
   "links": [{"to": "mobile-documents-payslips", "kind": "continuation", "note": "dispatched payslips are what employees consume from the mobile Documents tab"}],
   "steps": [
     {

@@ -11,6 +11,11 @@ const workload_plan_consultation: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A planner opens the workload forecasting view. The front queries svc-workload-plan directly through the V2 client. WorkloadPlanManagerV2#get loads the plans and rules from Mongo, fetches the shop from svc-search's shared raw-shop collections, and — when rules reference metrics — pulls predictive KPIs from svc-kpis-v2 to generate dynamic staffing rules (degrades gracefully when the KPI service is unavailable). (Previously routed through svc-bff-planning, decommissioned.)",
   "trigger": {"actor": "manager"},
   "primaryArea": "workload-forecasting",
+  "chapters": [
+    { "title": "A planner opens the forecast", "summary": "The front asks svc-workload-plan directly for the week's plans and staffing rules.", "refs": ["skello-app-front", "cu-wpc-front-v2", "svc-workload-plan"] },
+    { "title": "Plans and rules are loaded", "summary": "svc-workload-plan reads plans and rules from its MongoDB and the shop from svc-search's shared collections.", "refs": ["cu-wpc-controller-v2", "cu-wpc-rules-controller", "cu-wpc-manager-v2", "mongo-workload", "svc-search"] },
+    { "title": "Dynamic rules use predicted KPIs", "summary": "When rules reference metrics, predicted KPIs from svc-kpis-v2 generate staffing rules; the view still loads if it is down.", "refs": ["cu-wpc-kpis-manager", "svc-kpis-v2"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

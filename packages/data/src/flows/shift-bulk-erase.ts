@@ -13,6 +13,13 @@ const shift_bulk_erase: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager erases the shifts of a period (or of selected employees) in one action. The front DELETEs /v3/api/plannings/shifts/bulk_delete and logs the BULK_DELETE activity to svc-events itself. In the monolith, BulkDestroyService destroys assigned shifts WITH callbacks (so DeleteShiftDocumentsJob cleans their documents in svc-documents-v2), fast-deletes unassigned shifts without callbacks, purges the attached PredictedShift / ShiftSwap / ShiftReplacement rows, and recomputes the affected users' counters. When employees are selected, BulkDestroyByUsersService resolves their shift ids first.",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A manager erases a period", "summary": "The planning page sends one bulk delete, by period or by selected employees, and logs the activity to svc-events itself.", "refs": ["skello-app-front", "cu-bulk-store", "svc-events"] },
+    { "title": "The shifts to erase are found", "summary": "For selected employees, skello-app first resolves their shifts over the period.", "refs": ["cu-bulk-controller", "cu-bulk-by-users"] },
+    { "title": "The shifts are deleted", "summary": "Assigned shifts are destroyed with callbacks and unassigned ones removed in bulk, with their predictions, swaps and replacements.", "refs": ["cu-bulk-destroy", "pg-bulk-erase"] },
+    { "title": "Documents and counters follow", "summary": "Callbacks queue a job deleting each shift's documents in svc-documents-v2, and counters recompute.", "refs": ["cu-bulk-callbacks", "cu-bulk-docs-job", "svc-documents-v2", "cu-bulk-tracker"] },
+    { "title": "The removals are replicated", "summary": "DMS removes the rows from svc-search's replica.", "refs": ["pg-bulk-erase", "svc-search"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

@@ -12,6 +12,12 @@ const mobile_shift_swap_request: ServiceFlow = ServiceFlowSchema.parse({
   "description": "An employee proposes a shift swap from the phone — a lifecycle the WEB DOES NOT HAVE (client divergence: web offers only manager drag-and-drop reassignment). Screens still live in the legacy v2 stack: browse swappable shifts, create the request (POST /api/v2/shifts/:shiftId/shift_swaps), the target employee sees it in the requests hub (GET /api/v1/requests/received) and accepts/refuses (PATCH /api/v2/shift_swaps/:id). Everything runs through the monolith's api/v2 surface; ShiftSwap rows live in monolith PostgreSQL, and V3::Shifts::UpdateService destroys pending ShiftSwaps when the underlying shift is reassigned or changes day (the same remove_dependencies that unlinks badgings). Acceptance applies the swap as a shift update — the shift-swap flow's code layer covers that server side.",
   "trigger": {"actor": "employee"},
   "primaryArea": "leave-requests",
+  "chapters": [
+    { "title": "An employee proposes a swap", "summary": "From the phone, the employee picks a swappable shift and sends the request; the web has no such screen.", "refs": ["skello-mobile", "cu-mss-new", "skello-app"] },
+    { "title": "The swap is recorded", "summary": "skello-app stores the swap request in its own database.", "refs": ["cu-mss-controller", "pg-skello-swaps"] },
+    { "title": "The colleague answers", "summary": "The colleague sees it among their requests and accepts or refuses; acceptance applies the swap as a shift update.", "refs": ["cu-mss-hub", "cu-mss-received", "cu-mss-controller"] },
+    { "title": "Stale swaps disappear", "summary": "When the shift is reassigned or changes day, skello-app deletes its pending swaps.", "refs": ["skello-app", "pg-skello-swaps"] }
+  ],
   "links": [{"to": "shift-swap", "kind": "domain-related", "note": "employee-initiated swap lifecycle (legacy api/v2); the web flow is manager drag-drop only"}],
   "steps": [
     {

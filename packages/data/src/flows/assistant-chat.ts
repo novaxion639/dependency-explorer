@@ -11,6 +11,13 @@ const assistant_chat: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager asks the Skello AI assistant a question. The chat session manager gates the turn on the organisation's freemium credit balance (svc-billing-automation), then the LangGraph agent runs on Bedrock Converse (or direct Anthropic behind a flag) with conversation state checkpointed in svc-intelligence's MongoDB ('for continuity'). Agent tools fan out to real data: shift/worked-hours tools call svc-shifts over HTTP (MCP), document tools read svc-documents-v2 and poll e-signature status on the decommission-watch service, and employee tools read svc-search's employees replica directly over VPC Mongo. A credit is consumed after a successful turn.",
   "trigger": {"actor": "manager", "role": "assistant user (freemium credits gate)"},
   "primaryArea": "assistant",
+  "chapters": [
+    { "title": "A manager asks a question", "summary": "The chat panel sends the turn to svc-skello-assistant's chat endpoint.", "refs": ["skello-app-front", "svc-skello-assistant", "cu-chat-controller"] },
+    { "title": "Credits are checked", "summary": "The session manager reads the organisation's credit balance from svc-billing-automation before running the turn.", "refs": ["cu-session-manager", "cu-billing-client", "svc-billing-automation"] },
+    { "title": "The agent thinks", "summary": "A LangGraph agent runs on Bedrock and keeps the conversation in svc-intelligence's MongoDB for a week.", "refs": ["cu-agent-manager", "mongo-svc-int"] },
+    { "title": "Tools fetch real data", "summary": "The agent's tools ask svc-shifts about shifts, read documents and signature status, and read employees from svc-search.", "refs": ["cu-agent-tools", "cu-shifts-client", "svc-shifts", "cu-doc-repo", "svc-documents-v2", "cu-esign-repo", "svc-documents-esignature", "cu-employee-repo", "svc-search"] },
+    { "title": "A credit is spent", "summary": "After a successful turn, the session manager uses one credit.", "refs": ["cu-session-manager", "cu-billing-client", "svc-billing-automation"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",
