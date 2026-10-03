@@ -15,3 +15,9 @@ export function refPatch(ref: DiagramRef): Partial<UrlState> {
       return { unit: ref.id }
   }
 }
+
+const PANEL_ONLY = new Set<DiagramRef['type']>(['unit', 'service', 'connections'])
+
+export function selectPatch(ref: DiagramRef, present: boolean): Partial<UrlState> | null {
+  return present && PANEL_ONLY.has(ref.type) ? null : refPatch(ref)
+}

@@ -4,7 +4,7 @@ import { pagePatch, type UrlState } from '../../hooks/useUrlState'
 import { Diagram } from '../../diagram/Diagram'
 import type { FocusState } from '../../diagram/focus'
 import { chapterFocus, swimlanes } from '../../diagram/layouts/swimlane'
-import { refPatch } from '../../diagram/refPatch'
+import { selectPatch } from '../../diagram/refPatch'
 import { keyInfo, presentStepKey, stepThrough } from '../../shell/presentMode'
 import { FlowHeader } from './FlowHeader'
 import { FlowStory } from './FlowStory'
@@ -49,7 +49,12 @@ export function FlowPage({ flow, url, patch, onBack }: Props) {
       focus={focus}
       renderer={url.renderer}
       onRenderer={renderer => patch({ renderer })}
-      onSelect={ref => patch(refPatch(ref))}
+      onSelect={ref => {
+        const next = selectPatch(ref, url.present)
+        if (next) {
+          patch(next)
+        }
+      }}
       filename={`flow_${flow.id}`}
       notes={NOTES}
     />
