@@ -537,4 +537,9 @@ describe('flow chapters', () => {
       expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
     }
   })
+  it('are authored for the analytics, scheduling, billing and documents reading paths', () => {
+    for (const id of ['analytics-dashboard-load', 'bff-dashboard-load', 'auto-planning-generation', 'shift-replacement-search', 'assistant-freemium-credits', 'self-serve-signup', 'subscription-upgrade', 'document-generation-esignature', 'document-share']) {
+      expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
+    }
+  })
 })

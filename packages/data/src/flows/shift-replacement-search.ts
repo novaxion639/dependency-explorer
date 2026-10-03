@@ -7,6 +7,13 @@ const shift_replacement_search: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A planner searches for a replacement for an uncovered shift. The frontend calls svc-automatic-scheduling (single synchronous Lambda, 29s timeout) which reads the target shift and postes from svc-search's MongoDB over VPC, fetches shop + users data from skello-app (with shift_id param to exclude already-replaced users via the shift_replacements table), reads all candidate assigned shifts from MongoDB, then runs 13 eligibility rule classes in-memory to rank candidates by availability and contract fit. A metrics report is sent to SQS and consumed by a separate Lambda that forwards to the data platform ingestion API.",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "automatic-scheduling",
+  "chapters": [
+    { "title": "A planner looks for a replacement", "summary": "The planning page asks svc-automatic-scheduling for candidates for one uncovered shift, in one call capped at 29 seconds.", "refs": ["skello-app-front", "svc-automatic-scheduling", "cu-rep-controller"] },
+    { "title": "Candidate data is gathered", "summary": "In parallel it reads shop and staff from skello-app, minus those already replaced, and shifts from svc-search's database.", "refs": ["cu-rep-manager", "cu-rep-fetcher", "skello-app", "pg-skello-read", "mongo-svc-search"] },
+    { "title": "Candidates are ranked", "summary": "Eligibility rules run in memory over each candidate; the eligible ones are ranked by availability and contract fit.", "refs": ["cu-rep-processor", "cu-rep-sorter"] },
+    { "title": "The planner gets the list", "summary": "The ranked candidates return to the planning page.", "refs": ["skello-app-front (response)"] },
+    { "title": "Metrics are reported", "summary": "A metrics report goes onto a queue; a separate job forwards it to the data platform.", "refs": ["cu-rep-metrics-repo", "sqs-metrics", "cu-rep-metrics-job"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

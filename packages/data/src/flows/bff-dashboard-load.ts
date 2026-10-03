@@ -15,6 +15,12 @@ const bff_dashboard_load: ServiceFlow = ServiceFlowSchema.parse({
   "description": "Opening the month planning view hits svc-bff's aggregated initial load (GET /v1/plannings/month/load): MonthPlanningInitialLoadManager fans out to the monolith over the skello-app SDK (planning config, planning calendar, shop catalog, shop rules, shop) and to svc-shops (missions), then assembles one response for the grid. The BFF's other surfaces are writes, not reads: POST /v1/kpis bulk-updates manual KPIs to BOTH svc-kpis-v2 and the monolith in parallel (the dual-write side of the KPIs migration), and /v1/documents orchestrates document generation on svc-documents-v2. (Re-traced 2026-07-11: the earlier 'dashboard KPIs compute + recent documents fetch' reading of these endpoints was wrong.)",
   "trigger": {"actor": "manager"},
   "primaryArea": "analytics",
+  "chapters": [
+    { "title": "A manager opens the month view", "summary": "The front asks svc-bff for the month planning in a single call.", "refs": ["skello-app-front", "svc-bff", "cu-bff-load-controller"] },
+    { "title": "svc-bff gathers the pieces", "summary": "In parallel, svc-bff reads planning config, calendar, catalog, rules and shop from skello-app and missions from svc-shops.", "refs": ["cu-bff-load-manager", "skello-app", "svc-shops"] },
+    { "title": "One response fills the grid", "summary": "svc-bff merges the answers into the one response the month grid opens with.", "refs": ["cu-bff-load-manager"] },
+    { "title": "Manual KPIs are written twice", "summary": "Saving manual KPIs through svc-bff writes them to svc-kpis-v2 and to skello-app in parallel.", "refs": ["cu-bff-kpis-controller", "cu-bff-kpis-manager", "svc-kpis-v2", "mongo-kpis", "skello-app"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

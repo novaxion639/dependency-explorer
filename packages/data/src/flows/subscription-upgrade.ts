@@ -15,6 +15,12 @@ const subscription_upgrade: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager requests an upsell (plan feature/upgrade) from the settings UI. The front calls svc-billing-automation directly; UpsellManager records the interest in Salesforce — feature upsells are sales-assisted. One exception ships alongside ('Autonomous switch' board, verified 2026-07-12): the annual-plan switch is AUTONOMOUS — the front estimates and finalizes shop/organisation contract changes directly (estimate/finalize endpoints), no sales touch. When the subscription actually changes (Chargebee ↔ Salesforce on the billing side), billing's step functions process the change: organisation/shop/license state is written back into the monolith (SkelloManager → v3/api/billing_automation/* controllers, from_svc_billing_auto), the client is pinged over the LEGACY websockets queue (pingTypeAndUuid), and notification emails go out through comms-v2. Churn follows the same write-back path (Update/DeleteSkelloOrganisation/Shop handlers).",
   "trigger": {"actor": "account admin"},
   "primaryArea": "billing",
+  "chapters": [
+    { "title": "A manager asks for an upsell", "summary": "The settings page sends the request straight to svc-billing-automation, which records it and hands the interest to sales in Salesforce.", "refs": ["skello-app-front", "svc-billing-automation", "cu-up-upsell-manager", "dynamo-billing"] },
+    { "title": "The subscription changes", "summary": "Chargebee holds the subscription; billing's step functions process each change, churn included.", "refs": ["cu-up-chargebee-manager", "cu-up-lifecycle-handler"] },
+    { "title": "skello-app gets the new state", "summary": "Billing writes organisation, shop and license changes, and churn deletions, back into skello-app.", "refs": ["cu-up-skello-manager", "skello-app", "cu-up-mono-api", "pg-skello-billing"] },
+    { "title": "The client is pinged and emailed", "summary": "A final step pings the browser over the legacy websockets, and emails go out through svc-communications-v2.", "refs": ["cu-up-ws-job", "svc-websockets", "svc-communications-v2"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

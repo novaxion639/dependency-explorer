@@ -13,6 +13,12 @@ const self_serve_signup: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A prospect signs up through the self-serve funnel (SkelloSelfServe front, outside the map). The monolith drives the funnel step by step: a Prospect row with activation token, then user registration (User + planning config + extended info), shop & organisation creation (with a labour-law convention canary check), while every completed step is synced to svc-billing-automation (step infos + /pricing) AND pushed as a lead create/update DIRECTLY to Salesforce over HTTP from the monolith. Onboarding emails go out through comms-v2 (with attachments; comms-v1 fallback), plus an internal Skello-team notification. The account-identity leg (svc-users POST /sign-up) is called by the SelfServe front itself.",
   "trigger": {"actor": "prospect"},
   "primaryArea": "billing",
+  "chapters": [
+    { "title": "A prospect starts signing up", "summary": "The self-serve funnel calls skello-app, which records a prospect with an activation token.", "refs": ["skello-app", "cu-ss-controller", "cu-ss-prospect", "pg-skello-signup"] },
+    { "title": "The account is registered", "summary": "skello-app creates the user and planning config, then the shop and organisation after a labour-law convention check.", "refs": ["cu-ss-registrate", "cu-ss-controller", "pg-skello-signup"] },
+    { "title": "Billing and Salesforce follow along", "summary": "Every completed step goes to svc-billing-automation, which returns pricing, and creates or updates the lead in Salesforce.", "refs": ["cu-ss-billing-notify", "svc-billing-automation", "cu-ss-salesforce"] },
+    { "title": "Welcome emails go out", "summary": "A background job sends onboarding emails with attachments through svc-communications-v2, plus an internal team notice.", "refs": ["cu-ss-onboarding-mailer", "redis-skello-signup", "svc-communications-v2"] }
+  ],
   "steps": [
     {
       "from": "skello-app",

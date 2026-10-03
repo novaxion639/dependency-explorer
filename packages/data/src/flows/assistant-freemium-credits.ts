@@ -9,6 +9,13 @@ const assistant_freemium_credits: ServiceFlow = ServiceFlowSchema.parse({
   "description": "Every assistant chat turn passes a credit gate. Check-before: ChatSessionManager.discuss synchronously reads the balance (GET credit-balance) before enqueuing the turn — refusing with TooManyRequestsHttpError('Not enough credits') only when used EXCEEDS limit, so the last credit tolerates one overshoot. Decrement-after: once the LLM turn completes in the SQS consumer, useCredit fires best-effort — errors are LOGGED, NOT retried (a code-noted credit-loss risk), and no idempotency guards the decrement against SQS redelivery double-counting. The billing side stores one DynamoDB row per (organisation, feature 'ai_agent', period YYYY-MM): NO refill cron exists — a fresh month lazily creates a zero-used row on first access. Limits are plan-derived (freemium = 5 × admin_count, paid 1000, no-access 0) and re-raise on upgrade only when the org already hit its cap.",
   "trigger": { "actor": "manager", "role": "assistant user (SystemAdminPermissions on discuss)" },
   "primaryArea": "billing",
+  "chapters": [
+    { "title": "A user sends a chat message", "summary": "The assistant's chat endpoint accepts the turn from a system admin.", "refs": ["svc-skello-assistant", "cu-afc-chat-controller"] },
+    { "title": "The credit balance is checked", "summary": "Before queuing the turn, the assistant reads the balance from svc-billing-automation and refuses only once usage exceeds the limit.", "refs": ["cu-afc-session-mgr", "cu-afc-billing-client", "svc-billing-automation", "cu-afc-credit-controller"] },
+    { "title": "The month's balance is found", "summary": "Billing keeps one balance per organisation and month, created on first use with a limit derived from the plan in skello-app.", "refs": ["cu-afc-credit-mgr", "cu-afc-credit-repo", "dynamo-billing-credits", "cu-afc-skello-repo", "skello-app"] },
+    { "title": "The assistant answers", "summary": "The turn waits on a queue, then a consumer runs the language-model turn.", "refs": ["sqs-assistant-processchat", "cu-afc-process-controller", "cu-afc-agent-mgr"] },
+    { "title": "A credit is spent", "summary": "After the turn, the assistant asks billing to use one credit; a failure is logged, not retried.", "refs": ["cu-afc-session-mgr", "cu-afc-billing-client", "cu-afc-credit-mgr", "dynamo-billing-credits"] }
+  ],
   "links": [
     { "to": "assistant-chat", "kind": "continuation", "note": "the gate wraps assistant-chat's LLM turn — check before the enqueue, decrement after the turn" }
   ],
