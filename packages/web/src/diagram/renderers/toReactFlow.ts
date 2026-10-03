@@ -27,8 +27,7 @@ export function toReactFlow(model: DiagramModel, emphases: Emphases): { nodes: D
       position: lane ? { x: node.x - lane.x, y: node.y - lane.y } : { x: node.x, y: node.y },
       width: node.w,
       height: node.h,
-      draggable: false,
-      ...(lane ? { parentId: lane.id, extent: 'parent' as const } : {}),
+      ...(lane ? { parentId: lane.id, extent: 'parent' as const, draggable: false } : {}),
       data: { node, emphasis: emphases.nodes.get(node.id) ?? 'normal' },
     }
   })

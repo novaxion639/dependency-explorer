@@ -73,6 +73,7 @@ function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<Diag
           <button
             type="button"
             className={`${styles.edgeLabel} nodrag nopan`}
+            data-wrapped={edge.labelLines ? 'true' : undefined}
             aria-label={edgeName(nodeLabel(from), nodeLabel(to), edge)}
             style={{ transform: `translate(-50%, -50%) translate(${at.x}px, ${at.y}px)`, opacity: paint.opacity, color: paint.text }}
             onClick={() => {
@@ -151,7 +152,6 @@ export function ReactFlowDiagram({ model, emphases, onSelect, onMove }: Props) {
           }
         }}
         onNodeDragStop={(_, n) => onMove(n.id, n.position)}
-        nodesDraggable={false}
         fitView
         minZoom={0.1}
         maxZoom={2}

@@ -107,12 +107,27 @@ function crosses(a: { x: number; y: number }, b: { x: number; y: number }, box: 
 }
 
 function nodeEdges(model: DiagramModel) {
-  const nodeIds = new Set(model.nodes.map(n => n.id))
-  return model.edges.filter(e => nodeIds.has(e.from) && nodeIds.has(e.to))
+  return model.edges
+}
+
+type Pt = { x: number; y: number }
+
+function segmentsOf(route: Pt[]): Array<[Pt, Pt]> {
+  return route.slice(1).map((q, i): [Pt, Pt] => [route[i] ?? q, q])
+}
+
+function collinearOverlap([a, b]: [Pt, Pt], [c, d]: [Pt, Pt]): number {
+  if (a.y === b.y && c.y === d.y && a.y === c.y) {
+    return Math.min(Math.max(a.x, b.x), Math.max(c.x, d.x)) - Math.max(Math.min(a.x, b.x), Math.min(c.x, d.x))
+  }
+  if (a.x === b.x && c.x === d.x && a.x === c.x) {
+    return Math.min(Math.max(a.y, b.y), Math.max(c.y, d.y)) - Math.max(Math.min(a.y, b.y), Math.min(c.y, d.y))
+  }
+  return 0
 }
 
 describe('swimlane routes', () => {
-  it('routes every node-to-node edge orthogonally, never through another node', () => {
+  it('routes every edge orthogonally, never through another node', () => {
     for (const f of map.flows) {
       const model = swimlanes(f)
       for (const e of nodeEdges(model)) {
@@ -167,5 +182,30 @@ describe('swimlane routes', () => {
     }
     const replacement = swimlanes(flow('shift-replacement-search'))
     expect(replacement.edges.map(e => e.label)).toContain('GET /shifts/{shiftId}/employee_replacements')
+  })
+  it('never runs two edges along one line unless they leave or enter the same unit', () => {
+    for (const f of map.flows) {
+      const edges = swimlanes(f).edges
+      edges.forEach((e, i) => {
+        for (const o of edges.slice(i + 1).filter(o => o.from !== e.from && o.to !== e.to)) {
+          for (const s1 of segmentsOf(e.route ?? [])) {
+            for (const s2 of segmentsOf(o.route ?? [])) {
+              expect(collinearOverlap(s1, s2), `${f.id} ${e.id} runs along ${o.id}`).toBeLessThanOrEqual(1)
+            }
+          }
+        }
+      })
+    }
+  })
+  it('sets each label against its own route, inside the drawing', () => {
+    for (const f of map.flows) {
+      const model = swimlanes(f)
+      for (const e of model.edges.filter(e => e.labelBox)) {
+        const box = e.labelBox ?? { x: 0, y: 0, w: 0, h: 0 }
+        const near = { x: box.x - 2, y: box.y - 2, w: box.w + 4, h: box.h + 4 }
+        expect(segmentsOf(e.route ?? []).some(([p, q]) => crosses(p, q, near) || (p.x === q.x && p.x > near.x && p.x < near.x + near.w && Math.min(p.y, q.y) <= near.y + near.h && Math.max(p.y, q.y) >= near.y) || (p.y === q.y && p.y > near.y && p.y < near.y + near.h && Math.min(p.x, q.x) <= near.x + near.w && Math.max(p.x, q.x) >= near.x)), `${f.id} ${e.id} label away from its line`).toBe(true)
+        expect(box.x >= 0 && box.y >= 0 && box.x + box.w <= model.width && box.y + box.h <= model.height, `${f.id} ${e.id} label outside the drawing`).toBe(true)
+      }
+    }
   })
 })

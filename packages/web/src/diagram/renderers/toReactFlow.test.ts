@@ -49,7 +49,8 @@ describe('toReactFlow lanes', () => {
     expect(flow.nodes.find(n => n.id === 'a')).toMatchObject({ parentId: 'L', extent: 'parent', position: { x: 10, y: 30 } })
     expect(flow.nodes.find(n => n.id === 'b')?.parentId).toBeUndefined()
   })
-  it('lets no node be dragged', () => {
-    expect(flow.nodes.every(n => n.draggable === false)).toBe(true)
+  it('pins lane members in place and leaves other nodes draggable', () => {
+    expect(flow.nodes.find(n => n.id === 'a')?.draggable).toBe(false)
+    expect(flow.nodes.find(n => n.id === 'b')?.draggable).toBeUndefined()
   })
 })

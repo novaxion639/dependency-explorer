@@ -58,3 +58,21 @@ describe('SvgDiagram', () => {
     expect(html).toContain('stroke-dasharray:6 4')
   })
 })
+
+describe('SvgDiagram routes', () => {
+  const routed: DiagramModel = {
+    ...model,
+    edges: [{
+      id: 'r', from: 'subject', to: 'calls:svc-y', mode: 'sync', weight: 1, label: 'GET /long/route/name', directed: true, lane: 0, lanes: 1,
+      route: [{ x: 200, y: 40 }, { x: 250, y: 40 }, { x: 250, y: 44 }, { x: 310, y: 44 }],
+      labelBox: { x: 210, y: 60, w: 80, h: 38 }, labelLines: ['GET /long/route', '/name'],
+    }],
+  }
+
+  it('draws a routed edge along its route with its wrapped label lines', () => {
+    const html = renderToStaticMarkup(<SvgDiagram model={routed} emphases={emphasise(routed, NO_FOCUS)} onSelect={noop} />)
+    expect(html).toContain('points="200,40 250,40 250,44 310,44"')
+    expect(html).toContain('>GET /long/route</text>')
+    expect(html).toContain('>/name</text>')
+  })
+})
