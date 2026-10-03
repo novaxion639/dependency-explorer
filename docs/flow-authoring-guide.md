@@ -56,7 +56,7 @@ For each step in the flow:
 | `{type}-{service}` | Infra node scoped to a service | `pg-skello-read`, `mongo-svc-search` |
 | `{type}-{purpose}` | Shared or unique infra | `sqs-metrics` |
 
-**Rule: Never share infra nodes across Lambda steps. Each Lambda gets its own instance of every infra resource it calls.** This ensures infra nodes are placed directly underneath their parent Lambda in the flow graph layout (the `buildFlowGraph` layout engine places infra nodes below the first service that references them via an `infraEdge`).
+**Rule: Never share infra nodes across Lambda steps. Each Lambda gets its own instance of every infra resource it calls.** Each node then carries what that step does with the resource in its description, and a chapter about that step focuses exactly its own stores.
 
 ---
 
@@ -118,7 +118,7 @@ When a flow involves `skello-app` endpoints:
 
 **Do not share infra nodes across multiple Lambda steps.** Instead, create a dedicated infra node for each Lambda that touches the resource.
 
-Why: the flow graph layout engine (`buildFlowGraph.ts`) places infra nodes below the **first service that references them** via an `infraEdge`. Shared nodes end up under only one Lambda, with long crossing edges from other Lambdas — cluttering the graph.
+Why: each node's description states what one step does with the resource (the status it writes, the message it sends), and a chapter naming that step's stores focuses them alone. A shared node can describe only one step and lights up in every chapter that touches the resource.
 
 Example — `automatic_scheduling_jobs` MongoDB (used by 6 Lambdas):
 ```json
