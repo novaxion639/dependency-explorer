@@ -1,5 +1,5 @@
 import type { ConnectivityMap, Platform, ProductArea } from '@dependency-explorer/data'
-import { areaFacts, getAreaFlows, getAreaServices } from '@dependency-explorer/data'
+import { areaFacts, getAreaFlows, getAreaServices, getSharedExternals } from '@dependency-explorer/data'
 import { plural } from '../../utils/plural'
 import styles from './AreasHome.module.css'
 
@@ -20,6 +20,7 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
   const teamName = new Map((map.teams ?? []).map(t => [t.id, t.name]))
   const product = areas.filter(a => a.kind === 'product')
   const platform = areas.filter(a => a.kind === 'platform')
+  const shared = getSharedExternals(areas, map.externals ?? [])
   return (
     <section aria-label="Product areas" className={styles.page}>
       <header className={styles.head}>
@@ -61,6 +62,19 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
           </li>
         ))}
       </ul>
+      {shared.length > 0 && (
+        <>
+          <h2 className={styles.section}>Shared by every area</h2>
+          <ul className={styles.shared}>
+            {shared.map(e => (
+              <li key={e.id}>
+                <b>{e.name}</b>
+                <span className={styles.muted}>{[...new Set(e.usedBy.map(u => u.service))].join(' · ')}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </section>
   )
 }
