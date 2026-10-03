@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { ServiceEndpoint, RecurringTask } from '@dependency-explorer/data'
-import { DB_COLORS } from '../nodes/DatabaseNode'
+import { STORE_META } from '../storeTypes'
 import styles from './EndpointList.module.css'
 
 interface Props {
@@ -87,7 +87,7 @@ export function EndpointList({ serviceName, endpoints, recurringTasks, highlight
                       <Label>AWS resources</Label>
                       <ul className={styles.chips}>
                         {(ep.awsCalls ?? []).map(c => {
-                          const meta = DB_COLORS[c.type]
+                          const meta = STORE_META[c.type]
                           return <li key={`${c.type}:${c.name}`}>{meta?.icon ?? '💾'} <b>{meta?.label ?? c.type}</b> {c.name}</li>
                         })}
                       </ul>

@@ -12,7 +12,7 @@ import type { Renderer } from '../diagram/model'
  *   ?page=microservices&area=planning    overview, area spotlit (also on monolith)
  *   ?page=microservices&s=svc-users      one service
  *   ?page=monolith                       skello-app
- *   ?page=flows&flow=shift-creation      flow page (&detail=code | sequence)
+ *   ?page=flows&flow=shift-creation      flow page
  *   ?page=flows&flows=svc-users          flows a service takes part in
  *   ?page=flows&file=svc-punch/src/…     flows traversing a file
  *   ?page=flows&flag=FEATUREDEV_X        flows gated by a feature flag
@@ -20,6 +20,7 @@ import type { Renderer } from '../diagram/model'
  *   ?page=impact&blast=svc-users         impact of a failing service or resource
  *   ?page=ownership&team=team-salsa      ownership, team focused
  *   &edge=from~to~protocol[,…] · &drawer=svc · &ep=id   detail panel content
+ *   &unit=<unit or store id> · &chapter=<n>   flow page panel · story step
  *   &present=1                           present mode
  *   &renderer=svg | mermaid              diagram renderer (React Flow by default)
  *
@@ -43,8 +44,8 @@ export interface UrlState {
   blast: string | null
   flows: string | null
   flow: string | null
-  /** 'code' = code-detail view of the open flow graph, 'sequence' = its sequence diagram */
-  detail: 'code' | 'sequence' | null
+  unit: string | null
+  chapter: number | null
   edge: string | null
   drawer: string | null
   ep: string | null
@@ -91,7 +92,11 @@ function parsePage(p: URLSearchParams): Page {
   return PAGES.find(page => page === p.get('page')) ?? inferPage(p)
 }
 
-export type FlowDetail = UrlState['detail']
+
+function positiveInt(value: string | null): number | null {
+  const n = Number(value)
+  return value !== null && Number.isInteger(n) && n > 0 ? n : null
+}
 
 export function parseUrl(search: string): UrlState {
   const p = new URLSearchParams(search)
@@ -106,7 +111,8 @@ export function parseUrl(search: string): UrlState {
     blast: p.get('blast') === '1' ? p.get('s') : p.get('blast'),
     flows: p.get('flows'),
     flow: p.get('flow'),
-    detail: p.get('detail') === 'code' ? 'code' : p.get('detail') === 'sequence' ? 'sequence' : null,
+    unit: p.get('unit'),
+    chapter: positiveInt(p.get('chapter')),
     edge: p.get('edge'),
     drawer: p.get('drawer'),
     ep: p.get('ep'),
@@ -142,8 +148,11 @@ export function toQueryString(state: UrlState): string {
   }
   if (state.flow) {
     p.set('flow', state.flow)
-    if (state.detail) {
-      p.set('detail', state.detail)
+    if (state.unit) {
+      p.set('unit', state.unit)
+    }
+    if (state.chapter) {
+      p.set('chapter', String(state.chapter))
     }
   }
   if (state.edge) {
@@ -174,7 +183,7 @@ export function toQueryString(state: UrlState): string {
 }
 
 export function pagePatch(page: Page): Partial<UrlState> {
-  return { page, s: null, area: null, term: null, team: null, blast: null, flows: null, flow: null, detail: null, edge: null, drawer: null, ep: null, flag: null, file: null, resource: null }
+  return { page, s: null, area: null, term: null, team: null, blast: null, flows: null, flow: null, unit: null, chapter: null, edge: null, drawer: null, ep: null, flag: null, file: null, resource: null }
 }
 
 export function selectServicePatch(name: string): Partial<UrlState> {

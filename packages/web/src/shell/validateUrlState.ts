@@ -1,3 +1,4 @@
+import { flowChapters } from '@dependency-explorer/data'
 import { EDGE_LIST_SEP, edgeKey, type UrlState } from '../hooks/useUrlState'
 import { areaById, fileIndex, flagRegistry, map, resourceIds } from './dataIndexes'
 
@@ -21,6 +22,19 @@ export function validateUrlState(st: UrlState): UrlState {
     notFound = notFound ?? { param: 'flow', value: next.flow }
     next.flow = null
   }
+  const openFlow = next.flow ? map.flows.find(f => f.id === next.flow) : undefined
+  if (!openFlow) {
+    next.unit = null
+    next.chapter = null
+  } else {
+    const ids = new Set([...(openFlow.codeUnits ?? []).map(u => u.id), ...(openFlow.infraNodes ?? []).map(n => n.id)])
+    if (next.unit && !ids.has(next.unit)) {
+      next.unit = null
+    }
+    if (next.chapter && next.chapter > flowChapters(openFlow).chapters.length) {
+      next.chapter = null
+    }
+  }
   if (next.resource && !resourceIds.has(next.resource)) {
     notFound = notFound ?? { param: 'resource', value: next.resource }
     next.resource = null
@@ -36,9 +50,6 @@ export function validateUrlState(st: UrlState): UrlState {
   }
   if (next.file && !fileIndex.has(next.file)) {
     next.file = null
-  }
-  if (!next.flow) {
-    next.detail = null
   }
   if (next.drawer && !serviceNames.has(next.drawer)) {
     next.drawer = null

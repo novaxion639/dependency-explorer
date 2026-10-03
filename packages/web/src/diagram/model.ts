@@ -1,14 +1,15 @@
 import type { ServiceConnection } from '@dependency-explorer/data'
 
 export type EdgeMode = 'sync' | 'async' | 'data-feed'
-export type NodeKind = 'service' | 'client' | 'monolith' | 'subject' | 'area' | 'summary' | 'unmapped'
-export type GroupKind = 'group' | 'band'
+export type NodeKind = 'service' | 'client' | 'monolith' | 'subject' | 'area' | 'summary' | 'unmapped' | 'unit' | 'job' | 'store'
+export type GroupKind = 'group' | 'band' | 'lane'
 export type Renderer = 'react-flow' | 'svg' | 'mermaid'
 export type DiagramRef =
   | { type: 'service'; name: string }
   | { type: 'area'; id: string }
   | { type: 'resource'; id: string }
   | { type: 'connections'; keys: string[] }
+  | { type: 'unit'; id: string }
 
 export interface Box { x: number; y: number; w: number; h: number }
 export interface DiagramStore { label: string; resource?: string }
@@ -37,6 +38,7 @@ export interface DiagramEdge {
   weight: number
   label: string
   directed: boolean
+  condition?: string
   lane: number
   lanes: number
   ref?: DiagramRef

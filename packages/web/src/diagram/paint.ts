@@ -17,7 +17,9 @@ export const DASH: Record<EdgeMode, string | undefined> = { sync: undefined, asy
 export const MODE_LABEL: Record<EdgeMode, string> = { sync: 'sync', async: 'async', 'data-feed': 'data feed' }
 export const EMPHASIS_WORD: Partial<Record<Emphasis, string>> = { origin: 'origin', fails: 'fails', starves: 'starves', degrades: 'degrades' }
 
-const TINTED = new Set<NodeKind>(['subject', 'summary', 'monolith'])
+const TINTED = new Set<NodeKind>(['subject', 'summary', 'monolith', 'store'])
+
+export const NODE_DASH: Partial<Record<NodeKind, string>> = { job: '6 4', unmapped: '6 4' }
 
 export function nodeFill(kind: NodeKind, emphasis: Emphasis): string | null {
   if (emphasis === 'on') {

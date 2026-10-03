@@ -24,7 +24,7 @@ export function FilePage({ entry, onSelectFlow, onOpenRoute, onOpenResource }: P
             <button type="button" className={styles.card} onClick={() => onSelectFlow(flow)}>
               <b>{flow.name}</b>
               <small>{(flow.codeUnits ?? []).filter(u => u.service === entry.service && u.path === entry.path).map(u => u.label).join(' · ')}</small>
-              <small className={styles.go}>View code detail →</small>
+              <small className={styles.go}>Open in the flow →</small>
             </button>
           </li>
         ))}

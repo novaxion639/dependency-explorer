@@ -3,7 +3,7 @@ import type { DiagramModel } from './model'
 
 export type Emphasis = 'normal' | 'dim' | 'on' | 'origin' | Effect
 export type ImpactMarks = ReadonlyMap<string, Effect | 'origin'>
-export interface FocusState { spotlight: string | null; impact: ImpactMarks | null }
+export interface FocusState { spotlight: string | null; impact: ImpactMarks | null; chapter?: ReadonlySet<string> | null }
 export interface Emphases { nodes: Map<string, Emphasis>; groups: Map<string, Emphasis>; edges: Map<string, Emphasis> }
 
 export const NO_FOCUS: FocusState = { spotlight: null, impact: null }
@@ -25,6 +25,19 @@ export function emphasise(model: DiagramModel, focus: FocusState): Emphases {
       if (focus.impact.has(e.from) && focus.impact.has(e.to)) {
         edges.set(e.id, 'normal')
       }
+    }
+    return { nodes, groups, edges }
+  }
+  if (focus.chapter) {
+    const chapter = focus.chapter
+    for (const id of nodes.keys()) {
+      nodes.set(id, chapter.has(id) ? 'normal' : 'dim')
+    }
+    for (const id of groups.keys()) {
+      groups.set(id, 'normal')
+    }
+    for (const e of model.edges) {
+      edges.set(e.id, chapter.has(e.from) && chapter.has(e.to) ? 'normal' : 'dim')
     }
     return { nodes, groups, edges }
   }

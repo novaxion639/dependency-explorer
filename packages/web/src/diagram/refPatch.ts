@@ -11,5 +11,7 @@ export function refPatch(ref: DiagramRef): Partial<UrlState> {
       return { ...pagePatch('resources'), resource: ref.id }
     case 'connections':
       return { edge: ref.keys.join(EDGE_LIST_SEP), drawer: null, ep: null }
+    case 'unit':
+      return { unit: ref.id }
   }
 }

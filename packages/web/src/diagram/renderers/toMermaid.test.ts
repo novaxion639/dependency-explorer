@@ -46,4 +46,9 @@ describe('toMermaid', () => {
     await expect(mermaid.parse(source)).resolves.toMatchObject({ diagramType: 'flowchart-v2' })
     await expect(mermaid.parse(toMermaid(model, emphasise(model, NO_FOCUS), read))).resolves.toBeTruthy()
   })
+  it('appends conditions to the edge label', () => {
+    const withCondition = { ...model, edges: model.edges.map(e => (e.id === 'e1' ? { ...e, condition: 'absence shifts only' } : e)) }
+    const text = toMermaid(withCondition, emphasise(withCondition, NO_FOCUS), read)
+    expect(text).toContain('g1 -.->|"SQS ×4 · if absence shifts only"| n1')
+  })
 })
