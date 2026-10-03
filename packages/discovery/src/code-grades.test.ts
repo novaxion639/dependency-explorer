@@ -161,7 +161,9 @@ describe('checkCodeGrades with container wiring', () => {
     links: [],
   }))
   write('svc-x/src/Manager/DocumentManager.ts', 'export class DocumentManager {}\n')
-  write('svc-x/src/container.ts', 'const extractionManager = new ExtractionManager(new BedrockLlmProvider(client));\nconst documentManager = new DocumentManager(extractionManager);\n')
+  write('svc-x/src/Manager/ExtractionManager.ts', 'export class ExtractionManager {}\n')
+  write('svc-x/src/Client/Llm/BedrockLlmProvider.ts', 'export class BedrockLlmProvider {}\n')
+  write('svc-x/src/container.ts', "import {DocumentManager} from './Manager/DocumentManager';\nimport {ExtractionManager} from './Manager/ExtractionManager';\nimport {BedrockLlmProvider} from './Client/Llm/BedrockLlmProvider';\nconst extractionManager = new ExtractionManager(new BedrockLlmProvider(client));\nconst documentManager = new DocumentManager(extractionManager);\n")
   const map = ConnectivityMapSchema.parse({
     services: [{ name: 'svc-x', type: 'typescript-microservice', description: 'd', endpoints: [] }],
     connections: [],

@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
-import { loadWiring, wiredGrade, type Read, type Wiring } from './code-wiring'
+import { loadWiring, readerFor, wiredGrade, type Wiring } from './code-wiring'
 
 export type Grade = 'graph' | 'constant' | 'import' | 'text' | 'none'
 
@@ -188,17 +188,13 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
         continue
       }
       const repoDir = path.join(repoBase, from.service)
-      const read: Read = rel => {
-        const file = path.join(repoDir, rel)
-        return fs.existsSync(file) ? fs.readFileSync(file, 'utf-8') : null
-      }
+      const read = readerFor(repoDir)
       const base = gradeEdge(graph, from.path, to.path, source, to.label)
       const wired = base === 'graph' ? null : wiredGrade(wiringFor(from.service), {
         callerPath: from.path,
         calleePath: to.path,
         callerCode: stripComments(source),
         calleeSource: read(to.path) ?? '',
-        callerClasses: graph.classesIn.get(from.path) ?? [],
         calleeClasses: graph.classesIn.get(to.path) ?? [],
       }, read)
       record(key, flow.id, bestGrade(base, wired), `${from.service}/${from.path} → ${to.path}`)

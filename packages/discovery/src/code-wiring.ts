@@ -9,15 +9,15 @@ export interface WiredEdge {
   calleePath: string
   callerCode: string
   calleeSource: string
-  callerClasses: string[]
   calleeClasses: string[]
 }
 
 const DECLARATION = /^(?:export\s+)?const\s+(\w+)[^=\n]*=\s*/gm
-const NEW_CLASS = /\bnew\s+([A-Z]\w*)/g
-const CONSTRUCTED = /^new\s+([A-Z]\w*)/
+const NEW_CALL = /\bnew\s+([A-Z]\w*)\s*(?:<[^>()]*>)?\s*\(/g
 const IDENTIFIER = /\b[A-Za-z_$][\w$]*\b/g
 const NOT_INJECTABLE = new Set(['Map', 'Set', 'Array', 'Object', 'Date', 'Promise', 'URL', 'Error'])
+
+interface Construction { cls: string; args: string; start: number; end: number }
 
 function statementEnd(source: string, from: number, limit: number): number {
   let depth = 0
@@ -34,39 +34,70 @@ function statementEnd(source: string, from: number, limit: number): number {
   return limit
 }
 
-function newClasses(code: string): string[] {
-  return [...code.matchAll(NEW_CLASS)].map(m => m[1] ?? '').filter(c => !NOT_INJECTABLE.has(c))
+function closingParen(code: string, open: number): number {
+  let depth = 0
+  for (let i = open; i < code.length; i++) {
+    if (code[i] === '(') {
+      depth++
+    } else if (code[i] === ')') {
+      depth--
+      if (depth === 0) {
+        return i
+      }
+    }
+  }
+  return code.length
 }
 
-function constructedClass(init: string): string | null {
-  const head = CONSTRUCTED.exec(init)?.[1]
-  return head && !NOT_INJECTABLE.has(head) ? head : null
+function outerConstructions(code: string): Construction[] {
+  const out: Construction[] = []
+  const call = new RegExp(NEW_CALL.source, 'g')
+  for (let m = call.exec(code); m !== null; m = call.exec(code)) {
+    const open = m.index + m[0].length - 1
+    const close = closingParen(code, open)
+    out.push({ cls: m[1] ?? '', args: code.slice(open + 1, close), start: m.index, end: close + 1 })
+    call.lastIndex = close + 1
+  }
+  return out
 }
 
-export function parseInjections(source: string): Map<string, Set<string>> {
+function blankSpans(code: string, spans: Construction[]): string {
+  return spans.reduceRight((acc, s) => `${acc.slice(0, s.start)}${' '.repeat(s.end - s.start)}${acc.slice(s.end)}`, code)
+}
+
+export function parseInjections(source: string, fileOf: (cls: string) => string | null): Map<string, Set<string>> {
   const starts = [...source.matchAll(DECLARATION)]
   const decls = new Map(starts.map((m, i) => {
     const from = (m.index ?? 0) + m[0].length
     return [m[1] ?? '', source.slice(from, statementEnd(source, from, starts[i + 1]?.index ?? source.length))]
   }))
+  const out = new Map<string, Set<string>>()
   const refsIn = (code: string, self: string) => [...new Set(code.match(IDENTIFIER) ?? [])].filter(id => id !== self && decls.has(id))
+  const provides = (code: string, self: string, seen: Set<string>): string[] => {
+    const spans = outerConstructions(code)
+    const constructed = spans.flatMap(n => {
+      if (NOT_INJECTABLE.has(n.cls)) {
+        return provides(n.args, self, seen)
+      }
+      const file = fileOf(n.cls)
+      const deps = provides(n.args, self, seen)
+      if (file === null) {
+        return []
+      }
+      out.set(file, new Set([...(out.get(file) ?? []), ...deps]))
+      return [file]
+    })
+    return [...constructed, ...refsIn(blankSpans(code, spans), self).flatMap(r => holds(r, seen))]
+  }
   const holds = (name: string, seen: Set<string>): string[] => {
     const init = decls.get(name)
     if (init === undefined || seen.has(name)) {
       return []
     }
-    const ctor = constructedClass(init)
-    return ctor ? [ctor] : [...newClasses(init), ...refsIn(init, name).flatMap(r => holds(r, new Set([...seen, name])))]
+    return provides(init, name, new Set([...seen, name]))
   }
-  const out = new Map<string, Set<string>>()
   for (const [name, init] of decls) {
-    const ctor = constructedClass(init)
-    if (!ctor) {
-      continue
-    }
-    const args = init.replace(CONSTRUCTED, '')
-    const injected = [...newClasses(args), ...refsIn(args, name).flatMap(r => holds(r, new Set([name])))]
-    out.set(ctor, new Set([...(out.get(ctor) ?? []), ...injected]))
+    provides(init, name, new Set([name]))
   }
   return out
 }
@@ -77,6 +108,8 @@ export function injectionReach(injects: Map<string, Set<string>>, from: string[]
   return firstHop.some(c => targets.has(c) || [...(injects.get(c) ?? [])].some(d => targets.has(d)))
 }
 
+const TSCONFIG_PATH = /"((?:~|@[\w-]+))\/\*"\s*:\s*\[\s*"([^"*]*)\*"/g
+const DEFAULT_IMPORT = /import\s+([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?\s*from\s*['"]([^'"]+)['"]/g
 const VITE_ALIAS = /['"](@[\w-]+)['"]\s*:\s*fileURLToPath\(\s*new URL\(\s*['"]\.\/([^'"]*)['"]/g
 const IMPORT_FROM = /(?:\bfrom|\bimport|\brequire\()\s*['"]([^'"]+)['"]/g
 const NAMED_IMPORT = /import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
@@ -86,6 +119,17 @@ const BARREL_SUFFIXES = ['/index.js', '/index.ts']
 
 export function parseViteAliases(source: string, configDir: string): Alias[] {
   return [...source.matchAll(VITE_ALIAS)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, '') }))
+}
+
+export function parseTsconfigPaths(source: string, configDir: string): Alias[] {
+  return [...source.matchAll(TSCONFIG_PATH)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, '') }))
+}
+
+export function readerFor(repoDir: string): Read {
+  return rel => {
+    const file = path.join(repoDir, rel)
+    return fs.statSync(file, { throwIfNoEntry: false })?.isFile() ? fs.readFileSync(file, 'utf-8') : null
+  }
 }
 
 export function resolveSpecifier(spec: string, fromPath: string, aliases: Alias[]): string | null {
@@ -104,7 +148,7 @@ function importedNames(list: string): string[] {
   return list.split(',').map(n => n.trim().split(/\s+as\s+/)[0]?.trim() ?? '').filter(Boolean)
 }
 
-function exportedNames(list: string): string[] {
+function boundNames(list: string): string[] {
   return list.split(',').map(n => n.trim().split(/\s+as\s+/).pop()?.trim() ?? '').filter(Boolean)
 }
 
@@ -129,7 +173,7 @@ export function importsCallee(e: WiredEdge, aliases: Alias[], read: Read): boole
     const wanted = new Set(importedNames(m[1] ?? ''))
     return [...barrel.matchAll(NAMED_REEXPORT)].some(r => {
       const target = resolveSpecifier(r[2] ?? '', barrelPath, aliases)
-      return target !== null && resolvesTo(target, e.calleePath) && exportedNames(r[1] ?? '').some(n => wanted.has(n))
+      return target !== null && resolvesTo(target, e.calleePath) && boundNames(r[1] ?? '').some(n => wanted.has(n))
     })
   })
 }
@@ -193,6 +237,19 @@ export function namesReceiverModel(callerCode: string, calleeClasses: string[], 
 }
 
 const VITE_CONFIGS = ['vite.config.mjs', 'vite.config.ts', 'vite.config.js']
+const CONTAINER = 'src/container.ts'
+
+function containerFileOf(source: string, aliases: Alias[], read: Read): (cls: string) => string | null {
+  const specOf = new Map<string, string>([
+    ...[...source.matchAll(NAMED_IMPORT)].flatMap(m => boundNames(m[1] ?? '').map(n => [n, m[2] ?? ''] as const)),
+    ...[...source.matchAll(DEFAULT_IMPORT)].map(m => [m[1] ?? '', m[2] ?? ''] as const),
+  ])
+  return cls => {
+    const spec = specOf.get(cls)
+    const base = spec === undefined ? null : resolveSpecifier(spec, CONTAINER, aliases)
+    return base === null ? null : RESOLVE_SUFFIXES.map(suffix => `${base}${suffix}`).find(p => read(p) !== null) ?? null
+  }
+}
 
 export interface Wiring {
   aliases: Alias[]
@@ -201,28 +258,31 @@ export interface Wiring {
 }
 
 export function loadWiring(repoDir: string): Wiring {
-  const read = (rel: string) => {
-    const file = path.join(repoDir, rel)
-    return fs.existsSync(file) ? fs.readFileSync(file, 'utf-8') : null
-  }
+  const read = readerFor(repoDir)
   const appsDir = path.join(repoDir, 'apps')
   const configDirs = ['', ...(fs.existsSync(appsDir) ? fs.readdirSync(appsDir).map(a => `apps/${a}`) : [])]
-  const aliases = configDirs.flatMap(dir => VITE_CONFIGS.flatMap(name => {
-    const source = read(path.posix.join(dir, name))
-    return source === null ? [] : parseViteAliases(source, dir)
-  }))
-  const container = read('src/container.ts')
+  const aliases = configDirs.flatMap(dir => {
+    const tsconfig = read(path.posix.join(dir, 'tsconfig.json'))
+    return [
+      ...(tsconfig === null ? [] : parseTsconfigPaths(tsconfig, dir)),
+      ...VITE_CONFIGS.flatMap(name => {
+        const source = read(path.posix.join(dir, name))
+        return source === null ? [] : parseViteAliases(source, dir)
+      }),
+    ]
+  })
+  const container = read(CONTAINER)
   const modelsDir = path.join(repoDir, 'app', 'models')
   const models = fs.existsSync(modelsDir) ? fs.readdirSync(modelsDir, { recursive: true, encoding: 'utf-8' }).filter(f => f.endsWith('.rb')) : []
   return {
     aliases,
-    injects: container === null ? new Map() : parseInjections(container),
+    injects: container === null ? new Map() : parseInjections(container, containerFileOf(container, aliases, read)),
     associations: new Map(models.flatMap(f => parseAssociations(fs.readFileSync(path.join(modelsDir, f), 'utf-8')))),
   }
 }
 
 export function wiredGrade(w: Wiring, e: WiredEdge, read: Read): 'graph' | 'import' | 'text' | null {
-  if (injectionReach(w.injects, e.callerClasses, e.calleeClasses)) {
+  if (injectionReach(w.injects, [e.callerPath], [e.calleePath])) {
     return 'graph'
   }
   const ns = vuexNamespaceOf(e.calleePath, read)
