@@ -23,7 +23,6 @@ const LEGACY_DIAGRAM_FILES = new Set([
 const PENDING_4A = new Set([
   'components/SearchModal.tsx',
   'components/connectivity/ServiceSidebar.tsx',
-  'components/ownership/OwnershipPage.tsx',
 ])
 
 const offenders = Object.entries(sources).filter(([, src]) => COLOUR_LITERAL.test(src)).map(([path]) => path.replace(/^\.\.\//, '')).sort()
