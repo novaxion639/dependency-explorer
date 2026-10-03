@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, type WiredEdge } from './code-wiring'
+import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, parseTsconfigPaths, importedFiles, type WiredEdge } from './code-wiring'
 
 const container = `
 const llmProviders: LlmProviders = {
@@ -209,5 +209,29 @@ const integrationManager = new IntegrationManager(registry);
     expect(injectionReach(injects, ['src/Registry/ImplementationProviderRegistry.ts'], ['src/Provider/AdditionImplementationProvider.ts'])).toBe(true)
     expect(injectionReach(injects, ['src/Manager/IntegrationManager.ts'], ['src/Provider/AdditionImplementationProvider.ts'])).toBe(true)
     expect(injectionReach(injects, ['src/Manager/IntegrationManager.ts'], ['src/Repository/AdditionRepository.ts'])).toBe(false)
+  })
+})
+
+describe('imported files', () => {
+  const tsconfig = `{
+  "compilerOptions": {
+    // path aliases
+    "paths": {
+      "~/*": ["src/*"],
+      "@test/*": ["test/*"]
+    }
+  }
+}`
+  const repo = new Map([
+    ['src/Repository/Skello/SkelloRepository.ts', 'export class SkelloRepository {}'],
+    ['apps/vue-app/src/shared/store/modules/plannings/api/shift.js', "export const ENDPOINT_NAMESPACE = '/v3/api/plannings/shifts';"],
+  ])
+  const readRepo = (p: string) => repo.get(p) ?? null
+
+  it('lists the repo files a caller imports, skipping packages', () => {
+    const manager = "import {SkelloRepository} from '~/Repository/Skello/SkelloRepository';\nimport {AxiosError} from 'axios';"
+    expect(importedFiles(manager, 'src/Manager/SkelloManager.ts', parseTsconfigPaths(tsconfig, ''), readRepo)).toEqual(['src/Repository/Skello/SkelloRepository.ts'])
+    const store = "import {\n  ENDPOINT_NAMESPACE,\n} from './api/shift';"
+    expect(importedFiles(store, 'apps/vue-app/src/shared/store/modules/plannings/shifts.js', [], readRepo)).toEqual(['apps/vue-app/src/shared/store/modules/plannings/api/shift.js'])
   })
 })
