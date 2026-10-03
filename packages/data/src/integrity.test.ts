@@ -527,4 +527,9 @@ describe('flow chapters', () => {
       }
     }
   })
+  it('are authored for the planning and time & attendance reading paths', () => {
+    for (const id of ['planning-page-load', 'planning-period-lock', 'shift-creation', 'shift-publication', 'shift-update', 'week-copy', 'badging-review', 'employee-clock-in', 'mobile-clock-in', 'punchclock-device-setup']) {
+      expect(flows.find(f => f.id === id)?.chapters, `${id} has no chapters`).toBeDefined()
+    }
+  })
 })

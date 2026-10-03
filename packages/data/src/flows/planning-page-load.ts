@@ -7,6 +7,12 @@ const planning_page_load: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager opens the planning page. Phased loading: the initial paint fetches the planning context and week shifts from the monolith (shift reads can hit the read replica behind REPLICA_SHIFTS_CONTROLLER_ENABLED), then the compliance panels fetch alerts and weekly rests (labour-law rules are evaluated in-process from synced rule data), and the workload forecast loads from svc-workload-plan. svc-bff-planning has been decommissioned and is no longer in this flow; a previously documented frontend→svc-search call was removed (no evidence: svc-search exposes no HTTP API).",
   "trigger": {"actor": "manager"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A manager opens the planning page", "summary": "The planning store starts a phased load: the planning context and the week's shifts come from skello-app first.", "refs": ["skello-app-front", "cu-ppl-store"] },
+    { "title": "The week's shifts are read", "summary": "skello-app reads shifts, employees and contracts, from the read replica when the replica flag is on.", "refs": ["skello-app", "cu-ppl-index", "pg-skello-planning"] },
+    { "title": "Compliance panels fill in", "summary": "The browser computes labour-law alerts from the loaded shifts; skello-app computes weekly rests with rules from svc-labour-laws.", "refs": ["cu-ppl-alerts-lib", "cu-ppl-weekly-rests", "svc-labour-laws", "dynamo-labour-laws-planning"] },
+    { "title": "The workload forecast loads", "summary": "The planning store fetches the week's forecast from svc-workload-plan, which keeps it in MongoDB.", "refs": ["svc-workload-plan", "mongo-workload-planning"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

@@ -13,6 +13,12 @@ const shift_publication: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A planner publishes the week. The monolith records per-user WeeklyOptionPublication rows and marks the week published, then PublishJob (Sidekiq) builds the notification fan-out: missions fetched from svc-shops, the planning PDF rendered in-process, then push/SMS notifications and high-priority emails (PDF attached) sent through svc-communications-v2 — with a legacy comms-v1 fallback path still present. (Corrected 2026-06-12: publication lives on WeeklyOptions, not /v3/shifts/publish; no svc-events audit exists in this path.)",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A planner publishes the week", "summary": "The planning page sends the chosen employees and SMS and email options; skello-app filters them by team permissions.", "refs": ["skello-app-front", "cu-pub-controller"] },
+    { "title": "The week is marked published", "summary": "Per-employee publication rows are written and the week's options are flagged as published.", "refs": ["cu-pub-service", "pg-skello-publication"] },
+    { "title": "Notifications are prepared", "summary": "A background job reads the shop's missions from svc-shops and renders the planning PDF for the emails.", "refs": ["cu-pub-job", "redis-skello-publication", "svc-shops", "cu-pub-pdf"] },
+    { "title": "Employees are notified", "summary": "Push, SMS and high-priority emails with the PDF attached go out through svc-communications-v2.", "refs": ["cu-pub-job", "svc-communications-v2"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

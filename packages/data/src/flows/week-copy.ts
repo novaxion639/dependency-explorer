@@ -12,6 +12,13 @@ const week_copy: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager copies shifts from a previous week (or day) into target weeks. Timeout-dodging split: the FIRST 5 weeks are duplicated synchronously in the request; any remaining weeks are re-enqueued as one Sidekiq job per week running the same service. Each copied shift is a real Shift.create — the creation callback group (cache, staleness, paid leaves, predicted shifts) fires per shift. A FeatureClick row records the product usage. (Corrected 2026-06-12: no svc-shifts call, no event emission, no notification, no DLQ exist in this path.)",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A manager copies a week", "summary": "The planning page sends the target weeks; skello-app copies the first five inside the request.", "refs": ["skello-app-front", "cu-wc-controller"] },
+    { "title": "Extra weeks move to the background", "summary": "Beyond five weeks, one background job per week runs the same copy outside the request.", "refs": ["cu-wc-async-job", "redis-skello-week-copy"] },
+    { "title": "Shifts are cloned", "summary": "Each source shift is created again in the target week, firing the usual creation callbacks for every shift.", "refs": ["cu-wc-service", "cu-wc-duplicator", "pg-skello-week-copy"] },
+    { "title": "Counters recompute", "summary": "Counters update for every employee receiving shifts, and a usage row records the copy.", "refs": ["cu-wc-tracker", "pg-skello-week-copy"] },
+    { "title": "The rows are replicated", "summary": "DMS copies the new shifts to svc-search in bulk.", "refs": ["pg-skello-week-copy", "svc-search"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

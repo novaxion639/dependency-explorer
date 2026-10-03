@@ -11,6 +11,13 @@ const punchclock_device_setup: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager turns a tablet into the shop's punch clock. Three-tier auth chain: (1) manager signs in with email/password or SSO — POST /v3/login terminates in the MONOLITH behind the auth.skello.io host, SSO capability checks hit svc-users; (2) multi-org accounts pick an organisation (GET /v3/api/me/organisations) and swap to an employee-scoped token (svc-users POST /token-employee, requires canEditPunchClockSettings); (3) shop selection issues the device's long-lived identity — a shop-scoped time-clock JWT (POST /v3/login/login_time_clock, refreshed via refresh_time_clock_token, stored in expo-secure-store with AFTER_FIRST_UNLOCK; the stale token is deliberately reusable offline). First sync pulls punch settings and the employee list (with PINs) from svc-punch into on-device SQLite. The ADMIN AREA on the device (settings edit, day review of the shop's clock-in-outs, manual sync) sits behind a shop PIN read from svc-punch settings (shopPin). Feature flags (unauthenticated) gate the SQLite offline stacks and onboarding. Employees never authenticate: they punch with a 4-digit PIN matched locally (employee-clock-in flow).",
   "trigger": {"actor": "manager", "role": "punch settings (canEditPunchClockSettings)"},
   "primaryArea": "time-attendance",
+  "chapters": [
+    { "title": "A manager signs in on the tablet", "summary": "Email and password or SSO: skello-app opens the session and svc-users checks the SSO capability.", "refs": ["cu-pds-signin", "skello-app", "svc-users"] },
+    { "title": "The organisation is chosen", "summary": "Multi-organisation accounts pick one and swap to an employee token allowed to edit punch settings.", "refs": ["cu-pds-orgsel", "svc-users"] },
+    { "title": "The tablet gets its shop identity", "summary": "Picking the shop issues a long-lived shop token, kept in secure storage and reused offline.", "refs": ["cu-pds-auth", "skello-app"] },
+    { "title": "Settings and employees sync", "summary": "At boot, feature flags load and the first sync copies settings and employees with their PINs into SQLite.", "refs": ["cu-pds-loader", "svc-feature-flags", "svc-punch", "sqlite-tablet-setup"] },
+    { "title": "The admin area opens with a PIN", "summary": "A shop PIN guards settings edits, the day's clock-in review and manual sync.", "refs": ["cu-pds-shoppin", "cu-pds-review", "svc-punch"] }
+  ],
   "links": [{"to": "employee-clock-in", "kind": "continuation", "note": "device identity provisioned here is what every subsequent punch authenticates with"}],
   "steps": [
     {

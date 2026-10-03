@@ -12,6 +12,13 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A planner edits an existing shift. The monolith evaluates labour-law compliance in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call) and persists the change inside a transaction; AR commit callbacks then fan out the same three Sidekiq jobs as creation. Updating does NOT emit a svc-events activity nor notify the employee — notifications happen at planning publication. (Corrected 2026-06-12: the previously documented svc-shifts metrics call, shift.updated event and notification email had no code path.)",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A planner edits a shift", "summary": "The planning page sends the change; skello-app checks the planner may update shifts.", "refs": ["skello-app-front", "cu-upd-controller"] },
+    { "title": "The shift is updated", "summary": "One transaction resolves absence clashes and replacements, saves the shift and unlinks its badging when it is unassigned.", "refs": ["cu-upd-service", "cu-upd-replacement", "pg-skello-shifts-upd"] },
+    { "title": "Counters recompute", "summary": "Hours, RCR and paid-leave counters update for the old and the new assignee.", "refs": ["cu-upd-tracker", "pg-skello-counters-upd"] },
+    { "title": "Side effects after commit", "summary": "Model callbacks refresh the shift cache and queue the same three background jobs as creation.", "refs": ["cu-upd-callbacks", "redis-skello-upd", "cu-upd-cb-job", "cu-upd-data-job", "cu-upd-pl-job"] },
+    { "title": "The row is replicated", "summary": "DMS copies the updated row to svc-search.", "refs": ["pg-skello-shifts-upd", "svc-search"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",

@@ -12,6 +12,12 @@ const planning_period_lock: ServiceFlow = ServiceFlowSchema.parse({
   "description": "A manager locks or unlocks a planning period (day, week or month). WeeklyOptionsController#validate_period runs V3::WeeklyOptions::LockService over the period's WeeklyOption rows (per-shop, per-monday lock levels), audits the action through ActivityJob → svc-events, and — when an intermediate lock is set — emails the higher authority through PlanningNotifier → NotificationMailerJob → svc-communications-v2 (/email/low-priority). The separate unlock_request action changes nothing: it only sends the unlock-request email through the same notifier.",
   "trigger": {"actor": "manager"},
   "primaryArea": "planning",
+  "chapters": [
+    { "title": "A manager locks a period", "summary": "The planning page sends a day, week or month lock to skello-app, which checks who may lift intermediate locks.", "refs": ["skello-app-front", "cu-lock-controller"] },
+    { "title": "The lock is written", "summary": "Each affected Monday and shop gets the new lock level on its weekly option, which every shift edit checks.", "refs": ["cu-lock-service", "pg-period-lock"] },
+    { "title": "The action is audited", "summary": "A background job posts the lock or unlock activity to svc-events.", "refs": ["cu-lock-activity", "svc-events"] },
+    { "title": "The higher authority is emailed", "summary": "Intermediate locks and unlock requests email the next level up through svc-communications-v2.", "refs": ["cu-lock-notifier", "cu-lock-mailer", "svc-communications-v2"] }
+  ],
   "steps": [
     {
       "from": "skello-app-front",
