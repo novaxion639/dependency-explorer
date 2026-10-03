@@ -4,6 +4,7 @@ import { connectivityMap, monolithRoutes, codeEdgeGrades, resourceSurface } from
 import { resourceNotes } from './resource-notes'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { getFlowAreas } from './areas-derive'
+import { flowRefIds } from './flow-chapters'
 import discoveredJson from './generated/discovered.json'
 
 const { services, connections, flows, teams, rules, areas, externals } = connectivityMap
@@ -489,6 +490,40 @@ describe('flow infra nodes', () => {
         for (const id of node.resources ?? []) {
           expect(known.has(id), `${flow.id}/${node.id} → unknown ${id}`).toBe(true)
         }
+      }
+    }
+  })
+})
+
+describe('flow chapters', () => {
+  const authored = flows.filter(f => f.chapters)
+  it('reference only ids of their own flow', () => {
+    for (const flow of authored) {
+      const ids = flowRefIds(flow)
+      for (const c of flow.chapters ?? []) {
+        for (const ref of c.refs) {
+          expect(ids.has(ref), `${flow.id}: chapter "${c.title}" refs unknown id ${ref}`).toBe(true)
+        }
+      }
+    }
+  })
+  it('count 3 to 7 chapters with short titles and one-line summaries', () => {
+    for (const flow of authored) {
+      const chapters = flow.chapters ?? []
+      expect(chapters.length, `${flow.id} chapter count`).toBeGreaterThanOrEqual(3)
+      expect(chapters.length, `${flow.id} chapter count`).toBeLessThanOrEqual(7)
+      for (const c of chapters) {
+        expect(c.title.length, `${flow.id}: "${c.title}"`).toBeLessThanOrEqual(40)
+        expect(c.summary.length, `${flow.id}: "${c.title}" summary`).toBeLessThanOrEqual(160)
+        expect(c.summary, `${flow.id}: "${c.title}" summary`).not.toMatch(/\n/)
+      }
+    }
+  })
+  it('cover every code unit and store of the flow', () => {
+    for (const flow of authored) {
+      const covered = new Set((flow.chapters ?? []).flatMap(c => c.refs))
+      for (const id of [...(flow.codeUnits ?? []).map(u => u.id), ...(flow.infraNodes ?? []).map(n => n.id)]) {
+        expect(covered.has(id), `${flow.id}: no chapter covers ${id}`).toBe(true)
       }
     }
   })

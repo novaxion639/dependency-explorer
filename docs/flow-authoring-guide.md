@@ -364,3 +364,21 @@ See `src/data/flows/auto-planning-generation.ts` — the first flow built using 
 - Correct endpoint paths verified against `routes.rb`
 - Per-Lambda WebSocket SQS notifications with status messages
 - Python solver with no external calls (explicitly documented)
+
+## Chapters
+
+`chapters` turn a flow into a story for presenting: numbered, plain-language chapters on the left of the flow page, each focusing the units, stores and services it covers in the swimlanes.
+
+| Field | Rule |
+|---|---|
+| `title` | At most 40 characters, plain language, present tense, no code identifiers — "The shift is written" |
+| `summary` | One line, at most 160 characters — what happens and why it matters |
+| `refs` | Ids from the same flow: code unit ids, infra node ids, step nodes or code-edge endpoints |
+
+- 3 to 7 chapters per flow, in execution order.
+- Every code unit and infra node of the flow appears in at least one chapter.
+- A chapter states only facts already in the flow — unit and edge descriptions, conditions, branches, steps, the flow description. Discovery verifies those units at the pinned commit (`pnpm discover`). A summary that needs a fact the flow lacks first adds it to the unit's description, read from the file at the pinned commit: `git -C ~/Documents/Skello_Dev/<repo> show <pin>:<path>` (pins: `packages/data/src/generated/resources.json` → `pins`).
+- A flow without chapters shows derived ones: one per step, then "Side effects" (async-job edges) and "Replication" (data feeds out of stores).
+
+The integrity suite enforces every rule above.
+```
