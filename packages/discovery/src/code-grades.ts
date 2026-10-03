@@ -1,7 +1,8 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
-import { loadWiring, readerFor, wiredGrade, type Wiring } from './code-wiring'
+import { importedFiles, loadWiring, readerFor, wiredGrade, type Wiring } from './code-wiring'
+import { routeGrade, type RouteRef } from './route-grades'
 
 export type Grade = 'graph' | 'constant' | 'import' | 'text' | 'none'
 
@@ -122,7 +123,9 @@ export function gradeEdge(graph: RepoGraph, callerPath: string, calleePath: stri
 
 export interface GradeFinding { flow: string; kind: 'ungraded-edge' | 'stale-graph'; subject: string; detail: string }
 
-export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: (repo: string) => string | null) {
+const MONOLITH = 'skello-app'
+
+export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: (repo: string) => string | null, routes: ReadonlyArray<RouteRef> = []) {
   const findings: GradeFinding[] = []
   const grades: Record<string, Grade> = {}
   const distribution: Record<Grade, number> = { graph: 0, constant: 0, import: 0, text: 0, none: 0 }
@@ -180,7 +183,12 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
       }
       if (from.service !== to.service) {
         const empty: RepoGraph = { builtAt: '', fileEdges: new Map(), importEdges: new Map(), classesIn: new Map() }
-        record(key, flow.id, crossRepoGrade(gradeEdge(empty, from.path, to.path, source, to.label)), `${from.service}/${from.path} → ${to.service}/${to.path} (cross-repo)`)
+        const textGrade = crossRepoGrade(gradeEdge(empty, from.path, to.path, source, to.label))
+        const callerCode = stripComments(source)
+        const callerRead = readerFor(path.join(repoBase, from.service))
+        const imported = importedFiles(callerCode, from.path, wiringFor(from.service).aliases, callerRead).map(f => stripComments(callerRead(f) ?? ''))
+        const routed = to.service === MONOLITH ? routeGrade(callerCode, imported, to.path, routes) : null
+        record(key, flow.id, bestGrade(textGrade, routed), `${from.service}/${from.path} → ${to.service}/${to.path} (cross-repo)`)
         continue
       }
       const graph = graphFor(from.service)

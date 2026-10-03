@@ -144,6 +144,15 @@ export function resolvesTo(base: string, file: string): boolean {
   return RESOLVE_SUFFIXES.some(s => `${base}${s}` === file)
 }
 
+export function importedFiles(code: string, fromPath: string, aliases: Alias[], read: Read): string[] {
+  const found = [...code.matchAll(IMPORT_FROM)].flatMap(m => {
+    const base = resolveSpecifier(m[1] ?? '', fromPath, aliases)
+    const file = base === null ? undefined : RESOLVE_SUFFIXES.map(s => `${base}${s}`).find(p => read(p) !== null)
+    return file === undefined ? [] : [file]
+  })
+  return [...new Set(found)]
+}
+
 function importedNames(list: string): string[] {
   return list.split(',').map(n => n.trim().split(/\s+as\s+/)[0]?.trim() ?? '').filter(Boolean)
 }
