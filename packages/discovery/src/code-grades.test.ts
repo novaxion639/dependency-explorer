@@ -3,7 +3,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { ConnectivityMapSchema } from '@dependency-explorer/schema'
-import { loadRepoGraph, gradeEdge, stripComments, checkCodeGrades, crossRepoGrade } from './code-grades'
+import { loadRepoGraph, gradeEdge, stripComments, checkCodeGrades, crossRepoGrade, bestGrade } from './code-grades'
 
 const graphJson = {
   built_at_commit: 'abc123',
@@ -135,5 +135,47 @@ describe('checkCodeGrades', () => {
     const r = checkCodeGrades(map, base, () => 'deadbeef')
     expect(r.grades['f#c→m']).toBeUndefined()
     expect(r.findings.filter(f => f.kind === 'stale-graph').map(f => f.detail)).toEqual(['graph stale — run graphify update at deadbeef'])
+  })
+})
+
+describe('bestGrade', () => {
+  it('keeps the better grade and never drops one', () => {
+    expect(bestGrade('none', 'import')).toBe('import')
+    expect(bestGrade('constant', 'text')).toBe('constant')
+    expect(bestGrade('text', null)).toBe('text')
+  })
+})
+
+describe('checkCodeGrades with container wiring', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'wired-'))
+  const write = (rel: string, content: string) => {
+    fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true })
+    fs.writeFileSync(path.join(base, rel), content)
+  }
+  write('svc-x/graphify-out/graph.json', JSON.stringify({
+    built_at_commit: 'abc123',
+    nodes: [
+      { id: 'd', label: 'DocumentManager', source_file: 'src/Manager/DocumentManager.ts', _callable_class: true },
+      { id: 'b', label: 'BedrockLlmProvider', source_file: 'src/Client/Llm/BedrockLlmProvider.ts', _callable_class: true },
+    ],
+    links: [],
+  }))
+  write('svc-x/src/Manager/DocumentManager.ts', 'export class DocumentManager {}\n')
+  write('svc-x/src/container.ts', 'const extractionManager = new ExtractionManager(new BedrockLlmProvider(client));\nconst documentManager = new DocumentManager(extractionManager);\n')
+  const map = ConnectivityMapSchema.parse({
+    services: [{ name: 'svc-x', type: 'typescript-microservice', description: 'd', endpoints: [] }],
+    connections: [],
+    flows: [{
+      id: 'f', name: 'F', description: 'd', steps: [],
+      codeUnits: [
+        { id: 'd', service: 'svc-x', kind: 'manager', label: 'DocumentManager', path: 'src/Manager/DocumentManager.ts' },
+        { id: 'b', service: 'svc-x', kind: 'service', label: 'BedrockLlmProvider', path: 'src/Client/Llm/BedrockLlmProvider.ts' },
+      ],
+      codeEdges: [{ from: 'd', to: 'b', label: 'extraction', mode: 'sync' }],
+    }],
+  })
+
+  it('grades an edge the container wires but the graph cannot see', () => {
+    expect(checkCodeGrades(map, base, () => 'abc123').grades['f#d→b']).toBe('graph')
   })
 })

@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
+import { loadWiring, wiredGrade, type Read, type Wiring } from './code-wiring'
 
 export type Grade = 'graph' | 'constant' | 'import' | 'text' | 'none'
 
@@ -64,6 +65,12 @@ export function stripComments(source: string): string {
 
 export function crossRepoGrade(grade: Grade): Grade {
   return grade === 'none' ? 'none' : 'text'
+}
+
+const GRADE_ORDER: Grade[] = ['graph', 'constant', 'import', 'text', 'none']
+
+export function bestGrade(a: Grade, b: Grade | null): Grade {
+  return b !== null && GRADE_ORDER.indexOf(b) < GRADE_ORDER.indexOf(a) ? b : a
 }
 
 function escape(s: string): string {
@@ -137,6 +144,16 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
     }
     return graphs.get(repo) ?? null
   }
+  const wirings = new Map<string, Wiring>()
+  const wiringFor = (repo: string): Wiring => {
+    const cached = wirings.get(repo)
+    if (cached) {
+      return cached
+    }
+    const wiring = loadWiring(path.join(repoBase, repo))
+    wirings.set(repo, wiring)
+    return wiring
+  }
   const record = (key: string, flow: string, grade: Grade, detail: string) => {
     grades[key] = grade
     distribution[grade]++
@@ -170,7 +187,21 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
       if (!graph) {
         continue
       }
-      record(key, flow.id, gradeEdge(graph, from.path, to.path, source, to.label), `${from.service}/${from.path} → ${to.path}`)
+      const repoDir = path.join(repoBase, from.service)
+      const read: Read = rel => {
+        const file = path.join(repoDir, rel)
+        return fs.existsSync(file) ? fs.readFileSync(file, 'utf-8') : null
+      }
+      const base = gradeEdge(graph, from.path, to.path, source, to.label)
+      const wired = base === 'graph' ? null : wiredGrade(wiringFor(from.service), {
+        callerPath: from.path,
+        calleePath: to.path,
+        callerCode: stripComments(source),
+        calleeSource: read(to.path) ?? '',
+        callerClasses: graph.classesIn.get(from.path) ?? [],
+        calleeClasses: graph.classesIn.get(to.path) ?? [],
+      }, read)
+      record(key, flow.id, bestGrade(base, wired), `${from.service}/${from.path} → ${to.path}`)
     }
   }
   return { findings, grades, distribution, backlog }

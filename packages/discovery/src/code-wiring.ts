@@ -1,3 +1,4 @@
+import * as fs from 'node:fs'
 import * as path from 'node:path'
 
 export type Alias = { prefix: string; dir: string }
@@ -189,4 +190,47 @@ export function namesReceiverModel(callerCode: string, calleeClasses: string[], 
     const word = m[1] ?? ''
     return declared.has(camelize(singular(word))) || declared.has(associations.get(word) ?? '')
   })
+}
+
+const VITE_CONFIGS = ['vite.config.mjs', 'vite.config.ts', 'vite.config.js']
+
+export interface Wiring {
+  aliases: Alias[]
+  injects: Map<string, Set<string>>
+  associations: Map<string, string>
+}
+
+export function loadWiring(repoDir: string): Wiring {
+  const read = (rel: string) => {
+    const file = path.join(repoDir, rel)
+    return fs.existsSync(file) ? fs.readFileSync(file, 'utf-8') : null
+  }
+  const appsDir = path.join(repoDir, 'apps')
+  const configDirs = ['', ...(fs.existsSync(appsDir) ? fs.readdirSync(appsDir).map(a => `apps/${a}`) : [])]
+  const aliases = configDirs.flatMap(dir => VITE_CONFIGS.flatMap(name => {
+    const source = read(path.posix.join(dir, name))
+    return source === null ? [] : parseViteAliases(source, dir)
+  }))
+  const container = read('src/container.ts')
+  const modelsDir = path.join(repoDir, 'app', 'models')
+  const models = fs.existsSync(modelsDir) ? fs.readdirSync(modelsDir, { recursive: true, encoding: 'utf-8' }).filter(f => f.endsWith('.rb')) : []
+  return {
+    aliases,
+    injects: container === null ? new Map() : parseInjections(container),
+    associations: new Map(models.flatMap(f => parseAssociations(fs.readFileSync(path.join(modelsDir, f), 'utf-8')))),
+  }
+}
+
+export function wiredGrade(w: Wiring, e: WiredEdge, read: Read): 'graph' | 'import' | 'text' | null {
+  if (injectionReach(w.injects, e.callerClasses, e.calleeClasses)) {
+    return 'graph'
+  }
+  const ns = vuexNamespaceOf(e.calleePath, read)
+  if (importsCallee(e, w.aliases, read) || (ns !== null && usesVuexNamespace(e.callerCode, ns)) || emitsToCallee(e, w.aliases)) {
+    return 'import'
+  }
+  if (e.callerPath.endsWith('.rb') && namesReceiverModel(e.callerCode, e.calleeClasses, w.associations)) {
+    return 'text'
+  }
+  return null
 }

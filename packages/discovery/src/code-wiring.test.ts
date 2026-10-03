@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, type WiredEdge } from './code-wiring'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
+import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, type WiredEdge } from './code-wiring'
 
 const container = `
 const llmProviders: LlmProviders = {
@@ -129,5 +132,43 @@ describe('rails receivers', () => {
   })
   it('ignores receivers that name another model', () => {
     expect(namesReceiverModel('params.require(:shift)', ['Shift'], associations)).toBe(false)
+  })
+})
+
+describe('wiredGrade', () => {
+  const wiring = { aliases, injects: parseInjections(container), associations: new Map([['amendments', 'ContractAmendment']]) }
+  const noFiles = () => null
+
+  it('grades a container path graph and a resolved import import', () => {
+    expect(wiredGrade(wiring, { ...edge('src/Manager/DocumentManager.ts', 'src/Client/Llm/BedrockLlmProvider.ts', ''), callerClasses: ['DocumentManager'], calleeClasses: ['BedrockLlmProvider'] }, noFiles)).toBe('graph')
+    expect(wiredGrade(wiring, edge('apps/vue-app/src/badgings/Badgings.vue', 'apps/vue-app/src/shared/store/modules/timeclock/badgings.js', "...mapState('badgings', ['users'])"), readStore)).toBe('import')
+  })
+  it('grades a Rails receiver text and ignores it outside Ruby', () => {
+    expect(wiredGrade(wiring, { ...edge('app/services/v3/shifts/destroy_service.rb', 'app/models/shift.rb', 'shift.destroy!'), calleeClasses: ['Shift'] }, noFiles)).toBe('text')
+    expect(wiredGrade(wiring, { ...edge('src/shifts.ts', 'app/models/shift.rb', 'shift.destroy()'), calleeClasses: ['Shift'] }, noFiles)).toBeNull()
+  })
+})
+
+describe('loadWiring', () => {
+  it('loads empty wiring for a bare repo', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiring-'))
+    const w = loadWiring(dir)
+    expect(w.aliases).toEqual([])
+    expect(w.injects.size).toBe(0)
+    expect(w.associations.size).toBe(0)
+  })
+  it('reads app vite configs, the container and model associations', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiring-'))
+    const write = (rel: string, content: string) => {
+      fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true })
+      fs.writeFileSync(path.join(dir, rel), content)
+    }
+    write('apps/vue-app/vite.config.mjs', viteConfig)
+    write('src/container.ts', container)
+    write('app/models/hr/contract.rb', "has_many :amendments, class_name: 'ContractAmendment'\n")
+    const w = loadWiring(dir)
+    expect(w.aliases.map(a => a.prefix)).toEqual(['@app-js', '@skello-utils', '@app'])
+    expect(injectionReach(w.injects, ['DocumentManager'], ['BedrockLlmProvider'])).toBe(true)
+    expect(w.associations.get('amendments')).toBe('ContractAmendment')
   })
 })
