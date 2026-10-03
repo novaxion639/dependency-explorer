@@ -10,6 +10,7 @@ describe('breadcrumb', () => {
     expect(labels('')).toEqual([])
     expect(labels('?page=microservices&s=svc-punch')).toEqual(['Architecture', 'Microservices', 'svc-punch'])
     expect(labels('?page=monolith')).toEqual(['Architecture', 'Monolith'])
+    expect(labels('?page=monolith&s=skello-app')).toEqual(['Architecture', 'Monolith', 'Connections'])
     expect(labels('?page=flows&flow=shift-creation')).toEqual(['Flows', 'Shift Creation'])
     expect(labels('?page=resources&resource=pg:skello_production.shifts')).toEqual(['Resources', 'shifts'])
     expect(labels('?page=impact&blast=svc-requests')).toEqual(['Impact', 'svc-requests'])
