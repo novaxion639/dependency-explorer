@@ -47,6 +47,9 @@ export interface TfMongoRole {
   database: string
 }
 
+export const OWNING_ROLES = new Set(['readWrite', 'dbOwner'])
+export const READING_ROLES = new Set(['read'])
+
 export interface TerraformFacts {
   resources: TfResource[]
   mongoRoles: TfMongoRole[]
@@ -92,6 +95,10 @@ function topLevelAttr(block: string, key: string): string | undefined {
 }
 
 function blockAt(content: string, start: number): string {
+  const firstLine = content.slice(start).split('\n')[0] ?? ''
+  if (/\{\s*\}\s*$/.test(firstLine)) {
+    return firstLine
+  }
   const end = content.slice(start).search(/^\}/m)
   return end === -1 ? content.slice(start) : content.slice(start, start + end + 1)
 }
@@ -164,6 +171,8 @@ export function parseTerraform(content: string): TerraformFacts {
 
 const IDENTITY_LOCALS = new Set(['project', 'project_kebab_case', 'projectCamelCase', 'application', 'comp'])
 const MAX_LOCAL_DEPTH = 4
+const ENVIRONMENT_LOCALS = new Set(['region', 'aws_region', 'account_id', 'environment', 'env'])
+const TEMPLATE_LOCAL = /\$\{(?:(lower|upper)\()?local\.(\w+)\)?\}/g
 const BARE_LOCAL = /^local\.(\w+)$/
 const CASE_CALL = /^(lower|upper)\(\s*(.*?)\s*\)$/
 
@@ -192,14 +201,15 @@ export function applyTerraformLocals(value: string, locals: Record<string, strin
   const bare = value.match(BARE_LOCAL)?.[1]
   if (bare) {
     const resolved = locals[bare]
-    return resolved === undefined || depth >= MAX_LOCAL_DEPTH ? value : applyTerraformLocals(resolved, locals, depth + 1)
+    return resolved === undefined || ENVIRONMENT_LOCALS.has(bare) || depth >= MAX_LOCAL_DEPTH ? value : applyTerraformLocals(resolved, locals, depth + 1)
   }
-  return value.replace(/\$\{local\.(\w+)\}/g, (whole, key: string) => {
+  return value.replace(TEMPLATE_LOCAL, (whole, fn: string | undefined, key: string) => {
     const resolved = locals[key]
     if (resolved === undefined || depth >= MAX_LOCAL_DEPTH || !(IDENTITY_LOCALS.has(key) || resolved.includes('${'))) {
       return whole
     }
-    return applyTerraformLocals(resolved, locals, depth + 1)
+    const applied = applyTerraformLocals(resolved, locals, depth + 1)
+    return fn === 'lower' || fn === 'upper' ? changeCase(applied, fn) : applied
   })
 }
 

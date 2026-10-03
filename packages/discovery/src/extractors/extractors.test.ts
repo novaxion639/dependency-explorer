@@ -633,3 +633,17 @@ describe('resolveDmsSources', () => {
     expect(resolveDmsSources(tasks, data).map(t => t.source)).toEqual(['skelloapp-database-aurora-${local.workspace}', 'aws_dms_endpoint.own.endpoint_arn'])
   })
 })
+
+describe('terraform locals and blocks', () => {
+  it('never resolves a bare environment local into a resource name', () => {
+    expect(applyTerraformLocals('local.region', { region: 'eu-west-1' })).toBe('local.region')
+    expect(applyTerraformLocals('lower(local.aws_region)', { aws_region: 'EU-WEST-1' })).toBe('local.aws_region')
+  })
+  it('resolves a case call inside a template', () => {
+    expect(applyTerraformLocals('${lower(local.project)}-globalDms-${local.workspace}', { project: 'SkelloApp' })).toBe('skelloapp-globalDms-${local.workspace}')
+  })
+  it('reads a one-line data block without swallowing the next block', () => {
+    const names = parseTerraformDataNames('data "aws_region" "current" {}\ndata "aws_dms_endpoint" "x" {\n  endpoint_id = "y"\n}\n')
+    expect(names).toEqual({ 'aws_dms_endpoint.x': 'y' })
+  })
+})

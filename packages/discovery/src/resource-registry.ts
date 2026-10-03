@@ -2,8 +2,7 @@ import type { ConnectivityMap, Resource } from '@dependency-explorer/schema'
 import { normalizeResourceName } from '@dependency-explorer/data'
 import type { RailsModel } from './extractors/rails-schema'
 import type { ServerlessFacts } from './extractors/serverless'
-import type { TerraformFacts } from './extractors/terraform'
-import { OWNING_ROLES, READING_ROLES } from './resource-relations'
+import { OWNING_ROLES, READING_ROLES, type TerraformFacts } from './extractors/terraform'
 
 export const STORE_PREFIX: Record<string, string> = {
   postgresql: 'pg', mongodb: 'mongo', dynamodb: 'ddb', s3: 's3', sqs: 'sqs', sns: 'sns', kinesis: 'kinesis', redis: 'redis', elasticsearch: 'es',

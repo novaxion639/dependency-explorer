@@ -1,7 +1,7 @@
 import type { Resource, ResourceRelation } from '@dependency-explorer/schema'
 import type { RailsModel } from './extractors/rails-schema'
 import { stripComments, type RepoGraph } from './code-grades'
-import type { TerraformFacts } from './extractors/terraform'
+import { OWNING_ROLES, READING_ROLES, type TerraformFacts } from './extractors/terraform'
 import { normalizeResourceName } from '@dependency-explorer/data'
 import type { ServerlessFacts } from './extractors/serverless'
 
@@ -151,8 +151,6 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
   return out
 }
 
-export const OWNING_ROLES = new Set(['readWrite', 'dbOwner'])
-export const READING_ROLES = new Set(['read'])
 
 export function atlasRelations(terraform: Array<{ service: string; facts: TerraformFacts }>, resources: Resource[]): ResourceRelation[] {
   const out: ResourceRelation[] = []
