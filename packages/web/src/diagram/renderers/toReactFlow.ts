@@ -18,14 +18,19 @@ export function toReactFlow(model: DiagramModel, emphases: Emphases): { nodes: D
     draggable: false,
     data: { group, emphasis: emphases.groups.get(group.id) ?? 'normal' },
   }))
-  const nodes = model.nodes.map((node): DiagramNodeType => ({
-    id: node.id,
-    type: 'diagramNode',
-    position: { x: node.x, y: node.y },
-    width: node.w,
-    height: node.h,
-    data: { node, emphasis: emphases.nodes.get(node.id) ?? 'normal' },
-  }))
+  const laneOf = new Map(model.groups.filter(g => g.kind === 'lane').flatMap(g => g.members.map(m => [m, g] as const)))
+  const nodes = model.nodes.map((node): DiagramNodeType => {
+    const lane = laneOf.get(node.id)
+    return {
+      id: node.id,
+      type: 'diagramNode',
+      position: lane ? { x: node.x - lane.x, y: node.y - lane.y } : { x: node.x, y: node.y },
+      width: node.w,
+      height: node.h,
+      ...(lane ? { parentId: lane.id, extent: 'parent' as const, draggable: false } : {}),
+      data: { node, emphasis: emphases.nodes.get(node.id) ?? 'normal' },
+    }
+  })
   const edges = model.edges.map((edge): DiagramFlowEdge => ({
     id: edge.id,
     source: edge.from,

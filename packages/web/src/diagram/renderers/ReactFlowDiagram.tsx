@@ -61,26 +61,37 @@ function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<Diag
   }
   const { edge, emphasis } = data
   const s = edgeSegment(boxOf(from), boxOf(to), edge.lane, edge.lanes)
+  const path = edge.route ? `M ${edge.route.map(p => `${p.x} ${p.y}`).join(' L ')}` : `M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`
+  const at = edge.labelBox ? { x: edge.labelBox.x + edge.labelBox.w / 2, y: edge.labelBox.y + edge.labelBox.h / 2 } : { x: s.lx, y: s.ly }
   const paint = PAINT[emphasis]
   const ref = edge.ref
   return (
     <>
-      <BaseEdge id={id} path={`M ${s.x1} ${s.y1} L ${s.x2} ${s.y2}`} markerEnd={markerEnd} style={{ stroke: paint.stroke, strokeWidth: strokeWidth(edge.weight), strokeDasharray: DASH[edge.mode], opacity: paint.opacity }} />
+      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={{ stroke: paint.stroke, strokeWidth: strokeWidth(edge.weight), strokeDasharray: DASH[edge.mode], opacity: paint.opacity }} />
       {(edge.label || edge.condition) && (
         <EdgeLabelRenderer>
           <button
             type="button"
             className={`${styles.edgeLabel} nodrag nopan`}
+            data-wrapped={edge.labelLines ? 'true' : undefined}
             aria-label={edgeName(nodeLabel(from), nodeLabel(to), edge)}
-            style={{ transform: `translate(-50%, -50%) translate(${s.lx}px, ${s.ly}px)`, opacity: paint.opacity, color: paint.text }}
+            style={{ transform: `translate(-50%, -50%) translate(${at.x}px, ${at.y}px)`, opacity: paint.opacity, color: paint.text }}
             onClick={() => {
               if (ref) {
                 select(ref)
               }
             }}
           >
-            {edge.label}
-            {edge.condition && <span className={styles.pill}>if {edge.condition}</span>}
+            {edge.labelLines
+              ? edge.labelLines.map((line, i) => <span key={`${i}:${line}`} className={styles.labelLine}>{line}</span>)
+              : edge.label}
+            {edge.condition && (
+              <span className={styles.pill}>
+                {edge.conditionLines
+                  ? edge.conditionLines.map((line, i) => <span key={`${i}:${line}`} className={styles.labelLine}>{line}</span>)
+                  : `if ${edge.condition}`}
+              </span>
+            )}
           </button>
         </EdgeLabelRenderer>
       )}

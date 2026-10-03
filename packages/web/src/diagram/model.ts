@@ -12,6 +12,7 @@ export type DiagramRef =
   | { type: 'unit'; id: string }
 
 export interface Box { x: number; y: number; w: number; h: number }
+export interface RoutePoint { x: number; y: number }
 export interface DiagramStore { label: string; resource?: string }
 export interface DiagramNode extends Box {
   id: string
@@ -42,6 +43,10 @@ export interface DiagramEdge {
   lane: number
   lanes: number
   ref?: DiagramRef
+  route?: RoutePoint[]
+  labelBox?: Box
+  labelLines?: string[]
+  conditionLines?: string[]
 }
 export interface DiagramModel {
   id: string
