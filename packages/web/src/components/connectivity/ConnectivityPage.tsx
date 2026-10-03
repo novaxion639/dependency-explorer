@@ -90,7 +90,10 @@ export function ConnectivityPage() {
 
   const selectedService = url.s
   const openResource = useCallback((id: string) => patch({ flow: null, detail: null, file: null, resource: id }), [patch])
-  const viewMode = url.view
+  const viewMode = ({
+    home: 'areas', areas: 'areas', microservices: url.s ? 'services' : 'context', monolith: 'services', flows: url.s ? 'services' : 'areas',
+    resources: 'resources', impact: url.s ? 'services' : 'areas', ownership: 'teams',
+  } as const)[url.page]
 
   const selectService = useCallback(
     (name: string) => {
@@ -159,7 +162,7 @@ export function ConnectivityPage() {
           {(['areas', 'context', 'services', 'resources', 'teams'] as const).map(mode => (
             <button
               key={mode}
-              onClick={() => patch({ view: mode, resource: null })}
+              onClick={() => patch({ page: TAB_PAGE[mode], resource: null, ...(mode === 'context' ? { s: null } : {}) })}
               style={{
                 padding: '4px 12px', borderRadius: 5, fontSize: 11, fontWeight: 600,
                 border: 'none', cursor: 'pointer',
@@ -286,9 +289,9 @@ export function ConnectivityPage() {
             onSelectService={selectService}
           />
         ) : viewMode === 'areas' ? (
-          <AreasHome map={map} onOpenArea={id => patch({ area: id, term: null })} onOpenContext={() => patch({ view: 'context' })} />
+          <AreasHome map={map} onOpenArea={id => patch({ area: id, term: null })} onOpenContext={() => patch({ page: 'microservices', s: null })} />
         ) : viewMode === 'context' ? (
-          <SystemContext map={map} onSelectService={selectService} onOpenArea={id => patch({ view: 'areas', area: id, term: null })} />
+          <SystemContext map={map} onSelectService={selectService} onOpenArea={id => patch({ page: 'areas', area: id, term: null })} />
         ) : viewMode === 'services' ? (
           <ConnectivityGraph
             map={map}
@@ -309,7 +312,7 @@ export function ConnectivityPage() {
             focusedTeam={url.team}
             onFocusTeam={team => patch({ team })}
             onSelectService={selectService}
-            onOpenArea={id => patch({ view: 'areas', area: id, term: null })}
+            onOpenArea={id => patch({ page: 'areas', area: id, term: null })}
           />
         )}
 
@@ -343,7 +346,7 @@ export function ConnectivityPage() {
           detail={url.detail}
           onDetailChange={d => patch({ detail: d })}
           onOpenFlow={flowId => patch({ flow: flowId, detail: null })}
-          onOpenArea={id => patch({ view: 'areas', area: id, term: null, flow: null, flows: null, detail: null })}
+          onOpenArea={id => patch({ page: 'areas', area: id, term: null, flow: null, flows: null, detail: null })}
           onOpenResource={openResource}
           onBack={() => patch({ flow: null, detail: null })}
           onClose={() => patch({ flow: null, flows: null, detail: null })}
@@ -364,7 +367,7 @@ export function ConnectivityPage() {
         <FileModal
           entry={fileIndex.get(url.file)!}
           onSelectFlow={flow => patch({ flow: flow.id, detail: 'code', file: null })}
-          onOpenRoute={id => patch({ file: null, s: 'skello-app', view: 'services', drawer: 'skello-app', ep: id })}
+          onOpenRoute={id => patch({ file: null, s: 'skello-app', page: 'monolith', drawer: 'skello-app', ep: id })}
           onOpenResource={openResource}
           onClose={() => patch({ file: null })}
         />
@@ -393,6 +396,8 @@ export function ConnectivityPage() {
     </div>
   )
 }
+
+const TAB_PAGE = { areas: 'areas', context: 'microservices', services: 'microservices', resources: 'resources', teams: 'ownership' } as const
 
 const VIEW_LABEL = { areas: 'Areas', context: 'System context', services: 'Service View', resources: 'Resources', teams: 'Ownership' } as const
 

@@ -1,6 +1,6 @@
 import type { ConnectivityMap, MonolithRoute, Resource } from '@dependency-explorer/data'
 import type { UrlState } from '../hooks/useUrlState'
-import { edgeKey } from '../hooks/useUrlState'
+import { edgeKey, servicePage } from '../hooks/useUrlState'
 import { buildFlagRegistry } from './flagRegistry'
 import { buildFileIndex } from './fileIndex'
 
@@ -35,7 +35,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: svc.name,
       sublabel: svc.description,
       haystack: `${svc.type} ${(svc.tags ?? []).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, s: svc.name, view: 'services' },
+      patch: { ...CLOSE_OVERLAYS, s: svc.name, page: servicePage(svc.name) },
     })
     for (const ep of svc.endpoints) {
       entries.push({
@@ -43,7 +43,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
         label: `${ep.method} ${ep.path}`,
         sublabel: `${svc.name} · ${ep.description}`,
         haystack: `${ep.id} ${ep.useCase}`,
-        patch: { ...CLOSE_OVERLAYS, s: svc.name, view: 'services', drawer: svc.name, ep: ep.id },
+        patch: { ...CLOSE_OVERLAYS, s: svc.name, page: servicePage(svc.name), drawer: svc.name, ep: ep.id },
       })
     }
   }
@@ -54,7 +54,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: r.name,
       sublabel: `${r.kind} · ${r.store}${r.owner ? ` · ${r.owner}` : ''}`,
       haystack: r.id,
-      patch: { ...CLOSE_OVERLAYS, resource: r.id },
+      patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: r.id },
     })
   }
 
@@ -64,7 +64,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: `${conn.from} → ${conn.to}`,
       sublabel: `${conn.communicationType}/${conn.protocol} · ${conn.description}`,
       haystack: `${conn.sdkPackage} ${(conn.usedEndpoints ?? []).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, s: conn.from, view: 'services', edge: edgeKey(conn.from, conn.to, conn.protocol) },
+      patch: { ...CLOSE_OVERLAYS, s: conn.from, page: servicePage(conn.from), edge: edgeKey(conn.from, conn.to, conn.protocol) },
     })
   }
 
@@ -78,7 +78,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
         ...flow.steps.map(s => `${s.from} ${s.to} ${s.action}`),
         ...(flow.codeUnits ?? []).map(u => `${u.path ?? ''} ${u.label}`),
       ].join(' '),
-      patch: { ...CLOSE_OVERLAYS, flow: flow.id },
+      patch: { ...CLOSE_OVERLAYS, page: 'flows', flow: flow.id },
     })
   }
 
@@ -89,7 +89,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: entry.path,
       sublabel: `${entry.service} · touched by ${entry.flows.length} flow${entry.flows.length === 1 ? '' : 's'}${entry.routes.length ? ` · serves ${entry.routes.length} route${entry.routes.length === 1 ? '' : 's'}` : ''}`,
       haystack: [...entry.flows.map(f => `${f.id} ${f.name}`), ...entry.routes].join(' '),
-      patch: { ...CLOSE_OVERLAYS, file: `${entry.service}/${entry.path}` },
+      patch: { ...CLOSE_OVERLAYS, page: 'flows', file: `${entry.service}/${entry.path}` },
     })
   }
 
@@ -100,7 +100,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: team.name,
       sublabel: `team · owns ${ownedServices.length} service${ownedServices.length === 1 ? '' : 's'}`,
       haystack: `${(team.githubTeams ?? []).join(' ')} ${ownedServices.map(s => s.name).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, view: 'teams', team: team.id, s: null },
+      patch: { ...CLOSE_OVERLAYS, page: 'ownership', team: team.id, s: null },
     })
   }
 
@@ -110,7 +110,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: area.name,
       sublabel: `${area.kind === 'product' ? 'product area' : 'platform capability'} · ${area.description}`,
       haystack: `${area.id} ${area.codeLocations.map(l => `${l.repo} ${l.globs.join(' ')}`).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, view: 'areas', area: area.id, s: null },
+      patch: { ...CLOSE_OVERLAYS, page: 'areas', area: area.id, s: null },
     })
     for (const g of area.glossary) {
       entries.push({
@@ -118,7 +118,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
         label: g.term,
         sublabel: `${area.name} · glossary`,
         haystack: `${g.definition} ${g.anchor?.symbol ?? ''}`,
-        patch: { ...CLOSE_OVERLAYS, view: 'areas', area: area.id, term: g.term, s: null },
+        patch: { ...CLOSE_OVERLAYS, page: 'areas', area: area.id, term: g.term, s: null },
       })
     }
   }
@@ -129,7 +129,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: ext.name,
       sublabel: `external · ${ext.category}`,
       haystack: `${ext.description} ${ext.usedBy.map(u => u.service).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, view: 'context', s: null },
+      patch: { ...CLOSE_OVERLAYS, page: 'microservices', s: null },
     })
   }
 
@@ -139,7 +139,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: entry.name,
       sublabel: `${entry.kind} flag · gates ${entry.flows.length} flow${entry.flows.length === 1 ? '' : 's'}`,
       haystack: entry.flows.map(f => `${f.id} ${f.name}`).join(' '),
-      patch: { ...CLOSE_OVERLAYS, flag: entry.name },
+      patch: { ...CLOSE_OVERLAYS, page: 'flows', flag: entry.name },
     })
   }
 

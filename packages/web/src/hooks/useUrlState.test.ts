@@ -2,47 +2,63 @@ import { describe, it, expect } from 'vitest'
 import { parseUrl, toQueryString, isNavigation, commitPatch, selectServicePatch } from './useUrlState'
 
 describe('parseUrl', () => {
-  it('lands on the areas home with no params', () => {
-    expect(parseUrl('').view).toBe('areas')
+  it('lands on home with no params', () => {
+    expect(parseUrl('').page).toBe('home')
   })
-
-  it('keeps service permalinks on the service view', () => {
-    expect(parseUrl('?s=svc-punch').view).toBe('services')
+  it('reads the page key', () => {
+    expect(parseUrl('?page=ownership&team=team-salsa').page).toBe('ownership')
   })
-
-  it('maps legacy domain links to the areas home', () => {
-    const st = parseUrl('?view=domains&domain=hr')
-    expect(st.view).toBe('areas')
-    expect('domain' in st).toBe(false)
+  it('maps legacy view keys to pages', () => {
+    expect(parseUrl('?view=domains&domain=hr').page).toBe('areas')
+    expect(parseUrl('?view=areas&area=planning&term=Poste').page).toBe('areas')
+    expect(parseUrl('?view=context').page).toBe('microservices')
+    expect(parseUrl('?view=services').page).toBe('microservices')
+    expect(parseUrl('?view=resources').page).toBe('resources')
+    expect(parseUrl('?view=teams&team=team-salsa').page).toBe('ownership')
   })
-
-  it('reads area and term', () => {
-    const st = parseUrl('?view=areas&area=planning&term=Poste')
-    expect([st.area, st.term]).toEqual(['planning', 'Poste'])
+  it('infers the page from legacy service links', () => {
+    expect(parseUrl('?s=svc-punch').page).toBe('microservices')
+    expect(parseUrl('?s=skello-app').page).toBe('monolith')
   })
-
-  it('reads the context view', () => {
-    expect(parseUrl('?view=context').view).toBe('context')
+  it('infers the flows page from detail keys', () => {
+    const st = parseUrl('?s=svc-punch&flow=shift-creation&detail=code')
+    expect([st.page, st.flow, st.detail, st.s]).toEqual(['flows', 'shift-creation', 'code', 'svc-punch'])
+    expect(parseUrl('?file=svc-punch/src/a.ts').page).toBe('flows')
+    expect(parseUrl('?flag=FEATUREDEV_X').page).toBe('flows')
+    expect(parseUrl('?flows=svc-punch').page).toBe('flows')
+  })
+  it('opens resources and impact from their keys', () => {
+    expect(parseUrl('?resource=pg:skello_production.shifts').page).toBe('resources')
+    const legacyBlast = parseUrl('?blast=1&s=svc-users')
+    expect([legacyBlast.page, legacyBlast.blast]).toEqual(['impact', 'svc-users'])
+    expect(parseUrl('?blast=sqs:transaction').page).toBe('impact')
+  })
+  it('falls back from an unknown page', () => {
+    expect(parseUrl('?page=bogus').page).toBe('home')
+    expect(parseUrl('?page=bogus&s=svc-punch').page).toBe('microservices')
+  })
+  it('reads present mode', () => {
+    expect(parseUrl('?present=1').present).toBe(true)
+    expect(parseUrl('').present).toBe(false)
   })
 })
 
 describe('toQueryString', () => {
-  it('omits the default view and round-trips', () => {
-    for (const qs of ['', 's=svc-punch', 'view=areas&area=planning&term=Poste', 'view=context', 'view=teams&team=team-salsa', 'flow=shift-creation&detail=code']) {
+  it('round-trips the page form', () => {
+    for (const qs of ['', 'page=microservices&s=svc-punch', 'page=areas&area=planning&term=Poste', 'page=ownership&team=team-salsa', 'page=flows&flow=shift-creation&detail=code', 'page=impact&blast=svc-users', 'page=resources&resource=pg%3Askello_production.shifts', 'present=1']) {
       expect(toQueryString(parseUrl(`?${qs}`))).toBe(qs)
     }
   })
-
-  it('writes view=services when no service is selected', () => {
-    expect(toQueryString({ ...parseUrl(''), view: 'services' })).toBe('view=services')
+  it('rewrites a legacy link into the page form', () => {
+    expect(toQueryString(parseUrl('?view=context'))).toBe('page=microservices')
   })
 })
 
 describe('isNavigation', () => {
   const base = parseUrl('?s=svc-punch')
 
-  it('treats view, area, service, flow and modal changes as navigation', () => {
-    expect(isNavigation(base, { view: 'areas' })).toBe(true)
+  it('treats page, area, service, flow and modal changes as navigation', () => {
+    expect(isNavigation(base, { page: 'areas' })).toBe(true)
     expect(isNavigation(base, { flow: 'shift-creation' })).toBe(true)
     expect(isNavigation(base, { s: 'svc-users' })).toBe(true)
     expect(isNavigation({ ...base, flow: 'x' }, { flow: null })).toBe(true)
@@ -52,6 +68,7 @@ describe('isNavigation', () => {
     expect(isNavigation(base, { blast: 'svc-a' })).toBe(false)
     expect(isNavigation(base, { detail: 'code' })).toBe(false)
     expect(isNavigation(base, { s: 'svc-punch' })).toBe(false)
+    expect(isNavigation(base, { present: true })).toBe(false)
   })
 })
 
@@ -71,7 +88,7 @@ describe('commitPatch', () => {
     const { calls, history } = recorder()
     const next = commitPatch(parseUrl('?s=svc-punch'), { flow: 'badging-review' }, undefined, history, '/')
     expect(next.flow).toBe('badging-review')
-    expect(calls).toEqual([['push', '/?s=svc-punch&flow=badging-review']])
+    expect(calls).toEqual([['push', '/?page=microservices&s=svc-punch&flow=badging-review']])
   })
 
   it('replaces in place for toggles and clears notFound', () => {
@@ -79,23 +96,23 @@ describe('commitPatch', () => {
     const prev = { ...parseUrl('?s=svc-punch&flow=x'), notFound: { param: 'area' as const, value: 'nope' } }
     const next = commitPatch(prev, { detail: 'code' }, undefined, history, '/')
     expect(next.notFound).toBeNull()
-    expect(calls).toEqual([['replace', '/?s=svc-punch&flow=x&detail=code']])
+    expect(calls).toEqual([['replace', '/?page=flows&s=svc-punch&flow=x&detail=code']])
   })
 })
 
 describe('detail=sequence', () => {
   it('parses and round-trips the sequence mode', () => {
     expect(parseUrl('?flow=f&detail=sequence').detail).toBe('sequence')
-    expect(toQueryString(parseUrl('?flow=f&detail=sequence'))).toBe('flow=f&detail=sequence')
+    expect(toQueryString(parseUrl('?flow=f&detail=sequence'))).toBe('page=flows&flow=f&detail=sequence')
   })
 })
 
 describe('resources', () => {
   it('parses and round-trips the index and a resource page', () => {
-    expect(parseUrl('?view=resources').view).toBe('resources')
+    expect(parseUrl('?view=resources').page).toBe('resources')
     const st = parseUrl('?resource=pg%3Askello_production.shifts')
     expect(st.resource).toBe('pg:skello_production.shifts')
-    expect(toQueryString(st)).toBe('resource=pg%3Askello_production.shifts')
+    expect(toQueryString(st)).toBe('page=resources&resource=pg%3Askello_production.shifts')
   })
   it('treats opening a resource as navigation', () => {
     expect(isNavigation(parseUrl(''), { resource: 'sqs:jobs' })).toBe(true)
@@ -106,12 +123,15 @@ describe('blast permalinks', () => {
   it('names the impact origin, upgrading the legacy ?blast=1 to the selected service', () => {
     expect(parseUrl('?s=svc-a&blast=1').blast).toBe('svc-a')
     expect(parseUrl('?blast=sqs%3Ajobs').blast).toBe('sqs:jobs')
-    expect(toQueryString(parseUrl('?blast=sqs%3Ajobs'))).toBe('blast=sqs%3Ajobs')
+    expect(toQueryString(parseUrl('?blast=sqs%3Ajobs'))).toBe('page=impact&blast=sqs%3Ajobs')
   })
 })
 
 describe('selectServicePatch', () => {
+  it('opens skello-app on the monolith page', () => {
+    expect(selectServicePatch('skello-app').page).toBe('monolith')
+  })
   it('leaves a resource page for the service view', () => {
-    expect(selectServicePatch('svc-a')).toEqual({ s: 'svc-a', view: 'services', resource: null, edge: null, drawer: null, ep: null })
+    expect(selectServicePatch('svc-a')).toEqual({ s: 'svc-a', page: 'microservices', resource: null, edge: null, drawer: null, ep: null })
   })
 })

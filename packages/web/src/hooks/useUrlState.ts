@@ -5,31 +5,33 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * (never in a path segment: the bundle must work from any static host or
  * SSO proxy without rewrite rules, see ADR-0005).
  *
- *   (no params)                  areas home (default landing)
- *   ?view=areas&area=planning    area page
- *   ?term=Poste                  glossary term highlighted on the area page
- *   ?view=context                system context
- *   ?s=svc-users                 selected service (service view)
- *   ?view=services               service view without a selection
- *   ?view=teams                  ownership view (per-team service ownership)
- *   ?team=team-salsa             team focused inside the ownership view
- *   ?blast=svc-users             impact panel for a failing service or resource id
- *   ?flows=svc-users             flow LIST modal for a service
- *   ?flow=shift-creation         flow GRAPH modal (by flow id)
- *   ?edge=from~to~protocol       connection popup (protocol disambiguates
- *                                multi-channel pairs, e.g. rest vs sns)
- *   ?drawer=svc-users            endpoint drawer for a service
- *   ?ep=api-sign-up              endpoint highlighted inside the drawer
- *   ?flag=FEATUREDEV_X           feature-flag view (flows gated by the flag)
- *   ?file=svc-punch/src/…        reverse index view (flows traversing a file)
- *   ?view=resources              resource index
- *   ?resource=pg:skello_production.shifts   resource page (change impact)
+ *   (no params)                          home (question-first landing)
+ *   ?page=areas&area=planning&term=Poste product area page, glossary term highlighted
+ *   ?page=microservices                  microservices overview
+ *   ?page=microservices&s=svc-users      one service
+ *   ?page=monolith                       skello-app
+ *   ?page=flows&flow=shift-creation      flow page (&detail=code | sequence)
+ *   ?page=flows&flows=svc-users          flows a service takes part in
+ *   ?page=flows&file=svc-punch/src/…     flows traversing a file
+ *   ?page=flows&flag=FEATUREDEV_X        flows gated by a feature flag
+ *   ?page=resources&resource=pg:…        resource page (change impact)
+ *   ?page=impact&blast=svc-users         impact of a failing service or resource
+ *   ?page=ownership&team=team-salsa      ownership, team focused
+ *   &edge=from~to~protocol · &drawer=svc · &ep=id   detail panel content
+ *   &present=1                           present mode
+ *
+ * Legacy keys (`view=…`, a bare `s`, `flow`, `blast=1&s=…`) parse into the page form.
  */
-export type View = 'areas' | 'context' | 'services' | 'resources' | 'teams'
+export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | 'resources' | 'impact' | 'ownership'
+
+export const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
+const MONOLITH = 'skello-app'
+const LEGACY_VIEW_PAGE: Record<string, Page> = { areas: 'areas', domains: 'areas', context: 'microservices', services: 'microservices', resources: 'resources', teams: 'ownership' }
 
 export interface UrlState {
   s: string | null
-  view: View
+  page: Page
+  present: boolean
   area: string | null
   term: string | null
   team: string | null
@@ -50,22 +52,36 @@ export interface UrlState {
 
 export const EDGE_SEP = '~'
 
-const VIEWS: readonly View[] = ['areas', 'context', 'services', 'resources', 'teams']
-const NAVIGATION_KEYS = ['view', 'area', 's', 'team', 'flows', 'flow', 'drawer', 'flag', 'file', 'resource'] as const
+const NAVIGATION_KEYS = ['page', 'area', 's', 'team', 'flows', 'flow', 'drawer', 'flag', 'file', 'resource'] as const
 
 export function edgeKey(from: string, to: string, protocol: string): string {
   return [from, to, protocol].join(EDGE_SEP)
 }
 
-function defaultView(s: string | null): View {
-  return s ? 'services' : 'areas'
+export function servicePage(name: string): Page {
+  return name === MONOLITH ? 'monolith' : 'microservices'
 }
 
-function parseView(raw: string | null, s: string | null): View {
-  if (raw === 'domains') {
-    return 'areas'
+function inferPage(p: URLSearchParams): Page {
+  if (p.get('flow') || p.get('flows') || p.get('file') || p.get('flag')) {
+    return 'flows'
   }
-  return VIEWS.find(v => v === raw) ?? defaultView(s)
+  if (p.get('resource')) {
+    return 'resources'
+  }
+  if (p.get('blast')) {
+    return 'impact'
+  }
+  const view = LEGACY_VIEW_PAGE[p.get('view') ?? '']
+  if (view) {
+    return view
+  }
+  const s = p.get('s')
+  return s ? servicePage(s) : 'home'
+}
+
+function parsePage(p: URLSearchParams): Page {
+  return PAGES.find(page => page === p.get('page')) ?? inferPage(p)
 }
 
 export type FlowDetail = UrlState['detail']
@@ -74,7 +90,8 @@ export function parseUrl(search: string): UrlState {
   const p = new URLSearchParams(search)
   return {
     s: p.get('s'),
-    view: parseView(p.get('view'), p.get('s')),
+    page: parsePage(p),
+    present: p.get('present') === '1',
     area: p.get('area'),
     term: p.get('term'),
     team: p.get('team'),
@@ -94,19 +111,19 @@ export function parseUrl(search: string): UrlState {
 
 export function toQueryString(state: UrlState): string {
   const p = new URLSearchParams()
+  if (state.page !== 'home') {
+    p.set('page', state.page)
+  }
   if (state.s) {
     p.set('s', state.s)
   }
-  if (state.view !== defaultView(state.s) || (state.view === 'areas' && state.area)) {
-    p.set('view', state.view)
-  }
-  if (state.view === 'areas' && state.area) {
+  if (state.page === 'areas' && state.area) {
     p.set('area', state.area)
     if (state.term) {
       p.set('term', state.term)
     }
   }
-  if (state.view === 'teams' && state.team) {
+  if (state.page === 'ownership' && state.team) {
     p.set('team', state.team)
   }
   if (state.blast) {
@@ -139,11 +156,14 @@ export function toQueryString(state: UrlState): string {
   if (state.resource) {
     p.set('resource', state.resource)
   }
+  if (state.present) {
+    p.set('present', '1')
+  }
   return p.toString()
 }
 
 export function selectServicePatch(name: string): Partial<UrlState> {
-  return { s: name, view: 'services', resource: null, edge: null, drawer: null, ep: null }
+  return { s: name, page: servicePage(name), resource: null, edge: null, drawer: null, ep: null }
 }
 
 export function isNavigation(prev: UrlState, p: Partial<UrlState>): boolean {

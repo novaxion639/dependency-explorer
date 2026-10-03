@@ -20,3 +20,12 @@ describe('resource entries', () => {
     expect(entries.some(e => String(e.type) === 'infra')).toBe(false)
   })
 })
+
+describe('pages', () => {
+  const index = buildSearchIndex(connectivityMap, [], resourceSurface.resources)
+  it('gives every result a page', () => {
+    for (const entry of index) {
+      expect(entry.patch.page, `${entry.type} ${entry.label}`).toBeDefined()
+    }
+  })
+})
