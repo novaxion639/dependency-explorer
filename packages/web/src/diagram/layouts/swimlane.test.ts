@@ -56,6 +56,22 @@ describe('swimlanes', () => {
     expect(model.nodes).toHaveLength(3)
     expect(layoutProblems(model)).toEqual([])
   })
+  it('focuses a drawn node for every ref of every authored chapter', () => {
+    const blind = map.flows.flatMap(f => {
+      const model = swimlanes(f)
+      return (f.chapters ?? []).flatMap(c => c.refs.filter(ref => chapterFocus(model, f, [ref]).size === 0).map(ref => `${f.id} "${c.title}": ${ref}`))
+    })
+    expect(blind).toEqual([])
+  })
+  it('opens a store without resources in the panel', () => {
+    const odd = ServiceFlowSchema.parse({
+      id: 'odd', name: 'Odd', description: 'd', steps: [],
+      codeUnits: [{ id: 'a', service: 'x', kind: 'service', label: 'A' }],
+      infraNodes: [{ id: 'db', type: 'redis', label: 'cache' }],
+      codeEdges: [{ from: 'a', to: 'db' }],
+    })
+    expect(swimlanes(odd).nodes.find(n => n.id === infraNodeId('db'))?.ref).toEqual({ type: 'unit', id: 'db' })
+  })
   it('focuses a chapter, expanding a service that owns units to its lanes', () => {
     expect([...chapterFocus(m, shift, ['skello-app-front', 'cu-create-service', 'pg-skello-shifts'])].sort())
       .toEqual([infraNodeId('pg-skello-shifts'), serviceNodeId('skello-app-front'), unitNodeId('cu-create-service')].sort())

@@ -8,12 +8,11 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "automatic-scheduling",
   "chapters": [
-    { "title": "A planner starts auto-scheduling", "summary": "The front asks svc-automatic-scheduling to compute and gets a websocket id to follow each step's progress live.", "refs": ["skello-app-front", "svc-automatic-scheduling", "mongo-jobs-trigger"] },
+    { "title": "A planner starts auto-scheduling", "summary": "The front asks svc-automatic-scheduling to compute and gets a websocket id to follow each step's progress live.", "refs": ["svc-automatic-scheduling", "mongo-jobs-trigger"] },
     { "title": "Inputs are gathered", "summary": "The first step reads shop, staff and contracts from skello-app, and shifts and postes from svc-search's database.", "refs": ["sfn-dataFetcher", "skello-app (data)", "pg-skello-read", "mongo-svc-search", "mongo-jobs-dataFetcher", "sqs-ws-dataFetcher"] },
-    { "title": "Eligibility is checked", "summary": "Parallel steps work out who may take each shift, batch by batch, then merge the results.", "refs": ["sfn-eligibility", "sfn-aggregate", "mongo-jobs-eligibility", "sqs-ws-eligibility", "mongo-jobs-aggregate", "sqs-ws-aggregate"] },
-    { "title": "The solver optimises", "summary": "A Python optimiser finds the best assignment, with no outside calls.", "refs": ["sfn-solver"] },
+    { "title": "Eligibility is checked and solved", "summary": "Parallel steps work out who may take each shift, then a Python optimiser finds the best assignment with no outside calls.", "refs": ["sfn-eligibility", "sfn-aggregate", "mongo-jobs-eligibility", "sqs-ws-eligibility", "mongo-jobs-aggregate", "sqs-ws-aggregate"] },
     { "title": "Assignments are written back", "summary": "skello-app applies the result, recomputes alerts and counters and, in creation mode, bulk-creates the shifts.", "refs": ["sfn-assignShifts", "skello-app (assign)", "cu-as-controller", "cu-as-assignment", "cu-as-save", "cu-as-alert", "cu-as-bulk-create", "cu-as-tracker-v2", "cu-as-cb-job", "pg-skello-write", "mongo-jobs-assignShifts", "sqs-ws-assignShifts"] },
-    { "title": "The planner sees the result", "summary": "The job is marked finished, the last progress message arrives and the planning shows the new roster.", "refs": ["sfn-finishJob", "mongo-jobs-finishJob", "sqs-ws-finishJob", "skello-app-front (notify)"] }
+    { "title": "The planner sees the result", "summary": "The job is marked finished, the last progress message arrives and the planning shows the new roster.", "refs": ["sfn-finishJob", "mongo-jobs-finishJob", "sqs-ws-finishJob"] }
   ],
   "steps": [
     {

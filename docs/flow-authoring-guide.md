@@ -56,7 +56,7 @@ For each step in the flow:
 | `{type}-{service}` | Infra node scoped to a service | `pg-skello-read`, `mongo-svc-search` |
 | `{type}-{purpose}` | Shared or unique infra | `sqs-metrics` |
 
-**Rule: Never share infra nodes across Lambda steps. Each Lambda gets its own instance of every infra resource it calls.** This ensures infra nodes are placed directly underneath their parent Lambda in the flow graph layout (the `buildFlowGraph` layout engine places infra nodes below the first service that references them via an `infraEdge`).
+**Rule: Never share infra nodes across Lambda steps. Each Lambda gets its own instance of every infra resource it calls.** Each node then carries what that step does with the resource in its description, and a chapter about that step focuses exactly its own stores.
 
 ---
 
@@ -118,7 +118,7 @@ When a flow involves `skello-app` endpoints:
 
 **Do not share infra nodes across multiple Lambda steps.** Instead, create a dedicated infra node for each Lambda that touches the resource.
 
-Why: the flow graph layout engine (`buildFlowGraph.ts`) places infra nodes below the **first service that references them** via an `infraEdge`. Shared nodes end up under only one Lambda, with long crossing edges from other Lambdas — cluttering the graph.
+Why: each node's description states what one step does with the resource (the status it writes, the message it sends), and a chapter naming that step's stores focuses them alone. A shared node can describe only one step and lights up in every chapter that touches the resource.
 
 Example — `automatic_scheduling_jobs` MongoDB (used by 6 Lambdas):
 ```json
@@ -130,7 +130,7 @@ Example — `automatic_scheduling_jobs` MongoDB (used by 6 Lambdas):
   "description": "Update job status → ELIGIBILITY_COMPLIANCE_CHECK" }
 ```
 
-Each has a unique `id` but the same `label` (which is the user-visible name on the node). The `FlowGraphModal` infra legend deduplicates by `type:label`, so the legend still shows one entry.
+Each has a unique `id` but the same `label` (the user-visible name on the node), so every copy reads as the same database in the stores lane.
 
 ### 4.2 Separate read and write instances for the same database
 
@@ -373,12 +373,12 @@ See `src/data/flows/auto-planning-generation.ts` — the first flow built using 
 |---|---|
 | `title` | At most 40 characters, plain language, present tense, no code identifiers — "The shift is written" |
 | `summary` | One line, at most 160 characters — what happens and why it matters |
-| `refs` | Ids from the same flow: code unit ids, infra node ids, step nodes or code-edge endpoints |
+| `refs` | Ids the flow's swimlanes draw: code unit ids, infra node ids, and services that are code-edge endpoints |
 
 - 3 to 7 chapters per flow, in execution order.
 - Every code unit and infra node of the flow appears in at least one chapter.
 - A chapter states only facts already in the flow — unit and edge descriptions, conditions, branches, steps, the flow description. Discovery verifies those units at the pinned commit (`pnpm discover`). A summary that needs a fact the flow lacks first adds it to the unit's description, read from the file at the pinned commit: `git -C ~/Documents/Skello_Dev/<repo> show <pin>:<path>` (pins: `packages/data/src/generated/resources.json` → `pins`).
 - A flow without chapters shows derived ones: one per step, then "Side effects" (async-job edges) and "Replication" (data feeds out of stores).
 
-The integrity suite enforces every rule above.
+The integrity suite enforces the chapter count, the title and summary lengths, the refs and the coverage; the swimlane suite checks that every ref focuses a drawn node. Plain language and execution order are the author's to check.
 ```

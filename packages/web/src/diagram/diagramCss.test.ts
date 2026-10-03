@@ -8,4 +8,7 @@ describe('Diagram layout', () => {
     expect(css).toMatch(/\.frame\s*\{[^}]*flex:\s*1 0 auto/)
     expect(css).not.toMatch(/\.frame\s*\{[^}]*min-height:\s*0/)
   })
+  it('lets a container lower the canvas minimum through --canvas-min', () => {
+    expect(css).toMatch(/\.canvas\s*\{[^}]*min-height:\s*var\(--canvas-min, max\(420px, 62vh\)\)/)
+  })
 })
