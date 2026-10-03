@@ -100,13 +100,14 @@ export function MicroservicesPage({ url, patch }: Props) {
   const [search, setSearch] = useState('')
   const [listOpen, setListOpen] = useState(false)
   const service = url.s ? map.services.find(s => s.name === url.s) ?? null : null
+  const panelOpen = !service && Boolean(url.area || url.edge || url.drawer)
   const select = (name: string) => {
     setListOpen(false)
     patch(selectServicePatch(name))
   }
   return (
     <div className={styles.page}>
-      {!url.present && (
+      {!url.present && !panelOpen && (
         <ServiceSidebar services={map.services} teams={map.teams} selected={url.s} onSelect={select} search={search} onSearch={setSearch} open={listOpen} onClose={() => setListOpen(false)} />
       )}
       <div className={styles.content}>
