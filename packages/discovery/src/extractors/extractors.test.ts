@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseServerlessState, parseServerlessStatic, classifyStreamRef, stripTemplate } from './serverless'
 import { classifyAwsUsage } from './aws-clients'
-import { parseTerraform, parseTerraformLocals, applyTerraformLocals } from './terraform'
+import { parseTerraform, parseTerraformLocals, applyTerraformLocals, parseTerraformDataNames, parseTerraformLocalMaps, expandTerraformNames, parseTerraformSsmValues, resolveDmsSources } from './terraform'
 import { parseEnvServiceUrls } from './frontend'
 import { classifyImports } from './typescript'
 import { parseSdkSource } from './sdk-registry'
@@ -366,6 +366,75 @@ export class ShopEntity {}`
 })
 
 describe('parseTerraform', () => {
+  it('reads the stream behind a DMS Kinesis endpoint, index suffix included', () => {
+    const src = `resource "aws_dms_endpoint" "kinesis" {
+  endpoint_type = "target"
+  engine_name   = "kinesis"
+  kinesis_settings {
+    stream_arn = aws_kinesis_stream.svc_requests_full_load[0].arn
+  }
+}`
+    expect(parseTerraform(src).dmsEndpoints).toEqual([expect.objectContaining({ label: 'kinesis', streamLabel: 'svc_requests_full_load' })])
+  })
+
+  it('mines MongoDB Atlas user roles', () => {
+    const src = `resource "mongodbatlas_database_user" "user" {
+  username = "svcshops"
+  roles {
+    role_name     = "readWrite"
+    database_name = local.mongo_db_name
+  }
+  roles {
+    role_name     = "read"
+    database_name = "svc-search"
+  }
+}`
+    expect(parseTerraform(src).mongoRoles).toEqual([{ role: 'readWrite', database: 'local.mongo_db_name' }, { role: 'read', database: 'svc-search' }])
+  })
+
+  it('reads terraform-aws-modules blocks by their top-level name attribute', () => {
+    const src = `
+module "dynamodb_svc_punch" {
+  source  = "terraform-aws-modules/dynamodb-table/aws"
+  version = "4.2.0"
+
+  attributes = [
+    { name = "id", type = "S" },
+  ]
+  name = "\${local.project}-\${local.workspace}"
+}
+
+module "s3_hris" {
+  source = "terraform-aws-modules/s3-bucket/aws"
+  bucket = "svc-hris.\${local.region}.\${local.workspace}"
+  tags = {
+    Name = "ignored"
+  }
+}
+
+module "db_aurora" {
+  source = "terraform-aws-modules/rds-aurora/aws"
+  name   = lower("\${local.project}-\${local.workspace}")
+  engine = "aurora-postgresql"
+}
+
+module "elasticache" {
+  source               = "terraform-aws-modules/elasticache/aws"
+  replication_group_id = "\${local.project}-valkey-\${local.workspace}"
+}
+
+module "role" {
+  source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role"
+  name   = "not-a-store"
+}`
+    expect(parseTerraform(src).resources).toEqual([
+      { tfType: 'aws_dynamodb_table', label: 'dynamodb_svc_punch', name: '${local.project}-${local.workspace}' },
+      { tfType: 'aws_s3_bucket', label: 's3_hris', name: 'svc-hris.${local.region}.${local.workspace}' },
+      { tfType: 'aws_rds_cluster', label: 'db_aurora', name: 'lower("${local.project}-${local.workspace}")', engine: 'aurora-postgresql' },
+      { tfType: 'aws_elasticache_replication_group', label: 'elasticache', name: '${local.project}-valkey-${local.workspace}' },
+    ])
+  })
+
   it('mines owned data resources with their name attribute', () => {
     const src = `
 resource "aws_dynamodb_table" "table" {
@@ -466,5 +535,101 @@ describe('resource names behind constants and locals', () => {
     expect(applyTerraformLocals('${local.project}-dataLake-${local.workspace}', locals)).toBe('svcRequests-dataLake-${local.workspace}')
     expect(applyTerraformLocals('lower("${local.project}-full-load-${local.workspace}")', locals)).toBe('svcrequests-full-load-${local.workspace}')
     expect(applyTerraformLocals('skello-app.images.${local.region}', { project: 'skelloApp', region: 'eu-west-1' })).toBe('skello-app.images.${local.region}')
+  })
+})
+
+describe('Terraform locals resolution', () => {
+  const locals = parseTerraformLocals(`locals {
+  project            = "svcDocumentsV2"
+  project_kebab_case = "svc-documents-v2"
+  application        = "svc-communications-v2" # ARCHI naming
+  region             = "eu-west-1"
+  workspace          = terraform.workspace
+  dynamodb_table_name = "svcDocumentsV2-\${local.workspace}"
+  bucket_name        = "\${local.project_kebab_case}.\${local.region}.\${local.workspace}"
+  mongo_db_name      = local.project_kebab_case
+  loop_a             = "\${local.loop_b}"
+  loop_b             = "\${local.loop_a}"
+  s3_buckets = {
+    emails = {
+      name_suffix = "emails"
+    }
+  }
+}`)
+  it('reads quoted, templated, commented and bare-reference locals at the top level only', () => {
+    expect(locals.application).toBe('svc-communications-v2')
+    expect(locals.mongo_db_name).toBe('${local.project_kebab_case}')
+    expect(locals.workspace).toBeUndefined()
+    expect(locals.name_suffix).toBeUndefined()
+  })
+  it('resolves bare references, nested templates and case calls', () => {
+    expect(applyTerraformLocals('local.dynamodb_table_name', locals)).toBe('svcDocumentsV2-${local.workspace}')
+    expect(applyTerraformLocals('lower(local.bucket_name)', locals)).toBe('svc-documents-v2.${local.region}.${local.workspace}')
+    expect(applyTerraformLocals('local.mongo_db_name', locals)).toBe('svc-documents-v2')
+    expect(applyTerraformLocals('lower("${local.project}-${local.workspace}")', locals)).toBe('svcdocumentsv2-${local.workspace}')
+  })
+  it('resolves a local whose value is a case call', () => {
+    const cased = parseTerraformLocals(`locals {
+  project_kebab_case   = "svc-intelligence"
+  textract_bucket_name = lower("\${local.project_kebab_case}-textract.\${local.region}")
+}`)
+    expect(applyTerraformLocals('local.textract_bucket_name', cased)).toBe('svc-intelligence-textract.${local.region}')
+  })
+  it('never substitutes environment locals and terminates on cycles', () => {
+    expect(applyTerraformLocals('svc-hris.${local.region}.${local.workspace}', locals)).toBe('svc-hris.${local.region}.${local.workspace}')
+    expect(applyTerraformLocals('local.loop_a', locals)).toMatch(/\$\{local\.loop_[ab]\}/)
+  })
+})
+
+describe('Terraform data references and for_each', () => {
+  it('resolves data-block names and expands for_each over a locals map', () => {
+    const data = parseTerraformDataNames(`data "aws_sqs_queue" "generic_message" {
+  name = "\${local.project}-genericMessage-\${local.workspace}"
+}`)
+    const maps = parseTerraformLocalMaps(`locals {
+  s3_buckets = {
+    emails = {
+      name_suffix = "emails"
+    }
+    email-attachments = {
+      name_suffix = "attachments"
+    }
+  }
+}`)
+    const resources = parseTerraform(`resource "aws_sqs_queue" "generic_message" {
+  name = data.aws_sqs_queue.generic_message.name
+}
+
+resource "aws_s3_bucket" "buckets" {
+  for_each = local.s3_buckets
+
+  bucket = "\${local.application}.\${each.value.name_suffix}.\${local.workspace}"
+}`).resources
+    expect(expandTerraformNames(resources, data, maps).map(r => r.name)).toEqual([
+      '${local.project}-genericMessage-${local.workspace}',
+      '${local.application}.emails.${local.workspace}',
+      '${local.application}.attachments.${local.workspace}',
+    ])
+  })
+})
+
+describe('parseTerraformSsmValues', () => {
+  it('reads the value an SSM parameter publishes, so a role naming it resolves', () => {
+    const values = parseTerraformSsmValues(`resource "aws_ssm_parameter" "mongo_db_name" {
+  name  = "/\${local.workspace}/\${local.project}/MONGO_DB_NAME"
+  type  = "String"
+  value = local.project_kebab_case
+}`)
+    expect(values).toEqual({ mongo_db_name: 'local.project_kebab_case' })
+  })
+})
+
+describe('resolveDmsSources', () => {
+  it('replaces a data endpoint source with its endpoint id', () => {
+    const data = parseTerraformDataNames(`data "aws_dms_endpoint" "aurora" {
+  endpoint_id = "skelloapp-database-aurora-\${local.workspace}"
+}`)
+    const tasks = [{ label: 't', source: 'data.aws_dms_endpoint.aurora.endpoint_arn' }, { label: 'u', source: 'aws_dms_endpoint.own.endpoint_arn' }]
+    expect(resolveDmsSources(tasks, data).map(t => t.source)).toEqual(['skelloapp-database-aurora-${local.workspace}', 'aws_dms_endpoint.own.endpoint_arn'])
   })
 })

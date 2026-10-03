@@ -35,7 +35,7 @@ import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
 import { findQueueSenders, walkFiles } from './extractors/queue-senders'
-import { tableRelations, messagingRelations } from './resource-relations'
+import { tableRelations, messagingRelations, atlasRelations, dmsRelations } from './resource-relations'
 import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, checkPiiRefs, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult, type PiiCheckResult } from './flow-check'
 import { extractPiiFacts, type PiiFacts } from './extractors/pii'
 import { extractSwagger } from './extractors/swagger'
@@ -699,6 +699,8 @@ function run(): Report {
   report.liveRelations = [
     ...tableRelations(live, railsSchema?.models ?? [], monolithFiles, monolithGraph),
     ...messagingRelations(live, serverlessByRepo, sourcesByRepo),
+    ...atlasRelations(report.terraform.filter(t => t.inMap), live),
+    ...dmsRelations(report.terraform.filter(t => t.inMap), live),
   ]
   const resourceFacts = checkResources(resourceSurface.resources, live, railsSchema?.models ?? [], railsSchema?.tables ?? [], monolithGraph !== null)
   const byKind: Record<string, number> = {}

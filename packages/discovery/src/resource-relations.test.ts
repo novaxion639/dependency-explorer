@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tableWriters, tableRelations, messagingRelations } from './resource-relations'
+import { tableWriters, tableRelations, messagingRelations, atlasRelations, dmsRelations } from './resource-relations'
 import type { ServerlessFacts } from './extractors/serverless'
 import { loadRepoGraph } from './code-grades'
 import type { Resource } from '@dependency-explorer/schema'
@@ -142,5 +142,45 @@ describe('messagingRelations dead-letter queues', () => {
     const serverless = new Map([['svc-shops', sls({ dlqWirings: [{ queue: 'MergeShopSqs', dlq: 'MergeShopSqsDlq', retry: null, via: 'redrive' }] })]])
     const sources = new Map([['svc-shops', [{ file: 'serverless/functions.ts', source: "events: [{ sqs: { arn: 'x' } }]" }]]])
     expect(messagingRelations(resources, serverless, sources).filter(r => r.relation === 'consumes').map(r => r.resource)).toEqual(['sqs:mergeShopSqs'])
+  })
+})
+
+describe('atlasRelations', () => {
+  it('turns Atlas roles into config-graded writes and reads', () => {
+    const db = (name: string): Resource => ({ id: `mongo:${name}`, kind: 'database', store: 'mongodb', name, evidence: [] })
+    const facts = { resources: [], dmsTasks: [], dmsEndpoints: [], iamActions: [], mongoRoles: [{ role: 'readWrite', database: 'svc-shops' }, { role: 'read', database: 'svc-search' }] }
+    expect(atlasRelations([{ service: 'svc-shops', facts }], [db('svc-shops'), db('svc-search')])).toEqual([
+      { resource: 'mongo:svc-shops', relation: 'writes', service: 'svc-shops', grade: 'config' },
+      { resource: 'mongo:svc-search', relation: 'reads', service: 'svc-shops', grade: 'config' },
+    ])
+  })
+})
+
+describe('dmsRelations', () => {
+  it('credits each stream once whatever the number of tasks feeding it', () => {
+    const facts = {
+      resources: [{ tfType: 'aws_kinesis_stream', label: 's', name: 'skelloapp-svcsearch-fullload' }],
+      dmsTasks: [{ label: 'a', source: 'skelloapp-database', target: 'aws_dms_endpoint.k.endpoint_arn' }, { label: 'b', source: 'skelloapp-database', target: 'aws_dms_endpoint.k.endpoint_arn' }],
+      dmsEndpoints: [{ label: 'k', streamLabel: 's' }],
+      iamActions: [], mongoRoles: [],
+    }
+    const stream: Resource = { id: 'kinesis:skelloapp-svcsearch-fullload', kind: 'stream', store: 'kinesis', name: 'skelloapp-svcsearch-fullload', owner: 'svc-search', evidence: [] }
+    expect(dmsRelations([{ service: 'svc-search', facts }], [stream])).toHaveLength(1)
+  })
+  it('credits the DMS source with producing to the target stream', () => {
+    const facts = {
+      resources: [{ tfType: 'aws_kinesis_stream', label: 'skelloapp_bus', name: 'skelloapp-bus-${local.workspace}' }, { tfType: 'aws_kinesis_stream', label: 'own', name: 'svcRequests-cdc' }],
+      dmsTasks: [
+        { label: 'bus', source: 'aws_dms_endpoint.skelloapp_aurora.endpoint_arn', target: 'aws_dms_endpoint.bus[0].endpoint_arn' },
+        { label: 'own', source: 'aws_dms_endpoint.svc_requests_aurora[0].endpoint_arn', target: 'aws_dms_endpoint.own.endpoint_arn' },
+      ],
+      dmsEndpoints: [{ label: 'bus', streamLabel: 'skelloapp_bus' }, { label: 'own', streamLabel: 'own' }],
+      iamActions: [], mongoRoles: [],
+    }
+    const stream = (id: string, name: string, owner: string): Resource => ({ id, kind: 'stream', store: 'kinesis', name, owner, evidence: [] })
+    expect(dmsRelations([{ service: 'svc-requests', facts }], [stream('kinesis:skelloapp-bus', 'skelloapp-bus', 'svc-requests'), stream('kinesis:cdc', 'cdc', 'svc-requests')])).toEqual([
+      { resource: 'kinesis:skelloapp-bus', relation: 'produces', service: 'skello-app', grade: 'config' },
+      { resource: 'kinesis:cdc', relation: 'produces', service: 'svc-requests', grade: 'config' },
+    ])
   })
 })

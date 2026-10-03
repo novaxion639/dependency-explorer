@@ -10,11 +10,16 @@ const sls = (over: Partial<ServerlessFacts>): ServerlessFacts => ({
 
 describe('normalizeResourceName', () => {
   it('strips env templates, prefixes and decorations', () => {
-    expect(normalizeResourceName('svcEvents-createActivityLogJob-{env}')).toEqual({ name: 'createActivityLogJob', ownerHint: 'svc-events' })
-    expect(normalizeResourceName('${prefix}-createActivityLogJob-${stage}')).toEqual({ name: 'createActivityLogJob' })
-    expect(normalizeResourceName('svcRequests-{env}')).toEqual({ name: 'svcRequests' })
-    expect(normalizeResourceName('svc-documents-v2.{env}')).toEqual({ name: 'svc-documents-v2' })
-    expect(normalizeResourceName('svc-search DB (direct read)')).toEqual({ name: 'svc-search' })
+    expect(normalizeResourceName('svcEvents-createActivityLogJob-{env}', 'sqs')).toEqual({ name: 'createActivityLogJob', ownerHint: 'svc-events' })
+    expect(normalizeResourceName('${prefix}-createActivityLogJob-${stage}', 'sqs')).toEqual({ name: 'createActivityLogJob' })
+    expect(normalizeResourceName('svcRequests-{env}', 'sqs')).toEqual({ name: 'svcRequests' })
+    expect(normalizeResourceName('svc-documents-v2.{env}', 'sqs')).toEqual({ name: 'svc-documents-v2' })
+    expect(normalizeResourceName('svc-search DB (direct read)', 'sqs')).toEqual({ name: 'svc-search' })
+  })
+  it('keeps the prefix of non-messaging names', () => {
+    expect(normalizeResourceName('svcDocuments-eSignature-V2-{env}', 'dynamodb')).toEqual({ name: 'svcDocuments-eSignature-V2' })
+    expect(normalizeResourceName('svcEmployees-restaure-${local.workspace}', 'dynamodb')).toEqual({ name: 'svcEmployees-restaure' })
+    expect(normalizeResourceName('svcPos-dataLake-{env}', 'kinesis')).toEqual({ name: 'dataLake', ownerHint: 'svc-pos' })
   })
 })
 
@@ -71,7 +76,7 @@ describe('buildRegistry noise rules', () => {
         ],
       })],
     ]),
-    terraform: [{ service: 'svc-employees', tfRepo: 'svc-employees-tf', facts: { resources: [{ tfType: 'aws_dynamodb_table', label: 'restore', name: 'local.dynamodb_table_name_restore' }, { tfType: 'aws_sqs_queue', label: 'q', name: 'data.aws_sqs_queue.generic_message.name' }], dmsTasks: [], dmsEndpoints: [], iamActions: [] } }],
+    terraform: [{ service: 'svc-employees', tfRepo: 'svc-employees-tf', facts: { resources: [{ tfType: 'aws_dynamodb_table', label: 'restore', name: 'local.dynamodb_table_name_restore' }, { tfType: 'aws_sqs_queue', label: 'q', name: 'data.aws_sqs_queue.generic_message.name' }], dmsTasks: [], dmsEndpoints: [], iamActions: [], mongoRoles: [] } }],
     services: [{ name: 'svc-billing-automation', type: 'typescript-microservice', description: 'd', endpoints: [], databases: [{ type: 'sqs', name: 'billing job queues ×6 (+DLQs)', description: 'd' }] }],
   })
   const ids = reg.map(r => r.id)
@@ -86,13 +91,13 @@ describe('buildRegistry noise rules', () => {
 
 describe('buildRegistry Terraform streams', () => {
   it('registers Firehose delivery streams as kinesis streams', () => {
-    const reg = buildRegistry({ monolith: null, serverless: new Map(), services: [], terraform: [{ service: 'svc-pos', tfRepo: 'svc-pos-tf', facts: { resources: [{ tfType: 'aws_kinesis_firehose_delivery_stream', label: 'd', name: 'svcPos-dataLake-${local.workspace}' }], dmsTasks: [], dmsEndpoints: [], iamActions: [] } }] })
+    const reg = buildRegistry({ monolith: null, serverless: new Map(), services: [], terraform: [{ service: 'svc-pos', tfRepo: 'svc-pos-tf', facts: { resources: [{ tfType: 'aws_kinesis_firehose_delivery_stream', label: 'd', name: 'svcPos-dataLake-${local.workspace}' }], dmsTasks: [], dmsEndpoints: [], iamActions: [], mongoRoles: [] } }] })
     expect(reg.map(r => `${r.id}:${r.kind}:${r.owner}`)).toEqual(['kinesis:dataLake:stream:svc-pos'])
   })
 })
 
 describe('buildRegistry owners', () => {
-  const tf = (service: string, name: string) => ({ service, tfRepo: `${service}-tf`, facts: { resources: [{ tfType: 'aws_kinesis_stream', label: 's', name }], dmsTasks: [], dmsEndpoints: [], iamActions: [] } })
+  const tf = (service: string, name: string) => ({ service, tfRepo: `${service}-tf`, facts: { resources: [{ tfType: 'aws_kinesis_stream', label: 's', name }], dmsTasks: [], dmsEndpoints: [], iamActions: [], mongoRoles: [] } })
   it('gives each split resource only its own owner evidence plus unattributed evidence', () => {
     const reg = buildRegistry({
       monolith: null,
@@ -120,5 +125,35 @@ describe('buildRegistry owners', () => {
   it('keeps the declaring repo when the prefix is its project stem', () => {
     const reg = buildRegistry({ monolith: null, serverless: new Map(), services: [], terraform: [tf('svc-documents-esignature', 'svcDocuments-full-load')] })
     expect(reg.map(r => `${r.id}:${r.owner}`)).toEqual(['kinesis:full-load:svc-documents-esignature'])
+  })
+})
+
+describe('buildRegistry Terraform databases', () => {
+  const tfFacts = (resources: Array<{ tfType: string; label: string; name: string; engine?: string }>) => ({ resources, dmsTasks: [], dmsEndpoints: [], iamActions: [], mongoRoles: [] })
+  it('registers Aurora PostgreSQL clusters and Valkey groups as databases, and folds the monolith cluster into skello_production', () => {
+    const reg = buildRegistry({
+      monolith: { tables: [], models: [] },
+      serverless: new Map(),
+      services: [],
+      terraform: [
+        { service: 'svc-requests', tfRepo: 'svc-requests-tf', facts: tfFacts([{ tfType: 'aws_rds_cluster', label: 'db', name: 'svcrequests-${local.workspace}', engine: 'aurora-postgresql' }]) },
+        { service: 'svc-x', tfRepo: 'svc-x-tf', facts: tfFacts([{ tfType: 'aws_rds_cluster', label: 'db', name: 'svcx-mysql', engine: 'aurora-mysql' }]) },
+        { service: 'skello-app', tfRepo: 'skello-app-tf', facts: tfFacts([{ tfType: 'aws_rds_cluster', label: 'db', name: 'skelloapp-${local.workspace}', engine: 'aurora-postgresql' }, { tfType: 'aws_elasticache_replication_group', label: 'cache', name: 'skelloApp-valkey-${local.workspace}' }]) },
+      ],
+    })
+    expect(reg.map(r => `${r.id}:${r.kind}:${r.owner}`)).toEqual(['pg:skello_production:database:skello-app', 'pg:svcrequests:database:svc-requests', 'redis:skelloApp-valkey:database:skello-app'])
+    expect(reg.find(r => r.id === 'pg:skello_production')?.evidence).toContain('skello-app-tf:terraform')
+  })
+})
+
+describe('buildRegistry Atlas databases', () => {
+  it('ignores Atlas roles that grant no data access, such as atlasAdmin on admin', () => {
+    const facts = { resources: [], dmsTasks: [], dmsEndpoints: [], iamActions: [], mongoRoles: [{ role: 'atlasAdmin', database: 'admin' }] }
+    expect(buildRegistry({ monolith: null, serverless: new Map(), services: [], terraform: [{ service: 'svc-intelligence', tfRepo: 'svc-intelligence-tf', facts }] })).toEqual([])
+  })
+  it('owns a readWrite database and records read access as unattributed evidence', () => {
+    const facts = { resources: [], dmsTasks: [], dmsEndpoints: [], iamActions: [], mongoRoles: [{ role: 'readWrite', database: 'svc-shops' }, { role: 'read', database: 'svc-search' }] }
+    const reg = buildRegistry({ monolith: null, serverless: new Map(), services: [], terraform: [{ service: 'svc-shops', tfRepo: 'svc-shops-tf', facts }] })
+    expect(reg.map(r => `${r.id}:${r.owner ?? '-'}:${r.evidence.join(',')}`)).toEqual(['mongo:svc-search:-:svc-shops-tf:terraform', 'mongo:svc-shops:svc-shops:svc-shops-tf:terraform'])
   })
 })

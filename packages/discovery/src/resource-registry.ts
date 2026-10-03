@@ -3,6 +3,7 @@ import { normalizeResourceName } from '@dependency-explorer/data'
 import type { RailsModel } from './extractors/rails-schema'
 import type { ServerlessFacts } from './extractors/serverless'
 import type { TerraformFacts } from './extractors/terraform'
+import { OWNING_ROLES, READING_ROLES } from './resource-relations'
 
 export const STORE_PREFIX: Record<string, string> = {
   postgresql: 'pg', mongodb: 'mongo', dynamodb: 'ddb', s3: 's3', sqs: 'sqs', sns: 'sns', kinesis: 'kinesis', redis: 'redis', elasticsearch: 'es',
@@ -10,7 +11,7 @@ export const STORE_PREFIX: Record<string, string> = {
 const MONOLITH_DB = 'skello_production'
 const KIND_BY_STORE: Partial<Record<Resource['store'], Resource['kind']>> = { sqs: 'queue', sns: 'topic', kinesis: 'stream', s3: 'bucket', dynamodb: 'table' }
 const CF_STORE: Record<string, Resource['store']> = { 'AWS::DynamoDB::Table': 'dynamodb', 'AWS::S3::Bucket': 's3', 'AWS::Kinesis::Stream': 'kinesis', 'AWS::SNS::Topic': 'sns' }
-const TF_STORE: Record<string, Resource['store']> = { aws_dynamodb_table: 'dynamodb', aws_s3_bucket: 's3', aws_kinesis_stream: 'kinesis', aws_sqs_queue: 'sqs', aws_sns_topic: 'sns', aws_kinesis_firehose_delivery_stream: 'kinesis' }
+const TF_STORE: Record<string, Resource['store']> = { aws_dynamodb_table: 'dynamodb', aws_s3_bucket: 's3', aws_kinesis_stream: 'kinesis', aws_sqs_queue: 'sqs', aws_sns_topic: 'sns', aws_kinesis_firehose_delivery_stream: 'kinesis', aws_rds_cluster: 'postgresql', aws_db_instance: 'postgresql', aws_elasticache_replication_group: 'redis' }
 
 export interface RegistryInputs {
   monolith: { tables: string[]; models: RailsModel[] } | null
@@ -32,7 +33,7 @@ interface Draft { kind: Resource['kind']; store: Resource['store']; name: string
 export function buildRegistry(inputs: RegistryInputs): Resource[] {
   const drafts = new Map<string, Draft>()
   const add = (store: Resource['store'], rawName: string, kind: Resource['kind'], evidence: string, owner?: string) => {
-    const { name, ownerHint } = normalizeResourceName(rawName)
+    const { name, ownerHint } = normalizeResourceName(rawName, store)
     if (!isResourceName(name)) {
       return
     }
@@ -85,14 +86,26 @@ export function buildRegistry(inputs: RegistryInputs): Resource[] {
   for (const t of inputs.terraform) {
     for (const r of t.facts.resources) {
       const store = TF_STORE[r.tfType]
+      if (store === 'postgresql' && !/postgres/.test(r.engine ?? '')) {
+        continue
+      }
+      if (store === 'postgresql' && t.service === 'skello-app') {
+        drafts.get(`pg:${MONOLITH_DB}`)?.evidence.add(`${t.tfRepo}:terraform`)
+        continue
+      }
       if (store && r.name) {
         add(store, r.name, KIND_BY_STORE[store] ?? 'database', `${t.tfRepo}:terraform`, t.service)
       }
     }
   }
+  for (const t of inputs.terraform) {
+    for (const role of t.facts.mongoRoles.filter(r => OWNING_ROLES.has(r.role) || READING_ROLES.has(r.role))) {
+      add('mongodb', role.database, 'database', `${t.tfRepo}:terraform`, OWNING_ROLES.has(role.role) ? t.service : undefined)
+    }
+  }
   for (const svc of inputs.services) {
     for (const db of svc.databases ?? []) {
-      if (db.type === 'postgresql' && normalizeResourceName(db.name).name === MONOLITH_DB) {
+      if (db.type === 'postgresql' && normalizeResourceName(db.name, db.type).name === MONOLITH_DB) {
         drafts.get(`pg:${MONOLITH_DB}`)?.evidence.add(`dataset:${svc.name}`)
         continue
       }

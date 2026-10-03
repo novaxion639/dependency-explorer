@@ -1,6 +1,8 @@
 import type { Resource, ResourceRelation } from '@dependency-explorer/schema'
 import type { RailsModel } from './extractors/rails-schema'
 import { stripComments, type RepoGraph } from './code-grades'
+import type { TerraformFacts } from './extractors/terraform'
+import { normalizeResourceName } from '@dependency-explorer/data'
 import type { ServerlessFacts } from './extractors/serverless'
 
 export const WRITE_CALL = /\.(create!?|create_or_find_by!?|find_or_create_by!?|insert!?|insert_all!?|upsert|upsert_all|update_all|delete_all|destroy_all|delete_by|destroy_by)\b/
@@ -130,6 +132,43 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
       const dlq = pick(w.dlq)
       if (q && dlq) {
         out.push({ resource: q.id, relation: 'dead-letters-to', service: repo, target: dlq.id, grade: 'config' })
+      }
+    }
+  }
+  return out
+}
+
+export const OWNING_ROLES = new Set(['readWrite', 'dbOwner'])
+export const READING_ROLES = new Set(['read'])
+
+export function atlasRelations(terraform: Array<{ service: string; facts: TerraformFacts }>, resources: Resource[]): ResourceRelation[] {
+  const out: ResourceRelation[] = []
+  for (const t of terraform) {
+    for (const role of t.facts.mongoRoles) {
+      const name = normalizeResourceName(role.database, 'mongodb').name
+      const r = resources.find(x => x.store === 'mongodb' && x.name === name)
+      if (r && (OWNING_ROLES.has(role.role) || READING_ROLES.has(role.role))) {
+        out.push({ resource: r.id, relation: OWNING_ROLES.has(role.role) ? 'writes' : 'reads', service: t.service, grade: 'config' })
+      }
+    }
+  }
+  return out
+}
+
+const MONOLITH_DMS_SOURCE = /skelloapp/
+
+export function dmsRelations(terraform: Array<{ service: string; facts: TerraformFacts }>, resources: Resource[]): ResourceRelation[] {
+  const out: ResourceRelation[] = []
+  for (const t of terraform) {
+    const streamByEndpoint = new Map(t.facts.dmsEndpoints.flatMap(e => (e.streamLabel ? [[e.label, e.streamLabel] as const] : [])))
+    const nameByLabel = new Map(t.facts.resources.filter(r => r.tfType === 'aws_kinesis_stream' && r.name).map(r => [r.label, normalizeResourceName(r.name ?? '', 'kinesis').name]))
+    for (const task of t.facts.dmsTasks) {
+      const endpoint = task.target?.match(/aws_dms_endpoint\.([\w-]+)/)?.[1]
+      const name = nameByLabel.get(streamByEndpoint.get(endpoint ?? '') ?? '')
+      const stream = resources.find(r => r.store === 'kinesis' && r.name === name && (!r.owner || r.owner === t.service))
+      const service = MONOLITH_DMS_SOURCE.test(task.source ?? '') ? 'skello-app' : t.service
+      if (stream && !out.some(r => r.resource === stream.id && r.service === service)) {
+        out.push({ resource: stream.id, relation: 'produces', service, grade: 'config' })
       }
     }
   }
