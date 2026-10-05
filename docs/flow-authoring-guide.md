@@ -203,9 +203,9 @@ Skello microservices using Step Functions follow this pattern:
 
 Some microservices bypass HTTP APIs and read directly from another service's MongoDB over VPC (e.g. `svc-automatic-scheduling` reads from `svc-search`'s `shifts` and `rawPoste` collections). These are real connections that should be represented, but with the description noting "direct VPC read, no HTTP".
 
-### 6.3 Context passing via SFN state (not S3)
+### 6.3 Context passing through the SFN context bucket
 
-Even when an S3 bucket exists for "SFN context" (e.g. `svc-automatic-scheduling-sfn-ctx`), verify whether it's actually used. In the auto-scheduling flow, context passes entirely through the SFN state payload — the S3 bucket exists but the `S3ContextRepository` is not wired into any handler. Always check `container.ts` DI wiring, not just the existence of a repository class.
+Step Functions cap a state payload at 256 KB, so a pipeline with a large context passes object keys in its state and keeps the data in S3. In the auto-scheduling flow every step uses the SFN context bucket through `S3ContextRepository` (wired in `container.ts`): the data fetcher writes the context, the eligibility batches read it and write their results, the aggregate step writes the solver payload, the solver writes the assignments, and assignShifts reads them back. Each step that touches the bucket gets its own S3 infra node (§4.1). Verify the wiring in `container.ts` and each manager's calls, not just the existence of a repository class.
 
 ### 6.4 Monolith endpoint table fan-out
 
@@ -359,11 +359,11 @@ Every infra node except on-device `sqlite` queues names the registry resources i
 See `src/data/flows/auto-planning-generation.ts` — the first flow built using this guide. It demonstrates:
 
 - 12 step edges (trigger, response, 6 SFN Lambda transitions, 3 HTTP calls, 1 final notification)
-- 15 infra nodes (1 per Lambda per resource, split read/write for PostgreSQL)
-- 15 infra edges (each with explicit CRUD labels)
+- 1 infra node per Lambda per resource, split read/write for PostgreSQL — including one SFN-context S3 node per step
+- One infra edge per Lambda and resource, each with explicit CRUD labels
 - Correct endpoint paths verified against `routes.rb`
 - Per-Lambda WebSocket SQS notifications with status messages
-- Python solver with no external calls (explicitly documented)
+- The Python solver as a code unit, reading its payload from and writing its assignments to the SFN context bucket
 
 ## Chapters
 

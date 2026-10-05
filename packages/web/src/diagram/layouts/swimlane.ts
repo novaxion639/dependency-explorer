@@ -64,18 +64,21 @@ function edgeCondition(e: FlowCodeEdge): string | undefined {
 
 export function swimlanes(flow: ServiceFlow): DiagramModel {
   let extra = new Map<number, number>()
-  let result = laneLayout(flow, extra)
+  let detours = new Set<string>()
+  let result = laneLayout(flow, extra, detours)
   for (let pass = 1; pass < LAYOUT_PASSES && result.crowded.length > 0; pass++) {
     extra = new Map(extra)
-    for (const { row, h } of result.crowded) {
+    detours = new Set(detours)
+    for (const { row, h, edge } of result.crowded) {
       extra.set(row, (extra.get(row) ?? 0) + h)
+      detours.add(edge)
     }
-    result = laneLayout(flow, extra)
+    result = laneLayout(flow, extra, detours)
   }
   return result.model
 }
 
-function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>): { model: DiagramModel; crowded: Array<{ row: number; h: number }> } {
+function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detours: ReadonlySet<string>): { model: DiagramModel; crowded: Array<{ row: number; h: number; edge: string }> } {
   const units = new Map((flow.codeUnits ?? []).map(u => [u.id, u]))
   const infra = new Map((flow.infraNodes ?? []).map(n => [n.id, n]))
   const codeEdges = flow.codeEdges ?? []
@@ -189,6 +192,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>): { mo
   const labelHeight = (lines: number) => (lines > 0 ? lines * EDGE_LABEL_LINE + LABEL_FRAME : 0)
   const heightOf = (label: string, condition?: string) => labelHeight(wrapped(label).length + (condition ? wrapped(`if ${condition}`).length : 0))
   const directGap = new Map<number, number>()
+  const directLabelH = new Map<number, number>()
   const pairs = [
     ...codeEdges.map(e => ({ from: e.from, to: e.to, h: heightOf(edgeText(e.label, e.crud), edgeCondition(e)) })),
     ...infraLinks.map(e => ({ from: e.from, to: e.to, h: heightOf(edgeText(e.label, e.crud)) })),
@@ -202,6 +206,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>): { mo
     const between = order.some(id => id !== p.from && id !== p.to && laneOf(id) === laneOf(p.from) && (rowOf.get(id) ?? -1) > ra && (rowOf.get(id) ?? -1) < rb)
     if (!between) {
       directGap.set(ra, Math.max(directGap.get(ra) ?? 0, p.h + LABEL_MARGIN + ARROW + 2 * ARROW_CLEARANCE + 2))
+      directLabelH.set(ra, Math.max(directLabelH.get(ra) ?? 0, p.h))
     }
   }
   const gapAfter = (row: number) => Math.max(ROW_GAP, directGap.get(row) ?? 0) + (extra.get(row) ?? 0)
@@ -275,7 +280,19 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>): { mo
     const lane = laneOrder.indexOf(id)
     return lane < 0 ? null : { box: { x: laneX(lane) + PAD, y: HEADER_Y, w: NODE_W, h: HEADER_H }, lane, header: true }
   }
-  const route = (a: End, b: End): { points: RoutePoint[]; gutter: number | null } => {
+  const labelSize = (e: DiagramEdge) => {
+    const lines = [...(e.labelLines ?? []), ...(e.conditionLines ?? [])]
+    const w = Math.max(0, ...(e.labelLines ?? []).map(l => textWidth(l, EDGE_LABEL_FONT)), ...(e.conditionLines ?? []).map(l => textWidth(l, EDGE_LABEL_FONT) + PILL_PAD))
+    return { w: w + LABEL_PAD, h: labelHeight(lines.length) }
+  }
+  const rowByModel = new Map(order.map(id => [modelId(id), isLaneEndpoint(id) ? -1 : rowOf.get(id) ?? -1]))
+  const bands = new Map<number, number>()
+  const detourY = (row: number, h: number) => {
+    const start = bands.get(row) ?? (row < 0 ? HEADER_Y + HEADER_H + LABEL_MARGIN : (rowY[row] ?? top) + (rowH[row] ?? 0) + LABEL_MARGIN + (directLabelH.get(row) ?? 0) + LABEL_MARGIN)
+    bands.set(row, start + h + 2 * LABEL_MARGIN)
+    return start + LABEL_MARGIN + h / 2
+  }
+  const route = (a: End, b: End, drop: number | null): { points: RoutePoint[]; gutter: number | null } => {
     const port = (box: Box, share: number) => box.y + box.h * share
     if (a.lane === b.lane) {
       const ya = port(a.box, PORT.outRight)
@@ -286,6 +303,10 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>): { mo
         return { points: [{ x, y: a.box.y + a.box.h }, { x, y: b.box.y }], gutter: null }
       }
       const gx = trackX(a.lane)
+      if (drop !== null) {
+        const gx2 = trackX(a.lane)
+        return { points: [{ x: a.box.x + a.box.w, y: ya }, { x: gx, y: ya }, { x: gx, y: drop }, { x: gx2, y: drop }, { x: gx2, y: yb }, { x: b.box.x + b.box.w, y: yb }], gutter: a.lane }
+      }
       return { points: [{ x: a.box.x + a.box.w, y: ya }, { x: gx, y: ya }, { x: gx, y: yb }, { x: b.box.x + b.box.w, y: yb }], gutter: a.lane }
     }
     const right = b.lane > a.lane
@@ -296,11 +317,15 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>): { mo
     const start = right ? a.box.x + a.box.w : a.box.x
     const end = right ? b.box.x : b.box.x + b.box.w
     const x1 = trackX(first)
+    if (first === last && drop !== null) {
+      const x2 = trackX(first)
+      return { points: [{ x: start, y: ya }, { x: x1, y: ya }, { x: x1, y: drop }, { x: x2, y: drop }, { x: x2, y: yb }, { x: end, y: yb }], gutter: first }
+    }
     if (first === last) {
       return { points: [{ x: start, y: ya }, { x: x1, y: ya }, { x: x1, y: yb }, { x: end, y: yb }], gutter: first }
     }
     const x2 = trackX(last)
-    const channel = channelY(b.header ? top : b.box.y)
+    const channel = drop ?? channelY(b.header ? top : b.box.y)
     return { points: [{ x: start, y: ya }, { x: x1, y: ya }, { x: x1, y: channel }, { x: x2, y: channel }, { x: x2, y: yb }, { x: end, y: yb }], gutter: first }
   }
 
@@ -310,7 +335,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>): { mo
     if (!a || !b) {
       return []
     }
-    const r = route(a, b)
+    const r = route(a, b, detours.has(e.id) ? detourY(rowByModel.get(e.from) ?? -1, labelSize(e).h) : null)
     e.route = r.points
     return [{ edge: e, source: a.box, gutter: r.gutter }]
   })
@@ -318,14 +343,8 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>): { mo
     const box = arrowBox(edge.route ?? [])
     return box ? [box] : []
   })
-  const labelSize = (e: DiagramEdge) => {
-    const lines = [...(e.labelLines ?? []), ...(e.conditionLines ?? [])]
-    const w = Math.max(0, ...(e.labelLines ?? []).map(l => textWidth(l, EDGE_LABEL_FONT)), ...(e.conditionLines ?? []).map(l => textWidth(l, EDGE_LABEL_FONT) + PILL_PAD))
-    return { w: w + LABEL_PAD, h: labelHeight(lines.length) }
-  }
   const placed: Box[] = []
-  const crowded: Array<{ row: number; h: number }> = []
-  const rowByModel = new Map(order.map(id => [modelId(id), isLaneEndpoint(id) ? -1 : rowOf.get(id) ?? -1]))
+  const crowded: Array<{ row: number; h: number; edge: string }> = []
   for (const { edge, source } of routed.filter(r => r.gutter === null && (r.edge.label || r.edge.condition))) {
     const { w, h } = labelSize(edge)
     edge.labelBox = { x: Math.max(0, source.x + source.w / 2 - w / 2), y: source.y + source.h + LABEL_MARGIN, w, h }
@@ -346,9 +365,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>): { mo
       .sort((p, q) => Math.hypot(p.x - anchor.x, p.y - anchor.y) - Math.hypot(q.x - anchor.x, q.y - anchor.y))
       .find(p => !blocked(at(p)))
     if (!spot) {
-      const row = rowByModel.get(edge.from) ?? -1
-      const down = (edge.route?.[2]?.y ?? anchor.y) >= anchor.y
-      crowded.push({ row: down ? row : Math.max(-1, row - 1), h: h + LABEL_MARGIN })
+      crowded.push({ row: rowByModel.get(edge.from) ?? -1, h: h + 2 * LABEL_MARGIN, edge: edge.id })
     }
     let box = at(spot ?? anchor)
     for (let hit = spot ? undefined : [...placed, ...arrows].find(o => overlaps(box, o)); hit; hit = [...placed, ...arrows].find(o => overlaps(box, o))) {

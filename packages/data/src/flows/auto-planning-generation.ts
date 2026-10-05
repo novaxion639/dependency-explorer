@@ -4,17 +4,17 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
   "id": "auto-planning-generation",
   "name": "AI Auto-Planning Generation",
-  "description": "Triggered by the frontend via POST /automatic_assignment/compute, which returns a websocketId for live progress tracking. svc-automatic-scheduling creates a job in MongoDB (STARTED) and starts an AWS Step Functions pipeline. Each Lambda step updates the job status in MongoDB and sends a progress notification to websocket-topicMessage SQS (except the Python solver, which has no TS notification access — the aggregate step pre-sends OPTIMIZING on its behalf). Context (shifts, postes, users, shop) passes through the SFN state payload, not S3.",
+  "description": "Triggered by the frontend via POST /automatic_assignment/compute, which returns a websocketId for live progress tracking. svc-automatic-scheduling creates a job in MongoDB (STARTED) and starts an AWS Step Functions pipeline. Each Lambda step updates the job status in MongoDB and sends a progress notification to websocket-topicMessage SQS (except the Python solver, which has no TS notification access — the aggregate step pre-sends SOLVING on its behalf). Context (shifts, postes, users, shop) travels through the SFN context S3 bucket (svc-automatic-scheduling.assignment): the data fetcher writes it, each eligibility batch reads it and writes its result, the aggregate step reads both and writes the solver payload, the solver writes the assignments and assignShifts reads them back; the SFN state carries the object keys (contextKey, solverPayloadKey, assignmentPayloadKey).",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "automatic-scheduling",
   "chapters": [
     { "title": "A planner starts auto-scheduling", "summary": "The front asks svc-automatic-scheduling to compute; it records a started job and returns a websocket id for live progress.", "refs": ["svc-automatic-scheduling", "mongo-jobs-trigger"] },
     { "title": "The pipeline starts fetching", "summary": "The first pipeline step sets the job to data fetching and sends that status to the planner's websocket channel.", "refs": ["sfn-dataFetcher", "mongo-jobs-dataFetcher", "sqs-ws-dataFetcher"] },
     { "title": "Shop and staff come from skello-app", "summary": "It reads shop, teams, postes and contract types, then users, contracts, memberships and licenses from skello-app.", "refs": ["sfn-dataFetcher", "skello-app (data)", "pg-skello-read"] },
-    { "title": "Shifts come from svc-search", "summary": "Assigned and unassigned shifts and postes are read straight from svc-search's MongoDB; the context travels in the pipeline state.", "refs": ["sfn-dataFetcher", "mongo-svc-search"] },
-    { "title": "Eligibility is checked in batches", "summary": "Employee batches are checked in parallel and in memory; each batch updates the job status and sends a progress message.", "refs": ["sfn-eligibility", "mongo-jobs-eligibility", "sqs-ws-eligibility"] },
-    { "title": "Results are combined and solved", "summary": "Batch results are aggregated and the optimising status is pre-sent, because the Python solver makes no outside calls.", "refs": ["sfn-aggregate", "mongo-jobs-aggregate", "sqs-ws-aggregate"] },
-    { "title": "The result goes back to skello-app", "summary": "The assign step sets the job to assigning, tells the planner, and calls skello-app's private write-back with an API key.", "refs": ["sfn-assignShifts", "mongo-jobs-assignShifts", "sqs-ws-assignShifts", "svc-automatic-scheduling", "cu-as-controller"] },
+    { "title": "Shifts come from svc-search", "summary": "Assigned and unassigned shifts and postes are read straight from svc-search's MongoDB; the assembled context is written to the S3 context bucket.", "refs": ["sfn-dataFetcher", "mongo-svc-search", "s3-ctx-dataFetcher"] },
+    { "title": "Eligibility is checked in batches", "summary": "Employee batches are checked in parallel; each reads the context from S3, writes its result back there, and sends a progress message.", "refs": ["sfn-eligibility", "mongo-jobs-eligibility", "sqs-ws-eligibility", "s3-ctx-eligibility"] },
+    { "title": "Results are combined and solved", "summary": "Batch results are aggregated and the solving status pre-sent; the Python solver reads its payload from S3 and writes the assignments back there.", "refs": ["sfn-aggregate", "mongo-jobs-aggregate", "sqs-ws-aggregate", "s3-ctx-aggregate", "cu-as-solver", "s3-ctx-solver"] },
+    { "title": "The result goes back to skello-app", "summary": "The assign step sets the job to assigning, tells the planner, and calls skello-app's private write-back with an API key.", "refs": ["sfn-assignShifts", "mongo-jobs-assignShifts", "sqs-ws-assignShifts", "s3-ctx-assignShifts", "svc-automatic-scheduling", "cu-as-controller"] },
     { "title": "Assignments are saved", "summary": "skello-app persists the optimised user-to-shift assignments, writing shifts, badgings and swaps in one transaction.", "refs": ["cu-as-controller", "cu-as-assignment", "cu-as-save", "skello-app (assign)", "pg-skello-write"] },
     { "title": "Generated shifts are created", "summary": "In automatic shift creation mode, the write-back bulk-inserts the generated shifts.", "refs": ["cu-as-controller", "cu-as-bulk-create", "pg-skello-write"] },
     { "title": "Alerts and counters are refreshed", "summary": "Alerts are recomputed for the touched shifts, and planning-hours, RCR and paid-leave counters are recalculated.", "refs": ["cu-as-assignment", "cu-as-alert", "cu-as-tracker-v2"] },
@@ -60,7 +60,7 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "sfn-aggregate",
       "to": "sfn-solver",
-      "action": "SFN step 4 — Python CP-SAT optimizer (10 GB RAM, 15 min timeout, no external calls)"
+      "action": "SFN step 4 — Python CP-SAT optimizer (10 GB RAM, 15 min timeout; reads solver-payload.json, writes assignment-payload.json in the SFN context S3 bucket)"
     },
     {
       "from": "sfn-solver",
@@ -139,9 +139,34 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
         "label": "ShiftCallbackJob",
         "path": "app/jobs/shift_callback_job.rb",
         "description": "Weekly-option staleness — enqueued directly by AutomaticAssignmentService per affected user/week"
+      },
+      {
+        "id": "cu-as-solver",
+        "service": "svc-automatic-scheduling",
+        "kind": "job",
+        "label": "lambda_handler",
+        "path": "solver/handler.py",
+        "description": "Python CP-SAT solver Lambda (JobSfnSolver, 10 GB, 15 min): loads the solver payload from the SFN context bucket, runs solve() (solver/src/solver.py), writes assignment-payload.json and folds solverMetrics into metrics.json; no HTTP, Mongo or SQS calls"
       }
     ],
     "codeEdges": [
+      {
+        "from": "svc-automatic-scheduling",
+        "to": "cu-as-solver",
+        "label": "SFN sfnSolver task — {input, solverPayloadKey}",
+        "mode": "sync"
+      },
+      {
+        "from": "cu-as-solver",
+        "to": "s3-ctx-solver",
+        "label": "solver payload in; assignments + solverMetrics out",
+        "mode": "sync",
+        "crud": [
+          "read",
+          "create",
+          "update"
+        ]
+      },
       {
         "from": "svc-automatic-scheduling",
         "to": "cu-as-controller",
@@ -234,6 +259,13 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "description": "Send DATA_FETCHING notification to frontend WebSocket channel"
     },
     {
+      "id": "s3-ctx-dataFetcher",
+      "type": "s3",
+      "label": "svc-automatic-scheduling.assignment",
+      "resources": ["s3:svc-automatic-scheduling.assignment"],
+      "description": "SFN context bucket — the data fetcher writes the context (jobs/{jobId}/rule-chain-payload.json: shifts, postes, users, shop), the initial metrics.json and an empty error-trace list"
+    },
+    {
       "id": "mongo-jobs-eligibility",
       "type": "mongodb",
       "label": "automatic_assignment_jobs",
@@ -248,6 +280,13 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "description": "Send ELIGIBILITY_COMPLIANCE_CHECK (once per batch invocation)"
     },
     {
+      "id": "s3-ctx-eligibility",
+      "type": "s3",
+      "label": "svc-automatic-scheduling.assignment",
+      "resources": ["s3:svc-automatic-scheduling.assignment"],
+      "description": "SFN context bucket — each eligibility batch reads rule-chain-payload.json and writes rule-chain-batch-result-{index}.json"
+    },
+    {
       "id": "mongo-jobs-aggregate",
       "type": "mongodb",
       "label": "automatic_assignment_jobs",
@@ -259,7 +298,21 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "type": "sqs",
       "label": "websocket-topicMessage",
       "resources": ["sqs:websocket-topicMessage"],
-      "description": "Send ELIGIBILITY_AGGREGATION + OPTIMIZING (pre-sent for Python solver)"
+      "description": "Send ELIGIBILITY_AGGREGATION + SOLVING (pre-sent for Python solver)"
+    },
+    {
+      "id": "s3-ctx-aggregate",
+      "type": "s3",
+      "label": "svc-automatic-scheduling.assignment",
+      "resources": ["s3:svc-automatic-scheduling.assignment"],
+      "description": "SFN context bucket — the aggregate step reads rule-chain-payload.json and every rule-chain-batch-result-{index}.json, writes solver-payload.json and updates metrics.json"
+    },
+    {
+      "id": "s3-ctx-solver",
+      "type": "s3",
+      "label": "svc-automatic-scheduling.assignment",
+      "resources": ["s3:svc-automatic-scheduling.assignment"],
+      "description": "SFN context bucket — the solver reads jobs/{jobId}/solver-payload.json and metrics.json, writes assignment-payload.json and updates metrics.json (solverMetrics)"
     },
     {
       "id": "mongo-jobs-assignShifts",
@@ -274,6 +327,13 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "label": "websocket-topicMessage",
       "resources": ["sqs:websocket-topicMessage"],
       "description": "Send ASSIGNING notification to frontend WebSocket channel"
+    },
+    {
+      "id": "s3-ctx-assignShifts",
+      "type": "s3",
+      "label": "svc-automatic-scheduling.assignment",
+      "resources": ["s3:svc-automatic-scheduling.assignment"],
+      "description": "SFN context bucket — assignShifts reads the solver's assignment-payload.json and updates metrics.json"
     },
     {
       "id": "mongo-jobs-finishJob",
@@ -330,6 +390,12 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "crud": ["create"]
     },
     {
+      "from": "sfn-dataFetcher",
+      "to": "s3-ctx-dataFetcher",
+      "label": "write context + metrics + error traces",
+      "crud": ["create", "update"]
+    },
+    {
       "from": "sfn-eligibility",
       "to": "mongo-jobs-eligibility",
       "label": "update status",
@@ -342,6 +408,12 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "crud": ["create"]
     },
     {
+      "from": "sfn-eligibility",
+      "to": "s3-ctx-eligibility",
+      "label": "read context, write batch result",
+      "crud": ["read", "create"]
+    },
+    {
       "from": "sfn-aggregate",
       "to": "mongo-jobs-aggregate",
       "label": "update status",
@@ -350,8 +422,20 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "sfn-aggregate",
       "to": "sqs-ws-aggregate",
-      "label": "ELIGIBILITY_AGGREGATION + OPTIMIZING",
+      "label": "ELIGIBILITY_AGGREGATION + SOLVING",
       "crud": ["create"]
+    },
+    {
+      "from": "sfn-aggregate",
+      "to": "s3-ctx-aggregate",
+      "label": "read context + batch results, write solver payload + metrics",
+      "crud": ["read", "create", "update"]
+    },
+    {
+      "from": "sfn-solver",
+      "to": "s3-ctx-solver",
+      "label": "solver payload in, assignments + solverMetrics out",
+      "crud": ["read", "create", "update"]
     },
     {
       "from": "sfn-assignShifts",
@@ -364,6 +448,12 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
       "to": "sqs-ws-assignShifts",
       "label": "ASSIGNING",
       "crud": ["create"]
+    },
+    {
+      "from": "sfn-assignShifts",
+      "to": "s3-ctx-assignShifts",
+      "label": "read assignment payload, update metrics",
+      "crud": ["read", "update"]
     },
     {
       "from": "sfn-finishJob",
