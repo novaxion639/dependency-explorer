@@ -10,11 +10,13 @@ const assistant_freemium_credits: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": { "actor": "manager", "role": "assistant user (SystemAdminPermissions on discuss)" },
   "primaryArea": "billing",
   "chapters": [
-    { "title": "A user sends a chat message", "summary": "The assistant's chat endpoint accepts the turn from a system admin.", "refs": ["svc-skello-assistant", "cu-afc-chat-controller"] },
-    { "title": "The credit balance is checked", "summary": "Before queuing the turn, the assistant reads the balance from svc-billing-automation and refuses only once usage exceeds the limit.", "refs": ["cu-afc-session-mgr", "cu-afc-billing-client", "svc-billing-automation", "cu-afc-credit-controller"] },
-    { "title": "The month's balance is found", "summary": "Billing keeps one balance per organisation and month, created on first use with a limit derived from the plan in skello-app.", "refs": ["cu-afc-credit-mgr", "cu-afc-credit-repo", "dynamo-billing-credits", "cu-afc-skello-repo", "skello-app"] },
-    { "title": "The assistant answers", "summary": "The turn waits on a queue, then a consumer runs the language-model turn.", "refs": ["sqs-assistant-processchat", "cu-afc-process-controller", "cu-afc-agent-mgr"] },
-    { "title": "A credit is spent", "summary": "After the turn, the assistant asks billing to use one credit; a failure is logged, not retried.", "refs": ["cu-afc-session-mgr", "cu-afc-billing-client", "cu-afc-credit-mgr", "dynamo-billing-credits"] }
+    { "title": "A user sends a chat message", "summary": "The assistant's chat endpoint accepts the turn, only from a system admin.", "refs": ["svc-skello-assistant", "cu-afc-chat-controller"] },
+    { "title": "The assistant asks for the balance", "summary": "Before queuing the turn, the assistant reads the organisation's AI credit balance from svc-billing-automation with an API key.", "refs": ["cu-afc-session-mgr", "cu-afc-billing-client", "svc-billing-automation"] },
+    { "title": "Billing finds this month's balance", "summary": "Billing keeps one row per organisation and month; with no refill job, a new month starts at zero used on first read.", "refs": ["svc-billing-automation", "cu-afc-credit-controller", "cu-afc-credit-mgr", "cu-afc-credit-repo", "dynamo-billing-credits"] },
+    { "title": "The limit comes from the plan", "summary": "On first use or an upgrade check, skello-app's plan sets the limit: 5 per admin on freemium, 1000 when paid, 0 without access.", "refs": ["cu-afc-credit-mgr", "cu-afc-skello-repo", "skello-app"] },
+    { "title": "The gate lets the turn through", "summary": "Only usage above the limit is refused, so the last credit allows one overshoot; otherwise the turn joins a queue.", "refs": ["cu-afc-session-mgr", "sqs-assistant-processchat"] },
+    { "title": "The assistant answers", "summary": "A queue consumer runs the language-model turn; a turn that dead-letters is lost, but no credit was spent on it.", "refs": ["sqs-assistant-processchat", "cu-afc-process-controller", "cu-afc-session-mgr", "cu-afc-agent-mgr"] },
+    { "title": "A credit is spent", "summary": "After the turn, the assistant uses one credit over an API-key-only route; a failure is logged, not retried, and a redelivery can count twice.", "refs": ["cu-afc-session-mgr", "cu-afc-billing-client", "svc-billing-automation", "cu-afc-credit-controller", "cu-afc-credit-mgr", "cu-afc-credit-repo", "dynamo-billing-credits"] }
   ],
   "links": [
     { "to": "assistant-chat", "kind": "continuation", "note": "the gate wraps assistant-chat's LLM turn — check before the enqueue, decrement after the turn" }

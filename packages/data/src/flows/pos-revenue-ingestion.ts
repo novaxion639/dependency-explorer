@@ -10,12 +10,16 @@ const pos_revenue_ingestion: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": { "actor": "system", "role": "EventBridge cron — providers ADDITION/REVO/AGORA/CHIFT (prod cron(0 3 * * ? *))" },
   "primaryArea": "workload-forecasting",
   "chapters": [
-    { "title": "A nightly job starts the pull", "summary": "A daily schedule queues one job per active till integration; Chift's webhook only tracks the connection state.", "refs": ["svc-pos", "cu-pri-dispatch-mgr", "sqs-pos-integration", "cu-pri-chift-webhook"] },
-    { "title": "Transactions are fetched", "summary": "Each job asks the till provider for its transactions and queues them for writing.", "refs": ["cu-pri-pull-handler", "cu-pri-pull-service", "sqs-pos-transaction"] },
-    { "title": "Transactions are stored", "summary": "Batches of 25 transactions are written to svc-pos' DynamoDB table.", "refs": ["cu-pri-write-handler", "dynamo-svc-pos"] },
-    { "title": "Day totals reach skello-app", "summary": "The table stream queues ordered aggregation events, and the day's totals are written into skello-app's weekly options.", "refs": ["cu-pri-push-agg", "sqs-pos-aggregation", "cu-pri-compute", "skello-app"] },
-    { "title": "Data flows to the data lake", "summary": "The same stream ships transactions and integrations to the data lake through Firehose.", "refs": ["cu-pri-datalake", "kinesis-pos-datalake"] },
-    { "title": "Revenue becomes KPIs", "summary": "svc-kpis-v2 reads raw transactions to derive revenue KPIs, which svc-workload-plan reads for calibration.", "refs": ["svc-kpis-v2", "cu-pri-kpis-mgr", "cu-pri-kpis-repo", "mongo-kpis-transactions", "svc-workload-plan", "cu-pri-wp-mgr"] }
+    { "title": "A nightly schedule starts the pull", "summary": "A daily cron, 03:00 UTC in production, queues one job per active till integration.", "refs": ["cu-pri-dispatch-mgr", "sqs-pos-integration"] },
+    { "title": "Chift only reports connections", "summary": "Chift's signed webhook records account connection changes only; revenue never arrives this way.", "refs": ["cu-pri-chift-webhook"] },
+    { "title": "Each till is polled", "summary": "One job per integration, five at a time, asks the provider (Chift, REVO or Agora) for its transactions.", "refs": ["sqs-pos-integration", "cu-pri-pull-handler", "cu-pri-pull-service"] },
+    { "title": "Transactions are queued", "summary": "Pulled transactions go onto a queue; a dead-lettered batch delays that till's revenue until redrive or the next day's poll.", "refs": ["cu-pri-pull-handler", "sqs-pos-transaction"] },
+    { "title": "Transactions are stored", "summary": "A job writes them to svc-pos' DynamoDB table in batches of 25.", "refs": ["sqs-pos-transaction", "cu-pri-write-handler", "dynamo-svc-pos"] },
+    { "title": "Aggregation events are queued", "summary": "The table stream turns each inserted or removed transaction into an event on an ordered queue.", "refs": ["dynamo-svc-pos", "cu-pri-push-agg", "sqs-pos-aggregation"] },
+    { "title": "Day totals reach skello-app", "summary": "The day's transactions are aggregated into skello-app's weekly options; lost events leave those KPIs stale for that day.", "refs": ["sqs-pos-aggregation", "cu-pri-compute", "skello-app"] },
+    { "title": "Data flows to the data lake", "summary": "The same stream ships transactions, integrations and organisation config to the S3 data lake through Firehose.", "refs": ["dynamo-svc-pos", "cu-pri-datalake", "kinesis-pos-datalake"] },
+    { "title": "Revenue becomes KPIs", "summary": "svc-kpis-v2 reads raw transactions to derive revenue, guests, quantity and productivity; manual values beat transactions, which beat forecasts.", "refs": ["cu-pri-kpis-mgr", "cu-pri-kpis-repo", "mongo-kpis-transactions"] },
+    { "title": "Workload plans calibrate", "summary": "svc-workload-plan fetches all KPIs from svc-kpis-v2 to calibrate its plans.", "refs": ["cu-pri-wp-mgr", "svc-kpis-v2"] }
   ],
   "links": [
     { "to": "workload-plan-consultation", "kind": "continuation", "note": "svc-workload-plan calibrates against the revenue KPIs this pipeline produces (fetchAllKpis)" }

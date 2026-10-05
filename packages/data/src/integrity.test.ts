@@ -507,11 +507,12 @@ describe('flow chapters', () => {
       }
     }
   })
-  it('count 3 to 7 chapters with short titles and one-line summaries', () => {
+  it('count 3 to 12 chapters, one for every two units or stores, with short titles and one-line summaries', () => {
     for (const flow of authored) {
       const chapters = flow.chapters ?? []
-      expect(chapters.length, `${flow.id} chapter count`).toBeGreaterThanOrEqual(3)
-      expect(chapters.length, `${flow.id} chapter count`).toBeLessThanOrEqual(7)
+      const covered = (flow.codeUnits ?? []).length + (flow.infraNodes ?? []).length
+      expect(chapters.length, `${flow.id} chapter count`).toBeGreaterThanOrEqual(Math.max(3, Math.min(12, Math.ceil(covered / 2))))
+      expect(chapters.length, `${flow.id} chapter count`).toBeLessThanOrEqual(12)
       for (const c of chapters) {
         expect(c.title.length, `${flow.id}: "${c.title}"`).toBeLessThanOrEqual(40)
         expect(c.summary.length, `${flow.id}: "${c.title}" summary`).toBeLessThanOrEqual(160)

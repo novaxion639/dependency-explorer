@@ -17,10 +17,12 @@ const payslip_dispatch: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": {"actor": "manager", "role": "payroll"},
   "primaryArea": "documents-esignature",
   "chapters": [
-    { "title": "A payslip file is stored", "summary": "Writing the bulk payslip document in svc-documents-v2 fires that service's own change stream.", "refs": ["svc-documents-v2", "dynamo-docs-v2-pd"] },
-    { "title": "Analysis is requested", "summary": "A stream listener builds the analysis requests and batch-sends them to svc-intelligence's queue.", "refs": ["cu-pd-analyze-listener", "cu-pd-extract-mgr", "svc-intelligence"] },
-    { "title": "AI reads the payslips", "summary": "svc-intelligence fetches the document, turns its pages into images and extracts each employee's payslip on Bedrock.", "refs": ["cu-pd-handler", "cu-pd-doc-manager", "cu-pd-docs-repo", "cu-pd-bedrock", "dynamo-intelligence", "mongo-intelligence-pd"] },
-    { "title": "The user sees progress", "summary": "Each stored model response triggers a progress or completion push over the legacy websockets.", "refs": ["dynamo-intelligence", "cu-pd-notify-handler", "cu-pd-notify", "svc-websockets"] },
+    { "title": "A payslip file is stored", "summary": "An employer's bulk payslip document is written to svc-documents-v2's table, whose own change stream starts the analysis.", "refs": ["svc-documents-v2", "dynamo-docs-v2-pd"] },
+    { "title": "Analysis is requested", "summary": "A listener on that stream builds the analysis requests and batch-sends them to svc-intelligence's queue.", "refs": ["cu-pd-analyze-listener", "cu-pd-extract-mgr", "svc-intelligence"] },
+    { "title": "The extraction job starts", "summary": "A queue job takes each request as a payslip analysis and records its state; a failed one goes to a dead-letter queue after one try.", "refs": ["cu-pd-handler", "cu-pd-doc-manager", "dynamo-intelligence"] },
+    { "title": "The document is fetched", "summary": "svc-intelligence reads the document content back from svc-documents-v2.", "refs": ["cu-pd-doc-manager", "cu-pd-docs-repo", "svc-documents-v2"] },
+    { "title": "AI reads the payslips", "summary": "Pages become images and a Claude Haiku model on Bedrock extracts each employee's payslip; extraction artifacts are kept in MongoDB.", "refs": ["cu-pd-doc-manager", "cu-pd-bedrock", "mongo-intelligence-pd"] },
+    { "title": "The user sees progress", "summary": "Each stored model response fires the table's stream, which pushes progress or completion over the legacy websockets.", "refs": ["dynamo-intelligence", "cu-pd-notify-handler", "cu-pd-notify", "svc-websockets"] },
     { "title": "Employees get their payslips", "summary": "Per-employee documents and their document-ready notice go out from svc-documents-v2 through svc-communications-v2.", "refs": ["svc-documents-v2"] }
   ],
   "links": [{"to": "mobile-documents-payslips", "kind": "continuation", "note": "dispatched payslips are what employees consume from the mobile Documents tab"}],

@@ -14,10 +14,13 @@ const mobile_clock_in: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": {"actor": "employee", "role": "mobile badging permission (svc-punch replicated user)"},
   "primaryArea": "time-attendance",
   "chapters": [
-    { "title": "An employee clocks in on the phone", "summary": "The employee picks a shift and shop and swipes; GPS is captured when available but never blocks the punch.", "refs": ["skello-mobile", "cu-mci-screen"] },
-    { "title": "The phone calls svc-punch directly", "summary": "The app posts the punch to svc-punch with its own id, so retries never double it; skello-app is not involved.", "refs": ["cu-mci-api", "cu-mci-client", "svc-punch"] },
-    { "title": "svc-punch stores the punch", "summary": "The record is written with its precomputed auto-close time; clock-out and pauses update the same record.", "refs": ["cu-mci-controller", "cu-mci-manager", "dynamo-svc-punch"] },
-    { "title": "Lateness is checked", "summary": "The badge moves the shop's settings row; its stream calls skello-app, which queues a job texting planners about late staff.", "refs": ["cu-mci-lateness", "cu-mci-sac", "skello-app", "cu-mci-private", "cu-mci-latejob", "redis-skello-lateness"] }
+    { "title": "An employee clocks in on the phone", "summary": "The employee picks a shift and a shop, then swipes; GPS is captured when available but never blocks the punch.", "refs": ["cu-mci-screen"] },
+    { "title": "The app prepares the punch", "summary": "The punch carries the time, user, shop, an id made on the phone and any locations; double taps are reported.", "refs": ["cu-mci-api"] },
+    { "title": "The phone calls svc-punch directly", "summary": "svc-punch checks the token's permissions and drops a same-second retry; skello-app is not in the request path.", "refs": ["cu-mci-client", "cu-mci-controller"] },
+    { "title": "The punch is written", "summary": "The record holds shop, user and times but no shift; auto-close is preset to shop closing, a day later overnight.", "refs": ["cu-mci-manager", "dynamo-svc-punch"] },
+    { "title": "Clock-out updates the same record", "summary": "Clock-out and pauses update the punch; no job closes it later, it counts as closed by the backend when out equals auto-close.", "refs": ["cu-mci-screen", "cu-mci-manager", "dynamo-svc-punch"] },
+    { "title": "The badge wakes the lateness check", "summary": "Each mobile badge moves the shop's settings row; its stream calls skello-app's private lateness endpoint with an API key.", "refs": ["dynamo-svc-punch", "cu-mci-lateness", "cu-mci-sac"] },
+    { "title": "Planners are told who is late", "summary": "skello-app queues a job that compares staff with planned shifts and texts planners about late employees.", "refs": ["cu-mci-private", "cu-mci-latejob", "redis-skello-lateness"] }
   ],
   "links": [{"to": "badging-review", "kind": "continuation", "note": "mobile punches reviewed in the same time-management tab"}],
   "steps": [

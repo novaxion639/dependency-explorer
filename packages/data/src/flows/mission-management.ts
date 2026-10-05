@@ -10,12 +10,16 @@ const mission_management: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": { "actor": "manager", "role": "can_read_missions / can_download_mission_report (monolith) · MissionAction permissions (svc-shops); shop gated by is_missions_enabled" },
   "primaryArea": "missions",
   "chapters": [
-    { "title": "A manager manages missions", "summary": "The front creates and edits missions directly in svc-shops, which checks the permission for each action.", "refs": ["skello-app-front", "cu-mm-front-store", "cu-mm-front-client", "svc-shops", "cu-mm-controller"] },
-    { "title": "Missions live in svc-shops", "summary": "svc-shops keeps missions in its own MongoDB collection.", "refs": ["cu-mm-manager", "cu-mm-repo", "mongo-shops-missions"] },
-    { "title": "Mission hours are computed", "summary": "svc-shops reads the shop timezone and mission shifts from svc-search's shared database and sorts hours into planned, worked and ongoing.", "refs": ["cu-mm-rawshop-repo", "cu-mm-shift-repo", "mongo-search-shared", "cu-mm-hours"] },
-    { "title": "Missing wages are flagged", "summary": "svc-shops asks svc-employees for active contracts and flags the first employee with no hourly wage.", "refs": ["cu-mm-wage", "svc-employees"] },
-    { "title": "The report is exported", "summary": "skello-app builds the xlsx report from its own shifts, fetching the mission name from svc-shops.", "refs": ["skello-app", "cu-mm-mono-controller", "cu-mm-mono-gen", "cu-mm-mono-exporter"] },
-    { "title": "Shop teardown purges missions", "summary": "When a shop is torn down, a skello-app job asks svc-shops to purge its missions.", "refs": ["cu-mm-purge-job", "svc-shops"] }
+    { "title": "A manager opens missions", "summary": "In a shop with missions enabled, the front sends mission reads and edits straight to svc-shops.", "refs": ["cu-mm-front-store", "cu-mm-front-client"] },
+    { "title": "Each action is permission-checked", "summary": "svc-shops checks the manager's mission permission for every action before passing it on.", "refs": ["cu-mm-controller", "cu-mm-manager"] },
+    { "title": "Missions are saved in svc-shops", "summary": "Missions live only in svc-shops' own collection, where they are created, read, updated and deleted; CSV imports go by 100.", "refs": ["cu-mm-repo", "mongo-shops-missions"] },
+    { "title": "The shop timezone is looked up", "summary": "For the details view, the shop timezone is read from svc-search's shared database; a missing one fails the request.", "refs": ["cu-mm-manager", "cu-mm-rawshop-repo", "mongo-search-shared"] },
+    { "title": "The mission's shifts are read", "summary": "The mission's shifts that have an employee are read from svc-search's shared shifts collection.", "refs": ["cu-mm-shift-repo", "mongo-search-shared"] },
+    { "title": "Mission hours are sorted", "summary": "In memory, hours are classed as planned, worked or ongoing against the current time in the shop's timezone.", "refs": ["cu-mm-hours"] },
+    { "title": "Missing wages are flagged", "summary": "svc-employees returns active contracts; the first employee whose hourly wage with costs is empty or zero is flagged.", "refs": ["cu-mm-wage", "svc-employees"] },
+    { "title": "A manager exports the report", "summary": "The front asks skello-app for the xlsx report, open only to managers allowed to download it.", "refs": ["cu-mm-front-store", "cu-mm-mono-controller"] },
+    { "title": "The report is built", "summary": "skello-app reads the mission's shifts from its own database, fetches the name from svc-shops and writes the xlsx by 500.", "refs": ["cu-mm-mono-gen", "cu-mm-mono-exporter"] },
+    { "title": "Shop teardown purges missions", "summary": "When a shop is torn down, a skello-app job calls svc-shops to delete the shop's missions.", "refs": ["cu-mm-purge-job", "cu-mm-controller"] }
   ],
   "steps": [
     {

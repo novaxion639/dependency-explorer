@@ -8,11 +8,18 @@ const auto_planning_generation: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "automatic-scheduling",
   "chapters": [
-    { "title": "A planner starts auto-scheduling", "summary": "The front asks svc-automatic-scheduling to compute and gets a websocket id to follow each step's progress live.", "refs": ["svc-automatic-scheduling", "mongo-jobs-trigger"] },
-    { "title": "Inputs are gathered", "summary": "The first step reads shop, staff and contracts from skello-app, and shifts and postes from svc-search's database.", "refs": ["sfn-dataFetcher", "skello-app (data)", "pg-skello-read", "mongo-svc-search", "mongo-jobs-dataFetcher", "sqs-ws-dataFetcher"] },
-    { "title": "Eligibility is checked and solved", "summary": "Parallel steps work out who may take each shift, then a Python optimiser finds the best assignment with no outside calls.", "refs": ["sfn-eligibility", "sfn-aggregate", "mongo-jobs-eligibility", "sqs-ws-eligibility", "mongo-jobs-aggregate", "sqs-ws-aggregate"] },
-    { "title": "Assignments are written back", "summary": "skello-app applies the result, recomputes alerts and counters and, in creation mode, bulk-creates the shifts.", "refs": ["sfn-assignShifts", "skello-app (assign)", "cu-as-controller", "cu-as-assignment", "cu-as-save", "cu-as-alert", "cu-as-bulk-create", "cu-as-tracker-v2", "cu-as-cb-job", "pg-skello-write", "mongo-jobs-assignShifts", "sqs-ws-assignShifts"] },
-    { "title": "The planner sees the result", "summary": "The job is marked finished, the last progress message arrives and the planning shows the new roster.", "refs": ["sfn-finishJob", "mongo-jobs-finishJob", "sqs-ws-finishJob"] }
+    { "title": "A planner starts auto-scheduling", "summary": "The front asks svc-automatic-scheduling to compute; it records a started job and returns a websocket id for live progress.", "refs": ["svc-automatic-scheduling", "mongo-jobs-trigger"] },
+    { "title": "The pipeline starts fetching", "summary": "The first pipeline step sets the job to data fetching and sends that status to the planner's websocket channel.", "refs": ["sfn-dataFetcher", "mongo-jobs-dataFetcher", "sqs-ws-dataFetcher"] },
+    { "title": "Shop and staff come from skello-app", "summary": "It reads shop, teams, postes and contract types, then users, contracts, memberships and licenses from skello-app.", "refs": ["sfn-dataFetcher", "skello-app (data)", "pg-skello-read"] },
+    { "title": "Shifts come from svc-search", "summary": "Assigned and unassigned shifts and postes are read straight from svc-search's MongoDB; the context travels in the pipeline state.", "refs": ["sfn-dataFetcher", "mongo-svc-search"] },
+    { "title": "Eligibility is checked in batches", "summary": "Employee batches are checked in parallel and in memory; each batch updates the job status and sends a progress message.", "refs": ["sfn-eligibility", "mongo-jobs-eligibility", "sqs-ws-eligibility"] },
+    { "title": "Results are combined and solved", "summary": "Batch results are aggregated and the optimising status is pre-sent, because the Python solver makes no outside calls.", "refs": ["sfn-aggregate", "mongo-jobs-aggregate", "sqs-ws-aggregate"] },
+    { "title": "The result goes back to skello-app", "summary": "The assign step sets the job to assigning, tells the planner, and calls skello-app's private write-back with an API key.", "refs": ["sfn-assignShifts", "mongo-jobs-assignShifts", "sqs-ws-assignShifts", "svc-automatic-scheduling", "cu-as-controller"] },
+    { "title": "Assignments are saved", "summary": "skello-app persists the optimised user-to-shift assignments, writing shifts, badgings and swaps in one transaction.", "refs": ["cu-as-controller", "cu-as-assignment", "cu-as-save", "skello-app (assign)", "pg-skello-write"] },
+    { "title": "Generated shifts are created", "summary": "In automatic shift creation mode, the write-back bulk-inserts the generated shifts.", "refs": ["cu-as-controller", "cu-as-bulk-create", "pg-skello-write"] },
+    { "title": "Alerts and counters are refreshed", "summary": "Alerts are recomputed for the touched shifts, and planning-hours, RCR and paid-leave counters are recalculated.", "refs": ["cu-as-assignment", "cu-as-alert", "cu-as-tracker-v2"] },
+    { "title": "Weekly options are marked stale", "summary": "A background job is queued for each affected employee and week to mark its weekly options stale.", "refs": ["cu-as-assignment", "cu-as-cb-job"] },
+    { "title": "The planner sees the result", "summary": "The job is marked finished, the final progress message arrives and the planning shows the optimised roster.", "refs": ["sfn-finishJob", "mongo-jobs-finishJob", "sqs-ws-finishJob"] }
   ],
   "steps": [
     {

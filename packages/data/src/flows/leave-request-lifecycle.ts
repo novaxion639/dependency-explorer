@@ -18,11 +18,15 @@ const leave_request_lifecycle: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": {"actor": "employee"},
   "primaryArea": "leave-requests",
   "chapters": [
-    { "title": "An employee asks for leave", "summary": "On the web the request goes straight to svc-requests; the mobile form asks svc-requests for the preselected manager.", "refs": ["skello-app-front", "cu-lrl-front-client", "skello-mobile", "cu-lrl-mob-form"] },
-    { "title": "Mobile goes through skello-app", "summary": "The phone sends the request to skello-app, which relays it to svc-requests.", "refs": ["cu-lrl-mob-api", "skello-app", "cu-lrl-mono-proxy"] },
-    { "title": "svc-requests saves the request", "summary": "The request is validated and saved in svc-requests' own database; an activity log goes to svc-events behind a feature flag.", "refs": ["svc-requests", "cu-lrl-api", "cu-lrl-manager", "pg-requests", "cu-lrl-activity", "svc-events"] },
-    { "title": "The change fans out", "summary": "The database change stream reaches a job that publishes the creation triggers on one topic.", "refs": ["kinesis-requests-cdc", "cu-lrl-decode", "sns-dispatch-lrl"] },
-    { "title": "The manager is told", "summary": "Email and notification jobs tell the manager through svc-communications-v2.", "refs": ["cu-lrl-mail", "cu-lrl-email-mgr", "cu-lrl-notif", "cu-lrl-notif-mgr", "svc-communications-v2"] }
+    { "title": "An employee asks for leave on the web", "summary": "The web client sends the request straight to svc-requests, without touching skello-app.", "refs": ["skello-app-front", "cu-lrl-front-client", "cu-lrl-api"] },
+    { "title": "The mobile form opens", "summary": "The phone form gets the preselected manager straight from svc-requests; over-midnight shops move after-midnight times a day on.", "refs": ["cu-lrl-mob-form"] },
+    { "title": "Mobile goes through skello-app", "summary": "The phone sends the request to skello-app, which authorises it, maps its fields and relays it to svc-requests.", "refs": ["cu-lrl-mob-api", "skello-app", "cu-lrl-mono-proxy", "cu-lrl-api"] },
+    { "title": "The request is saved", "summary": "svc-requests validates the request and saves it in its own Aurora Postgres database.", "refs": ["cu-lrl-api", "cu-lrl-manager", "pg-requests"] },
+    { "title": "The activity is logged", "summary": "Behind a feature flag, an activity-log batch goes to svc-events; a failed batch costs only the audit trail, not the request.", "refs": ["cu-lrl-api", "cu-lrl-activity", "svc-events"] },
+    { "title": "The change is streamed", "summary": "A dedicated replication task streams the new row onto svc-requests' own change stream.", "refs": ["pg-requests", "kinesis-requests-cdc"] },
+    { "title": "Triggers are published", "summary": "A job decodes each change and publishes it on one topic with computed triggers that queues filter on.", "refs": ["kinesis-requests-cdc", "cu-lrl-decode", "sns-dispatch-lrl"] },
+    { "title": "The manager gets an email", "summary": "The created-mail job builds the manager's email and sends it through svc-communications-v2.", "refs": ["sns-dispatch-lrl", "cu-lrl-mail", "cu-lrl-email-mgr", "svc-communications-v2"] },
+    { "title": "The manager gets a notification", "summary": "The created-notification job builds the in-app notification and sends it through svc-communications-v2.", "refs": ["sns-dispatch-lrl", "cu-lrl-notif", "cu-lrl-notif-mgr", "svc-communications-v2"] }
   ],
   "steps": [
     {
