@@ -375,7 +375,7 @@ See `src/data/flows/auto-planning-generation.ts` — the first flow built using 
 | `summary` | One line, at most 160 characters — what happens and why it matters |
 | `refs` | Ids the flow's swimlanes draw: code unit ids, infra node ids, and services that are code-edge endpoints |
 
-- 3 to 7 chapters per flow, in execution order.
+- 3 to 12 chapters per flow, in execution order, at least one for every two code units or infra nodes.
 - Every code unit and infra node of the flow appears in at least one chapter.
 - A chapter states only facts already in the flow — unit and edge descriptions, conditions, branches, steps, the flow description. Discovery verifies those units at the pinned commit (`pnpm discover`). A summary that needs a fact the flow lacks first adds it to the unit's description, read from the file at the pinned commit: `git -C ~/Documents/Skello_Dev/<repo> show <pin>:<path>` (pins: `packages/data/src/generated/resources.json` → `pins`).
 - A flow without chapters shows derived ones: one per step, then "Side effects" (async-job edges) and "Replication" (data feeds out of stores).

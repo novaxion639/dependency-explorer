@@ -24,7 +24,7 @@ describe('FlowPage stepping', () => {
     const press = (key: string) => window.dispatchEvent(new KeyboardEvent('keydown', { key }))
     await act(async () => render('?page=flows&flow=shift-creation&present=1&renderer=svg'))
     await act(async () => press('ArrowRight'))
-    await act(async () => render('?page=flows&flow=shift-creation&present=1&renderer=svg&chapter=6'))
+    await act(async () => render(`?page=flows&flow=shift-creation&present=1&renderer=svg&chapter=${shift.chapters?.length ?? 0}`))
     await act(async () => press('ArrowRight'))
     expect(patches).toEqual([{ chapter: 1 }, { chapter: 1 }])
     root.unmount()

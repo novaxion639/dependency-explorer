@@ -12,11 +12,15 @@ const org_onboarding: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": { "actor": "prospect", "role": "authenticated user without_organisation? (create) · system_admin for the onboarding journey" },
   "primaryArea": "org-admin",
   "chapters": [
-    { "title": "A new user creates an organisation", "summary": "After signup, the organisation form posts to skello-app, which accepts only users without an organisation.", "refs": ["skello-app-front", "cu-oo-org-form", "cu-oo-onb-store", "skello-app", "cu-oo-mono-controller"] },
-    { "title": "The organisation is provisioned", "summary": "One transaction creates the organisation, default licenses, the creator's contract and a document template.", "refs": ["cu-oo-upsert", "pg-skello-onboarding"] },
-    { "title": "The legacy journey sets up shops", "summary": "With the flag off, a seven-step modal adds users and postes through skello-app and imports a planning through svc-intelligence.", "refs": ["cu-oo-admin-onb", "svc-intelligence"] },
-    { "title": "The new journey tracks progress", "summary": "With the flag on, per-shop progress is saved in svc-enrollment, which writes nothing back to skello-app.", "refs": ["cu-oo-enroll-store", "svc-enrollment", "cu-oo-enroll-controller", "cu-oo-enroll-mgr", "cu-oo-enroll-repo", "dynamo-enrollment"] },
-    { "title": "Progress reaches the data lake", "summary": "svc-enrollment's change stream replicates the progress to the data lake through Firehose.", "refs": ["cu-oo-firehose", "kinesis-enrollment-datalake"] }
+    { "title": "A new user fills in the organisation", "summary": "After signup, the forms collect the organisation, its first shop and billing, then send them to skello-app.", "refs": ["cu-oo-org-form", "cu-oo-onb-store"] },
+    { "title": "Only users without one may create", "summary": "skello-app lets only a user without an organisation create one; the request runs as one transaction, invalid data answers 422.", "refs": ["cu-oo-mono-controller"] },
+    { "title": "The organisation is provisioned", "summary": "One transaction creates the organisation, default licenses, the creator's license and contract, and a document template.", "refs": ["cu-oo-upsert", "pg-skello-onboarding"] },
+    { "title": "The prospect moves forward", "summary": "The prospect is marked organisation created; updates toggle pack features and default postes and start a self-serve free trial.", "refs": ["cu-oo-upsert", "pg-skello-onboarding"] },
+    { "title": "The legacy journey sets up shops", "summary": "With the flag off, a seven-step modal adds users, postes and licenses through skello-app and never touches svc-enrollment.", "refs": ["cu-oo-admin-onb"] },
+    { "title": "A language model imports the planning", "summary": "In the legacy modal, svc-intelligence imports the planning over a websocket; a dropped import is retried by the admin.", "refs": ["cu-oo-admin-onb", "svc-intelligence"] },
+    { "title": "The new journey sends progress", "summary": "With the flag on, the front sends per-shop progress, for planning or time clock, to svc-enrollment with the user's token.", "refs": ["cu-oo-enroll-store"] },
+    { "title": "svc-enrollment stores the progress", "summary": "A system admin's progress is upserted once per shop and journey; svc-enrollment writes nothing back to skello-app.", "refs": ["cu-oo-enroll-controller", "cu-oo-enroll-mgr", "cu-oo-enroll-repo", "dynamo-enrollment"] },
+    { "title": "Progress reaches the data lake", "summary": "The table's stream batches progress to the data lake through Firehose; a dead-lettered batch loses only that copy.", "refs": ["dynamo-enrollment", "cu-oo-firehose", "kinesis-enrollment-datalake"] }
   ],
   "links": [
     { "to": "self-serve-signup", "kind": "continuation", "note": "sign-up produces the authenticated user + Prospect this flow provisions; self_serve orgs get free_trial_started_at on activation" }

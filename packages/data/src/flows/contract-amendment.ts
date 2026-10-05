@@ -10,12 +10,15 @@ const contract_amendment: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": { "actor": "manager", "role": "can_create_amendment (Pundit on highest_license)" },
   "primaryArea": "employees-hr",
   "chapters": [
-    { "title": "A manager amends a contract", "summary": "The contract page posts the amendment; skello-app refuses it unless the shop has the amendments feature.", "refs": ["skello-app-front", "cu-ca-modal", "cu-ca-store", "skello-app", "cu-ca-controller"] },
-    { "title": "The amendment is saved", "summary": "The amendment is saved, and a permanent one closes the previous overlapping amendment.", "refs": ["cu-ca-create-service", "cu-ca-model", "pg-skello-amendments"] },
-    { "title": "Annualization syncs", "summary": "An annualization config goes to svc-employees; if that fails, the amendment is removed and the previous end date restored.", "refs": ["cu-ca-employee-client", "svc-employees"] },
-    { "title": "Cyclic amendments update in bulk", "summary": "Amendments that follow team schedules are written together in one transaction.", "refs": ["cu-ca-bulk-service"] },
-    { "title": "Hours and caches recompute", "summary": "Background jobs reset planning hours, recompute the week and rebuild the contracts timeline that microservices read.", "refs": ["cu-ca-recalc-job", "cu-ca-reset-job", "cu-ca-timeline-job", "redis-skello-amendments", "pg-skello-amendments"] },
-    { "title": "The change is audited", "summary": "An audit job records the amendment and, behind a feature flag, posts it to svc-events.", "refs": ["cu-ca-activity-job", "cu-ca-event-client", "svc-events"] }
+    { "title": "A manager fills in the amendment", "summary": "On the contract page a modal creates a temporary or permanent amendment and posts it to skello-app.", "refs": ["cu-ca-modal", "cu-ca-store", "skello-app"] },
+    { "title": "The amendments feature is checked", "summary": "skello-app refuses the request unless the shop has the amendments feature; annualization settings pass only behind a dev flag.", "refs": ["skello-app", "cu-ca-controller"] },
+    { "title": "The amendment is saved", "summary": "The amendment is saved without a transaction; a permanent one first closes the overlapping non-cyclic amendment before it.", "refs": ["cu-ca-create-service", "cu-ca-model", "pg-skello-amendments"] },
+    { "title": "Annualization syncs", "summary": "When an annualization config is present it goes to svc-employees; if that fails, the amendment is removed and the previous end date restored.", "refs": ["cu-ca-create-service", "cu-ca-employee-client", "svc-employees"] },
+    { "title": "Weekly hours are recomputed", "summary": "A background job recomputes the employee's weekly planning hours, and stops early when the employee has none.", "refs": ["cu-ca-create-service", "cu-ca-recalc-job", "redis-skello-amendments"] },
+    { "title": "Planning hours reset after commit", "summary": "After commit, a job on the hours-counter queue resets planning hours from the amendment's start date.", "refs": ["cu-ca-model", "cu-ca-reset-job", "redis-skello-amendments", "pg-skello-amendments"] },
+    { "title": "The contracts timeline is rebuilt", "summary": "After commit, the employee's cache is busted and a job rebuilds the contracts timeline that microservices read.", "refs": ["cu-ca-model", "cu-ca-timeline-job", "pg-skello-amendments"] },
+    { "title": "The change is audited", "summary": "An audit job notifies unless the author is a super admin and, behind a feature flag, posts the amendment to svc-events.", "refs": ["cu-ca-activity-job", "cu-ca-event-client", "svc-events", "redis-skello-amendments"] },
+    { "title": "Cyclic amendments update in bulk", "summary": "Amendments that follow team schedules take a separate bulk route, written together in one transaction.", "refs": ["cu-ca-controller", "cu-ca-bulk-service"] }
   ],
   "links": [
     { "to": "employee-onboarding", "kind": "domain-related", "note": "shares PlanningHoursData recompute, contracts-timeline cache rebuild and the ActivityJob → svc-events audit path" }

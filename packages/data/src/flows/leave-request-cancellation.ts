@@ -14,9 +14,12 @@ const leave_request_cancellation: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": {"actor": "employee"},
   "primaryArea": "leave-requests",
   "chapters": [
-    { "title": "A leave request is cancelled", "summary": "The web calls svc-requests directly; on mobile, skello-app relays the same delete.", "refs": ["skello-app-front", "cu-lrc-front-client", "skello-app", "cu-lrc-mono-proxy"] },
-    { "title": "The request is deleted", "summary": "svc-requests loads the request, answering 404 when it is gone, and deletes the row.", "refs": ["svc-requests", "cu-lrc-api", "cu-lrc-manager", "pg-requests-cancel"] },
-    { "title": "Nobody is notified", "summary": "The change stream publishes the deletion, but no subscription matches it: no email, notification or shift change follows.", "refs": ["kinesis-requests-cdc-cancel", "cu-lrc-decode", "sns-dispatch-cancel"] }
+    { "title": "An employee cancels on the web", "summary": "The web front sends the delete for the leave request straight to svc-requests.", "refs": ["cu-lrc-front-client"] },
+    { "title": "Mobile cancels through skello-app", "summary": "On the mobile app, skello-app checks the user may manage their own leave and relays the same delete.", "refs": ["cu-lrc-mono-proxy"] },
+    { "title": "svc-requests finds the request", "summary": "The request is loaded first and a missing one answers 404; this path writes no activity log.", "refs": ["cu-lrc-api"] },
+    { "title": "The row is deleted", "summary": "The leave request row is deleted from svc-requests' own database.", "refs": ["cu-lrc-manager", "pg-requests-cancel"] },
+    { "title": "The deletion reaches the stream", "summary": "Change capture copies the deletion onto svc-requests' own stream, like any row change, and the decoder receives it.", "refs": ["pg-requests-cancel", "kinesis-requests-cdc-cancel", "cu-lrc-decode"] },
+    { "title": "Nobody is notified", "summary": "No subscription matches a deletion, so only the data-lake export sees it: no email, notification or shift change follows.", "refs": ["cu-lrc-decode", "sns-dispatch-cancel"] }
   ],
   "steps": [
     {

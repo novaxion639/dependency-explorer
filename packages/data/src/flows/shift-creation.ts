@@ -12,11 +12,15 @@ const shift_creation: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": {"actor": "manager", "role": "planner (can_create_shifts!)"},
   "primaryArea": "planning",
   "chapters": [
-    { "title": "A manager saves a shift", "summary": "The planning page posts the new shift to skello-app, which checks the planner may create shifts.", "refs": ["skello-app-front", "cu-shifts-controller"] },
-    { "title": "The shift is written", "summary": "One transaction validates the shift and writes it, moving clashing shifts aside when an absence lands on them.", "refs": ["cu-create-service", "cu-sick-leave-service", "cu-replacement-service", "pg-skello-shifts"] },
-    { "title": "Counters recompute", "summary": "Hours, RCR and paid-leave counters update for every employee assigned to the shift.", "refs": ["cu-tracker-service", "pg-skello-counters"] },
-    { "title": "Side effects after commit", "summary": "Model callbacks refresh the shift cache and queue three background jobs for weekly options, shift data and paid leave.", "refs": ["cu-shift-callbacks", "redis-skello-shifts", "cu-shift-callback-job", "cu-shift-data-job", "cu-paid-leaves-job"] },
-    { "title": "Absences are audited", "summary": "For absence shifts only, a background job posts an audit event to svc-events.", "refs": ["cu-activity-job", "svc-events", "dynamo-events-shift"] },
+    { "title": "A manager saves a shift", "summary": "The planning page posts the new shift; skello-app checks the planner may create shifts and answers with the created shift.", "refs": ["skello-app-front", "cu-shifts-controller"] },
+    { "title": "Locked days and bad input stop it", "summary": "One transaction opens: a locked day returns 403, a reused shift id or invalid times, pause or poste return 422, and all rolls back.", "refs": ["cu-create-service"] },
+    { "title": "Sick-leave durations recompute", "summary": "Behind a dev flag, absence durations of a sick-leave batch are recomputed, all or nothing.", "refs": ["cu-create-service", "cu-sick-leave-service"] },
+    { "title": "Clashing shifts are moved aside", "summary": "When an absence lands on existing work shifts, those shifts become unassigned and a replacement row records each move.", "refs": ["cu-replacement-service", "pg-skello-shifts"] },
+    { "title": "The shift is written", "summary": "The shift row is created inside the same transaction.", "refs": ["cu-create-service", "pg-skello-shifts"] },
+    { "title": "Counters recompute", "summary": "Hours, RCR and paid-leave counters update for every assigned employee, inline or as a background job.", "refs": ["cu-tracker-service", "pg-skello-counters"] },
+    { "title": "Callbacks refresh cache and predictions", "summary": "After save the first-shift cache reloads; after commit, a future shift within shop hours gets a predicted shift for the punch clock.", "refs": ["cu-shift-callbacks", "redis-skello-shifts", "pg-skello-shifts"] },
+    { "title": "Three background jobs follow", "summary": "Through Sidekiq, jobs mark the week's options stale, refresh the shift data payload and recompute paid-leave counters.", "refs": ["cu-shift-callbacks", "redis-skello-shifts", "cu-shift-callback-job", "cu-shift-data-job", "cu-paid-leaves-job"] },
+    { "title": "Absences are audited", "summary": "For absence shifts only, a background job posts a shift-created event to svc-events, which stores it.", "refs": ["cu-activity-job", "svc-events", "dynamo-events-shift"] },
     { "title": "The row is replicated", "summary": "DMS copies the new row to svc-search, where auto-scheduling and the BFF read it.", "refs": ["pg-skello-shifts", "svc-search"] }
   ],
   "steps": [
