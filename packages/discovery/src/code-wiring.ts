@@ -12,7 +12,9 @@ export interface WiredEdge {
   calleeClasses: string[]
 }
 
-const DECLARATION = /^(?:export\s+)?const\s+(\w+)[^=\n]*=\s*/gm
+const DECLARATION = /^\s*(?:export\s+)?const\s+(\w+)[^=\n]*=\s*/gm
+const OBJECT_KEY = /([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)(?!:)/g
+const STRING = /'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g
 const NEW_CALL = /\bnew\s+([A-Z]\w*)\s*(?:<[^>()]*>)?\s*\(/g
 const IDENTIFIER = /\b[A-Za-z_$][\w$]*\b/g
 const NOT_INJECTABLE = new Set(['Map', 'Set', 'Array', 'Object', 'Date', 'Promise', 'URL', 'Error'])
@@ -65,7 +67,16 @@ function blankSpans(code: string, spans: Construction[]): string {
   return spans.reduceRight((acc, s) => `${acc.slice(0, s.start)}${' '.repeat(s.end - s.start)}${acc.slice(s.end)}`, code)
 }
 
-export function parseInjections(source: string, fileOf: (cls: string) => string | null): Map<string, Set<string>> {
+export function maskStrings(source: string): string {
+  return source.replace(STRING, s => `${s[0] ?? ''}${' '.repeat(Math.max(0, s.length - 2))}${s[s.length - 1] ?? ''}`)
+}
+
+function maskObjectKeys(code: string): string {
+  return code.replace(OBJECT_KEY, (_whole, lead: string, key: string, colon: string) => `${lead}${' '.repeat(key.length)}${colon}`)
+}
+
+export function parseInjections(raw: string, fileOf: (cls: string) => string | null): Map<string, Set<string>> {
+  const source = maskObjectKeys(maskStrings(stripComments(raw)))
   const starts = [...source.matchAll(DECLARATION)]
   const decls = new Map(starts.map((m, i) => {
     const from = (m.index ?? 0) + m[0].length

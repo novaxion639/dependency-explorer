@@ -1,11 +1,10 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { readerFor, RESOLVE_SUFFIXES, resolveSpecifier, stripComments, type Alias, type Read } from './code-wiring'
+import { maskStrings, readerFor, RESOLVE_SUFFIXES, resolveSpecifier, stripComments, type Alias, type Read } from './code-wiring'
 
 export interface VueRoute { name: string; componentFile: string }
 
 const DEFAULT_IMPORT = /\bimport\s+([A-Za-z_$][\w$]*)\s+from\s+['"]([^'"]+)['"]/g
-const STRING = /'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g
 const COMPONENT_KEY = /\bcomponent\s*:/g
 const COMPONENT_VALUE = /^\s*(?:([A-Za-z_$][\w$]*)\s*[,}\n]|\(\)\s*=>\s*import\(\s*['"]([^'"]+)['"]\s*\))/
 const NAME_VALUE = /^name\s*:\s*(['"])([^'"]+)\1/
@@ -15,9 +14,6 @@ const ROUTE_FILE = /routes?\.(?:js|ts)$/i
 const NOT_SOURCE = /(?:^|\/)(?:node_modules|__tests__)\/|\.(?:test|spec)\./
 const NAVIGATES = /\$?router\.(?:push|replace)\s*\(|<router-link\b/
 
-function maskStrings(source: string): string {
-  return source.replace(STRING, s => `${s[0] ?? ''}${' '.repeat(Math.max(0, s.length - 2))}${s[s.length - 1] ?? ''}`)
-}
 
 function enclosingObject(masked: string, at: number): [number, number] | null {
   let depth = 0

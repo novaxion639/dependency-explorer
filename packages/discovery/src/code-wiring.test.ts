@@ -235,3 +235,38 @@ describe('imported files', () => {
     expect(importedFiles(store, 'apps/vue-app/src/shared/store/modules/plannings/shifts.js', [], readRepo)).toEqual(['apps/vue-app/src/shared/store/modules/plannings/api/shift.js'])
   })
 })
+
+describe('parseInjections precision', () => {
+  const asFile = (cls: string) => `src/${cls}.ts`
+  it('never splits or wires through strings and comments', () => {
+    const container = [
+      "const a = new A('x; new B(')",
+      '// const c = new C(a)',
+      'const d = new D(a /* ; new E() */)',
+    ].join('\n')
+    const injects = parseInjections(container, asFile)
+    expect([...injects.keys()].sort()).toEqual(['src/A.ts', 'src/D.ts'])
+    expect([...(injects.get('src/D.ts') ?? [])]).toEqual(['src/A.ts'])
+  })
+  it('reads object values, not keys, as dependencies', () => {
+    const container = [
+      'const documentManager = new DocumentManager()',
+      'const other = new Other()',
+      'const x = new X({ documentManager: other })',
+      'const y = new Y({ documentManager })',
+    ].join('\n')
+    const injects = parseInjections(container, asFile)
+    expect([...(injects.get('src/X.ts') ?? [])]).toEqual(['src/Other.ts'])
+    expect([...(injects.get('src/Y.ts') ?? [])]).toEqual(['src/DocumentManager.ts'])
+  })
+  it('reads declarations indented inside an initContainer function', () => {
+    const container = [
+      'export const initContainer = async (env) => {',
+      '  const repo = new Repo(env)',
+      '  const manager = new Manager(repo)',
+      '  return { manager }',
+      '}',
+    ].join('\n')
+    expect([...(parseInjections(container, asFile).get('src/Manager.ts') ?? [])]).toEqual(['src/Repo.ts'])
+  })
+})
