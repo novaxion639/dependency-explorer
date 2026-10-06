@@ -248,6 +248,16 @@ describe('dmsRelations sources', () => {
     const stream: Resource = { id: 'kinesis:svc-requests/fullload', kind: 'stream', store: 'kinesis', name: 'fullload', owner: 'svc-requests', evidence: [] }
     expect(dmsRelations([{ service: 'svc-requests', facts }], [stream]).map(r => r.service)).toEqual(['skello-app'])
   })
+  it('reads a quoted production branch containing colons', () => {
+    const facts = {
+      resources: [{ tfType: 'aws_kinesis_stream', label: 'full', name: 'fullload' }],
+      dmsTasks: [{ label: 'f', source: 'local.workspace == "prod" ? "arn:aws:dms:eu-west-1:1:endpoint:skelloapp-rds" : aws_dms_endpoint.svc_requests_aurora[0].endpoint_arn', target: 'aws_dms_endpoint.k.endpoint_arn' }],
+      dmsEndpoints: [{ label: 'k', streamLabel: 'full' }],
+      iamActions: [], mongoRoles: [],
+    }
+    const stream: Resource = { id: 'kinesis:svc-requests/fullload', kind: 'stream', store: 'kinesis', name: 'fullload', owner: 'svc-requests', evidence: [] }
+    expect(dmsRelations([{ service: 'svc-requests', facts }], [stream]).map(r => r.service)).toEqual(['skello-app'])
+  })
 })
 
 describe('dedupeRelations', () => {

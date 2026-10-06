@@ -182,7 +182,7 @@ function compactName(repo: string): string {
 }
 
 function productionBranch(source: string): string {
-  const m = source.match(/([!=]=)\s*"prod"\s*\?\s*(.+?)\s*:\s*(.+)$/)
+  const m = source.match(/([!=]=)\s*"prod"\s*\?\s*("(?:[^"\\]|\\.)*"|[^:]+?)\s*:\s*(.+)$/)
   if (!m) {
     return source
   }

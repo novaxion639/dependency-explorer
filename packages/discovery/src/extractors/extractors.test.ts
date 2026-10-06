@@ -659,6 +659,14 @@ describe('parseSqsConsumers', () => {
     expect(parseSqsConsumers(content)).toBeNull()
     expect(parseSqsConsumers(content.split('\n').filter(l => !l.includes('UndeclaredQueue')).join('\n'))).toEqual(['mergeShopSqs', 'svcPos-transaction'])
   })
+  it('never takes the QueueName of the next resource', () => {
+    const content = [
+      "fn: { events: [{ sqs: { arn: { 'Fn::GetAtt': ['FifoQueue', 'Arn'] } } }] },",
+      "FifoQueue: { Type: 'AWS::SQS::Queue', Properties: { FifoQueue: true } },",
+      "Other: { Type: 'AWS::SQS::Queue', Properties: { QueueName: 'other-${sls:stage}' } },",
+    ].join('\n')
+    expect(parseSqsConsumers(content)).toBeNull()
+  })
   it('knows nothing when an sqs event names its queue through a parameter', () => {
     expect(parseSqsConsumers("fn: { events: [{ sqs: { arn: '${self:custom.parameters.reportQueueArn}' } }] }")).toBeNull()
     expect(parseSqsConsumers("const arn = 'arn:aws:sqs:eu-west-1:1:x'")).toEqual([])

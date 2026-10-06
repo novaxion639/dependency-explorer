@@ -438,7 +438,7 @@ export function parseTerraformDlq(content: string): DlqWiringFact[] {
 const SQS_EVENT_LITERAL = /\bsqs:\s*(?:\{\s*arn:\s*)?(['"`])([^'"`]+)\1/g
 const SQS_EVENT_GETATT = /\bsqs:\s*\{\s*arn:\s*\{\s*['"`]?Fn::GetAtt['"`]?\s*:\s*\[\s*['"`]?([\w$.]+)['"`]?/g
 const SQS_EVENT_KEY = /(?:^|[\s{,[])sqs:\s*['"`{]/gm
-const SQS_QUEUE_RESOURCE = /\b([A-Za-z]\w*):\s*\{\s*Type:\s*['"`]AWS::SQS::Queue['"`][\s\S]{0,300}?QueueName:\s*['"`]([^'"`]+)['"`]/g
+const SQS_QUEUE_RESOURCE = /\b([A-Za-z]\w*):\s*\{\s*Type:\s*['"`]AWS::SQS::Queue['"`](?:(?!\bType:)[\s\S]){0,300}?QueueName:\s*['"`]([^'"`]+)['"`]/g
 
 function queueNameOf(raw: string): string {
   const last = raw.replace(/\$\{[^}]*\}/g, '').split(':').pop() ?? ''
