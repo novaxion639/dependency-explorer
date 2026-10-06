@@ -4,19 +4,24 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
   "id": "hiring-open",
   "name": "Open Hiring (Join)",
-  "description": "A manager clicks Hiring in the navbar. When the hiring_join shop feature is off the click opens the upsell modal instead. Otherwise the front builds a setup snapshot — the organisation, its active hiring_join shops, and the users who can hire (every can_hire administrator for a system admin, the manager alone otherwise) — and calls svc-hiring POST /join_token. svc-hiring checks the caller belongs to the organisation, mints a partner access key from the monolith on first setup, provisions the Join company, users and offices synchronously (DynamoDB status rows make every step idempotent), emails the outcome through svc-communications-v2, then asks Join for an auto-login token. The front opens the returned redirectUrl in a new tab. Only a failure on the company or on the connecting user blocks the token; other users' and offices' failures are reported and retried on the next click.",
+  "description": "A manager clicks Hiring in the navbar. When the hiring_join shop feature is off the click opens the upsell modal instead. Otherwise the front reads from the monolith the caller's accessible active shops, keeps those with hiring_join, and gathers the users who can hire (every can_hire administrator for a system admin — the admin alone when licences are unreadable — the manager alone otherwise); it posts that setup snapshot to svc-hiring POST /join_token. svc-hiring checks the caller belongs to the organisation, mints a partner access key from the monolith on first setup, provisions the Join company, users and offices synchronously (DynamoDB status rows make every step idempotent), emails new accounts and errors through svc-communications-v2, then asks Join for an auto-login token. The front opens the returned redirectUrl in a new tab. Only a failure on the company or on the connecting user blocks the token; other users' and offices' failures are reported and retried on the next click.",
   "trigger": { "actor": "manager", "role": "can_hire license on a hiring_join shop" },
   "primaryArea": "hiring",
   "chapters": [
     { "title": "A manager clicks Hiring", "summary": "The navbar opens the upsell modal when Hiring is not enabled for the shop; otherwise it starts opening Join.", "refs": ["skello-app-front", "cu-ho-navbar", "cu-ho-open"] },
     { "title": "The front sends a setup snapshot", "summary": "It gathers the organisation, its hiring shops and the users who can hire, and posts them to svc-hiring for a Join token.", "refs": ["cu-ho-open", "cu-ho-api", "svc-hiring"] },
-    { "title": "The caller is checked", "summary": "svc-hiring only serves a caller whose organisation matches the request.", "refs": ["cu-ho-controller", "cu-ho-token-mgr"] },
-    { "title": "Skello hands Join an access key", "summary": "On first setup svc-hiring mints an organisation access key from the monolith, which Join uses to call back into Skello.", "refs": ["cu-ho-token-mgr", "cu-ho-skello-client", "skello-app"] },
+    { "title": "The caller is checked", "summary": "svc-hiring only serves a caller whose organisation matches the request.", "refs": ["svc-hiring", "cu-ho-controller"] },
+    { "title": "Skello hands Join an access key", "summary": "On first setup svc-hiring mints an organisation access key from the monolith, which Join uses to call back into Skello.", "refs": ["cu-ho-token-mgr", "cu-ho-skello-client", "skello-app", "dynamo-svc-users-access-key"] },
     { "title": "Join accounts are provisioned", "summary": "The company, then each user and office, is created on Join once; DynamoDB status rows make every retry safe.", "refs": ["cu-ho-setup-mgr", "dynamo-svc-hiring", "cu-ho-join-client"] },
-    { "title": "Admins hear the outcome", "summary": "Account-created, welcome and error emails go out through svc-communications-v2.", "refs": ["cu-ho-notifier", "svc-communications-v2"] },
+    { "title": "New accounts and errors are emailed", "summary": "Admins created on Join get an account-created email, other new users a welcome email; Join errors are emailed to every admin.", "refs": ["cu-ho-notifier", "svc-communications-v2"] },
     { "title": "Join opens in a new tab", "summary": "svc-hiring asks Join for an auto-login link and the front opens it; any failure shows an error and opens nothing.", "refs": ["cu-ho-token-mgr", "cu-ho-join-client", "cu-ho-open"] }
   ],
   "steps": [
+    {
+      "from": "skello-app-front",
+      "to": "skello-app",
+      "action": "GET /v3/api/shops · GET /v3/api/licenses · GET /v3/api/users/administrators · GET /v3/api/current_user — accessible active shops, can_hire licences and administrators (system admin only), the caller's language"
+    },
     {
       "from": "skello-app-front",
       "to": "svc-hiring",
@@ -30,7 +35,7 @@ const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-hiring",
       "to": "svc-communications-v2",
-      "action": "POST /email/low-priority — account created, welcome, or grouped-error email to the organisation's admins"
+      "action": "POST /email/low-priority — account-created (new admins), welcome (new non-admins), grouped-error or auth-token-error (all admins)"
     },
     {
       "from": "svc-hiring",
@@ -53,7 +58,7 @@ const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "component",
       "label": "useOpenHiring",
       "path": "apps/base-app/src/pages/App/sections/Navbar/sections/NavbarLinks/hooks/useOpenHiring/useOpenHiring.ts",
-      "description": "Builds the SetupRequestDto (active shops with hiring_join; can_hire administrators for a system admin, the manager alone otherwise), requests the Join token and opens redirectUrl in a new tab; any error shows the errors.hiring.open_failed snackbar"
+      "description": "Builds the SetupRequestDto (the caller's accessible active shops with hiring_join; can_hire administrators for a system admin — the admin alone when licences are unreadable — the manager alone otherwise), requests the Join token and opens redirectUrl in a new tab; any error shows the errors.hiring.open_failed snackbar"
     },
     {
       "id": "cu-ho-api",
@@ -69,7 +74,7 @@ const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "controller",
       "label": "JoinTokenController",
       "path": "src/Controller/JoinTokenController.ts",
-      "description": "Validates the request body and checks OrganisationIdPermissionCheck: a super admin, or a JWT user of the request's organisation (403 otherwise)"
+      "description": "Structurally validates the body (loose JoinTokenRequestDto; content is left for Join to reject), then checks OrganisationIdPermissionCheck for JWT callers: a super admin, or a user of the request's organisation (403 otherwise)"
     },
     {
       "id": "cu-ho-token-mgr",
@@ -85,7 +90,7 @@ const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "client",
       "label": "SkelloClient",
       "path": "src/Client/SkelloClient.ts",
-      "description": "createOrganisationAccessKey — POST /private/organisations/:organisation_id/access_keys with the Skello App API key; the monolith stores an employees:read access key in DynamoDB and returns its skl_ token"
+      "description": "createOrganisationAccessKey — POST /private/organisations/:organisation_id/access_keys with the Skello App API key; the monolith stores the hashed employees:read access key in the svcUsers DynamoDB table and returns its skl_ token, which Join uses to call back into Skello"
     },
     {
       "id": "cu-ho-setup-mgr",
@@ -109,7 +114,7 @@ const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "client",
       "label": "SvcCommunicationJoinEmailNotifier",
       "path": "src/Notifier/SvcCommunicationJoinEmailNotifier.ts",
-      "description": "Account-created and welcome emails on a fresh setup, a grouped error email on permanent failures, and an auth-token error email — each through svc-communications-v2 low-priority email"
+      "description": "Account-created email to each admin and welcome email to each non-admin freshly created on Join in this run; grouped-error (permanent failures with displayable errors) and auth-token-error emails to every admin — each through SvcCommunicationRepository and svc-communications-v2 low-priority email"
     }
   ],
   "codeEdges": [
@@ -124,6 +129,7 @@ const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
       "auth": { "tokenType": "jwt", "gate": "OrganisationIdPermissionCheck" }
     },
     { "from": "cu-ho-controller", "to": "cu-ho-token-mgr", "label": "mintToken", "mode": "sync" },
+    { "from": "cu-ho-token-mgr", "to": "dynamo-svc-hiring", "label": "company row (skip key mint); delete stale user row on a Join 404", "mode": "sync", "crud": ["read", "delete"] },
     { "from": "cu-ho-token-mgr", "to": "cu-ho-skello-client", "label": "createOrganisationAccessKey", "mode": "sync", "condition": "first setup: no partner key and no company row" },
     {
       "from": "cu-ho-skello-client", "to": "skello-app", "label": "POST /private/organisations/:organisation_id/access_keys", "mode": "sync",
@@ -132,8 +138,8 @@ const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
     { "from": "cu-ho-token-mgr", "to": "cu-ho-setup-mgr", "label": "createAll", "mode": "sync" },
     { "from": "cu-ho-setup-mgr", "to": "dynamo-svc-hiring", "label": "status rows, provisioning lease", "mode": "sync", "crud": ["read", "create"] },
     { "from": "cu-ho-setup-mgr", "to": "cu-ho-join-client", "label": "createCompany, createUser, createOffice", "mode": "sync" },
-    { "from": "cu-ho-token-mgr", "to": "cu-ho-notifier", "label": "accountCreated, welcome, groupedError", "mode": "sync" },
-    { "from": "cu-ho-notifier", "to": "svc-communications-v2", "label": "emailRepository.createLowPriority", "mode": "sync" },
+    { "from": "cu-ho-token-mgr", "to": "cu-ho-notifier", "label": "accountCreated, welcome, groupedError, authTokenError (on token failure)", "mode": "sync" },
+    { "from": "cu-ho-notifier", "to": "svc-communications-v2", "label": "SvcCommunicationRepository → emailRepository.createLowPriority", "mode": "sync" },
     { "from": "cu-ho-token-mgr", "to": "cu-ho-join-client", "label": "generateAuthToken → redirectUrl", "mode": "sync" }
   ],
   "branches": [
@@ -155,8 +161,8 @@ const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "no-access-key",
       "at": "cu-ho-token-mgr",
-      "when": "the monolith does not return an access key",
-      "outcome": "503, the manager retries",
+      "when": "the access-key call to the monolith fails",
+      "outcome": "503; the front shows the open-failed snackbar and the next click retries",
       "status": 503,
       "evidence": { "literal": "Could not obtain a Join access key from Skello, please retry" }
     },
@@ -180,13 +186,21 @@ const hiring_open: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "dynamo-svc-hiring",
       "type": "dynamodb",
-      "label": "svcHiring ({env})",
+      "label": "svcHiring-{env}",
       "resources": ["ddb:svcHiring"],
       "description": "Join status rows per organisation — company (SK O), office (SHOP#id), user (EMPLOYEE#id) — and the 15-second user-provisioning lease"
+    },
+    {
+      "id": "dynamo-svc-users-access-key",
+      "type": "dynamodb",
+      "label": "svcUsers-{env} (access keys)",
+      "resources": ["ddb:svcUsers"],
+      "description": "The monolith's access-key store: the hashed employees:read key for the organisation (Skello::AccessKey::AccessKeyService)"
     }
   ],
   "infraEdges": [
-    { "from": "svc-hiring", "to": "dynamo-svc-hiring", "label": "read and create status rows", "crud": ["read", "create"] }
+    { "from": "svc-hiring", "to": "dynamo-svc-hiring", "label": "read, create and delete status rows", "crud": ["read", "create", "delete"] },
+    { "from": "skello-app", "to": "dynamo-svc-users-access-key", "label": "store the hashed access key", "crud": ["create"] }
   ]
 })
 

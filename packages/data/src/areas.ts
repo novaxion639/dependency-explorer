@@ -259,7 +259,7 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
         'app/services/microservices/labour_law_service.rb', 'app/services/microservices/trackers_service.rb', 'app/services/persisters/*majoration_slices_*.rb', 'app/controllers/v3/api/bulk_rcr_counters_controller.rb', 'app/controllers/v3/api/holidays_controller.rb'),
     ],
     readingPath: [
-      { flowId: 'shift-creation', why: "How a new shift updates hours, RCR and paid-leave counters, and why labour-law alerts are fetched separately" },
+      { flowId: 'shift-creation', why: "How a new shift updates hours, RCR and paid-leave counters, and that labour-law alerts are fetched separately (GET /alerts), not checked at creation" },
       { flowId: 'absence-creation', why: "Paid-leave counters and labour-law entitlements when an absence is recorded" },
       { flowId: 'shift-deletion', why: "Counters recomputed inside the deletion transaction" },
       { flowId: 'auto-planning-generation', why: "Alerts and counters refreshed after the solver's write-back" }

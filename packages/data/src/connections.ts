@@ -1313,7 +1313,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
   {
     "from": "svc-hiring",
     "to": "skello-app",
-    "sdkPackage": "SkelloClient (skelloRepository, x-api-key)",
+    "sdkPackage": "@skelloapp/svc-hiring-sdk (SkelloFactory → SkelloRepository, x-api-key)",
     "communicationType": "sync",
     "protocol": "rest",
     "authType": "api-key",
@@ -1327,7 +1327,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "communicationType": "sync",
     "protocol": "rest",
     "authType": "api-key",
-    "description": "Join account-created, welcome and error emails to the organisation's admins (SvcCommunicationJoinEmailNotifier → emailRepository.createLowPriority)",
+    "description": "Join emails: account-created to each new admin, welcome to each new non-admin, grouped-error and auth-token-error to every admin (SvcCommunicationJoinEmailNotifier → SvcCommunicationRepository → emailRepository.createLowPriority)",
     "usedEndpoints": [
       "bulk-create-low-priority-email-route"
     ]
