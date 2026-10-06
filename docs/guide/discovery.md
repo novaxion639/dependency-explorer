@@ -7,14 +7,15 @@
 - **Code and config:**
   - SDK usage;
   - serverless config: HTTP, SQS, Kinesis/DynamoDB streams, S3 triggers, EventBridge schedules;
+  - serverless event sources and owned CloudFormation resources (🌀 report section), which feed the `RecurringTask` model and the CDC backbone edges;
   - Rails clients and routes;
   - frontend env usage.
-- **Application-code AWS clients:**
+- **Application-code AWS clients** (🔧 report section):
   - Kinesis/Firehose produce, S3 reads and writes, DynamoDB CRUD and TypeORM Postgres coupling;
   - each compared with `service.databases`, in both directions.
-- **Terraform ground truth** (the `<service>-tf` checkouts):
+- **Terraform ground truth** (the `<service>-tf` checkouts; 🏗 report section):
   - owned resources and `terraform-aws-modules` stores;
-  - DMS replication tasks and the streams they feed;
+  - DMS replication tasks, which prove the aurora → kinesis CDC backbone, and the streams they feed;
   - MongoDB Atlas user roles and IAM actions.
 - **Product-area code locations:**
   - glob liveness;
@@ -26,7 +27,7 @@
   - branch literals, domain-rule stamps, flags, DLQs, auth refs and PII refs.
 - **Live AWS state** (Layer 4), compared with the map: a read-only account snapshot of event source mappings, subscriptions and filter policies, DMS tasks, bucket notifications and schedules.
   - Snapshots are gitignored.
-  - Sandbox account only, per the credentials story in the shared docs.
+  - Sandbox account only, per the credentials story (`research/aws-live-verification-credentials.md` in the shared docs).
 
 ## Commands
 
@@ -36,7 +37,7 @@ pnpm discover -- --pinned     # same, against each repo's production branch (mas
 pnpm discover:apply           # pinned run + regenerate the discovered overlay (provenance stamps, call-edge grades) and the monolith routes; refuses to run unpinned
 pnpm discover:baseline        # pinned run + rewrite packages/discovery/baseline.json (accepted findings and scanned repo set)
 pnpm discover -- --pinned --fail-on-new   # exit 1 when a finding is not in the baseline, or a baseline repo was not scanned
-pnpm --filter @dependency-explorer/discovery discover:unit-paths   # exit 1 when a flow unit's file is missing at its pinned commit; counts units it skips
+pnpm --filter @dependency-explorer/discovery discover:unit-paths   # exit 1 when a flow unit's file is missing at its pinned commit; counts units it skips (repo not cloned or not pinned)
 pnpm --filter @dependency-explorer/discovery discover:grades       # replay call-edge grades against the existing pinned worktrees, no re-pin
 pnpm discover -- --aws [dir]  # + 🛰 live AWS snapshot diff (defaults to the latest snapshot)
 pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (~215 calls, MFA'd session required)

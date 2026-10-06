@@ -42,7 +42,7 @@ Each resource carries graded relations computed at the pinned commit. Grades are
 - Readers are call-graph references to the model.
 - Instance writes (`record.save`) cannot be attributed statically and appear as reads.
 
-**Consumers** are the queues, streams and buckets a service reads:
+**Consumers** are the services that read a queue, stream or bucket:
 - the queues a service's `sqs:` events read, by arn literal or by `Fn::GetAtt` on a declared queue;
 - every non-DLQ queue the owner declares, when one of its events names its queue through a parameter;
 - Kinesis and S3 event sources.

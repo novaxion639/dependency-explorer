@@ -2,13 +2,13 @@
 
 The canonical, continuously verified map of Skello's distributed architecture: every service, endpoint, connection, queue and business flow, **generated from code and deployed state, enriched by humans where automation can't reach**.
 
-It is a local proof of concept: a static bundle with no backend, run on your own machine ([ADR-0005](docs/adr/0005-local-poc-first.md)).
+It is a local proof of concept: a static bundle with no backend and no external dependencies, run on your own machine ([ADR-0005](docs/adr/0005-local-poc-first.md)). Hosting, SSO and network integration wait on validation with the Infrastructure team and Architects; the static bundle can sit behind any SSO proxy, ALB or CDN they choose.
 
 ## What it shows
 
 - **Product areas, microservices and the monolith:** the architecture by area, service and connection. [→ explorer](docs/guide/explorer.md)
 - **48 verified flows:** swimlanes of the code each action traverses, with every call graded against the code at its pinned commit. [→ flows](docs/guide/flows.md)
-- **Resources and impact:** who reads, writes, produces and consumes each table, queue and store, and what fails when one is down. [→ explorer](docs/guide/explorer.md#resource-pages), [→ data](docs/guide/data.md#resource-registry)
+- **Resources and impact:** who reads, writes, produces and consumes each table, queue and store, and what fails when one is down. [→ explorer](docs/guide/explorer.md#resource-pages), [→ impact](docs/guide/explorer.md#impact), [→ data](docs/guide/data.md#resource-registry)
 - **Ownership, search and permalinks:** team pages from CODEOWNERS, ⌘K over everything, and every view in the URL. [→ explorer](docs/guide/explorer.md#ownership)
 - **Discovery:** a scanner that reports drift between the map and the code, the Terraform estate and live AWS. [→ discovery](docs/guide/discovery.md)
 

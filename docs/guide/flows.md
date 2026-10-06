@@ -32,7 +32,9 @@
 
 **Two flow shapes carry extra detail:**
 - Page-load flows group their steps into ordered phases.
-- The punch flows carry the overnight-shop day-attribution rules on both the client and server sides. Web and mobile divergences are recorded wherever the two clients implement the same feature differently.
+- The punch flows carry the overnight-shop day-attribution rules on both the client and server sides.
+
+In any flow, web and mobile divergences are recorded wherever the two clients implement the same feature differently.
 
 ## The code layer and its grades
 
@@ -115,7 +117,7 @@ Code edges carry typed auth refs:
 - a named gateway authorizer, verified against the extracted serverless declarations (both syntaxes in the estate);
 - or an explicit `no-authorizer-configured` record, for routes that authenticate inside the Lambda.
 
-🔑 facts show on the calls in the unit detail panel, and the 🔐 discovery section checks them. Token-lifecycle facts stay prose, a deliberate boundary of the schema.
+🔑 facts show on the calls in the unit detail panel, and the 🔐 discovery section checks them. Token-lifecycle facts stay prose: a named boundary of the schema.
 
 ## Flow composition links
 
