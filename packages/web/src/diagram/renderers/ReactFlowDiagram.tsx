@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo } from 'react'
+import { useContext, useEffect, useMemo, useRef } from 'react'
 import {
   Background, BackgroundVariant, BaseEdge, Controls, EdgeLabelRenderer, getViewportForBounds, Handle, Position, ReactFlow,
   useInternalNode, useNodesState, useReactFlow, useStore, type EdgeProps, type InternalNode, type NodeProps,
@@ -107,14 +107,19 @@ function FitToFocus({ zoomTo }: { zoomTo: Box | null }) {
   const width = useStore(s => s.width)
   const height = useStore(s => s.height)
   const minZoom = useStore(s => s.minZoom)
+  const fitted = useRef(false)
   useEffect(() => {
+    const duration = fitted.current ? STEP_MS : 0
+    const done = () => {
+      fitted.current = true
+    }
     if (!zoomTo) {
-      void fitView({ duration: STEP_MS })
+      void fitView({ duration }).then(done)
       return
     }
     if (width > 0 && height > 0) {
       const bounds = { x: zoomTo.x, y: zoomTo.y, width: zoomTo.w, height: zoomTo.h }
-      void setViewport(getViewportForBounds(bounds, width, height, minZoom, FOCUS_MAX_ZOOM, 0), { duration: STEP_MS })
+      void setViewport(getViewportForBounds(bounds, width, height, minZoom, FOCUS_MAX_ZOOM, 0), { duration }).then(done)
     }
   }, [zoomTo, width, height, minZoom, fitView, setViewport])
   return null

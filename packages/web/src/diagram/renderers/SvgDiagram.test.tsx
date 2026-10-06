@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { emphasise, NO_FOCUS } from '../focus'
-import type { DiagramModel } from '../model'
-import { SvgDiagram } from './SvgDiagram'
+import type { Box, DiagramModel } from '../model'
+import { MIN_VIEW, SvgDiagram } from './SvgDiagram'
 
 const model: DiagramModel = {
   id: 'svc', title: 'svc-x — grouped by how they talk', width: 600, height: 200, renderers: ['svg'],
@@ -33,10 +33,11 @@ describe('SvgDiagram', () => {
     expect(html).toContain('aria-label="svc-x → Calls · 1: SQS ×2"')
     expect(html.match(/role="button"/g)?.length).toBe(5)
   })
-  it('frames the zoom box when a present-mode step sets one, and the whole model otherwise', () => {
-    const zoomed = renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} zoomTo={{ x: 286, y: 6, w: 238, h: 77 }} />)
-    expect(zoomed).toContain('viewBox="286 6 238 77"')
-    expect(renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} />)).toContain('viewBox="0 0 600 200"')
+  it('frames a present-mode zoom box, widened around its centre to a readable minimum', () => {
+    const view = (zoomTo?: Box) => /viewBox="([^"]+)"/.exec(renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} zoomTo={zoomTo} />))?.[1]
+    expect(view({ x: 0, y: 0, w: 1000, h: 600 })).toBe('0 0 1000 600')
+    expect(view({ x: 286, y: 6, w: 238, h: 77 })).toBe(`${405 - MIN_VIEW.w / 2} ${44.5 - MIN_VIEW.h / 2} ${MIN_VIEW.w} ${MIN_VIEW.h}`)
+    expect(view()).toBe('0 0 600 200')
   })
   it('dashes async edges and draws an arrow on directed ones', () => {
     const html = renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} />)

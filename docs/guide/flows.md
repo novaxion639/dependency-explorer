@@ -24,7 +24,7 @@
 - Units sit inside their lane and stay in place while the canvas pans and zooms.
 - Edge conditions and feature flags show as "if" pills, and branches as `⎇` lines on their unit.
 
-**Presenting**, the same diagram sits beside a story of 3–12 authored chapters, at least one per two units or stores (`&chapter=<n>`). The arrow keys step through them: the selected chapter keeps its units, stores and services, dims the rest, and the view zooms onto them (React Flow up to 1×, SVG crops to them; exports keep the whole flow). Chapters follow the [authoring guide](../flow-authoring-guide.md#chapters); a flow without them shows chapters derived from its steps.
+**Presenting**, the same diagram sits beside a story of 3–12 authored chapters, at least one per two units or stores (`&chapter=<n>`). The arrow keys step through them: the selected chapter keeps its units, stores and services, dims the rest, and the view zooms onto them (no closer than about 1× in React Flow and SVG; exports keep the whole flow). Chapters follow the [authoring guide](../flow-authoring-guide.md#chapters); a flow without them shows chapters derived from its steps.
 
 **Clicking:**
 - a unit opens it in the detail panel (`&unit=<id>`);
