@@ -1311,6 +1311,28 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     ]
   },
   {
+    "from": "svc-hiring",
+    "to": "skello-app",
+    "sdkPackage": "SkelloClient (skelloRepository, x-api-key)",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "Mints the organisation's partner access key for Join on first setup (POST /private/organisations/:organisation_id/access_keys) and reads a user's hiring qualification during CDC reconciliation",
+    "usedEndpoints": []
+  },
+  {
+    "from": "svc-hiring",
+    "to": "svc-communications-v2",
+    "sdkPackage": "@skelloapp/svc-communications-v2-sdk",
+    "communicationType": "sync",
+    "protocol": "rest",
+    "authType": "api-key",
+    "description": "Join account-created, welcome and error emails to the organisation's admins (SvcCommunicationJoinEmailNotifier → emailRepository.createLowPriority)",
+    "usedEndpoints": [
+      "bulk-create-low-priority-email-route"
+    ]
+  },
+  {
     "from": "skello-app",
     "to": "svc-hiring",
     "sdkPackage": "Microservices::HiringService (HTTParty)",

@@ -99,6 +99,7 @@ import pos_revenue_ingestion from './flows/pos-revenue-ingestion'
 import document_share from './flows/document-share'
 import mission_management from './flows/mission-management'
 import org_onboarding from './flows/org-onboarding'
+import hiring_open from './flows/hiring-open'
 
 // ── Discovered overlay merge (ADR-0004) ──────────────────────────────────────
 // Machine-verified facts from `pnpm discover:apply` enrich the manual layer:
@@ -243,6 +244,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   document_share,
   mission_management,
   org_onboarding,
+  hiring_open,
   ],
   teams,
   rules,

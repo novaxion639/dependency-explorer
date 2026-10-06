@@ -9,7 +9,7 @@ in [planning-actions-coverage.md](planning-actions-coverage.md).
 ## Current coverage (generated)
 
 <!-- GENERATED:flows-by-area BEGIN — run `pnpm docs:gen`, do not edit inside -->
-**48 modelled flows** across 37 services — every flow carries a code layer, a trigger and a primary area.
+**49 modelled flows** across 37 services — every flow carries a code layer, a trigger and a primary area.
 
 | Product area | Flows | Ids |
 |---|---|---|
@@ -25,10 +25,10 @@ in [planning-actions-coverage.md](planning-actions-coverage.md).
 | Analytics & dashboards | 2 | `analytics-dashboard-load` `bff-dashboard-load` |
 | Organisation & shop admin | 2 | `mobile-app-bootstrap` `org-onboarding` |
 | Missions | 1 | `mission-management` |
+| Hiring | 1 | `hiring-open` |
 | Counters & labour law | 0 | — |
-| Hiring | 0 | — |
 
-Product areas with no flow yet: Counters & labour law, Hiring.
+Product areas with no flow yet: Counters & labour law.
 
 Flows owned by a platform capability: `assistant-chat`.
 <!-- GENERATED:flows-by-area END -->
