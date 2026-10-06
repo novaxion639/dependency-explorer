@@ -65,15 +65,15 @@ const edge = (callerPath: string, calleePath: string, callerCode: string, callee
 describe('imports', () => {
   it('reads Vite aliases relative to the config directory', () => {
     expect(aliases).toEqual([
-      { prefix: '@app-js', dir: 'apps/vue-app/src' },
-      { prefix: '@skello-utils', dir: 'apps/vue-app/src/shared/utils' },
-      { prefix: '@app', dir: 'apps/vue-app/legacy' },
+      { prefix: '@app-js', dir: 'apps/vue-app/src', scope: 'apps/vue-app' },
+      { prefix: '@skello-utils', dir: 'apps/vue-app/src/shared/utils', scope: 'apps/vue-app' },
+      { prefix: '@app', dir: 'apps/vue-app/legacy', scope: 'apps/vue-app' },
     ])
   })
   it('matches the longest alias at a path boundary', () => {
-    expect(resolveSpecifier('@app-js/badgings/shared/utils', 'x.js', aliases)).toBe('apps/vue-app/src/badgings/shared/utils')
-    expect(resolveSpecifier('@app/old', 'x.js', aliases)).toBe('apps/vue-app/legacy/old')
-    expect(resolveSpecifier('@apps/x', 'x.js', aliases)).toBeNull()
+    expect(resolveSpecifier('@app-js/badgings/shared/utils', 'apps/vue-app/src/x.js', aliases)).toBe('apps/vue-app/src/badgings/shared/utils')
+    expect(resolveSpecifier('@app/old', 'apps/vue-app/src/x.js', aliases)).toBe('apps/vue-app/legacy/old')
+    expect(resolveSpecifier('@apps/x', 'apps/vue-app/src/x.js', aliases)).toBeNull()
     expect(resolveSpecifier('./api', 'src/modules/shifts/connector.ts', aliases)).toBe('src/modules/shifts/api')
   })
   it('credits an aliased directory import to its index file', () => {
@@ -268,5 +268,21 @@ describe('parseInjections precision', () => {
       '}',
     ].join('\n')
     expect([...(parseInjections(container, asFile).get('src/Manager.ts') ?? [])]).toEqual(['src/Repo.ts'])
+  })
+})
+
+describe('resolveSpecifier scopes', () => {
+  const aliases = [
+    ...parseViteAliases("'@environment': fileURLToPath(new URL('./src/environment', import.meta.url))", 'apps/base-app'),
+    ...parseViteAliases("'@environment': fileURLToPath(new URL('./src/env', import.meta.url))", 'apps/vue-app'),
+    ...parseTsconfigPaths('"~/*": ["src/*"]', ''),
+  ]
+  it('resolves an app alias inside its own app only', () => {
+    expect(resolveSpecifier('@environment/urls', 'apps/base-app/src/a.ts', aliases)).toBe('apps/base-app/src/environment/urls')
+    expect(resolveSpecifier('@environment/urls', 'apps/vue-app/src/a.js', aliases)).toBe('apps/vue-app/src/env/urls')
+    expect(resolveSpecifier('@environment/urls', 'packages/x/a.ts', aliases)).toBeNull()
+  })
+  it('applies a repo-root alias everywhere', () => {
+    expect(resolveSpecifier('~/Manager/A', 'apps/vue-app/src/a.js', aliases)).toBe('src/Manager/A')
   })
 })

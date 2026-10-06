@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
-export type Alias = { prefix: string; dir: string }
+export type Alias = { prefix: string; dir: string; scope: string }
 export type Read = (repoPath: string) => string | null
 
 export interface WiredEdge {
@@ -135,11 +135,11 @@ export function stripComments(source: string): string {
 const BARREL_SUFFIXES = ['/index.js', '/index.ts']
 
 export function parseViteAliases(source: string, configDir: string): Alias[] {
-  return [...source.matchAll(VITE_ALIAS)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, '') }))
+  return [...source.matchAll(VITE_ALIAS)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, ''), scope: configDir }))
 }
 
 export function parseTsconfigPaths(source: string, configDir: string): Alias[] {
-  return [...source.matchAll(TSCONFIG_PATH)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, '') }))
+  return [...source.matchAll(TSCONFIG_PATH)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, ''), scope: configDir }))
 }
 
 export function readerFor(repoDir: string): Read {
@@ -153,7 +153,10 @@ export function resolveSpecifier(spec: string, fromPath: string, aliases: Alias[
   if (spec.startsWith('./') || spec.startsWith('../')) {
     return path.posix.join(path.posix.dirname(fromPath), spec)
   }
-  const alias = aliases.filter(a => spec === a.prefix || spec.startsWith(`${a.prefix}/`)).sort((a, b) => b.prefix.length - a.prefix.length)[0]
+  const inScope = (a: Alias) => a.scope === '' || fromPath.startsWith(`${a.scope}/`)
+  const alias = aliases
+    .filter(a => inScope(a) && (spec === a.prefix || spec.startsWith(`${a.prefix}/`)))
+    .sort((a, b) => b.scope.length - a.scope.length || b.prefix.length - a.prefix.length)[0]
   return alias ? path.posix.join(alias.dir, spec.slice(alias.prefix.length)) : null
 }
 
