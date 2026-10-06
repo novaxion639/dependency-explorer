@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { download, exportName, standaloneSvg, svgSize, svgToPng } from './exportImage'
 import { CopyMermaid } from './CopyMermaid'
-import { emphasise, type FocusState } from './focus'
+import { emphasise, focusBounds, type FocusState } from './focus'
 import type { Point } from './geometry'
 import type { DiagramModel, DiagramRef, EdgeMode, Renderer } from './model'
 import { DASH, MODE_LABEL } from './paint'
@@ -47,6 +47,7 @@ function Legend({ notes, impact }: { notes: string[]; impact: boolean }) {
 export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename, notes = [], children }: Props) {
   const active: Renderer = model.renderers.includes(renderer) ? renderer : 'react-flow'
   const emphases = useMemo(() => emphasise(model, focus), [model, focus])
+  const zoomTo = useMemo(() => focusBounds(model, focus.chapter), [model, focus.chapter])
   const [placement, setPlacement] = useState<Placement>(NO_PLACEMENT)
   const display = useMemo(() => placed(model, placement), [model, placement])
   const mermaidRender = useRef<MermaidRender | null>(null)
@@ -101,8 +102,8 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
         {children}
       </div>
       <div className={styles.canvas}>
-        {active === 'react-flow' && <ReactFlowDiagram key={model.id} model={display} emphases={emphases} onSelect={onSelect} onMove={onMove} />}
-        {active === 'svg' && <SvgDiagram model={display} emphases={emphases} onSelect={onSelect} />}
+        {active === 'react-flow' && <ReactFlowDiagram key={model.id} model={display} emphases={emphases} zoomTo={zoomTo} onSelect={onSelect} onMove={onMove} />}
+        {active === 'svg' && <SvgDiagram model={display} emphases={emphases} zoomTo={zoomTo} onSelect={onSelect} />}
         {active === 'mermaid' && <MermaidDiagram source={source} onRendered={onRendered} />}
       </div>
       <Legend notes={notes} impact={focus.impact !== null} />

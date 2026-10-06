@@ -10,6 +10,7 @@ const LABEL_FONT = EDGE_LABEL_FONT
 interface Props {
   model: DiagramModel
   emphases: Emphases
+  zoomTo?: Box | null
   onSelect?: (ref: DiagramRef) => void
   standalone?: boolean
 }
@@ -36,7 +37,8 @@ function baseline(box: Box, fontSize: number, line: number): number {
   return box.y + PAD_Y + fontSize + line * fontSize * LINE_HEIGHT
 }
 
-export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Props) {
+export function SvgDiagram({ model, emphases, zoomTo = null, onSelect, standalone = false }: Props) {
+  const view = zoomTo ?? { x: 0, y: 0, w: model.width, h: model.height }
   const prefix = model.id.replace(/[^a-z0-9]/gi, '-')
   const boxes = new Map<string, Box & { label: string }>([...model.groups, ...model.nodes].map(b => [b.id, b]))
   return (
@@ -44,7 +46,7 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label={model.title}
-      viewBox={`0 0 ${model.width} ${model.height}`}
+      viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
       width={standalone ? model.width : '100%'}
       height={standalone ? model.height : '100%'}
       style={{ fontFamily: 'var(--font-sans)', background: 'var(--paper)' }}

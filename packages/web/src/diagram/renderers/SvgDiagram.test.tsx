@@ -33,6 +33,11 @@ describe('SvgDiagram', () => {
     expect(html).toContain('aria-label="svc-x → Calls · 1: SQS ×2"')
     expect(html.match(/role="button"/g)?.length).toBe(5)
   })
+  it('frames the zoom box when a present-mode step sets one, and the whole model otherwise', () => {
+    const zoomed = renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} zoomTo={{ x: 286, y: 6, w: 238, h: 77 }} />)
+    expect(zoomed).toContain('viewBox="286 6 238 77"')
+    expect(renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} />)).toContain('viewBox="0 0 600 200"')
+  })
   it('dashes async edges and draws an arrow on directed ones', () => {
     const html = renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} />)
     expect(html).toContain('stroke-dasharray:6 4')
