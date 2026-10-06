@@ -70,6 +70,25 @@ function camelStem(repo: string): string {
   return repo.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase())
 }
 
+const LOG_CALL_LEAD = /\b(?:log|logger|console)\.\w+\(\s*$/
+const INDEX_LEAD = /([\w$]+|[\])])\s*\[\s*$/
+const KEYWORDS_BEFORE_ARRAY = new Set(['return', 'yield', 'await', 'in', 'of', 'case', 'else', 'do', 'typeof', 'void'])
+const KEY_TAIL = /^\s*\??:(?!:)/
+const VALUE_LEAD = /(?:\?|\bcase)\s*$/
+
+function producerLiterals(source: string): string[] {
+  const code = stripComments(source)
+  return [...code.matchAll(IDENTIFIER_LITERAL)].flatMap(m => {
+    const at = m.index ?? 0
+    const before = code.slice(Math.max(0, at - 80), at)
+    const after = code.slice(at + m[0].length, at + m[0].length + 4)
+    const isKey = KEY_TAIL.test(after) && !VALUE_LEAD.test(before)
+    const indexLead = before.match(INDEX_LEAD)?.[1]
+    const isIndex = indexLead !== undefined && !KEYWORDS_BEFORE_ARRAY.has(indexLead)
+    return LOG_CALL_LEAD.test(before) || isIndex || isKey ? [] : [m[2] ?? '']
+  })
+}
+
 function namesResource(literal: string, store: string): boolean {
   const arnService = literal.match(ARN_SERVICE)?.[1]
   return !SSM_PATH.test(literal) && (!arnService || (ARN_SERVICES_BY_STORE[store] ?? []).includes(arnService))
@@ -104,7 +123,7 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
     if (cached) {
       return cached
     }
-    const found = [...f.source.matchAll(IDENTIFIER_LITERAL)].map(m => m[2] ?? '')
+    const found = producerLiterals(f.source)
     literalCache.set(key, found)
     return found
   }
@@ -182,7 +201,7 @@ function compactName(repo: string): string {
 }
 
 function productionBranch(source: string): string {
-  const m = source.match(/([!=]=)\s*"prod"\s*\?\s*(.+?)\s*:\s*(.+)$/)
+  const m = source.match(/([!=]=)\s*"prod"\s*\?\s*("(?:[^"\\]|\\.)*"|[^:]+?)\s*:\s*(.+)$/)
   if (!m) {
     return source
   }

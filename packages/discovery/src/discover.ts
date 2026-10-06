@@ -758,7 +758,7 @@ function writeOverlay(report: Report) {
 
 // ── Report ────────────────────────────────────────────────────────────────────
 
-function printMarkdown(r: Report) {
+function printMarkdown(r: Report, unscanned: string[]) {
   const section = (title: string, lines: string[]) => {
     console.log(`\n## ${title} (${lines.length})\n`)
     console.log(lines.length ? lines.join('\n') : '_none_')
@@ -1147,7 +1147,6 @@ function printMarkdown(r: Report) {
   const keys = findingKeys({ ...r })
   const delta = diffBaseline(keys, readBaseline(BASELINE_PATH))
   console.log(`\n## 🧾 Baseline — ${delta.added.length} new · ${delta.resolved.length} resolved · ${delta.carried} carried\n`)
-  const unscanned = PIN ? unscannedRepos(readBaselineRepos(BASELINE_PATH), PIN.pinned.map(p => p.repo)) : []
   if (unscanned.length) {
     console.log(`⚠ Not scanned this run: ${unscanned.join(', ')} — their baseline findings are unverified, not resolved.\n`)
   }
@@ -1167,10 +1166,11 @@ function printMarkdown(r: Report) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 const report = run()
+const unscanned = PIN ? unscannedRepos(readBaselineRepos(BASELINE_PATH), PIN.pinned.map(p => p.repo)) : []
 if (JSON_MODE) {
   console.log(JSON.stringify(report, null, 2))
 } else {
-  printMarkdown(report)
+  printMarkdown(report, unscanned)
 }
 if (APPLY_MODE) {
   writeOverlay(report)
@@ -1179,7 +1179,6 @@ if (BASELINE_MODE) {
   writeBaseline(BASELINE_PATH, findingKeys({ ...report }), PIN ? PIN.pinned.map(p => p.repo) : report.scannedRepos)
   console.log(`\nBaseline written: ${path.relative(process.cwd(), BASELINE_PATH)}`)
 }
-const unscannedNow = PIN ? unscannedRepos(readBaselineRepos(BASELINE_PATH), PIN.pinned.map(p => p.repo)) : []
-if (FAIL_ON_NEW && (diffBaseline(findingKeys({ ...report }), readBaseline(BASELINE_PATH)).added.length || unscannedNow.length)) {
+if (FAIL_ON_NEW && (diffBaseline(findingKeys({ ...report }), readBaseline(BASELINE_PATH)).added.length || unscanned.length)) {
   process.exitCode = 1
 }

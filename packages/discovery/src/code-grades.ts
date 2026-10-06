@@ -58,7 +58,7 @@ export function loadRepoGraph(graphJson: unknown): RepoGraph | null {
   return { builtAt: str(graphJson.built_at_commit), fileEdges, importEdges, classesIn }
 }
 
-const STRING_OR_COMMENT = /("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\/\*[\s\S]*?\*\/|(^|[^:\\])\/\/.*$|(^|\s)#(?![{!]).*$/gm
+const STRING_OR_COMMENT = /((?<=^|[\s(,=[])\?'(?=[\s),\]]|$)(?!.')|(?<=^|[\s(,=[])\?"(?=[\s),\]]|$)(?!.")|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\/\*[\s\S]*?\*\/|(^|[^:\\])\/\/.*$|(^|\s)#(?![{!]).*$/gm
 
 export function stripComments(source: string): string {
   return source.replace(STRING_OR_COMMENT, (_whole, literal: string | undefined, slashLead: string | undefined, hashLead: string | undefined) => literal ?? slashLead ?? hashLead ?? '')

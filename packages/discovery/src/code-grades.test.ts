@@ -53,6 +53,16 @@ describe('gradeEdge', () => {
     expect(stripComments("const g = 'src/**/*.ts'\nfoo() // x")).toBe("const g = 'src/**/*.ts'\nfoo() ")
     expect(stripComments('x = "foo #bar" # note')).toBe('x = "foo #bar" ')
   })
+  it('reads Ruby char literals without opening a string', () => {
+    expect(stripComments("s.tr(?', 'b # c') # note")).toBe("s.tr(?', 'b # c') ")
+    expect(stripComments('s.tr(?", "b # c") # note')).toBe('s.tr(?", "b # c") ')
+    expect(stripComments("a ?'b' : 'c' // js")).toBe("a ?'b' : 'c' ")
+    expect(stripComments("a ?'' : c // js")).toBe("a ?'' : c ")
+  })
+  it('reads an unformatted ternary with a one-character string as a string', () => {
+    expect(stripComments("c ?' ' : 'x # y' // n")).toBe("c ?' ' : 'x # y' ")
+    expect(stripComments("c ?`\n a # b` : d")).toBe("c ?`\n a # b` : d")
+  })
   it('grades a cross-repo edge text at best', () => {
     expect([crossRepoGrade('graph'), crossRepoGrade('import'), crossRepoGrade('text'), crossRepoGrade('none')]).toEqual(['text', 'text', 'text', 'none'])
   })

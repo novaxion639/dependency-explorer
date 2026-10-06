@@ -132,6 +132,32 @@ describe('messagingRelations producer precision', () => {
   })
 })
 
+describe('messagingRelations producer literal contexts', () => {
+  const queue = (name: string, owner: string): Resource => ({ id: `sqs:${name}`, kind: 'queue', store: 'sqs', name, owner, evidence: [] })
+  const resources = [queue('SetupJoinAccounts', 'svc-hiring'), queue('createShifts', 'svc-requests'), queue('transaction', 'svc-pos')]
+  const sources = new Map([
+    ['svc-hiring', [{ file: 'src/Swagger/SetupControllerSwagger.ts', source: '/**\n * `SetupJoinAccounts` queue\n */\nexport const x = 1' }]],
+    ['svc-requests', [{ file: 'src/Repository/SkelloAppRepository.ts', source: "this.logger.debug('createShifts', {params});" }]],
+    ['svc-pos', [
+      { file: 'src/Type/Meta.ts', source: "type Meta = {\n  'transaction-id': number;\n}" },
+      { file: 'src/Model/Meta.ts', source: "const id = props['transaction-id']" },
+    ]],
+    ['svc-x', [
+      { file: 'src/a.ts', source: "switch (q) { case 'createShifts': send() }" },
+      { file: 'src/b.ts', source: "const q = live ? 'transaction' : 'none'" },
+    ]],
+    ['svc-y', [{ file: 'src/c.ts', source: "function queues() { return ['createShifts'] }" }]],
+  ])
+  const rels = messagingRelations(resources, new Map(), sources).filter(r => r.relation === 'produces').map(r => `${r.resource} ${r.service}`)
+
+  it('ignores comments, log arguments, object keys and index accesses', () => {
+    expect(rels.filter(r => !r.endsWith('svc-x') && !r.endsWith('svc-y'))).toEqual([])
+  })
+  it('still credits case labels, ternary branches and returned arrays', () => {
+    expect(rels).toEqual(['sqs:createShifts svc-x', 'sqs:createShifts svc-y', 'sqs:transaction svc-x'])
+  })
+})
+
 describe('messagingRelations dead-letter queues', () => {
   it('never credits the owner with consuming a DLQ-named queue, whatever the wiring casing', () => {
     const resources: Resource[] = [
@@ -242,6 +268,16 @@ describe('dmsRelations sources', () => {
     const facts = {
       resources: [{ tfType: 'aws_kinesis_stream', label: 'full', name: 'fullload' }],
       dmsTasks: [{ label: 'f', source: 'local.workspace != "prod" ? aws_dms_endpoint.svc_requests_aurora[0].endpoint_arn : data.aws_dms_endpoint.skelloapp_rds[0].endpoint_arn', target: 'aws_dms_endpoint.k.endpoint_arn' }],
+      dmsEndpoints: [{ label: 'k', streamLabel: 'full' }],
+      iamActions: [], mongoRoles: [],
+    }
+    const stream: Resource = { id: 'kinesis:svc-requests/fullload', kind: 'stream', store: 'kinesis', name: 'fullload', owner: 'svc-requests', evidence: [] }
+    expect(dmsRelations([{ service: 'svc-requests', facts }], [stream]).map(r => r.service)).toEqual(['skello-app'])
+  })
+  it('reads a quoted production branch containing colons', () => {
+    const facts = {
+      resources: [{ tfType: 'aws_kinesis_stream', label: 'full', name: 'fullload' }],
+      dmsTasks: [{ label: 'f', source: 'local.workspace == "prod" ? "arn:aws:dms:eu-west-1:1:endpoint:skelloapp-rds" : aws_dms_endpoint.svc_requests_aurora[0].endpoint_arn', target: 'aws_dms_endpoint.k.endpoint_arn' }],
       dmsEndpoints: [{ label: 'k', streamLabel: 'full' }],
       iamActions: [], mongoRoles: [],
     }

@@ -89,6 +89,48 @@ function statements(content: string): string[] {
   return out
 }
 
+const RESOURCES_HEAD = /^(resources|resource)\s+((?::\w+\s*,\s*)*:\w+)/
+
+function opensBlock(t: string): boolean {
+  return OPENS_BLOCK.test(t) || OPENS_KEYWORD_BLOCK.test(t)
+}
+
+function blockBody(stmts: string[], from: number): string[] {
+  let depth = 1
+  for (let i = from; i < stmts.length; i++) {
+    const t = stmts[i] ?? ''
+    if (IS_END.test(t)) {
+      depth -= 1
+      if (depth === 0) {
+        return stmts.slice(from, i)
+      }
+    } else if (opensBlock(t)) {
+      depth += 1
+    }
+  }
+  return stmts.slice(from)
+}
+
+function expandResourceBlocks(stmts: string[]): string[] {
+  const out: string[] = []
+  for (let i = 0; i < stmts.length; i++) {
+    const t = stmts[i] ?? ''
+    const head = t.match(RESOURCES_HEAD)
+    const names = (head?.[2] ?? '').split(/\s*,\s*/)
+    if (!head || names.length < 2 || !OPENS_BLOCK.test(t)) {
+      out.push(t)
+      continue
+    }
+    const body = blockBody(stmts, i + 1)
+    const expanded = expandResourceBlocks(body)
+    for (const name of names) {
+      out.push(t.replace(head[2] ?? '', name), ...expanded, 'end')
+    }
+    i += body.length + 1
+  }
+  return out
+}
+
 export function parseRoutesContent(content: string): { routes: RailsRoute[]; unparsed: string[] } {
   const routes: RailsRoute[] = []
   const unparsed: string[] = []
@@ -100,7 +142,7 @@ export function parseRoutesContent(content: string): { routes: RailsRoute[]; unp
     routes.push({ verb, path: join(routePath), controller: fullController, action, controllerFile: `app/controllers/${fullController}_controller.rb` })
   }
 
-  for (const t of statements(content)) {
+  for (const t of expandResourceBlocks(statements(content))) {
     if (/^Rails\.application\.routes\.draw/.test(t)) {
       continue
     }
@@ -136,7 +178,7 @@ export function parseRoutesContent(content: string): { routes: RailsRoute[]; unp
       continue
     }
 
-    const res = t.match(/^(resources|resource)\s+((?::\w+\s*,\s*)*:\w+)/)
+    const res = t.match(RESOURCES_HEAD)
     if (res) {
       const singular = res[1] === 'resource'
       const names = (res[2] ?? '').split(/\s*,\s*/).map(s => s.slice(1))
@@ -144,7 +186,7 @@ export function parseRoutesContent(content: string): { routes: RailsRoute[]; unp
       const moduleParts = resModule ? [...f.module, resModule] : f.module
       const allowed = list(t, 'only')
       const excluded = list(t, 'except')
-      names.forEach((name, i) => {
+      names.forEach(name => {
         const seg = opt(t, 'path') ?? name
         const param = `:${opt(t, 'param') ?? 'id'}`
         const controller = opt(t, 'controller') ?? (singular ? pluralize(name) : name)
@@ -153,7 +195,7 @@ export function parseRoutesContent(content: string): { routes: RailsRoute[]; unp
             emit(verb, [...f.path, seg, suffix.replace(':id', param)], controller, action, moduleParts)
           }
         }
-        if (block && i === names.length - 1) {
+        if (block) {
           const nested = singular ? [...f.path, seg] : [...f.path, seg, `:${singularize(name)}_${param.slice(1)}`]
           stack.push({ path: nested, module: moduleParts, controller, memberOf: singular ? null : param, methodScope: singular })
         }

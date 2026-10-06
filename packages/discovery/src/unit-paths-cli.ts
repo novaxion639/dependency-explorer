@@ -3,6 +3,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
+import { checkUnitPaths } from './unit-paths'
 
 const REPO_BASE = process.env.REPO_BASE ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..')
 
@@ -15,12 +16,8 @@ function existsAt(repo: string, sha: string, file: string): boolean {
   }
 }
 
-const missing = connectivityMap.flows.flatMap(f => (f.codeUnits ?? []).flatMap(u => {
-  const pin = resourceSurface.pins[u.service]
-  if (!u.path || !pin || !fs.existsSync(path.join(REPO_BASE, u.service))) {
-    return []
-  }
-  return existsAt(u.service, pin, u.path) ? [] : [`${f.id} ${u.id} ${u.service}@${pin.slice(0, 7)} ${u.path}`]
-}))
+const units = connectivityMap.flows.flatMap(f => (f.codeUnits ?? []).map(u => ({ flow: f.id, id: u.id, service: u.service, path: u.path })))
+const { missing, skipped } = checkUnitPaths(units, s => resourceSurface.pins[s], s => fs.existsSync(path.join(REPO_BASE, s)), existsAt)
 console.log(missing.length ? missing.join('\n') : 'every unit path exists at its pin')
+console.log(`${skipped} units skipped (repo not cloned or not pinned)`)
 process.exitCode = missing.length ? 1 : 0
