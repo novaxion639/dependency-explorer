@@ -22,13 +22,18 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
     { "title": "Changes are queued", "summary": "One upsert message per changed employee goes onto svc-employees' upsert queue.", "refs": ["cu-hs-dispatcher", "sqs-hris-upsert"] },
     { "title": "svc-employees applies them", "summary": "A svc-employees job consumes the queue and writes each employee change to its own table.", "refs": ["sqs-hris-upsert", "cu-hs-upsert-job", "dynamo-employees"] },
     { "title": "Failed upserts are recorded", "summary": "Failed upserts land on a dead-letter queue; svc-hris turns them into sync errors that expire after 10 to 20 minutes.", "refs": ["sqs-hris-upsert", "cu-hs-dlq", "dynamo-hris"] },
-    { "title": "Errors are reported daily", "summary": "Daily at noon Paris time, each Kombo integration gets its error report on S3 and a 24-hour link emailed via svc-communications-v2.", "refs": ["cu-hs-report-job", "cu-hs-sync-error-mgr"] }
+    { "title": "Errors are reported daily", "summary": "Daily at noon Paris time, each Kombo integration gets its error report on S3 and a 24-hour link emailed via svc-communications-v2.", "refs": ["cu-hs-report-job", "cu-hs-sync-error-mgr", "svc-communications-v2"] }
   ],
   "steps": [
     {
       "from": "svc-hris",
       "to": "svc-employees",
       "action": "GET /v1/employees by organisation — matching/diff base, then SQS UpsertEmployeeFromHrisDto per change"
+    },
+    {
+      "from": "svc-hris",
+      "to": "svc-communications-v2",
+      "action": "Email the daily sync-error report link — SyncErrorManager → SvcCommunicationRepository.sendHrisIntegrationDataTransferFailedEmail"
     },
   ],
   "codeUnits": [
@@ -179,6 +184,12 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-hs-report-job",
       "to": "cu-hs-sync-error-mgr",
       "label": "SyncErrorManager report",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-hs-sync-error-mgr",
+      "to": "svc-communications-v2",
+      "label": "sendHrisIntegrationDataTransferFailedEmail",
       "mode": "sync"
     }
   ],
