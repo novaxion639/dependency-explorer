@@ -27,7 +27,7 @@ describe('service layouts', () => {
   })
   it('groups skello-app by how they talk, its own stores inside its card and no other stores', () => {
     const m = serviceByHow(map, resources, 'skello-app')
-    expect(m.groups.map(g => g.label)).toEqual(['Clients · call it · 3', 'Services · call it · 13', 'Calls · 16', 'Notifies (SNS) · 4', 'Copies its data (CDC) · 14'])
+    expect(m.groups.map(g => g.label)).toEqual(['Clients · call it · 3', 'Services · call it · 14', 'Calls · 16', 'Notifies (SNS) · 4', 'Copies its data (CDC) · 14'])
     const subject = m.nodes.find(n => n.id === SUBJECT_ID)
     expect(subject?.stores.map(s => s.resource)).toEqual(['pg:skello_production', 'redis:skelloApp-valkey', 'ddb:svcUsers'])
     expect(m.nodes.filter(n => n.id !== SUBJECT_ID).every(n => n.stores.length === 0)).toBe(true)
