@@ -243,3 +243,31 @@ describe('checkCodeGrades across repos through monolith routes', () => {
     expect(grades['f#store→lookalike']).toBe('none')
   })
 })
+
+describe('checkCodeGrades through Vue-router route names', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'router-'))
+  const write = (rel: string, content: string) => {
+    fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true })
+    fs.writeFileSync(path.join(base, rel), content)
+  }
+  write('front/graphify-out/graph.json', JSON.stringify({ built_at_commit: 'abc123', nodes: [], links: [] }))
+  write('front/apps/vue-app/src/App.vue', "<script>export default { methods: { go(n) { this.$router.push({ name: n }) }, start() { this.go('admin_onboarding') } } }</script>")
+  write('front/apps/vue-app/src/admin_onboarding/AdminOnboarding.vue', '<template><div/></template>')
+  write('front/apps/vue-app/src/admin_onboarding/admin_onboarding_routes.js', "import AdminOnboarding from './AdminOnboarding';\nexport default [{ path: '/v3/shops/:shop_id/admin-onboarding', component: AdminOnboarding, name: 'admin_onboarding' }];\n")
+  const map = ConnectivityMapSchema.parse({
+    services: [{ name: 'front', type: 'vue-frontend', description: 'd', endpoints: [] }],
+    connections: [],
+    flows: [{
+      id: 'f', name: 'F', description: 'd', steps: [],
+      codeUnits: [
+        { id: 'app', service: 'front', kind: 'component', label: 'App', path: 'apps/vue-app/src/App.vue' },
+        { id: 'onb', service: 'front', kind: 'component', label: 'AdminOnboarding', path: 'apps/vue-app/src/admin_onboarding/AdminOnboarding.vue' },
+      ],
+      codeEdges: [{ from: 'app', to: 'onb', label: 'redirect', mode: 'sync' }],
+    }],
+  })
+
+  it('verifies an edge that crosses a router navigation by route name', () => {
+    expect(checkCodeGrades(map, base, () => 'abc123').grades['f#app→onb']).toBe('import')
+  })
+})

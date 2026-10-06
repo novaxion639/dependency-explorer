@@ -3,6 +3,7 @@ import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import { importedFiles, loadWiring, readerFor, wiredGrade, type Wiring } from './code-wiring'
 import { routeGrade, type RouteRef } from './route-grades'
+import { loadVueRoutes, routerGrade, type VueRoute } from './router-grades'
 
 export type Grade = 'graph' | 'constant' | 'import' | 'text' | 'none'
 
@@ -161,6 +162,16 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
     wirings.set(repo, wiring)
     return wiring
   }
+  const vueRoutes = new Map<string, VueRoute[]>()
+  const routesFor = (repo: string): VueRoute[] => {
+    const cached = vueRoutes.get(repo)
+    if (cached) {
+      return cached
+    }
+    const loaded = loadVueRoutes(path.join(repoBase, repo), wiringFor(repo).aliases)
+    vueRoutes.set(repo, loaded)
+    return loaded
+  }
   const record = (key: string, flow: string, grade: Grade, detail: string) => {
     grades[key] = grade
     distribution[grade]++
@@ -207,7 +218,10 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
         calleeSource: read(to.path) ?? '',
         calleeClasses: graph.classesIn.get(to.path) ?? [],
       }, read)
-      record(key, flow.id, bestGrade(base, wired), `${from.service}/${from.path} → ${to.path}`)
+      const local = bestGrade(base, wired)
+      const callerCode = stripComments(source)
+      const navigated = local === 'graph' ? null : routerGrade(callerCode, importedSources(from.service, from.path, callerCode), to.path, routesFor(from.service))
+      record(key, flow.id, bestGrade(local, navigated), `${from.service}/${from.path} → ${to.path}`)
     }
   }
   return { findings, grades, distribution, backlog }

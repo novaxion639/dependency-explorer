@@ -1,4 +1,6 @@
-import { RESOLVE_SUFFIXES, resolveSpecifier, type Alias, type Read } from './code-wiring'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import { readerFor, RESOLVE_SUFFIXES, resolveSpecifier, type Alias, type Read } from './code-wiring'
 
 export interface VueRoute { name: string; componentFile: string }
 
@@ -9,6 +11,8 @@ const COMPONENT_VALUE = /^\s*(?:([A-Za-z_$][\w$]*)\s*[,}\n]|\(\)\s*=>\s*import\(
 const NAME_VALUE = /^name\s*:\s*(['"])([^'"]+)\1/
 const OPENERS = '{[('
 const CLOSERS = '}])'
+const ROUTE_FILE = /routes?\.(?:js|ts)$/i
+const NOT_SOURCE = /(?:^|\/)(?:node_modules|__tests__)\/|\.(?:test|spec)\./
 const NAVIGATES = /\$?router\.(?:push|replace)\s*\(|<router-link\b/
 
 function maskStrings(source: string): string {
@@ -99,4 +103,18 @@ export function routerGrade(callerCode: string, imported: string[], calleePath: 
     return 'import'
   }
   return names.some(n => imported.some(s => namesLiteral(s, n))) ? 'text' : null
+}
+
+function sourceRoots(repoDir: string): string[] {
+  const appsDir = path.join(repoDir, 'apps')
+  const apps = fs.existsSync(appsDir) ? fs.readdirSync(appsDir).map(a => path.posix.join('apps', a, 'src')) : []
+  return [...apps, 'src'].filter(root => fs.existsSync(path.join(repoDir, root)))
+}
+
+export function loadVueRoutes(repoDir: string, aliases: Alias[]): VueRoute[] {
+  const read = readerFor(repoDir)
+  return sourceRoots(repoDir).flatMap(root => fs.readdirSync(path.join(repoDir, root), { recursive: true, encoding: 'utf-8' })
+    .map(f => path.posix.join(root, f.split(path.sep).join('/')))
+    .filter(f => ROUTE_FILE.test(f) && !NOT_SOURCE.test(f))
+    .flatMap(f => parseVueRoutes(read(f) ?? '', f, aliases, read)))
 }
