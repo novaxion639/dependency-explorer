@@ -181,7 +181,7 @@ function forgetOtherPages(next: UrlState): UrlState {
   return KEY_ORDER.reduce<UrlState>((st, key) => (kept.has(key) ? st : { ...st, [key]: null }), next)
 }
 
-type HistoryWriter =Pick<History, 'pushState' | 'replaceState'> & { state?: unknown }
+type HistoryWriter = Pick<History, 'pushState' | 'replaceState'> & { state?: unknown }
 
 export function commitPatch(
   prev: UrlState,

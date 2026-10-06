@@ -71,7 +71,8 @@ function camelStem(repo: string): string {
 }
 
 const LOG_CALL_LEAD = /\b(?:log|logger|console)\.\w+\(\s*$/
-const INDEX_LEAD = /[\w\])]\s*\[\s*$/
+const INDEX_LEAD = /([\w$]+|[\])])\s*\[\s*$/
+const KEYWORDS_BEFORE_ARRAY = new Set(['return', 'yield', 'await', 'in', 'of', 'case', 'else', 'do', 'typeof', 'void'])
 const KEY_TAIL = /^\s*\??:(?!:)/
 const VALUE_LEAD = /(?:\?|\bcase)\s*$/
 
@@ -82,7 +83,9 @@ function producerLiterals(source: string): string[] {
     const before = code.slice(Math.max(0, at - 80), at)
     const after = code.slice(at + m[0].length, at + m[0].length + 4)
     const isKey = KEY_TAIL.test(after) && !VALUE_LEAD.test(before)
-    return LOG_CALL_LEAD.test(before) || INDEX_LEAD.test(before) || isKey ? [] : [m[2] ?? '']
+    const indexLead = before.match(INDEX_LEAD)?.[1]
+    const isIndex = indexLead !== undefined && !KEYWORDS_BEFORE_ARRAY.has(indexLead)
+    return LOG_CALL_LEAD.test(before) || isIndex || isKey ? [] : [m[2] ?? '']
   })
 }
 

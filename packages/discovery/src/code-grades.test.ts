@@ -59,6 +59,10 @@ describe('gradeEdge', () => {
     expect(stripComments("a ?'b' : 'c' // js")).toBe("a ?'b' : 'c' ")
     expect(stripComments("a ?'' : c // js")).toBe("a ?'' : c ")
   })
+  it('reads an unformatted ternary with a one-character string as a string', () => {
+    expect(stripComments("c ?' ' : 'x # y' // n")).toBe("c ?' ' : 'x # y' ")
+    expect(stripComments("c ?`\n a # b` : d")).toBe("c ?`\n a # b` : d")
+  })
   it('grades a cross-repo edge text at best', () => {
     expect([crossRepoGrade('graph'), crossRepoGrade('import'), crossRepoGrade('text'), crossRepoGrade('none')]).toEqual(['text', 'text', 'text', 'none'])
   })

@@ -146,14 +146,15 @@ describe('messagingRelations producer literal contexts', () => {
       { file: 'src/a.ts', source: "switch (q) { case 'createShifts': send() }" },
       { file: 'src/b.ts', source: "const q = live ? 'transaction' : 'none'" },
     ]],
+    ['svc-y', [{ file: 'src/c.ts', source: "function queues() { return ['createShifts'] }" }]],
   ])
   const rels = messagingRelations(resources, new Map(), sources).filter(r => r.relation === 'produces').map(r => `${r.resource} ${r.service}`)
 
   it('ignores comments, log arguments, object keys and index accesses', () => {
-    expect(rels.filter(r => !r.endsWith('svc-x'))).toEqual([])
+    expect(rels.filter(r => !r.endsWith('svc-x') && !r.endsWith('svc-y'))).toEqual([])
   })
-  it('still credits case labels and ternary branches', () => {
-    expect(rels).toEqual(['sqs:createShifts svc-x', 'sqs:transaction svc-x'])
+  it('still credits case labels, ternary branches and returned arrays', () => {
+    expect(rels).toEqual(['sqs:createShifts svc-x', 'sqs:createShifts svc-y', 'sqs:transaction svc-x'])
   })
 })
 
