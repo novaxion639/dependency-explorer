@@ -286,3 +286,20 @@ describe('resolveSpecifier scopes', () => {
     expect(resolveSpecifier('~/Manager/A', 'apps/vue-app/src/a.js', aliases)).toBe('src/Manager/A')
   })
 })
+
+describe('emitsToCallee scoping', () => {
+  const e = (calleeSource: string): WiredEdge => ({
+    callerPath: 'apps/vue-app/src/Child.vue', calleePath: 'apps/vue-app/src/Parent.vue',
+    callerCode: "this.$emit('saved')", calleeSource, calleeClasses: [],
+  })
+  const imp = "import Child from './Child';\nimport Other from './Other';\n"
+  it('credits the event bound on the tag that renders the caller', () => {
+    expect(emitsToCallee(e(`${imp}<Child @saved="x" />`), [])).toBe(true)
+    expect(emitsToCallee(e(`${imp}<child v-on:saved="x"></child>`), [])).toBe(true)
+    expect(emitsToCallee(e(`${imp}<component :is="Child" @saved="x" />`), [])).toBe(true)
+  })
+  it('never credits a binding on another element or inside an HTML comment', () => {
+    expect(emitsToCallee(e(`${imp}<Child /><Other @saved="x" />`), [])).toBe(false)
+    expect(emitsToCallee(e(`${imp}<!-- <Child @saved="x" /> --><Child />`), [])).toBe(false)
+  })
+})

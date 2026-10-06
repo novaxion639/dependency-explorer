@@ -229,11 +229,33 @@ export function usesVuexNamespace(code: string, ns: string): boolean {
   return new RegExp(`\\bmap(?:State|Getters|Actions|Mutations)\\(\\s*['"]${n}['"]|\\b(?:dispatch|commit)\\(\\s*['"\`]${n}/|\\[\\s*['"]${n}/`).test(code)
 }
 
+const HTML_COMMENT = /<!--[\s\S]*?-->/g
+const OPEN_TAG = /<([A-Za-z][\w-]*)\b([^>]*)>/g
+
+function kebab(name: string): string {
+  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+}
+
+function bindingsOf(code: string, fromPath: string, target: string, aliases: Alias[]): string[] {
+  const resolves = (spec: string) => {
+    const base = resolveSpecifier(spec, fromPath, aliases)
+    return base !== null && resolvesTo(base, target)
+  }
+  return [
+    ...[...code.matchAll(DEFAULT_IMPORT)].filter(m => resolves(m[2] ?? '')).map(m => m[1] ?? ''),
+    ...[...code.matchAll(NAMED_IMPORT)].filter(m => resolves(m[2] ?? '')).flatMap(m => boundNames(m[1] ?? '')),
+  ]
+}
+
 export function emitsToCallee(e: WiredEdge, aliases: Alias[]): boolean {
   const events = [...e.callerCode.matchAll(EMITTED)].map(m => m[1] ?? '')
-  return events.length > 0
-    && importsFileDirectly(e.calleeSource, e.calleePath, e.callerPath, aliases)
-    && events.some(ev => new RegExp(`(?:@|v-on:)${escape(ev)}=`).test(e.calleeSource))
+  const parent = e.calleeSource.replace(HTML_COMMENT, '')
+  const bindings = events.length > 0 ? bindingsOf(parent, e.calleePath, e.callerPath, aliases) : []
+  const tags = new Set(bindings.flatMap(b => [b, kebab(b)]))
+  const bindsEvent = (attrs: string) => events.some(ev => new RegExp(`(?:@|v-on:)${escape(ev)}=`).test(attrs))
+  const rendersCaller = (name: string, attrs: string) => tags.has(name)
+    || (name === 'component' && bindings.some(b => new RegExp(`:is="[^"]*\\b${escape(b)}\\b`).test(attrs)))
+  return [...parent.matchAll(OPEN_TAG)].some(m => rendersCaller(m[1] ?? '', m[2] ?? '') && bindsEvent(m[2] ?? ''))
 }
 
 const RECEIVER = /(?:@|\b)([a-z_][a-z0-9_]*)\.(?=[a-z_])/g
