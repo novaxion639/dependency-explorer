@@ -67,8 +67,27 @@ function blankSpans(code: string, spans: Construction[]): string {
   return spans.reduceRight((acc, s) => `${acc.slice(0, s.start)}${' '.repeat(s.end - s.start)}${acc.slice(s.end)}`, code)
 }
 
+function maskTemplate(t: string): string {
+  let out = '`'
+  let depth = 0
+  for (let i = 1; i < t.length - 1; i++) {
+    const c = t[i] ?? ''
+    if (depth === 0 && c === '$' && t[i + 1] === '{') {
+      depth = 1
+      out += '${'
+      i++
+    } else if (depth > 0) {
+      depth += c === '{' ? 1 : c === '}' ? -1 : 0
+      out += c
+    } else {
+      out += ' '
+    }
+  }
+  return `${out}\``
+}
+
 export function maskStrings(source: string): string {
-  return source.replace(STRING, s => `${s[0] ?? ''}${' '.repeat(Math.max(0, s.length - 2))}${s[s.length - 1] ?? ''}`)
+  return source.replace(STRING, s => (s.startsWith('`') ? maskTemplate(s) : `${s[0] ?? ''}${' '.repeat(Math.max(0, s.length - 2))}${s[s.length - 1] ?? ''}`))
 }
 
 function maskObjectKeys(code: string): string {
@@ -230,7 +249,7 @@ export function usesVuexNamespace(code: string, ns: string): boolean {
 }
 
 const HTML_COMMENT = /<!--[\s\S]*?-->/g
-const OPEN_TAG = /<([A-Za-z][\w-]*)\b([^>]*)>/g
+const OPEN_TAG = /<([A-Za-z][\w-]*)\b((?:"[^"]*"|'[^']*'|[^>"'])*)>/g
 
 function kebab(name: string): string {
   return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
@@ -253,9 +272,8 @@ export function emitsToCallee(e: WiredEdge, aliases: Alias[]): boolean {
   const bindings = events.length > 0 ? bindingsOf(parent, e.calleePath, e.callerPath, aliases) : []
   const tags = new Set(bindings.flatMap(b => [b, kebab(b)]))
   const bindsEvent = (attrs: string) => events.some(ev => new RegExp(`(?:@|v-on:)${escapeRegExp(ev)}=`).test(attrs))
-  const rendersCaller = (name: string, attrs: string) => tags.has(name)
-    || (name === 'component' && bindings.some(b => new RegExp(`:is="[^"]*\\b${escapeRegExp(b)}\\b`).test(attrs)))
-  return [...parent.matchAll(OPEN_TAG)].some(m => rendersCaller(m[1] ?? '', m[2] ?? '') && bindsEvent(m[2] ?? ''))
+  const rendersCaller = (name: string) => tags.has(name) || (name === 'component' && bindings.length > 0)
+  return [...parent.matchAll(OPEN_TAG)].some(m => rendersCaller(m[1] ?? '') && bindsEvent(m[2] ?? ''))
 }
 
 const RECEIVER = /(?:@|\b)([a-z_][a-z0-9_]*)\.(?=[a-z_])/g

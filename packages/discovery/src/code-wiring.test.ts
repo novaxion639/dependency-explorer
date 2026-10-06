@@ -259,6 +259,13 @@ describe('parseInjections precision', () => {
     expect([...(injects.get('src/X.ts') ?? [])]).toEqual(['src/Other.ts'])
     expect([...(injects.get('src/Y.ts') ?? [])]).toEqual(['src/DocumentManager.ts'])
   })
+  it('keeps the code inside template-literal interpolations', () => {
+    const container = [
+      'const env = new EnvVarsHelper(process.env)',
+      'const sts = new StsClient(`arn:aws:iam::${env.accountId}:role/x`)',
+    ].join('\n')
+    expect([...(parseInjections(container, asFile).get('src/StsClient.ts') ?? [])]).toEqual(['src/EnvVarsHelper.ts'])
+  })
   it('reads declarations indented inside an initContainer function', () => {
     const container = [
       'export const initContainer = async (env) => {',
@@ -297,6 +304,10 @@ describe('emitsToCallee scoping', () => {
     expect(emitsToCallee(e(`${imp}<Child @saved="x" />`), [])).toBe(true)
     expect(emitsToCallee(e(`${imp}<child v-on:saved="x"></child>`), [])).toBe(true)
     expect(emitsToCallee(e(`${imp}<component :is="Child" @saved="x" />`), [])).toBe(true)
+  })
+  it('reads past quoted > in attribute values and credits a computed component tag', () => {
+    expect(emitsToCallee(e(`${imp}<Child v-if="n > 0" @other="v => y" @saved="x" />`), [])).toBe(true)
+    expect(emitsToCallee(e(`${imp}<component :is="currentStep" @saved="x" />`), [])).toBe(true)
   })
   it('never credits a binding on another element or inside an HTML comment', () => {
     expect(emitsToCallee(e(`${imp}<Child /><Other @saved="x" />`), [])).toBe(false)
