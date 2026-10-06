@@ -1,7 +1,9 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
-import { importedFiles, loadWiring, readerFor, wiredGrade, type Wiring } from './code-wiring'
+import { importedFiles, loadWiring, readerFor, stripComments, wiredGrade, type Wiring } from './code-wiring'
+
+export { stripComments }
 import { routeGrade, type RouteRef } from './route-grades'
 import { loadVueRoutes, routerGrade, type VueRoute } from './router-grades'
 
@@ -59,11 +61,6 @@ export function loadRepoGraph(graphJson: unknown): RepoGraph | null {
   return { builtAt: str(graphJson.built_at_commit), fileEdges, importEdges, classesIn }
 }
 
-const STRING_OR_COMMENT = /((?<=^|[\s(,=[])\?'(?=[\s),\]]|$)(?!.')|(?<=^|[\s(,=[])\?"(?=[\s),\]]|$)(?!.")|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\/\*[\s\S]*?\*\/|(^|[^:\\])\/\/.*$|(^|\s)#(?![{!]).*$/gm
-
-export function stripComments(source: string): string {
-  return source.replace(STRING_OR_COMMENT, (_whole, literal: string | undefined, slashLead: string | undefined, hashLead: string | undefined) => literal ?? slashLead ?? hashLead ?? '')
-}
 
 export function crossRepoGrade(grade: Grade): Grade {
   return grade === 'none' ? 'none' : 'text'

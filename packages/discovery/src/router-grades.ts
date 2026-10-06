@@ -1,6 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { readerFor, RESOLVE_SUFFIXES, resolveSpecifier, type Alias, type Read } from './code-wiring'
+import { readerFor, RESOLVE_SUFFIXES, resolveSpecifier, stripComments, type Alias, type Read } from './code-wiring'
 
 export interface VueRoute { name: string; componentFile: string }
 
@@ -75,7 +75,8 @@ function resolveFile(spec: string, fromPath: string, aliases: Alias[], read: Rea
   return base === null ? null : RESOLVE_SUFFIXES.map(s => `${base}${s}`).find(p => read(p) !== null) ?? null
 }
 
-export function parseVueRoutes(source: string, fromPath: string, aliases: Alias[], read: Read): VueRoute[] {
+export function parseVueRoutes(raw: string, fromPath: string, aliases: Alias[], read: Read): VueRoute[] {
+  const source = stripComments(raw)
   const bindings = new Map([...source.matchAll(DEFAULT_IMPORT)].map(m => [m[1] ?? '', m[2] ?? '']))
   const masked = maskStrings(source)
   return [...masked.matchAll(COMPONENT_KEY)].flatMap(m => {
@@ -89,9 +90,18 @@ export function parseVueRoutes(source: string, fromPath: string, aliases: Alias[
   })
 }
 
+const STORE_CALL_LEAD = /\b(?:map\w+|dispatch|commit)\(\s*$/
+const ROUTE_NAME_COMPARED_LEAD = /\$route\.name\s*[!=]==?\s*$/
+const ROUTE_NAME_COMPARED_TAIL = /^\s*[!=]==?\s*(?:this\.)?\$route\.name\b/
+
 function namesLiteral(code: string, name: string): boolean {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  return new RegExp(`(['"\`])${escaped}\\1`).test(code)
+  return [...code.matchAll(new RegExp(`(['"\`])${escaped}\\1`, 'g'))].some(m => {
+    const at = m.index ?? 0
+    const before = code.slice(Math.max(0, at - 40), at)
+    const after = code.slice(at + m[0].length, at + m[0].length + 40)
+    return !STORE_CALL_LEAD.test(before) && !ROUTE_NAME_COMPARED_LEAD.test(before) && !ROUTE_NAME_COMPARED_TAIL.test(after)
+  })
 }
 
 export function routerGrade(callerCode: string, imported: string[], calleePath: string, routes: ReadonlyArray<VueRoute>): 'import' | 'text' | null {
