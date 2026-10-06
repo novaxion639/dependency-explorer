@@ -106,6 +106,21 @@ describe('commitPatch', () => {
     expect(calls).toEqual([['push', '/?page=flows&flow=badging-review']])
   })
 
+  it('forgets the keys of the page it leaves', () => {
+    const { history } = recorder()
+    const onFlows = commitPatch(parseUrl('?s=svc-punch&edge=a~b~rest'), { page: 'flows', flow: 'badging-review' }, undefined, history, '/')
+    expect(onFlows.s).toBeNull()
+    expect(onFlows.edge).toBeNull()
+    const back = commitPatch(onFlows, { page: 'microservices' }, undefined, history, '/')
+    expect(toQueryString(back)).toBe('page=microservices')
+  })
+
+  it('keeps the keys the new page uses', () => {
+    const { history } = recorder()
+    const next = commitPatch(parseUrl('?page=flows&flow=x'), selectServicePatch('svc-a'), undefined, history, '/')
+    expect(next.s).toBe('svc-a')
+  })
+
   it('replaces in place for toggles and clears notFound', () => {
     const { calls, history } = recorder()
     const prev = { ...parseUrl('?s=svc-punch&flow=x'), notFound: { param: 'area' as const, value: 'nope' } }

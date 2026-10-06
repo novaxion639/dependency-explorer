@@ -176,7 +176,12 @@ export function isNavigation(prev: UrlState, p: Partial<UrlState>): boolean {
   return NAVIGATION_KEYS.some(k => k in p && p[k] !== prev[k] && p[k] !== null)
 }
 
-type HistoryWriter = Pick<History, 'pushState' | 'replaceState'> & { state?: unknown }
+function forgetOtherPages(next: UrlState): UrlState {
+  const kept = new Set(PAGE_KEYS[next.page])
+  return KEY_ORDER.reduce<UrlState>((st, key) => (kept.has(key) ? st : { ...st, [key]: null }), next)
+}
+
+type HistoryWriter =Pick<History, 'pushState' | 'replaceState'> & { state?: unknown }
 
 export function commitPatch(
   prev: UrlState,
@@ -185,7 +190,8 @@ export function commitPatch(
   history: HistoryWriter,
   pathname: string,
 ): UrlState {
-  const next = { ...prev, notFound: null, ...p }
+  const merged = { ...prev, notFound: null, ...p }
+  const next = p.page !== undefined && p.page !== prev.page ? forgetOtherPages(merged) : merged
   const qs = toQueryString(next)
   const url = qs ? `${pathname}?${qs}` : pathname
   if (opts?.push ?? isNavigation(prev, p)) {
