@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, parseTsconfigPaths, importedFiles, type WiredEdge } from './code-wiring'
+import { associationMap, parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, parseTsconfigPaths, importedFiles, type WiredEdge } from './code-wiring'
 
 const container = `
 const llmProviders: LlmProviders = {
@@ -65,15 +65,15 @@ const edge = (callerPath: string, calleePath: string, callerCode: string, callee
 describe('imports', () => {
   it('reads Vite aliases relative to the config directory', () => {
     expect(aliases).toEqual([
-      { prefix: '@app-js', dir: 'apps/vue-app/src' },
-      { prefix: '@skello-utils', dir: 'apps/vue-app/src/shared/utils' },
-      { prefix: '@app', dir: 'apps/vue-app/legacy' },
+      { prefix: '@app-js', dir: 'apps/vue-app/src', scope: 'apps/vue-app' },
+      { prefix: '@skello-utils', dir: 'apps/vue-app/src/shared/utils', scope: 'apps/vue-app' },
+      { prefix: '@app', dir: 'apps/vue-app/legacy', scope: 'apps/vue-app' },
     ])
   })
   it('matches the longest alias at a path boundary', () => {
-    expect(resolveSpecifier('@app-js/badgings/shared/utils', 'x.js', aliases)).toBe('apps/vue-app/src/badgings/shared/utils')
-    expect(resolveSpecifier('@app/old', 'x.js', aliases)).toBe('apps/vue-app/legacy/old')
-    expect(resolveSpecifier('@apps/x', 'x.js', aliases)).toBeNull()
+    expect(resolveSpecifier('@app-js/badgings/shared/utils', 'apps/vue-app/src/x.js', aliases)).toBe('apps/vue-app/src/badgings/shared/utils')
+    expect(resolveSpecifier('@app/old', 'apps/vue-app/src/x.js', aliases)).toBe('apps/vue-app/legacy/old')
+    expect(resolveSpecifier('@apps/x', 'apps/vue-app/src/x.js', aliases)).toBeNull()
     expect(resolveSpecifier('./api', 'src/modules/shifts/connector.ts', aliases)).toBe('src/modules/shifts/api')
   })
   it('credits an aliased directory import to its index file', () => {
@@ -119,10 +119,10 @@ describe('vuex and events', () => {
 })
 
 describe('rails receivers', () => {
-  const associations = new Map(parseAssociations("class Contract < ApplicationRecord\n  has_many :amendments, class_name: 'ContractAmendment', dependent: :delete_all\n  belongs_to :user\nend\n"))
+  const associations = associationMap(parseAssociations("class Contract < ApplicationRecord\n  has_many :amendments, class_name: 'ContractAmendment', dependent: :delete_all\n  belongs_to :user\nend\n"))
 
   it('reads association class names', () => {
-    expect([...associations]).toEqual([['amendments', 'ContractAmendment']])
+    expect([...associations].map(([k, v]) => [k, [...v]])).toEqual([['amendments', ['ContractAmendment']]])
   })
   it('maps a receiver to the model its name singularizes to', () => {
     expect(namesReceiverModel('@badgings.each do |badging|', ['Badging'], associations)).toBe(true)
@@ -138,7 +138,7 @@ describe('rails receivers', () => {
 })
 
 describe('wiredGrade', () => {
-  const wiring = { aliases, injects: parseInjections(container, asFile), associations: new Map([['amendments', 'ContractAmendment']]) }
+  const wiring = { aliases, injects: parseInjections(container, asFile), associations: associationMap([['amendments', 'ContractAmendment']]) }
   const noFiles = () => null
 
   it('grades a container path graph and a resolved import import', () => {
@@ -175,7 +175,7 @@ describe('loadWiring', () => {
     const w = loadWiring(dir)
     expect(w.aliases.map(a => a.prefix)).toEqual(['~', '@app-js', '@skello-utils', '@app'])
     expect(injectionReach(w.injects, ['src/Manager/DocumentManager.ts'], ['src/Client/Llm/BedrockLlmProvider.ts'])).toBe(true)
-    expect(w.associations.get('amendments')).toBe('ContractAmendment')
+    expect([...(w.associations.get('amendments') ?? [])]).toEqual(['ContractAmendment'])
   })
 })
 
@@ -233,5 +233,105 @@ describe('imported files', () => {
     expect(importedFiles(manager, 'src/Manager/SkelloManager.ts', parseTsconfigPaths(tsconfig, ''), readRepo)).toEqual(['src/Repository/Skello/SkelloRepository.ts'])
     const store = "import {\n  ENDPOINT_NAMESPACE,\n} from './api/shift';"
     expect(importedFiles(store, 'apps/vue-app/src/shared/store/modules/plannings/shifts.js', [], readRepo)).toEqual(['apps/vue-app/src/shared/store/modules/plannings/api/shift.js'])
+  })
+})
+
+describe('parseInjections precision', () => {
+  const asFile = (cls: string) => `src/${cls}.ts`
+  it('never splits or wires through strings and comments', () => {
+    const container = [
+      "const a = new A('x; new B(')",
+      '// const c = new C(a)',
+      'const d = new D(a /* ; new E() */)',
+    ].join('\n')
+    const injects = parseInjections(container, asFile)
+    expect([...injects.keys()].sort()).toEqual(['src/A.ts', 'src/D.ts'])
+    expect([...(injects.get('src/D.ts') ?? [])]).toEqual(['src/A.ts'])
+  })
+  it('reads object values, not keys, as dependencies', () => {
+    const container = [
+      'const documentManager = new DocumentManager()',
+      'const other = new Other()',
+      'const x = new X({ documentManager: other })',
+      'const y = new Y({ documentManager })',
+    ].join('\n')
+    const injects = parseInjections(container, asFile)
+    expect([...(injects.get('src/X.ts') ?? [])]).toEqual(['src/Other.ts'])
+    expect([...(injects.get('src/Y.ts') ?? [])]).toEqual(['src/DocumentManager.ts'])
+  })
+  it('keeps the code inside template-literal interpolations', () => {
+    const container = [
+      'const env = new EnvVarsHelper(process.env)',
+      'const sts = new StsClient(`arn:aws:iam::${env.accountId}:role/x`)',
+    ].join('\n')
+    expect([...(parseInjections(container, asFile).get('src/StsClient.ts') ?? [])]).toEqual(['src/EnvVarsHelper.ts'])
+  })
+  it('reads declarations indented inside an initContainer function', () => {
+    const container = [
+      'export const initContainer = async (env) => {',
+      '  const repo = new Repo(env)',
+      '  const manager = new Manager(repo)',
+      '  return { manager }',
+      '}',
+    ].join('\n')
+    expect([...(parseInjections(container, asFile).get('src/Manager.ts') ?? [])]).toEqual(['src/Repo.ts'])
+  })
+})
+
+describe('resolveSpecifier scopes', () => {
+  const aliases = [
+    ...parseViteAliases("'@environment': fileURLToPath(new URL('./src/environment', import.meta.url))", 'apps/base-app'),
+    ...parseViteAliases("'@environment': fileURLToPath(new URL('./src/env', import.meta.url))", 'apps/vue-app'),
+    ...parseTsconfigPaths('"~/*": ["src/*"]', ''),
+  ]
+  it('resolves an app alias inside its own app only', () => {
+    expect(resolveSpecifier('@environment/urls', 'apps/base-app/src/a.ts', aliases)).toBe('apps/base-app/src/environment/urls')
+    expect(resolveSpecifier('@environment/urls', 'apps/vue-app/src/a.js', aliases)).toBe('apps/vue-app/src/env/urls')
+    expect(resolveSpecifier('@environment/urls', 'packages/x/a.ts', aliases)).toBeNull()
+  })
+  it('applies a repo-root alias everywhere', () => {
+    expect(resolveSpecifier('~/Manager/A', 'apps/vue-app/src/a.js', aliases)).toBe('src/Manager/A')
+  })
+})
+
+describe('emitsToCallee scoping', () => {
+  const e = (calleeSource: string): WiredEdge => ({
+    callerPath: 'apps/vue-app/src/Child.vue', calleePath: 'apps/vue-app/src/Parent.vue',
+    callerCode: "this.$emit('saved')", calleeSource, calleeClasses: [],
+  })
+  const imp = "import Child from './Child';\nimport Other from './Other';\n"
+  it('credits the event bound on the tag that renders the caller', () => {
+    expect(emitsToCallee(e(`${imp}<Child @saved="x" />`), [])).toBe(true)
+    expect(emitsToCallee(e(`${imp}<child v-on:saved="x"></child>`), [])).toBe(true)
+    expect(emitsToCallee(e(`${imp}<component :is="Child" @saved="x" />`), [])).toBe(true)
+  })
+  it('reads past quoted > in attribute values and credits a computed component tag', () => {
+    expect(emitsToCallee(e(`${imp}<Child v-if="n > 0" @other="v => y" @saved="x" />`), [])).toBe(true)
+    expect(emitsToCallee(e(`${imp}<component :is="currentStep" @saved="x" />`), [])).toBe(true)
+  })
+  it('never credits a binding on another element or inside an HTML comment', () => {
+    expect(emitsToCallee(e(`${imp}<Child /><Other @saved="x" />`), [])).toBe(false)
+    expect(emitsToCallee(e(`${imp}<!-- <Child @saved="x" /> --><Child />`), [])).toBe(false)
+  })
+})
+
+describe('associations across models', () => {
+  it('keeps every class an association name points to', () => {
+    const associations = associationMap([
+      ...parseAssociations("has_many :items, class_name: 'OrderItem'"),
+      ...parseAssociations("has_many :items, class_name: 'CartItem'"),
+    ])
+    expect(namesReceiverModel('@items.each', ['OrderItem'], associations)).toBe(true)
+    expect(namesReceiverModel('@items.each', ['CartItem'], associations)).toBe(true)
+  })
+})
+
+describe('loadWiring on unexpected files', () => {
+  it('treats an apps or app/models file as absent', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiring-files-'))
+    fs.writeFileSync(path.join(dir, 'apps'), '')
+    fs.mkdirSync(path.join(dir, 'app'))
+    fs.writeFileSync(path.join(dir, 'app', 'models'), '')
+    expect(loadWiring(dir).associations.size).toBe(0)
   })
 })

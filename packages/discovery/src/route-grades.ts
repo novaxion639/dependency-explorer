@@ -1,3 +1,4 @@
+import { escapeRegExp } from './code-wiring'
 export interface RouteRef { path: string; controllerFile: string }
 
 type UrlSegment = string | RegExp
@@ -34,10 +35,6 @@ function callerConstants(callerCode: string, imported: string[]): Map<string, st
     return local === undefined ? [] : [[local, value] as const]
   })
   return new Map([...fromImports, ...constantsIn(callerCode)])
-}
-
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 function urlSegment(s: string): UrlSegment | null {

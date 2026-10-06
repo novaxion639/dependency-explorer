@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
-export type Alias = { prefix: string; dir: string }
+export type Alias = { prefix: string; dir: string; scope: string }
 export type Read = (repoPath: string) => string | null
 
 export interface WiredEdge {
@@ -12,7 +12,9 @@ export interface WiredEdge {
   calleeClasses: string[]
 }
 
-const DECLARATION = /^(?:export\s+)?const\s+(\w+)[^=\n]*=\s*/gm
+const DECLARATION = /^\s*(?:export\s+)?const\s+(\w+)[^=\n]*=\s*/gm
+const OBJECT_KEY = /([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)(?!:)/g
+const STRING = /'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g
 const NEW_CALL = /\bnew\s+([A-Z]\w*)\s*(?:<[^>()]*>)?\s*\(/g
 const IDENTIFIER = /\b[A-Za-z_$][\w$]*\b/g
 const NOT_INJECTABLE = new Set(['Map', 'Set', 'Array', 'Object', 'Date', 'Promise', 'URL', 'Error'])
@@ -65,7 +67,35 @@ function blankSpans(code: string, spans: Construction[]): string {
   return spans.reduceRight((acc, s) => `${acc.slice(0, s.start)}${' '.repeat(s.end - s.start)}${acc.slice(s.end)}`, code)
 }
 
-export function parseInjections(source: string, fileOf: (cls: string) => string | null): Map<string, Set<string>> {
+function maskTemplate(t: string): string {
+  let out = '`'
+  let depth = 0
+  for (let i = 1; i < t.length - 1; i++) {
+    const c = t[i] ?? ''
+    if (depth === 0 && c === '$' && t[i + 1] === '{') {
+      depth = 1
+      out += '${'
+      i++
+    } else if (depth > 0) {
+      depth += c === '{' ? 1 : c === '}' ? -1 : 0
+      out += c
+    } else {
+      out += ' '
+    }
+  }
+  return `${out}\``
+}
+
+export function maskStrings(source: string): string {
+  return source.replace(STRING, s => (s.startsWith('`') ? maskTemplate(s) : `${s[0] ?? ''}${' '.repeat(Math.max(0, s.length - 2))}${s[s.length - 1] ?? ''}`))
+}
+
+function maskObjectKeys(code: string): string {
+  return code.replace(OBJECT_KEY, (_whole, lead: string, key: string, colon: string) => `${lead}${' '.repeat(key.length)}${colon}`)
+}
+
+export function parseInjections(raw: string, fileOf: (cls: string) => string | null): Map<string, Set<string>> {
+  const source = maskObjectKeys(maskStrings(stripComments(raw)))
   const starts = [...source.matchAll(DECLARATION)]
   const decls = new Map(starts.map((m, i) => {
     const from = (m.index ?? 0) + m[0].length
@@ -124,11 +154,11 @@ export function stripComments(source: string): string {
 const BARREL_SUFFIXES = ['/index.js', '/index.ts']
 
 export function parseViteAliases(source: string, configDir: string): Alias[] {
-  return [...source.matchAll(VITE_ALIAS)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, '') }))
+  return [...source.matchAll(VITE_ALIAS)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, ''), scope: configDir }))
 }
 
 export function parseTsconfigPaths(source: string, configDir: string): Alias[] {
-  return [...source.matchAll(TSCONFIG_PATH)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, '') }))
+  return [...source.matchAll(TSCONFIG_PATH)].map(m => ({ prefix: m[1] ?? '', dir: path.posix.join(configDir, m[2] ?? '').replace(/\/$/, ''), scope: configDir }))
 }
 
 export function readerFor(repoDir: string): Read {
@@ -142,7 +172,10 @@ export function resolveSpecifier(spec: string, fromPath: string, aliases: Alias[
   if (spec.startsWith('./') || spec.startsWith('../')) {
     return path.posix.join(path.posix.dirname(fromPath), spec)
   }
-  const alias = aliases.filter(a => spec === a.prefix || spec.startsWith(`${a.prefix}/`)).sort((a, b) => b.prefix.length - a.prefix.length)[0]
+  const inScope = (a: Alias) => a.scope === '' || fromPath.startsWith(`${a.scope}/`)
+  const alias = aliases
+    .filter(a => inScope(a) && (spec === a.prefix || spec.startsWith(`${a.prefix}/`)))
+    .sort((a, b) => b.scope.length - a.scope.length || b.prefix.length - a.prefix.length)[0]
   return alias ? path.posix.join(alias.dir, spec.slice(alias.prefix.length)) : null
 }
 
@@ -197,7 +230,7 @@ const STORE_MODULES = /^(.*\/store\/modules)\//
 const MODULE_REGISTRATION = /export\s*\{\s*default\s+as\s+(\w+)\s*\}\s*from\s*['"]([^'"]+)['"]/g
 const EMITTED = /\$emit\(\s*['"]([\w:-]+)['"]/g
 
-function escape(s: string): string {
+export function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
@@ -211,15 +244,36 @@ export function vuexNamespaceOf(calleePath: string, read: Read): string | null {
 }
 
 export function usesVuexNamespace(code: string, ns: string): boolean {
-  const n = escape(ns)
+  const n = escapeRegExp(ns)
   return new RegExp(`\\bmap(?:State|Getters|Actions|Mutations)\\(\\s*['"]${n}['"]|\\b(?:dispatch|commit)\\(\\s*['"\`]${n}/|\\[\\s*['"]${n}/`).test(code)
+}
+
+const HTML_COMMENT = /<!--[\s\S]*?-->/g
+const OPEN_TAG = /<([A-Za-z][\w-]*)\b((?:"[^"]*"|'[^']*'|[^>"'])*)>/g
+
+function kebab(name: string): string {
+  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+}
+
+function bindingsOf(code: string, fromPath: string, target: string, aliases: Alias[]): string[] {
+  const resolves = (spec: string) => {
+    const base = resolveSpecifier(spec, fromPath, aliases)
+    return base !== null && resolvesTo(base, target)
+  }
+  return [
+    ...[...code.matchAll(DEFAULT_IMPORT)].filter(m => resolves(m[2] ?? '')).map(m => m[1] ?? ''),
+    ...[...code.matchAll(NAMED_IMPORT)].filter(m => resolves(m[2] ?? '')).flatMap(m => boundNames(m[1] ?? '')),
+  ]
 }
 
 export function emitsToCallee(e: WiredEdge, aliases: Alias[]): boolean {
   const events = [...e.callerCode.matchAll(EMITTED)].map(m => m[1] ?? '')
-  return events.length > 0
-    && importsFileDirectly(e.calleeSource, e.calleePath, e.callerPath, aliases)
-    && events.some(ev => new RegExp(`(?:@|v-on:)${escape(ev)}=`).test(e.calleeSource))
+  const parent = e.calleeSource.replace(HTML_COMMENT, '')
+  const bindings = events.length > 0 ? bindingsOf(parent, e.calleePath, e.callerPath, aliases) : []
+  const tags = new Set(bindings.flatMap(b => [b, kebab(b)]))
+  const bindsEvent = (attrs: string) => events.some(ev => new RegExp(`(?:@|v-on:)${escapeRegExp(ev)}=`).test(attrs))
+  const rendersCaller = (name: string) => tags.has(name) || (name === 'component' && bindings.length > 0)
+  return [...parent.matchAll(OPEN_TAG)].some(m => rendersCaller(m[1] ?? '') && bindsEvent(m[2] ?? ''))
 }
 
 const RECEIVER = /(?:@|\b)([a-z_][a-z0-9_]*)\.(?=[a-z_])/g
@@ -239,15 +293,23 @@ function camelize(word: string): string {
   return word.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')
 }
 
+export function associationMap(pairs: Array<[string, string]>): Map<string, Set<string>> {
+  const map = new Map<string, Set<string>>()
+  for (const [name, cls] of pairs) {
+    map.set(name, new Set([...(map.get(name) ?? []), cls]))
+  }
+  return map
+}
+
 export function parseAssociations(source: string): Array<[string, string]> {
   return [...source.matchAll(ASSOCIATION)].map(m => [m[1] ?? '', m[2] ?? ''])
 }
 
-export function namesReceiverModel(callerCode: string, calleeClasses: string[], associations: Map<string, string>): boolean {
+export function namesReceiverModel(callerCode: string, calleeClasses: string[], associations: Map<string, Set<string>>): boolean {
   const declared = new Set(calleeClasses.flatMap(c => [c, c.split('::').pop() ?? c]))
   return [...callerCode.matchAll(RECEIVER)].some(m => {
     const word = m[1] ?? ''
-    return declared.has(camelize(singular(word))) || declared.has(associations.get(word) ?? '')
+    return declared.has(camelize(singular(word))) || [...(associations.get(word) ?? [])].some(c => declared.has(c))
   })
 }
 
@@ -269,13 +331,17 @@ function containerFileOf(source: string, aliases: Alias[], read: Read): (cls: st
 export interface Wiring {
   aliases: Alias[]
   injects: Map<string, Set<string>>
-  associations: Map<string, string>
+  associations: Map<string, Set<string>>
+}
+
+function isDirectory(dir: string): boolean {
+  return fs.statSync(dir, { throwIfNoEntry: false })?.isDirectory() ?? false
 }
 
 export function loadWiring(repoDir: string): Wiring {
   const read = readerFor(repoDir)
   const appsDir = path.join(repoDir, 'apps')
-  const configDirs = ['', ...(fs.existsSync(appsDir) ? fs.readdirSync(appsDir).map(a => `apps/${a}`) : [])]
+  const configDirs = ['', ...(isDirectory(appsDir) ? fs.readdirSync(appsDir).map(a => `apps/${a}`) : [])]
   const aliases = configDirs.flatMap(dir => {
     const tsconfig = read(path.posix.join(dir, 'tsconfig.json'))
     return [
@@ -288,11 +354,11 @@ export function loadWiring(repoDir: string): Wiring {
   })
   const container = read(CONTAINER)
   const modelsDir = path.join(repoDir, 'app', 'models')
-  const models = fs.existsSync(modelsDir) ? fs.readdirSync(modelsDir, { recursive: true, encoding: 'utf-8' }).filter(f => f.endsWith('.rb')) : []
+  const models = isDirectory(modelsDir) ? fs.readdirSync(modelsDir, { recursive: true, encoding: 'utf-8' }).filter(f => f.endsWith('.rb')) : []
   return {
     aliases,
     injects: container === null ? new Map() : parseInjections(container, containerFileOf(container, aliases, read)),
-    associations: new Map(models.flatMap(f => parseAssociations(fs.readFileSync(path.join(modelsDir, f), 'utf-8')))),
+    associations: associationMap(models.flatMap(f => parseAssociations(fs.readFileSync(path.join(modelsDir, f), 'utf-8')))),
   }
 }
 

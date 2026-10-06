@@ -1,19 +1,16 @@
 import type { Resource, ResourceRelation } from '@dependency-explorer/schema'
 import type { RailsModel } from './extractors/rails-schema'
-import { stripComments, type RepoGraph } from './code-grades'
+import { type RepoGraph } from './code-grades'
+import { escapeRegExp, stripComments } from './code-wiring'
 import { OWNING_ROLES, READING_ROLES, type TerraformFacts } from './extractors/terraform'
 import { normalizeResourceName } from '@dependency-explorer/data'
 import type { ServerlessFacts } from './extractors/serverless'
 
 export const WRITE_CALL = /\.(create!?|create_or_find_by!?|find_or_create_by!?|insert!?|insert_all!?|upsert|upsert_all|update_all|delete_all|destroy_all|delete_by|destroy_by)\b/
 
-function escape(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 export function tableWriters(files: Array<{ file: string; source: string }>, models: RailsModel[]): Map<string, Set<string>> {
   const writers = new Map<string, Set<string>>()
-  const patterns = models.map(m => ({ table: m.table, re: new RegExp(`\\b${escape(m.className)}\\.`, 'g') }))
+  const patterns = models.map(m => ({ table: m.table, re: new RegExp(`\\b${escapeRegExp(m.className)}\\.`, 'g') }))
   for (const { file, source } of files) {
     for (const line of stripComments(source).split('\n')) {
       for (const { table, re } of patterns) {
@@ -142,7 +139,7 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
         if (NON_SENDERS.has(repo) || consumersOf.get(r.id)?.has(repo) || siblingOwner) {
           continue
         }
-        const token = new RegExp(`(?<![A-Za-z0-9_])${escape(r.name)}(?![A-Za-z0-9_])`)
+        const token = new RegExp(`(?<![A-Za-z0-9_])${escapeRegExp(r.name)}(?![A-Za-z0-9_])`)
         for (const f of files) {
           if (repo === r.owner && f.file.includes('serverless')) {
             continue
