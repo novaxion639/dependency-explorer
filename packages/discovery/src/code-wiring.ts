@@ -114,7 +114,7 @@ const VITE_ALIAS = /['"](@[\w-]+)['"]\s*:\s*fileURLToPath\(\s*new URL\(\s*['"]\.
 const IMPORT_FROM = /(?:\bfrom|\bimport|\brequire\()\s*['"]([^'"]+)['"]/g
 const NAMED_IMPORT = /import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
 const NAMED_REEXPORT = /export\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
-const RESOLVE_SUFFIXES = ['', '.js', '.ts', '.tsx', '.vue', '.mjs', '/index.js', '/index.ts']
+export const RESOLVE_SUFFIXES = ['', '.js', '.ts', '.tsx', '.vue', '.mjs', '/index.js', '/index.ts']
 const BARREL_SUFFIXES = ['/index.js', '/index.ts']
 
 export function parseViteAliases(source: string, configDir: string): Alias[] {
