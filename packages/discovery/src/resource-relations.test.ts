@@ -132,6 +132,31 @@ describe('messagingRelations producer precision', () => {
   })
 })
 
+describe('messagingRelations producer literal contexts', () => {
+  const queue = (name: string, owner: string): Resource => ({ id: `sqs:${name}`, kind: 'queue', store: 'sqs', name, owner, evidence: [] })
+  const resources = [queue('SetupJoinAccounts', 'svc-hiring'), queue('createShifts', 'svc-requests'), queue('transaction', 'svc-pos')]
+  const sources = new Map([
+    ['svc-hiring', [{ file: 'src/Swagger/SetupControllerSwagger.ts', source: '/**\n * `SetupJoinAccounts` queue\n */\nexport const x = 1' }]],
+    ['svc-requests', [{ file: 'src/Repository/SkelloAppRepository.ts', source: "this.logger.debug('createShifts', {params});" }]],
+    ['svc-pos', [
+      { file: 'src/Type/Meta.ts', source: "type Meta = {\n  'transaction-id': number;\n}" },
+      { file: 'src/Model/Meta.ts', source: "const id = props['transaction-id']" },
+    ]],
+    ['svc-x', [
+      { file: 'src/a.ts', source: "switch (q) { case 'createShifts': send() }" },
+      { file: 'src/b.ts', source: "const q = live ? 'transaction' : 'none'" },
+    ]],
+  ])
+  const rels = messagingRelations(resources, new Map(), sources).filter(r => r.relation === 'produces').map(r => `${r.resource} ${r.service}`)
+
+  it('ignores comments, log arguments, object keys and index accesses', () => {
+    expect(rels.filter(r => !r.endsWith('svc-x'))).toEqual([])
+  })
+  it('still credits case labels and ternary branches', () => {
+    expect(rels).toEqual(['sqs:createShifts svc-x', 'sqs:transaction svc-x'])
+  })
+})
+
 describe('messagingRelations dead-letter queues', () => {
   it('never credits the owner with consuming a DLQ-named queue, whatever the wiring casing', () => {
     const resources: Resource[] = [

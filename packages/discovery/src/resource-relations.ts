@@ -70,6 +70,22 @@ function camelStem(repo: string): string {
   return repo.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase())
 }
 
+const LOG_CALL_LEAD = /\b(?:log|logger|console)\.\w+\(\s*$/
+const INDEX_LEAD = /[\w\])]\s*\[\s*$/
+const KEY_TAIL = /^\s*\??:(?!:)/
+const VALUE_LEAD = /(?:\?|\bcase)\s*$/
+
+function producerLiterals(source: string): string[] {
+  const code = stripComments(source)
+  return [...code.matchAll(IDENTIFIER_LITERAL)].flatMap(m => {
+    const at = m.index ?? 0
+    const before = code.slice(Math.max(0, at - 80), at)
+    const after = code.slice(at + m[0].length, at + m[0].length + 4)
+    const isKey = KEY_TAIL.test(after) && !VALUE_LEAD.test(before)
+    return LOG_CALL_LEAD.test(before) || INDEX_LEAD.test(before) || isKey ? [] : [m[2] ?? '']
+  })
+}
+
 function namesResource(literal: string, store: string): boolean {
   const arnService = literal.match(ARN_SERVICE)?.[1]
   return !SSM_PATH.test(literal) && (!arnService || (ARN_SERVICES_BY_STORE[store] ?? []).includes(arnService))
@@ -104,7 +120,7 @@ export function messagingRelations(resources: Resource[], serverless: Map<string
     if (cached) {
       return cached
     }
-    const found = [...f.source.matchAll(IDENTIFIER_LITERAL)].map(m => m[2] ?? '')
+    const found = producerLiterals(f.source)
     literalCache.set(key, found)
     return found
   }
