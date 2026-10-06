@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import { parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, parseTsconfigPaths, importedFiles, type WiredEdge } from './code-wiring'
+import { associationMap, parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, parseTsconfigPaths, importedFiles, type WiredEdge } from './code-wiring'
 
 const container = `
 const llmProviders: LlmProviders = {
@@ -119,10 +119,10 @@ describe('vuex and events', () => {
 })
 
 describe('rails receivers', () => {
-  const associations = new Map(parseAssociations("class Contract < ApplicationRecord\n  has_many :amendments, class_name: 'ContractAmendment', dependent: :delete_all\n  belongs_to :user\nend\n"))
+  const associations = associationMap(parseAssociations("class Contract < ApplicationRecord\n  has_many :amendments, class_name: 'ContractAmendment', dependent: :delete_all\n  belongs_to :user\nend\n"))
 
   it('reads association class names', () => {
-    expect([...associations]).toEqual([['amendments', 'ContractAmendment']])
+    expect([...associations].map(([k, v]) => [k, [...v]])).toEqual([['amendments', ['ContractAmendment']]])
   })
   it('maps a receiver to the model its name singularizes to', () => {
     expect(namesReceiverModel('@badgings.each do |badging|', ['Badging'], associations)).toBe(true)
@@ -138,7 +138,7 @@ describe('rails receivers', () => {
 })
 
 describe('wiredGrade', () => {
-  const wiring = { aliases, injects: parseInjections(container, asFile), associations: new Map([['amendments', 'ContractAmendment']]) }
+  const wiring = { aliases, injects: parseInjections(container, asFile), associations: associationMap([['amendments', 'ContractAmendment']]) }
   const noFiles = () => null
 
   it('grades a container path graph and a resolved import import', () => {
@@ -175,7 +175,7 @@ describe('loadWiring', () => {
     const w = loadWiring(dir)
     expect(w.aliases.map(a => a.prefix)).toEqual(['~', '@app-js', '@skello-utils', '@app'])
     expect(injectionReach(w.injects, ['src/Manager/DocumentManager.ts'], ['src/Client/Llm/BedrockLlmProvider.ts'])).toBe(true)
-    expect(w.associations.get('amendments')).toBe('ContractAmendment')
+    expect([...(w.associations.get('amendments') ?? [])]).toEqual(['ContractAmendment'])
   })
 })
 
@@ -301,5 +301,26 @@ describe('emitsToCallee scoping', () => {
   it('never credits a binding on another element or inside an HTML comment', () => {
     expect(emitsToCallee(e(`${imp}<Child /><Other @saved="x" />`), [])).toBe(false)
     expect(emitsToCallee(e(`${imp}<!-- <Child @saved="x" /> --><Child />`), [])).toBe(false)
+  })
+})
+
+describe('associations across models', () => {
+  it('keeps every class an association name points to', () => {
+    const associations = associationMap([
+      ...parseAssociations("has_many :items, class_name: 'OrderItem'"),
+      ...parseAssociations("has_many :items, class_name: 'CartItem'"),
+    ])
+    expect(namesReceiverModel('@items.each', ['OrderItem'], associations)).toBe(true)
+    expect(namesReceiverModel('@items.each', ['CartItem'], associations)).toBe(true)
+  })
+})
+
+describe('loadWiring on unexpected files', () => {
+  it('treats an apps or app/models file as absent', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiring-files-'))
+    fs.writeFileSync(path.join(dir, 'apps'), '')
+    fs.mkdirSync(path.join(dir, 'app'))
+    fs.writeFileSync(path.join(dir, 'app', 'models'), '')
+    expect(loadWiring(dir).associations.size).toBe(0)
   })
 })

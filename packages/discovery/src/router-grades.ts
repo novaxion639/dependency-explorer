@@ -1,6 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { maskStrings, readerFor, RESOLVE_SUFFIXES, resolveSpecifier, stripComments, type Alias, type Read } from './code-wiring'
+import { escapeRegExp, maskStrings, readerFor, RESOLVE_SUFFIXES, resolveSpecifier, stripComments, type Alias, type Read } from './code-wiring'
 
 export interface VueRoute { name: string; componentFile: string }
 
@@ -91,7 +91,7 @@ const ROUTE_NAME_COMPARED_LEAD = /\$route\.name\s*[!=]==?\s*$/
 const ROUTE_NAME_COMPARED_TAIL = /^\s*[!=]==?\s*(?:this\.)?\$route\.name\b/
 
 function namesLiteral(code: string, name: string): boolean {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const escaped = escapeRegExp(name)
   return [...code.matchAll(new RegExp(`(['"\`])${escaped}\\1`, 'g'))].some(m => {
     const at = m.index ?? 0
     const before = code.slice(Math.max(0, at - 40), at)

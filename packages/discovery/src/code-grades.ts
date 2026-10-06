@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
-import { importedFiles, loadWiring, readerFor, stripComments, wiredGrade, type Wiring } from './code-wiring'
+import { escapeRegExp, importedFiles, loadWiring, readerFor, stripComments, wiredGrade, type Wiring } from './code-wiring'
 
 export { stripComments }
 import { routeGrade, type RouteRef } from './route-grades'
@@ -72,10 +72,6 @@ export function bestGrade(a: Grade, b: Grade | null): Grade {
   return b !== null && GRADE_ORDER.indexOf(b) < GRADE_ORDER.indexOf(a) ? b : a
 }
 
-function escape(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
 function reachable(edges: Map<string, Set<string>>, from: string, to: string): boolean {
   const first = edges.get(from) ?? new Set<string>()
   return first.has(to) || [...first].some(mid => edges.get(mid)?.has(to) ?? false)
@@ -88,13 +84,13 @@ function stemOf(filePath: string): string {
 function namesDeclared(source: string, declared: string[]): boolean {
   return declared.some(c => {
     const last = c.split('::').pop() ?? c
-    return new RegExp(`\\b${escape(c)}\\b`).test(source) || (last.length > LAST_SEGMENT_MIN && new RegExp(`\\b${escape(last)}\\b`).test(source))
+    return new RegExp(`\\b${escapeRegExp(c)}\\b`).test(source) || (last.length > LAST_SEGMENT_MIN && new RegExp(`\\b${escapeRegExp(last)}\\b`).test(source))
   })
 }
 
 function importsFile(source: string, calleePath: string): boolean {
   const stem = stemOf(calleePath)
-  return new RegExp(`(?:from|require\\(|import\\()\\s*['"][^'"]*\\b${escape(stem)}(?:\\.[a-z]+)?['"]`).test(source)
+  return new RegExp(`(?:from|require\\(|import\\()\\s*['"][^'"]*\\b${escapeRegExp(stem)}(?:\\.[a-z]+)?['"]`).test(source)
 }
 
 function longestToken(label: string): string | null {
@@ -110,12 +106,12 @@ export function gradeEdge(graph: RepoGraph, callerPath: string, calleePath: stri
   if (namesDeclared(code, graph.classesIn.get(calleePath) ?? [])) {
     return 'constant'
   }
-  const importedAndUsed = reachable(graph.importEdges, callerPath, calleePath) && new RegExp(`\\b${escape(stemOf(calleePath))}\\b`, 'i').test(code)
+  const importedAndUsed = reachable(graph.importEdges, callerPath, calleePath) && new RegExp(`\\b${escapeRegExp(stemOf(calleePath))}\\b`, 'i').test(code)
   if (importedAndUsed || importsFile(code, calleePath)) {
     return 'import'
   }
   const token = longestToken(calleeLabel)
-  return token && new RegExp(`\\b${escape(token)}\\b`).test(code) ? 'text' : 'none'
+  return token && new RegExp(`\\b${escapeRegExp(token)}\\b`).test(code) ? 'text' : 'none'
 }
 
 

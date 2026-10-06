@@ -211,7 +211,7 @@ const STORE_MODULES = /^(.*\/store\/modules)\//
 const MODULE_REGISTRATION = /export\s*\{\s*default\s+as\s+(\w+)\s*\}\s*from\s*['"]([^'"]+)['"]/g
 const EMITTED = /\$emit\(\s*['"]([\w:-]+)['"]/g
 
-function escape(s: string): string {
+export function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
@@ -225,7 +225,7 @@ export function vuexNamespaceOf(calleePath: string, read: Read): string | null {
 }
 
 export function usesVuexNamespace(code: string, ns: string): boolean {
-  const n = escape(ns)
+  const n = escapeRegExp(ns)
   return new RegExp(`\\bmap(?:State|Getters|Actions|Mutations)\\(\\s*['"]${n}['"]|\\b(?:dispatch|commit)\\(\\s*['"\`]${n}/|\\[\\s*['"]${n}/`).test(code)
 }
 
@@ -252,9 +252,9 @@ export function emitsToCallee(e: WiredEdge, aliases: Alias[]): boolean {
   const parent = e.calleeSource.replace(HTML_COMMENT, '')
   const bindings = events.length > 0 ? bindingsOf(parent, e.calleePath, e.callerPath, aliases) : []
   const tags = new Set(bindings.flatMap(b => [b, kebab(b)]))
-  const bindsEvent = (attrs: string) => events.some(ev => new RegExp(`(?:@|v-on:)${escape(ev)}=`).test(attrs))
+  const bindsEvent = (attrs: string) => events.some(ev => new RegExp(`(?:@|v-on:)${escapeRegExp(ev)}=`).test(attrs))
   const rendersCaller = (name: string, attrs: string) => tags.has(name)
-    || (name === 'component' && bindings.some(b => new RegExp(`:is="[^"]*\\b${escape(b)}\\b`).test(attrs)))
+    || (name === 'component' && bindings.some(b => new RegExp(`:is="[^"]*\\b${escapeRegExp(b)}\\b`).test(attrs)))
   return [...parent.matchAll(OPEN_TAG)].some(m => rendersCaller(m[1] ?? '', m[2] ?? '') && bindsEvent(m[2] ?? ''))
 }
 
@@ -275,15 +275,23 @@ function camelize(word: string): string {
   return word.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')
 }
 
+export function associationMap(pairs: Array<[string, string]>): Map<string, Set<string>> {
+  const map = new Map<string, Set<string>>()
+  for (const [name, cls] of pairs) {
+    map.set(name, new Set([...(map.get(name) ?? []), cls]))
+  }
+  return map
+}
+
 export function parseAssociations(source: string): Array<[string, string]> {
   return [...source.matchAll(ASSOCIATION)].map(m => [m[1] ?? '', m[2] ?? ''])
 }
 
-export function namesReceiverModel(callerCode: string, calleeClasses: string[], associations: Map<string, string>): boolean {
+export function namesReceiverModel(callerCode: string, calleeClasses: string[], associations: Map<string, Set<string>>): boolean {
   const declared = new Set(calleeClasses.flatMap(c => [c, c.split('::').pop() ?? c]))
   return [...callerCode.matchAll(RECEIVER)].some(m => {
     const word = m[1] ?? ''
-    return declared.has(camelize(singular(word))) || declared.has(associations.get(word) ?? '')
+    return declared.has(camelize(singular(word))) || [...(associations.get(word) ?? [])].some(c => declared.has(c))
   })
 }
 
@@ -305,13 +313,17 @@ function containerFileOf(source: string, aliases: Alias[], read: Read): (cls: st
 export interface Wiring {
   aliases: Alias[]
   injects: Map<string, Set<string>>
-  associations: Map<string, string>
+  associations: Map<string, Set<string>>
+}
+
+function isDirectory(dir: string): boolean {
+  return fs.statSync(dir, { throwIfNoEntry: false })?.isDirectory() ?? false
 }
 
 export function loadWiring(repoDir: string): Wiring {
   const read = readerFor(repoDir)
   const appsDir = path.join(repoDir, 'apps')
-  const configDirs = ['', ...(fs.existsSync(appsDir) ? fs.readdirSync(appsDir).map(a => `apps/${a}`) : [])]
+  const configDirs = ['', ...(isDirectory(appsDir) ? fs.readdirSync(appsDir).map(a => `apps/${a}`) : [])]
   const aliases = configDirs.flatMap(dir => {
     const tsconfig = read(path.posix.join(dir, 'tsconfig.json'))
     return [
@@ -324,11 +336,11 @@ export function loadWiring(repoDir: string): Wiring {
   })
   const container = read(CONTAINER)
   const modelsDir = path.join(repoDir, 'app', 'models')
-  const models = fs.existsSync(modelsDir) ? fs.readdirSync(modelsDir, { recursive: true, encoding: 'utf-8' }).filter(f => f.endsWith('.rb')) : []
+  const models = isDirectory(modelsDir) ? fs.readdirSync(modelsDir, { recursive: true, encoding: 'utf-8' }).filter(f => f.endsWith('.rb')) : []
   return {
     aliases,
     injects: container === null ? new Map() : parseInjections(container, containerFileOf(container, aliases, read)),
-    associations: new Map(models.flatMap(f => parseAssociations(fs.readFileSync(path.join(modelsDir, f), 'utf-8')))),
+    associations: associationMap(models.flatMap(f => parseAssociations(fs.readFileSync(path.join(modelsDir, f), 'utf-8')))),
   }
 }
 
