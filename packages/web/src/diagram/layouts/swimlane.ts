@@ -4,7 +4,7 @@ import { ALL_RENDERERS, type Box, type DiagramEdge, type DiagramGroup, type Diag
 
 const FONT = 12
 const LANE_W = 250
-const LANE_GAP = 280
+export const LANE_GAP = 280
 const PAD = 12
 const HEAD = 80
 const ROW_GAP = 64
@@ -346,8 +346,8 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     edge.labelBox = { x: Math.max(0, source.x + source.w / 2 - w / 2), y: source.y + source.h + LABEL_MARGIN, w, h }
     placed.push(edge.labelBox)
   }
-  const lanes = laneOrder.length + (tracks.has(laneOrder.length - 1) ? 1 : 0)
-  const width = lanes * (LANE_W + LANE_GAP) - LANE_GAP
+  const lastLane = laneOrder.length - 1
+  const width = Math.max(0, laneX(lastLane) + LANE_W + (tracks.has(lastLane) ? LANE_GAP : 0))
   const headers = laneOrder.map((_, i) => ({ x: laneX(i), y: 0, w: LANE_W, h: HEADER_Y + HEADER_H }))
   const blocked = (box: Box) => box.x < 0 || box.x + box.w > width || box.y < 0 || [...placed, ...arrows, ...nodes, ...headers].some(o => overlaps(box, o))
   const gutterLabels = routed

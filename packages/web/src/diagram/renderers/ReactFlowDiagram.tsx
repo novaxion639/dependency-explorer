@@ -101,27 +101,25 @@ function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<Diag
 
 const FOCUS_MAX_ZOOM = 1
 const STEP_MS = 300
+const OVERVIEW_PADDING = 0.1
 
-function FitToFocus({ zoomTo }: { zoomTo: Box | null }) {
-  const { fitView, setViewport } = useReactFlow()
+function FitToFrame({ frame, focused }: { frame: Box; focused: boolean }) {
+  const { setViewport } = useReactFlow()
   const width = useStore(s => s.width)
   const height = useStore(s => s.height)
   const minZoom = useStore(s => s.minZoom)
+  const maxZoom = useStore(s => s.maxZoom)
   const fitted = useRef(false)
   useEffect(() => {
-    const duration = fitted.current ? STEP_MS : 0
-    const done = () => {
-      fitted.current = true
-    }
-    if (!zoomTo) {
-      void fitView({ duration }).then(done)
+    if (width === 0 || height === 0) {
       return
     }
-    if (width > 0 && height > 0) {
-      const bounds = { x: zoomTo.x, y: zoomTo.y, width: zoomTo.w, height: zoomTo.h }
-      void setViewport(getViewportForBounds(bounds, width, height, minZoom, FOCUS_MAX_ZOOM, 0), { duration }).then(done)
-    }
-  }, [zoomTo, width, height, minZoom, fitView, setViewport])
+    const bounds = { x: frame.x, y: frame.y, width: frame.w, height: frame.h }
+    const viewport = getViewportForBounds(bounds, width, height, minZoom, focused ? FOCUS_MAX_ZOOM : maxZoom, focused ? 0 : OVERVIEW_PADDING)
+    void setViewport(viewport, { duration: fitted.current ? STEP_MS : 0 }).then(() => {
+      fitted.current = true
+    })
+  }, [frame, focused, width, height, minZoom, maxZoom, setViewport])
   return null
 }
 
@@ -135,12 +133,13 @@ function refOf(n: DiagramFlowNode): DiagramRef | undefined {
 interface Props {
   model: DiagramModel
   emphases: Emphases
-  zoomTo: Box | null
+  frame: Box
+  focused: boolean
   onSelect: (ref: DiagramRef) => void
   onMove: (id: string, position: Point) => void
 }
 
-export function ReactFlowDiagram({ model, emphases, zoomTo, onSelect, onMove }: Props) {
+export function ReactFlowDiagram({ model, emphases, frame, focused, onSelect, onMove }: Props) {
   const flow = useMemo(() => toReactFlow(model, emphases), [model, emphases])
   const [nodes, setNodes, onNodesChange] = useNodesState<DiagramFlowNode>(flow.nodes)
   useEffect(() => {
@@ -169,7 +168,6 @@ export function ReactFlowDiagram({ model, emphases, zoomTo, onSelect, onMove }: 
           }
         }}
         onNodeDragStop={(_, n) => onMove(n.id, n.position)}
-        fitView={zoomTo === null}
         minZoom={0.1}
         maxZoom={2}
         nodesConnectable={false}
@@ -177,7 +175,7 @@ export function ReactFlowDiagram({ model, emphases, zoomTo, onSelect, onMove }: 
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--rule)" />
         <Controls showInteractive={false} />
-        <FitToFocus zoomTo={zoomTo} />
+        <FitToFrame frame={frame} focused={focused} />
       </ReactFlow>
     </DiagramSelectContext.Provider>
   )

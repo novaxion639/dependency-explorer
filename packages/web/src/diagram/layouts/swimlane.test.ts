@@ -3,7 +3,7 @@ import { connectivityMap as map, ServiceFlowSchema } from '@dependency-explorer/
 import { layoutProblems } from '../layoutProblems'
 import { overlaps, textWidth } from '../geometry'
 import type { Box, DiagramModel } from '../model'
-import { chapterFocus, infraNodeId, serviceNodeId, swimlanes, unitNodeId } from './swimlane'
+import { chapterFocus, infraNodeId, LANE_GAP, serviceNodeId, swimlanes, unitNodeId } from './swimlane'
 
 function flow(id: string) {
   const f = map.flows.find(x => x.id === id)
@@ -195,6 +195,15 @@ describe('swimlane routes', () => {
           }
         }
       })
+    }
+  })
+  it('ends the drawing at the last lane, or at its gutter when a route uses it', () => {
+    for (const f of map.flows) {
+      const model = swimlanes(f)
+      const last = model.groups[model.groups.length - 1]
+      const lastRight = last ? last.x + last.w : 0
+      const reach = Math.max(lastRight, ...model.edges.flatMap(e => [...(e.route ?? []).map(p => p.x), ...(e.labelBox ? [e.labelBox.x + e.labelBox.w] : [])]))
+      expect(model.width, f.id).toBeLessThanOrEqual(reach > lastRight ? lastRight + LANE_GAP : lastRight)
     }
   })
   it('sets each label against its own route, inside the drawing', () => {
