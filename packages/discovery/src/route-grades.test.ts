@@ -114,4 +114,10 @@ describe('routeGrade', () => {
     expect(routeGrade('fetch(`/v3/api/shops/${values?.shopId}`)', [], SHOPS, routes)).toBe('import')
     expect(routeGrade('fetch(`/v3/api/shops?page=${values?.page}`)', [], SHOPS, routes)).toBe('import')
   })
+  it('skips specifiers of test-double and resolve helpers', () => {
+    for (const call of ['vi.importActual', 'jest.requireActual', 'vi.doMock', 'jest.doMock', 'require.resolve']) {
+      expect(routeGrade(`${call}('/v3/api/shops')`, [], SHOPS, routes), call).toBeNull()
+    }
+    expect(routeGrade("request('/v3/api/shops')", [], SHOPS, routes)).toBe('import')
+  })
 })
