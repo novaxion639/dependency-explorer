@@ -217,6 +217,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
   const lineCount = (e: DiagramEdge) => (e.labelLines?.length ?? 0) + (e.conditionLines?.length ?? 0)
   const directGap = new Map<number, number>()
   const directLabelH = new Map<number, number>()
+  const stacked = new Map<string, number>()
   const pairs = [
     ...codeEdges.map(e => {
       const mode: EdgeMode = infra.has(e.from) ? 'data-feed' : e.mode === 'async-job' || e.mode === 'async-event' ? 'async' : 'sync'
@@ -232,8 +233,11 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     }
     const between = order.some(id => id !== p.from && id !== p.to && laneOf(id) === laneOf(p.from) && (rowOf.get(id) ?? -1) > ra && (rowOf.get(id) ?? -1) < rb)
     if (!between) {
-      directGap.set(ra, Math.max(directGap.get(ra) ?? 0, p.h + LABEL_MARGIN + ARROW + 2 * ARROW_CLEARANCE + 2))
-      directLabelH.set(ra, Math.max(directLabelH.get(ra) ?? 0, p.h))
+      const before = stacked.get(p.from) ?? 0
+      const stack = p.h > 0 ? before + (before > 0 ? LABEL_MARGIN : 0) + p.h : before
+      stacked.set(p.from, stack)
+      directGap.set(ra, Math.max(directGap.get(ra) ?? 0, stack + LABEL_MARGIN + ARROW + 2 * ARROW_CLEARANCE + 2))
+      directLabelH.set(ra, Math.max(directLabelH.get(ra) ?? 0, stack))
     }
   }
   const gapAfter = (row: number) => Math.max(ROW_GAP, directGap.get(row) ?? 0) + (extra.get(row) ?? 0)
@@ -361,9 +365,12 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     return box ? [box] : []
   })
   const placed: Box[] = []
+  const stackBottom = new Map<Box, number>()
   for (const { edge, source } of routed.filter(r => r.gutter === null && (r.edge.label || r.edge.condition))) {
     const { w, h } = labelSize(edge)
-    edge.labelBox = { x: Math.max(0, source.x + source.w / 2 - w / 2), y: source.y + source.h + LABEL_MARGIN, w, h }
+    const y = stackBottom.get(source) ?? source.y + source.h + LABEL_MARGIN
+    edge.labelBox = { x: Math.max(0, source.x + source.w / 2 - w / 2), y, w, h }
+    stackBottom.set(source, y + h + LABEL_MARGIN)
     placed.push(edge.labelBox)
   }
   const lastLane = laneOrder.length - 1

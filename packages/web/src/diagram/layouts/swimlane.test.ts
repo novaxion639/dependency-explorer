@@ -231,6 +231,20 @@ describe('swimlane routes', () => {
     expect(model.edges.filter(e => e.to === unitNodeId('b')).every(e => (e.route?.[2]?.y ?? Infinity) > above)).toBe(true)
     expect(layoutProblems(model)).toEqual([])
   })
+  it('stacks the labels of two straight-down edges between the same pair', () => {
+    const twice = ServiceFlowSchema.parse({
+      id: 'twice', name: 'Twice', description: 'd', steps: [],
+      codeUnits: [{ id: 'a', service: 'x', kind: 'service', label: 'A' }, { id: 'b', service: 'x', kind: 'service', label: 'B' }],
+      codeEdges: [{ from: 'a', to: 'b', label: 'creates' }, { from: 'a', to: 'b', label: 'updates', condition: 'when dirty' }],
+    })
+    const model = swimlanes(twice)
+    const [first, second] = model.edges.map(e => e.labelBox)
+    expect(first && second && overlaps(first, second)).toBe(false)
+    for (const box of [first, second]) {
+      expect(model.nodes.some(n => box && overlaps(box, n))).toBe(false)
+    }
+    expect(layoutProblems(model)).toEqual([])
+  })
   it('sets each label against its own route, inside the drawing', () => {
     for (const f of map.flows) {
       const model = swimlanes(f)
