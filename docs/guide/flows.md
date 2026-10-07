@@ -57,6 +57,7 @@ The layer is human-authored from code reading (assisted by `pnpm discover:trace 
 An edge into the monolith is also graded through the route table:
 - a URL written in the caller whose full path routes to the callee controller is `import`;
 - a URL found only in a file the caller imports, or a route tail only that controller owns, is `text`.
+- with no pinned skello-app, edges into it are skipped, like the edges of an unpinned caller.
 
 The full rules are in the Verified Paths spec (`docs/specs/VerifiedPaths.md` in the shared docs).
 
