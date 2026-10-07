@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { connectivityMap as map, ServiceFlowSchema } from '@dependency-explorer/data'
 import { layoutProblems } from '../layoutProblems'
-import { overlaps, textWidth } from '../geometry'
+import { EDGE_LABEL_FONT, overlaps, textWidth } from '../geometry'
 import type { Box, DiagramModel } from '../model'
-import { chapterFocus, infraNodeId, LANE_GAP, serviceNodeId, swimlanes, unitNodeId } from './swimlane'
+import { arrowBox, chapterFocus, infraNodeId, LANE_GAP, serviceNodeId, swimlanes, unitNodeId, WRAP_W } from './swimlane'
 
 function flow(id: string) {
   const f = map.flows.find(x => x.id === id)
@@ -88,20 +88,6 @@ describe('swimlanes', () => {
   })
 })
 
-const ARROW = 14
-
-function arrowBox(route: Array<{ x: number; y: number }>): Box | null {
-  const q = route[route.length - 1]
-  const p = route[route.length - 2]
-  if (!p || !q) {
-    return null
-  }
-  const dx = Math.sign(q.x - p.x)
-  const dy = Math.sign(q.y - p.y)
-  const tail = { x: q.x - dx * ARROW, y: q.y - dy * ARROW }
-  return { x: Math.min(q.x, tail.x) - 5, y: Math.min(q.y, tail.y) - 5, w: Math.abs(q.x - tail.x) + 10, h: Math.abs(q.y - tail.y) + 10 }
-}
-
 function crosses(a: { x: number; y: number }, b: { x: number; y: number }, box: Box): boolean {
   return Math.min(a.x, b.x) < box.x + box.w && Math.max(a.x, b.x) > box.x && Math.min(a.y, b.y) < box.y + box.h && Math.max(a.y, b.y) > box.y
 }
@@ -176,7 +162,7 @@ describe('swimlane routes', () => {
         expect(squash((e.labelLines ?? []).join('')), `${f.id} ${e.id}`).toBe(squash(e.label))
         expect(squash((e.conditionLines ?? []).join('')), `${f.id} ${e.id}`).toBe(e.condition ? squash(`if ${e.condition}`) : '')
         for (const line of [...(e.labelLines ?? []), ...(e.conditionLines ?? [])]) {
-          expect(textWidth(line, 11), `${f.id} ${e.id} ${line}`).toBeLessThanOrEqual(284)
+          expect(textWidth(line, EDGE_LABEL_FONT), `${f.id} ${e.id} ${line}`).toBeLessThanOrEqual(WRAP_W)
         }
       }
     }

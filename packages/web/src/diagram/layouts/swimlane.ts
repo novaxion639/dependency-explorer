@@ -15,7 +15,7 @@ const LABEL_FRAME = 4
 const LABEL_MARGIN = 4
 const ARROW = 14
 const ARROW_CLEARANCE = 6
-const WRAP_W = LANE_GAP + 2 * PAD - 2 * (ARROW + ARROW_CLEARANCE) - LABEL_PAD - 4
+export const WRAP_W = LANE_GAP + 2 * PAD - 2 * (ARROW + ARROW_CLEARANCE) - LABEL_PAD - 4
 const LAYOUT_PASSES = 12
 const TRACK = 8
 const CHANNEL = 19
@@ -427,7 +427,7 @@ function pointsAlong(route: RoutePoint[]): RoutePoint[] {
   })
 }
 
-function arrowBox(route: RoutePoint[]): Box | null {
+export function arrowBox(route: RoutePoint[]): Box | null {
   const q = route[route.length - 1]
   const p = route[route.length - 2]
   if (!p || !q) {
