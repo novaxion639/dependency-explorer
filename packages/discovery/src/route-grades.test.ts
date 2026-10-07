@@ -101,4 +101,8 @@ describe('routeGrade', () => {
     expect(routeGrade("httpClient.get(`/v3/api/${resource}s`)", [], V3_USERS, routes)).toBeNull()
     expect(routeGrade("httpClient.get(`/v3/api/${resource}s`)", [], SHOPS, routes)).toBeNull()
   })
+  it('reads URL literals past a template that continues a line, and joins a continued URL', () => {
+    expect(routeGrade("const m = `a \\\nb`; fetch('/v3/api/shops/' + id); const n = `x`", [], SHOPS, routes)).toBe('import')
+    expect(routeGrade("fetch('/v3/api/\\\nshops')", [], SHOPS, routes)).toBe('import')
+  })
 })

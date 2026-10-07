@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import { associationMap, parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, parseTsconfigPaths, importedFiles, type WiredEdge } from './code-wiring'
+import { associationMap, parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, parseTsconfigPaths, importedFiles, maskStrings, stripComments, type WiredEdge } from './code-wiring'
 
 const container = `
 const llmProviders: LlmProviders = {
@@ -333,5 +333,18 @@ describe('loadWiring on unexpected files', () => {
     fs.mkdirSync(path.join(dir, 'app'))
     fs.writeFileSync(path.join(dir, 'app', 'models'), '')
     expect(loadWiring(dir).associations.size).toBe(0)
+  })
+})
+
+describe('string tokenizing across line continuations', () => {
+  const continued = 'const a = `x \\\ny`\n// gone\nconst b = new Foo(); const z = `w`'
+  it('keeps code after a template that continues a line', () => {
+    expect(maskStrings(continued)).toContain('new Foo()')
+  })
+  it('strips a comment after a template that continues a line', () => {
+    expect(stripComments(continued)).not.toContain('gone')
+  })
+  it('still closes a string ending in an escaped backslash', () => {
+    expect(maskStrings("const p = 'C:\\\\'; new Bar()")).toContain('new Bar()')
   })
 })

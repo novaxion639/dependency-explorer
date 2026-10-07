@@ -5,8 +5,9 @@ type UrlSegment = string | RegExp
 
 interface UrlRef { absolute: boolean; segments: UrlSegment[] }
 
-const STRING_LITERAL = /'((?:\\.|[^'\\\n])*)'|"((?:\\.|[^"\\\n])*)"|`((?:\\.|[^`\\])*)`/g
+const STRING_LITERAL = /'((?:\\[\s\S]|[^'\\\n])*)'|"((?:\\[\s\S]|[^"\\\n])*)"|`((?:\\[\s\S]|[^`\\])*)`/g
 const CONSTANT = /\bconst\s+([A-Z][A-Z0-9_]*)\s*=\s*['"`]([^'"`$\n]*)['"`]/g
+const LINE_CONTINUATION = /\\\r?\n/g
 const INTERPOLATION = /\$\{\s*([A-Za-z_$][\w$]*)\s*\}/g
 const URL_SEGMENT = /^[\w.-]+$/
 const FORMAT_SUFFIX = /\(\.:format\)$/
@@ -49,7 +50,7 @@ function urlSegment(s: string): UrlSegment | null {
 }
 
 function urlRef(literal: string, constants: Map<string, string>): UrlRef | null {
-  const expanded = literal.replace(INTERPOLATION, (whole, name: string) => constants.get(name) ?? whole)
+  const expanded = literal.replace(LINE_CONTINUATION, '').replace(INTERPOLATION, (whole, name: string) => constants.get(name) ?? whole)
   const pathPart = expanded.split(/[?#]/)[0] ?? ''
   if (!pathPart.includes('/') || /\s/.test(pathPart)) {
     return null
