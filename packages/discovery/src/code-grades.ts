@@ -190,6 +190,9 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
         continue
       }
       if (from.service !== to.service) {
+        if (to.service === MONOLITH && !headOf(MONOLITH)) {
+          continue
+        }
         const empty: RepoGraph = { builtAt: '', fileEdges: new Map(), importEdges: new Map(), classesIn: new Map() }
         const textGrade = crossRepoGrade(gradeEdge(empty, from.path, to.path, source, to.label))
         const callerCode = stripComments(source)

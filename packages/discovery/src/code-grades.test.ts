@@ -242,6 +242,13 @@ describe('checkCodeGrades across repos through monolith routes', () => {
     expect(grades['f#store→orgs']).toBe('none')
     expect(grades['f#store→lookalike']).toBe('none')
   })
+
+  it('skips edges into an unpinned monolith, like an unpinned caller, and grades the rest', () => {
+    const { grades } = checkCodeGrades(map, base, repo => (repo === 'skello-app' ? null : 'abc123'), routes)
+    expect(grades['f#store→shifts']).toBeUndefined()
+    expect(grades['f#mgr→orgs']).toBeUndefined()
+    expect(grades['f#store→lookalike']).toBe('none')
+  })
 })
 
 describe('checkCodeGrades through Vue-router route names', () => {
