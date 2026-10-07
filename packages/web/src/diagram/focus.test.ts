@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { emphasise, NO_FOCUS } from './focus'
+import { emphasise, FOCUS_MARGIN, focusBounds, NO_FOCUS } from './focus'
 import type { DiagramModel, DiagramNode } from './model'
 
 function node(id: string, x: number): DiagramNode {
@@ -44,5 +44,26 @@ describe('emphasise', () => {
     expect([e.nodes.get('n3'), e.nodes.get('n4'), e.nodes.get('n1')]).toEqual(['normal', 'normal', 'dim'])
     expect(e.groups.get('G')).toBe('normal')
     expect([e.edges.get('e2'), e.edges.get('e1')]).toEqual(['normal', 'dim'])
+  })
+})
+
+describe('focusBounds', () => {
+  const m = FOCUS_MARGIN
+  it('is null without a chapter or when the chapter names nothing in the model', () => {
+    expect(focusBounds(model, null)).toBeNull()
+    expect(focusBounds(model, new Set(['ghost']))).toBeNull()
+  })
+  it('frames the chapter nodes with a margin and leaves their enclosing group out', () => {
+    expect(focusBounds(model, new Set(['G', 'n1', 'n2']))).toEqual({ x: 10 - m, y: 40 - m, w: 170 + 2 * m, h: 30 + 2 * m })
+  })
+  it('stretches to the route and label of an edge inside the chapter', () => {
+    const routed: DiagramModel = {
+      ...model,
+      edges: [{ id: 'e2', from: 'n3', to: 'n4', mode: 'async', weight: 1, label: 'SQS', directed: true, lane: 0, lanes: 1, route: [{ x: 340, y: 70 }, { x: 340, y: 160 }, { x: 490, y: 160 }, { x: 490, y: 70 }], labelBox: { x: 380, y: 150, w: 60, h: 30 } }],
+    }
+    expect(focusBounds(routed, new Set(['n3', 'n4']))).toEqual({ x: 300 - m, y: 40 - m, w: 230 + 2 * m, h: 140 + 2 * m })
+  })
+  it('falls back to the chapter groups when it holds no node', () => {
+    expect(focusBounds(model, new Set(['G']))).toEqual({ x: -m, y: -m, w: 200 + 2 * m, h: 100 + 2 * m })
   })
 })

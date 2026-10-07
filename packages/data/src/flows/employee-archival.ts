@@ -10,11 +10,16 @@ const employee_archival: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": { "actor": "manager", "role": "can_archive_and_restore_users over a managed employee" },
   "primaryArea": "employees-hr",
   "chapters": [
-    { "title": "A manager archives an employee", "summary": "skello-app checks the manager manages this employee and may archive staff.", "refs": ["skello-app-front", "cu-ea-controller"] },
-    { "title": "The employee is archived", "summary": "skello-app stamps the archive, clears a past-dated email and deletes pending future swaps, leaves and holiday settings.", "refs": ["cu-ea-archive-service", "cu-ea-history-model", "pg-skello-archival"] },
-    { "title": "Future shifts are cleared", "summary": "A background job backs up future shifts, then unassigns or deletes them and recomputes planning hours.", "refs": ["cu-ea-shifts-job", "redis-skello-archival", "pg-skello-archival"] },
-    { "title": "Other records follow", "summary": "Jobs remove availabilities, recalculate paid leave, flag the user in Intercom and log the activity to svc-events.", "refs": ["cu-ea-avail-job", "cu-ea-paidleaves-job", "cu-ea-intercom-job", "cu-ea-activitylog", "svc-events"] },
-    { "title": "Services learn of the archive", "summary": "The users change stream updates svc-users and svc-search, and svc-punch's user copies, which govern badge eligibility.", "refs": ["cu-ea-svcusers-job", "cu-ea-svcpunch-job", "cu-ea-svcsearch-job", "cu-ea-svcsearch-repo", "svc-users", "svc-punch", "svc-search"] }
+    { "title": "A manager archives an employee", "summary": "skello-app checks the employee is managed by this manager, whose license allows archiving and restoring staff.", "refs": ["skello-app-front", "cu-ea-controller"] },
+    { "title": "The employee is archived", "summary": "The archive date, author and note are set, a past-dated archive clears the email, and an audit row records the action.", "refs": ["cu-ea-archive-service", "cu-ea-history-model", "pg-skello-archival"] },
+    { "title": "Pending future items are deleted", "summary": "Pending future shift swaps and leave requests and future-year holiday settings are hard-deleted in the same request.", "refs": ["cu-ea-archive-service", "pg-skello-archival"] },
+    { "title": "Future shifts are backed up", "summary": "A queued background job backs up to 500 future shifts, in one transaction, before touching them.", "refs": ["redis-skello-archival", "cu-ea-shifts-job", "pg-skello-archival"] },
+    { "title": "Future shifts are cleared", "summary": "Work shifts are unassigned where the shop allows unassigned shifts, otherwise destroyed; future planning hours are recomputed.", "refs": ["cu-ea-shifts-job", "pg-skello-archival"] },
+    { "title": "Availabilities and paid leave follow", "summary": "Availabilities are destroyed once the archive date has passed, and paid-leave counters are recalculated from it.", "refs": ["cu-ea-avail-job", "cu-ea-paidleaves-job"] },
+    { "title": "Intercom and the audit log are told", "summary": "Intercom flags the user as archived, and an activity entry goes to svc-events; a lost batch costs only that entry.", "refs": ["cu-ea-intercom-job", "cu-ea-activitylog", "svc-events"] },
+    { "title": "svc-users updates its copy", "summary": "The users change stream reaches svc-users, which spots the archive date change and updates its user, email and license rows.", "refs": ["pg-skello-archival", "cu-ea-svcusers-job"] },
+    { "title": "Badging is revoked", "summary": "svc-punch writes the archive date to its user cache and every punch user copy, which removes badge eligibility.", "refs": ["pg-skello-archival", "cu-ea-svcpunch-job"] },
+    { "title": "Search reflects the archive", "summary": "svc-search routes the users change to its employee manager, which upserts the archive date on the employee document.", "refs": ["pg-skello-archival", "cu-ea-svcsearch-job", "cu-ea-svcsearch-repo"] }
   ],
   "links": [
     { "to": "employee-onboarding", "kind": "domain-related", "note": "the lifecycle inverse — V3::Users::UnarchiveService is the in-repo mirror of this flow" }

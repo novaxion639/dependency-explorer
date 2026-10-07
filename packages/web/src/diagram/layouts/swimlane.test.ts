@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { connectivityMap as map, ServiceFlowSchema } from '@dependency-explorer/data'
 import { layoutProblems } from '../layoutProblems'
+import { overlaps, textWidth } from '../geometry'
+import type { Box, DiagramModel } from '../model'
 import { chapterFocus, infraNodeId, serviceNodeId, swimlanes, unitNodeId } from './swimlane'
 
 function flow(id: string) {
@@ -83,5 +85,127 @@ describe('swimlanes', () => {
     const lanes = chapterFocus(m, shift, ['skello-app'])
     expect(lanes.has('lane:skello-app')).toBe(true)
     expect(lanes.has(unitNodeId('cu-activity-job'))).toBe(true)
+  })
+})
+
+const ARROW = 14
+
+function arrowBox(route: Array<{ x: number; y: number }>): Box | null {
+  const q = route[route.length - 1]
+  const p = route[route.length - 2]
+  if (!p || !q) {
+    return null
+  }
+  const dx = Math.sign(q.x - p.x)
+  const dy = Math.sign(q.y - p.y)
+  const tail = { x: q.x - dx * ARROW, y: q.y - dy * ARROW }
+  return { x: Math.min(q.x, tail.x) - 5, y: Math.min(q.y, tail.y) - 5, w: Math.abs(q.x - tail.x) + 10, h: Math.abs(q.y - tail.y) + 10 }
+}
+
+function crosses(a: { x: number; y: number }, b: { x: number; y: number }, box: Box): boolean {
+  return Math.min(a.x, b.x) < box.x + box.w && Math.max(a.x, b.x) > box.x && Math.min(a.y, b.y) < box.y + box.h && Math.max(a.y, b.y) > box.y
+}
+
+function nodeEdges(model: DiagramModel) {
+  return model.edges
+}
+
+type Pt = { x: number; y: number }
+
+function segmentsOf(route: Pt[]): Array<[Pt, Pt]> {
+  return route.slice(1).map((q, i): [Pt, Pt] => [route[i] ?? q, q])
+}
+
+function collinearOverlap([a, b]: [Pt, Pt], [c, d]: [Pt, Pt]): number {
+  if (a.y === b.y && c.y === d.y && a.y === c.y) {
+    return Math.min(Math.max(a.x, b.x), Math.max(c.x, d.x)) - Math.max(Math.min(a.x, b.x), Math.min(c.x, d.x))
+  }
+  if (a.x === b.x && c.x === d.x && a.x === c.x) {
+    return Math.min(Math.max(a.y, b.y), Math.max(c.y, d.y)) - Math.max(Math.min(a.y, b.y), Math.min(c.y, d.y))
+  }
+  return 0
+}
+
+describe('swimlane routes', () => {
+  it('routes every edge orthogonally, never through another node', () => {
+    for (const f of map.flows) {
+      const model = swimlanes(f)
+      for (const e of nodeEdges(model)) {
+        const route = e.route ?? []
+        expect(route.length, `${f.id} ${e.id}`).toBeGreaterThanOrEqual(2)
+        route.slice(1).forEach((q, i) => {
+          const p = route[i] ?? q
+          expect(p.x === q.x || p.y === q.y, `${f.id} ${e.id} diagonal`).toBe(true)
+          for (const n of model.nodes.filter(n => n.id !== e.from && n.id !== e.to)) {
+            expect(crosses(p, q, n), `${f.id} ${e.id} crosses ${n.id}`).toBe(false)
+          }
+        })
+      }
+    }
+  })
+  it('keeps every edge label clear of nodes, other labels and arrowheads', () => {
+    for (const f of map.flows) {
+      const model = swimlanes(f)
+      const labelled = nodeEdges(model).filter(e => e.label || e.condition)
+      const arrows = nodeEdges(model).flatMap(e => {
+        const box = arrowBox(e.route ?? [])
+        return box ? [{ id: e.id, box }] : []
+      })
+      labelled.forEach((e, i) => {
+        const box = e.labelBox
+        expect(box, `${f.id} ${e.id} has a label box`).toBeDefined()
+        if (!box) {
+          return
+        }
+        for (const n of model.nodes) {
+          expect(overlaps(box, n), `${f.id} ${e.id} label over ${n.id}`).toBe(false)
+        }
+        for (const other of labelled.slice(i + 1)) {
+          expect(other.labelBox && overlaps(box, other.labelBox), `${f.id} ${e.id} label over ${other.id} label`).toBeFalsy()
+        }
+        for (const a of arrows) {
+          expect(overlaps(box, a.box), `${f.id} ${e.id} label over ${a.id} arrow`).toBe(false)
+        }
+      })
+    }
+  })
+  it('carries every edge label and condition in full, wrapped to fit between lanes', () => {
+    const squash = (t: string) => t.replace(/\s/g, '')
+    for (const f of map.flows) {
+      for (const e of nodeEdges(swimlanes(f))) {
+        expect(squash((e.labelLines ?? []).join('')), `${f.id} ${e.id}`).toBe(squash(e.label))
+        expect(squash((e.conditionLines ?? []).join('')), `${f.id} ${e.id}`).toBe(e.condition ? squash(`if ${e.condition}`) : '')
+        for (const line of [...(e.labelLines ?? []), ...(e.conditionLines ?? [])]) {
+          expect(textWidth(line, 11), `${f.id} ${e.id} ${line}`).toBeLessThanOrEqual(284)
+        }
+      }
+    }
+    const replacement = swimlanes(flow('shift-replacement-search'))
+    expect(replacement.edges.map(e => e.label)).toContain('GET /shifts/{shiftId}/employee_replacements')
+  })
+  it('never runs two edges along one line unless they leave or enter the same unit', () => {
+    for (const f of map.flows) {
+      const edges = swimlanes(f).edges
+      edges.forEach((e, i) => {
+        for (const o of edges.slice(i + 1).filter(o => o.from !== e.from && o.to !== e.to)) {
+          for (const s1 of segmentsOf(e.route ?? [])) {
+            for (const s2 of segmentsOf(o.route ?? [])) {
+              expect(collinearOverlap(s1, s2), `${f.id} ${e.id} runs along ${o.id}`).toBeLessThanOrEqual(1)
+            }
+          }
+        }
+      })
+    }
+  })
+  it('sets each label against its own route, inside the drawing', () => {
+    for (const f of map.flows) {
+      const model = swimlanes(f)
+      for (const e of model.edges.filter(e => e.labelBox)) {
+        const box = e.labelBox ?? { x: 0, y: 0, w: 0, h: 0 }
+        const near = { x: box.x - 2, y: box.y - 2, w: box.w + 4, h: box.h + 4 }
+        expect(segmentsOf(e.route ?? []).some(([p, q]) => crosses(p, q, near) || (p.x === q.x && p.x > near.x && p.x < near.x + near.w && Math.min(p.y, q.y) <= near.y + near.h && Math.max(p.y, q.y) >= near.y) || (p.y === q.y && p.y > near.y && p.y < near.y + near.h && Math.min(p.x, q.x) <= near.x + near.w && Math.max(p.x, q.x) >= near.x)), `${f.id} ${e.id} label away from its line`).toBe(true)
+        expect(box.x >= 0 && box.y >= 0 && box.x + box.w <= model.width && box.y + box.h <= model.height, `${f.id} ${e.id} label outside the drawing`).toBe(true)
+      }
+    }
   })
 })

@@ -15,17 +15,25 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": {"actor": "system", "role": "HRIS integration (Kombo)"},
   "primaryArea": "employees-hr",
   "chapters": [
-    { "title": "The HRIS reports a finished sync", "summary": "A Kombo webhook reaches svc-hris, which starts a sync run for the organisation.", "refs": ["svc-hris", "cu-hs-webhook", "cu-hs-webhook-manager"] },
-    { "title": "Both sides are compared", "summary": "svc-hris reads the organisation's employees from svc-employees and the HRIS data through Kombo, tracking the session.", "refs": ["cu-hs-sync-manager", "svc-employees", "cu-hs-kombo-manager", "dynamo-hris"] },
-    { "title": "Changes are queued", "summary": "One upsert message per changed employee goes onto svc-employees' queue.", "refs": ["cu-hs-dispatcher", "sqs-hris-upsert"] },
-    { "title": "svc-employees applies them", "summary": "A job in svc-employees applies each employee upsert.", "refs": ["cu-hs-upsert-job", "dynamo-employees"] },
-    { "title": "Failures become a report", "summary": "Failed upserts become short-lived sync errors; a scheduled job builds the error report on S3 and emails it.", "refs": ["cu-hs-dlq", "dynamo-hris", "cu-hs-report-job", "cu-hs-sync-error-mgr"] }
+    { "title": "The HRIS reports a finished sync", "summary": "Kombo, the HRIS integration platform, sends svc-hris a sync-finished webhook; sibling handlers take other webhook types.", "refs": ["cu-hs-webhook"] },
+    { "title": "The webhook starts a sync run", "summary": "svc-hris routes each webhook type to its processing; a finished sync hands over to the sync run.", "refs": ["cu-hs-webhook-manager", "cu-hs-sync-manager"] },
+    { "title": "Skello's employees are fetched", "summary": "The sync reads the organisation's employees from svc-employees as the base for matching and diffing.", "refs": ["cu-hs-sync-manager"] },
+    { "title": "The HRIS data is read", "summary": "The HRIS-side employee data comes through Kombo's API, while the sync session and integration config live in svc-hris' table.", "refs": ["cu-hs-kombo-manager", "cu-hs-sync-manager", "dynamo-hris"] },
+    { "title": "Changes are queued", "summary": "One upsert message per changed employee goes onto svc-employees' upsert queue.", "refs": ["cu-hs-dispatcher", "sqs-hris-upsert"] },
+    { "title": "svc-employees applies them", "summary": "A svc-employees job consumes the queue and writes each employee change to its own table.", "refs": ["sqs-hris-upsert", "cu-hs-upsert-job", "dynamo-employees"] },
+    { "title": "Failed upserts are recorded", "summary": "Failed upserts land on a dead-letter queue; svc-hris turns them into sync errors that expire after 10 to 20 minutes.", "refs": ["sqs-hris-upsert", "cu-hs-dlq", "dynamo-hris"] },
+    { "title": "Errors are reported daily", "summary": "Daily at noon Paris time, each Kombo integration gets its error report on S3 and a 24-hour link emailed via svc-communications-v2.", "refs": ["cu-hs-report-job", "cu-hs-sync-error-mgr", "svc-communications-v2"] }
   ],
   "steps": [
     {
       "from": "svc-hris",
       "to": "svc-employees",
       "action": "GET /v1/employees by organisation — matching/diff base, then SQS UpsertEmployeeFromHrisDto per change"
+    },
+    {
+      "from": "svc-hris",
+      "to": "svc-communications-v2",
+      "action": "Email the daily sync-error report link — SyncErrorManager → SvcCommunicationRepository.sendHrisIntegrationDataTransferFailedEmail"
     },
   ],
   "codeUnits": [
@@ -176,6 +184,12 @@ const employee_hris_sync: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-hs-report-job",
       "to": "cu-hs-sync-error-mgr",
       "label": "SyncErrorManager report",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-hs-sync-error-mgr",
+      "to": "svc-communications-v2",
+      "label": "sendHrisIntegrationDataTransferFailedEmail",
       "mode": "sync"
     }
   ],

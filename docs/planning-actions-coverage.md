@@ -3,7 +3,7 @@
 Cross-reference of all user-initiated actions in `skello-app-front` (vue-app, planning section) against the flows currently modelled in the dependency graph.
 
 <!-- GENERATED:planning-flows BEGIN — run `pnpm docs:gen`, do not edit inside -->
-**The dependency graph models 48 flows** — 16 touch the planning area: `badging-review` `mobile-planning-management` `auto-planning-generation` `shift-creation` `shift-deletion` `shift-update` `shift-publication` `planning-page-load` `week-copy` `planning-period-lock` `absence-creation` `shift-bulk-erase` `shift-swap` `planning-event-management` `planning-template` `contract-amendment`
+**The dependency graph models 49 flows** — 16 touch the planning area: `badging-review` `mobile-planning-management` `auto-planning-generation` `shift-creation` `shift-deletion` `shift-update` `shift-publication` `planning-page-load` `week-copy` `planning-period-lock` `absence-creation` `shift-bulk-erase` `shift-swap` `planning-event-management` `planning-template` `contract-amendment`
 
 _The action-level table below is hand-maintained — sub-flow UI actions have no schema representation. Every ✅ flow id it cites is checked against the dataset by the docs-gen test._
 <!-- GENERATED:planning-flows END -->

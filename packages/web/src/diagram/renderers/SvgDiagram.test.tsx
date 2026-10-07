@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { emphasise, NO_FOCUS } from '../focus'
-import type { DiagramModel } from '../model'
-import { SvgDiagram } from './SvgDiagram'
+import type { Box, DiagramModel } from '../model'
+import { MIN_VIEW, SvgDiagram } from './SvgDiagram'
 
 const model: DiagramModel = {
   id: 'svc', title: 'svc-x — grouped by how they talk', width: 600, height: 200, renderers: ['svg'],
@@ -33,6 +33,12 @@ describe('SvgDiagram', () => {
     expect(html).toContain('aria-label="svc-x → Calls · 1: SQS ×2"')
     expect(html.match(/role="button"/g)?.length).toBe(5)
   })
+  it('frames a present-mode zoom box, widened around its centre to a readable minimum', () => {
+    const view = (zoomTo?: Box) => /viewBox="([^"]+)"/.exec(renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} zoomTo={zoomTo} />))?.[1]
+    expect(view({ x: 0, y: 0, w: 1000, h: 600 })).toBe('0 0 1000 600')
+    expect(view({ x: 286, y: 6, w: 238, h: 77 })).toBe(`${405 - MIN_VIEW.w / 2} ${44.5 - MIN_VIEW.h / 2} ${MIN_VIEW.w} ${MIN_VIEW.h}`)
+    expect(view()).toBe('0 0 600 200')
+  })
   it('dashes async edges and draws an arrow on directed ones', () => {
     const html = renderToStaticMarkup(<SvgDiagram model={model} emphases={emphasise(model, NO_FOCUS)} />)
     expect(html).toContain('stroke-dasharray:6 4')
@@ -56,5 +62,23 @@ describe('SvgDiagram', () => {
     expect(html).toContain('>if absence shifts only<')
     expect(html).toContain('aria-label="svc-x → Calls · 1: SQS ×2 (if absence shifts only)"')
     expect(html).toContain('stroke-dasharray:6 4')
+  })
+})
+
+describe('SvgDiagram routes', () => {
+  const routed: DiagramModel = {
+    ...model,
+    edges: [{
+      id: 'r', from: 'subject', to: 'calls:svc-y', mode: 'sync', weight: 1, label: 'GET /long/route/name', directed: true, lane: 0, lanes: 1,
+      route: [{ x: 200, y: 40 }, { x: 250, y: 40 }, { x: 250, y: 44 }, { x: 310, y: 44 }],
+      labelBox: { x: 210, y: 60, w: 80, h: 38 }, labelLines: ['GET /long/route', '/name'],
+    }],
+  }
+
+  it('draws a routed edge along its route with its wrapped label lines', () => {
+    const html = renderToStaticMarkup(<SvgDiagram model={routed} emphases={emphasise(routed, NO_FOCUS)} onSelect={noop} />)
+    expect(html).toContain('points="200,40 250,40 250,44 310,44"')
+    expect(html).toContain('>GET /long/route</text>')
+    expect(html).toContain('>/name</text>')
   })
 })

@@ -3,26 +3,31 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 
 // Code layer traced 2026-07-11. The monolith v3 controller has NO update
 // action — managers process requests straight from the web front against
-// svc-requests (SvcRequestsRepository.updateById). The earlier flow's
-// 'svc-events → comms' notification step and 'request-notify-dispatch'
-// lambda never existed: the fan-out is svc-requests' own CDC → SnsDispatch
-// with accepted/refused triggers, and acceptance ALSO fires the createShifts
+// svc-requests (SvcRequestsRepository.updateById). There is no svc-events
+// notification step and no request-notify-dispatch lambda: the fan-out is
+// svc-requests' own CDC → SnsDispatch with accepted/refused triggers, and
+// acceptance also fires the createShifts
 // trigger → CreateShiftsJob → SkelloAppManager write-back that
-// creates the absence shifts in the monolith (POST /private/shifts).
+// creates the absence shifts in the monolith (POST /private/requests/shifts).
 const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
   "id": "leave-request-approval",
   "name": "Leave Request Approval / Rejection",
-  "description": "A manager accepts or refuses a leave request from the web front, directly against svc-requests (PATCH — the monolith has no update proxy). The status change lands in the service's Aurora, its CDC stream carries it to DecodeAndPublishRequestJob, and the SnsDispatch topic fans out: sendAccepted/RefusedLeaveRequest mail + notification queues deliver the employee's email and in-app notification via svc-communications-v2; on acceptance the createShifts trigger additionally runs CreateShiftsJob → SkelloAppManager, the strangler write-back that creates the absence shifts in the monolith planning (with RetryCreateShiftsJob as the DLQ retry path).",
+  "description": "A manager accepts or refuses a leave request from the web front, directly against svc-requests (PATCH — the monolith has no update proxy). The status change lands in the service's Aurora, its CDC stream carries it to DecodeAndPublishRequestJob, and the SnsDispatch topic fans out: sendAccepted/RefusedLeaveRequest mail + notification queues deliver the employee's email and in-app notification via svc-communications-v2; on acceptance the createShifts trigger additionally runs CreateShiftsJob → SkelloAppManager, the strangler write-back that creates the absence shifts in the monolith planning (failures redeliver via SQS and end in SqsCreateShiftsDlq, which has no consumer; the separate RetryCreateShiftsJob consumes SqsRetryCreateShiftsDlq, which no queue redrives into).",
   "trigger": {"actor": "manager"},
   "primaryArea": "leave-requests",
   "chapters": [
-    { "title": "A manager accepts or refuses", "summary": "The web front sends the decision straight to svc-requests; skello-app is not in the request path.", "refs": ["skello-app-front", "cu-lra-front-client", "svc-requests", "cu-lra-api"] },
-    { "title": "The decision is saved", "summary": "svc-requests rejects requests no longer pending or for archived staff, saves the status and logs the activity when asked.", "refs": ["cu-lra-manager", "pg-requests-approval", "svc-events"] },
-    { "title": "The change fans out", "summary": "The database change stream reaches a job that publishes mail, notification and shift triggers on one topic.", "refs": ["kinesis-requests-cdc-approval", "cu-lra-decode", "sns-dispatch-lra"] },
-    { "title": "The employee hears back", "summary": "Email and notification jobs build the decision messages and send them through svc-communications-v2.", "refs": ["cu-lra-mail", "cu-lra-email-mgr", "cu-lra-notif", "cu-lra-notif-mgr", "svc-communications-v2"] },
-    { "title": "Absence shifts are created", "summary": "On acceptance, a job posts the absence shifts to skello-app, which writes them under a lock and reports dropped days.", "refs": ["cu-lra-create-shifts", "cu-lra-skello-mgr", "skello-app", "cu-lra-mono-shifts"] }
+    { "title": "A manager accepts or refuses", "summary": "The web client sends the decision straight to svc-requests; skello-app has no update proxy.", "refs": ["skello-app-front", "cu-lra-front-client", "cu-lra-api"] },
+    { "title": "The status change is checked", "summary": "svc-requests answers 422 when the request is no longer pending, or when accepting for an employee archived before the leave.", "refs": ["cu-lra-api", "cu-lra-manager"] },
+    { "title": "The decision is saved", "summary": "The new status is written to svc-requests' own Aurora database.", "refs": ["cu-lra-manager", "pg-requests-approval"] },
+    { "title": "The activity is logged", "summary": "When the update asks for it, an activity-log batch goes to svc-events; a lost batch costs only the audit trail.", "refs": ["cu-lra-api", "svc-events"] },
+    { "title": "The change is streamed", "summary": "A dedicated replication task streams the status change onto svc-requests' own change stream.", "refs": ["pg-requests-approval", "kinesis-requests-cdc-approval"] },
+    { "title": "Triggers are published", "summary": "A job decodes the change and publishes mail and notification triggers, plus a shift trigger for accepted requests, on one topic.", "refs": ["kinesis-requests-cdc-approval", "cu-lra-decode", "sns-dispatch-lra"] },
+    { "title": "The employee gets an email", "summary": "One job serves both the accepted and refused mail queues, building the decision email and sending it via svc-communications-v2.", "refs": ["sns-dispatch-lra", "cu-lra-mail", "cu-lra-email-mgr", "svc-communications-v2"] },
+    { "title": "The employee gets a notification", "summary": "The notification job builds the in-app decision message and sends it through svc-communications-v2.", "refs": ["sns-dispatch-lra", "cu-lra-notif", "cu-lra-notif-mgr", "svc-communications-v2"] },
+    { "title": "Absence shifts are requested", "summary": "For accepted, not deleted requests, a job posts the absence shifts to skello-app; a failure is redelivered by SQS up to 3 times before landing in a DLQ.", "refs": ["sns-dispatch-lra", "cu-lra-create-shifts", "cu-lra-skello-mgr", "skello-app"] },
+    { "title": "skello-app writes the absences", "summary": "Shifts are written under a lock; a held lock answers 409, and invalid days are dropped and returned for svc-requests to log.", "refs": ["skello-app", "cu-lra-mono-shifts"] }
   ],
-  "links": [{"to": "shift-creation", "kind": "writes-back-to", "note": "CreateShiftsJob POSTs /private/shifts \u2014 the shift-creation domain action through a private strangler entry point, not the modeled /v3/shifts path"}],
+  "links": [{"to": "shift-creation", "kind": "writes-back-to", "note": "CreateShiftsJob POSTs /private/requests/shifts \u2014 the shift-creation domain action through a private strangler entry point, not the modeled /v3/shifts path"}],
   "steps": [
     {
       "from": "skello-app-front",
@@ -37,7 +42,7 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "svc-requests",
       "to": "skello-app",
-      "action": "POST /private/shifts — create absence shifts on acceptance (CreateShiftsJob write-back)"
+      "action": "POST /private/requests/shifts — create absence shifts on acceptance (CreateShiftsJob write-back)"
     },
     {
       "from": "svc-requests",
@@ -52,7 +57,7 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "controller",
       "label": "Private::SvcRequests::ShiftsController#create",
       "path": "app/controllers/private/svc_requests/shifts_controller.rb",
-      "description": "Creates the absence shifts under a pg advisory lock (Persisters::LeaveRequestAbsenceCreator); answers 409 when the lock is held, 200 with dropped_absences when some days were invalid, 204 otherwise"
+      "description": "POST /private/requests/shifts — creates the absence shifts under a pg_try_advisory_xact_lock keyed on user, shop, start and end dates (Persisters::LeaveRequestAbsenceCreator); answers 409 when the lock is held, 200 with dropped_absences when some days were invalid, 204 otherwise"
     },
     {
       "id": "cu-lra-front-client",
@@ -124,7 +129,7 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "job",
       "label": "CreateShiftsJob",
       "path": "src/Job/CreateShiftsJob.ts",
-      "description": "Consumes the createShifts-filtered queue (accepted, not deleted); RetryCreateShiftsJob replays its DLQ"
+      "description": "Consumes the createShifts-filtered queue (accepted, not deleted). Failures are not caught: SQS redelivers up to 3 times, then the message lands in SqsCreateShiftsDlq, which has no consumer. RetryCreateShiftsJob is a separate consumer of a different queue (SqsRetryCreateShiftsDlq) that no queue redrives into"
     },
     {
       "id": "cu-lra-skello-mgr",
@@ -132,7 +137,7 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "manager",
       "label": "SkelloAppManager",
       "path": "src/Manager/SkelloAppManager.ts",
-      "description": "Strangler write-back client — POST /private/shifts on the monolith (SSM SKELLO_APP_API_URL + SKELLO_APP_REQUESTS_API_KEY)"
+      "description": "Strangler write-back client — POST /private/requests/shifts on the monolith (SSM SKELLO_APP_API_URL + SKELLO_APP_REQUESTS_API_KEY)"
     }
   ],
   "codeEdges": [
@@ -280,8 +285,8 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "lock-held",
       "at": "cu-lra-mono-shifts",
-      "when": "a concurrent delivery of the same leave request holds the advisory lock (BR-15280)",
-      "outcome": "409 Conflict, no absence shifts written by this delivery",
+      "when": "a concurrent delivery of the same leave request (same user, shop, start and end dates) holds the pg advisory lock (BR-15280)",
+      "outcome": "409 Conflict, no absence shifts written by this delivery; CreateShiftsJob does not catch it — SQS redelivers the message up to 3 times, then it lands in SqsCreateShiftsDlq, which has no consumer; the web front never sees it",
       "status": 409,
       "evidence": { "literal": "return render_conflict unless lock_acquired" }
     },

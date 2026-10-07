@@ -1,15 +1,26 @@
 import type { KeyboardEvent, ReactNode } from 'react'
 import type { Emphases, Emphasis } from '../focus'
-import { edgeSegment, LINE_HEIGHT, PAD_X, PAD_Y, textWidth } from '../geometry'
+import { EDGE_LABEL_FONT, EDGE_LABEL_LINE, edgeSegment, LINE_HEIGHT, PAD_X, PAD_Y, textWidth } from '../geometry'
 import type { Box, DiagramModel, DiagramRef } from '../model'
 import { edgeName } from '../edgeName'
 import { DASH, EMPHASIS_WORD, NODE_DASH, nodeFill, PAINT, strokeWidth } from '../paint'
 
-const LABEL_FONT = 11
+const LABEL_FONT = EDGE_LABEL_FONT
+export const MIN_VIEW = { w: 800, h: 450 }
+
+function viewOf(model: DiagramModel, zoomTo: Box | null): Box {
+  if (!zoomTo) {
+    return { x: 0, y: 0, w: model.width, h: model.height }
+  }
+  const w = Math.max(zoomTo.w, MIN_VIEW.w)
+  const h = Math.max(zoomTo.h, MIN_VIEW.h)
+  return { x: zoomTo.x + (zoomTo.w - w) / 2, y: zoomTo.y + (zoomTo.h - h) / 2, w, h }
+}
 
 interface Props {
   model: DiagramModel
   emphases: Emphases
+  zoomTo?: Box | null
   onSelect?: (ref: DiagramRef) => void
   standalone?: boolean
 }
@@ -36,7 +47,8 @@ function baseline(box: Box, fontSize: number, line: number): number {
   return box.y + PAD_Y + fontSize + line * fontSize * LINE_HEIGHT
 }
 
-export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Props) {
+export function SvgDiagram({ model, emphases, zoomTo = null, onSelect, standalone = false }: Props) {
+  const view = viewOf(model, zoomTo)
   const prefix = model.id.replace(/[^a-z0-9]/gi, '-')
   const boxes = new Map<string, Box & { label: string }>([...model.groups, ...model.nodes].map(b => [b.id, b]))
   return (
@@ -44,7 +56,7 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label={model.title}
-      viewBox={`0 0 ${model.width} ${model.height}`}
+      viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
       width={standalone ? model.width : '100%'}
       height={standalone ? model.height : '100%'}
       style={{ fontFamily: 'var(--font-sans)', background: 'var(--paper)' }}
@@ -79,9 +91,10 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
         const s = edgeSegment(from, to, e.lane, e.lanes)
         const paint = PAINT[emphases.edges.get(e.id) ?? 'normal']
         return (
-          <line
+          <polyline
             key={e.id}
-            x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
+            points={(e.route ?? [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]).map(p => `${p.x},${p.y}`).join(' ')}
+            fill="none"
             markerEnd={e.directed ? `url(#${prefix}-arrow)` : undefined}
             style={{ stroke: paint.stroke, strokeWidth: strokeWidth(e.weight), strokeDasharray: DASH[e.mode], opacity: paint.opacity }}
           />
@@ -114,7 +127,23 @@ export function SvgDiagram({ model, emphases, onSelect, standalone = false }: Pr
         if (!from || !to || (!e.label && !e.condition)) {
           return null
         }
-        const s = edgeSegment(from, to, e.lane, e.lanes)
+        if (e.labelBox && e.labelLines) {
+          const box = e.labelBox
+          const paint = PAINT[emphases.edges.get(e.id) ?? 'normal']
+          const label = e.labelLines
+          const pill = e.conditionLines ?? []
+          const pillY = box.y + label.length * EDGE_LABEL_LINE
+          return (
+            <Clickable key={`label:${e.id}`} label={edgeName(from.label, to.label, e)} target={e.ref} onSelect={onSelect}>
+              {label.length > 0 && <rect x={box.x} y={box.y} width={box.w} height={label.length * EDGE_LABEL_LINE} rx={3} style={{ fill: 'var(--card)', stroke: 'var(--rule)', opacity: paint.opacity }} />}
+              {label.map((line, i) => <text key={`l${i}:${line}`} x={box.x + box.w / 2} y={box.y + 12 + i * EDGE_LABEL_LINE} textAnchor="middle" style={{ fill: paint.text, fontSize: LABEL_FONT, opacity: paint.opacity }}>{line}</text>)}
+              {pill.length > 0 && <rect x={box.x} y={pillY} width={box.w} height={pill.length * EDGE_LABEL_LINE} rx={8} style={{ fill: 'var(--highlight)', stroke: 'var(--ink)', opacity: paint.opacity }} />}
+              {pill.map((line, i) => <text key={`p${i}:${line}`} x={box.x + box.w / 2} y={pillY + 12 + i * EDGE_LABEL_LINE} textAnchor="middle" style={{ fill: 'var(--ink)', fontSize: LABEL_FONT, opacity: paint.opacity }}>{line}</text>)}
+            </Clickable>
+          )
+        }
+        const segment = edgeSegment(from, to, e.lane, e.lanes)
+        const s = e.labelBox ? { lx: e.labelBox.x + e.labelBox.w / 2, ly: e.labelBox.y + 9 } : segment
         const paint = PAINT[emphases.edges.get(e.id) ?? 'normal']
         const pill = e.condition ? `if ${e.condition}` : ''
         const w = Math.max(textWidth(e.label, LABEL_FONT), textWidth(pill, LABEL_FONT)) + 8

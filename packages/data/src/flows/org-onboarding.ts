@@ -8,15 +8,20 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const org_onboarding: ServiceFlow = ServiceFlowSchema.parse({
   "id": "org-onboarding",
   "name": "Organisation Onboarding & Provisioning",
-  "description": "Post-signup, an authenticated user without an organisation completes the org-creation forms; the monolith's Onboarding::OrganisationsController + Organisations::UpsertService provision everything transactionally: Organisation, default licenses, the creator's affiliation (user_license + contract), the default text-document template, and the Prospect state-machine step (organisation_created); update toggles pack features and default postes and stamps free_trial_started_at for self-serve orgs. TWO ONBOARDING SYSTEMS then coexist, selected by FEATUREDEV_PLANNING_ONBOARDING_MS_ENROLLMENT: the LEGACY admin_onboarding modal (7 steps — launch → profiling → convention → LLM planning import via the svc-intelligence websocket → employees → positions → loading) provisions through monolith REST and NEVER touches svc-enrollment; the NEW branch persists per-shop progress payloads (FlowEnum PLANNING | TIMECLOCK — shop-level, never org-level) in svc-enrollment's DynamoDB, which is a self-contained JWT-authed store: it writes NOTHING back to the monolith (verified — no Skello client in src/) and only streams to the data lake via Firehose. svc-enrollment's EmployeeOnboardingController is a separate HR-config feature, not this journey.",
+  "description": "Post-signup, an authenticated user without an organisation completes the org-creation forms; the monolith's Onboarding::OrganisationsController + Organisations::UpsertService provision everything transactionally: Organisation, default licenses, the creator's affiliation (user_license + contract), the default text-document template, and the Prospect state-machine step (organisation_created); update toggles pack features and default postes and stamps free_trial_started_at for self-serve orgs. TWO ONBOARDING SYSTEMS then coexist, selected client-side by FEATUREDEV_PLANNING_ONBOARDING_MS_ENROLLMENT, read in skello-app-front's App.vue (the backend relays the flag list and never evaluates it): the LEGACY admin_onboarding modal (7 steps — launch → profiling → convention → LLM planning import via the svc-intelligence websocket → employees → positions → loading) provisions through monolith REST and NEVER touches svc-enrollment; the NEW branch persists per-shop progress payloads (FlowEnum PLANNING | TIMECLOCK — shop-level, never org-level) in svc-enrollment's DynamoDB, which is a self-contained JWT-authed store: it writes NOTHING back to the monolith (verified — no Skello client in src/) and only streams to the data lake via Firehose. svc-enrollment's EmployeeOnboardingController is a separate HR-config feature, not this journey.",
   "trigger": { "actor": "prospect", "role": "authenticated user without_organisation? (create) · system_admin for the onboarding journey" },
   "primaryArea": "org-admin",
   "chapters": [
-    { "title": "A new user creates an organisation", "summary": "After signup, the organisation form posts to skello-app, which accepts only users without an organisation.", "refs": ["skello-app-front", "cu-oo-org-form", "cu-oo-onb-store", "skello-app", "cu-oo-mono-controller"] },
-    { "title": "The organisation is provisioned", "summary": "One transaction creates the organisation, default licenses, the creator's contract and a document template.", "refs": ["cu-oo-upsert", "pg-skello-onboarding"] },
-    { "title": "The legacy journey sets up shops", "summary": "With the flag off, a seven-step modal adds users and postes through skello-app and imports a planning through svc-intelligence.", "refs": ["cu-oo-admin-onb", "svc-intelligence"] },
-    { "title": "The new journey tracks progress", "summary": "With the flag on, per-shop progress is saved in svc-enrollment, which writes nothing back to skello-app.", "refs": ["cu-oo-enroll-store", "svc-enrollment", "cu-oo-enroll-controller", "cu-oo-enroll-mgr", "cu-oo-enroll-repo", "dynamo-enrollment"] },
-    { "title": "Progress reaches the data lake", "summary": "svc-enrollment's change stream replicates the progress to the data lake through Firehose.", "refs": ["cu-oo-firehose", "kinesis-enrollment-datalake"] }
+    { "title": "A new user fills in the organisation", "summary": "After signup, the forms collect the organisation, its first shop and billing, then send them to skello-app.", "refs": ["cu-oo-org-form", "cu-oo-onb-store"] },
+    { "title": "Only users without one may create", "summary": "skello-app lets only a user without an organisation create one; the request runs as one transaction, invalid data answers 422.", "refs": ["cu-oo-mono-controller"] },
+    { "title": "The organisation is provisioned", "summary": "One transaction creates the organisation, default licenses, the creator's license and contract, and a document template.", "refs": ["cu-oo-upsert", "pg-skello-onboarding"] },
+    { "title": "The prospect moves forward", "summary": "The prospect is marked organisation created; updates toggle pack features and default postes and start a self-serve free trial.", "refs": ["cu-oo-upsert", "pg-skello-onboarding"] },
+    { "title": "A flag picks the journey", "summary": "A system admin of a shop with no postes or users goes to the legacy modal with the flag off, or to the svc-enrollment journey with it on.", "refs": ["cu-oo-app-shell"] },
+    { "title": "The legacy journey sets up shops", "summary": "With the flag off, a seven-step modal adds users, postes and licenses through skello-app and never touches svc-enrollment.", "refs": ["cu-oo-admin-onb"] },
+    { "title": "A language model imports the planning", "summary": "In the legacy modal, svc-intelligence imports the planning over a websocket; a dropped import is retried by the admin.", "refs": ["cu-oo-admin-onb", "svc-intelligence"] },
+    { "title": "The new journey sends progress", "summary": "With the flag on, the front sends per-shop progress, for planning or time clock, to svc-enrollment with the user's token.", "refs": ["cu-oo-enroll-store"] },
+    { "title": "svc-enrollment stores the progress", "summary": "A system admin's progress is upserted once per shop and journey; svc-enrollment writes nothing back to skello-app.", "refs": ["cu-oo-enroll-controller", "cu-oo-enroll-mgr", "cu-oo-enroll-repo", "dynamo-enrollment"] },
+    { "title": "Progress reaches the data lake", "summary": "The table's stream batches progress to the data lake through Firehose; a dead-lettered batch loses only that copy.", "refs": ["dynamo-enrollment", "cu-oo-firehose", "kinesis-enrollment-datalake"] }
   ],
   "links": [
     { "to": "self-serve-signup", "kind": "continuation", "note": "sign-up produces the authenticated user + Prospect this flow provisions; self_serve orgs get free_trial_started_at on activation" }
@@ -35,7 +40,7 @@ const org_onboarding: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app-front",
       "to": "svc-enrollment",
-      "action": "NEW branch (FF) — onboarding progress payloads per (shopId, flow) over JWT"
+      "action": "NEW branch (flag on, App.vue) — onboarding progress payloads per (shopId, flow) over JWT"
     },
     {
       "from": "svc-enrollment",
@@ -75,6 +80,15 @@ const org_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "label": "enrollment store (svcEnrollmentClient)",
       "path": "apps/vue-app/src/shared/store/modules/enrollment.js",
       "description": "NEW branch — getOne/create/updateOnboarding per (shopId, FlowEnum PLANNING|TIMECLOCK), JWT via getAuthToken"
+    },
+    {
+      "id": "cu-oo-app-shell",
+      "service": "skello-app-front",
+      "kind": "component",
+      "label": "App",
+      "path": "apps/vue-app/src/App.vue",
+      "description": "Root shell — handleOnboardingRedirection picks the journey from the dev flag (resolved by currentShop/isDevFlagEnabled from /v3/api/feature_flags): flag on → fetches the shop's PLANNING enrollment and routes to plannings_weeks_employees while the enrollment is started and incomplete; flag off → routes to admin_onboarding. Both only for a system admin of a shop lacking postes or planning users",
+      "flags": [{ "name": "FEATUREDEV_PLANNING_ONBOARDING_MS_ENROLLMENT", "kind": "dev" }]
     },
     {
       "id": "cu-oo-mono-controller",
@@ -135,6 +149,16 @@ const org_onboarding: ServiceFlow = ServiceFlowSchema.parse({
     },
     { "from": "cu-oo-upsert", "to": "pg-skello-onboarding", "label": "org + licenses + affiliation + template + prospect step", "mode": "sync", "inTransaction": true, "crud": ["create", "update"] },
     {
+      "from": "cu-oo-app-shell", "to": "cu-oo-enroll-store", "label": "fetchOnboarding (PLANNING)",
+      "mode": "sync", "condition": "flag on — system admin, shop lacks postes or planning users",
+      "flags": [{ "name": "FEATUREDEV_PLANNING_ONBOARDING_MS_ENROLLMENT", "kind": "dev" }]
+    },
+    {
+      "from": "cu-oo-app-shell", "to": "cu-oo-admin-onb", "label": "router push admin_onboarding",
+      "mode": "sync", "condition": "flag off — system admin, shop lacks postes or planning users",
+      "flags": [{ "name": "FEATUREDEV_PLANNING_ONBOARDING_MS_ENROLLMENT", "kind": "dev" }]
+    },
+    {
       "from": "cu-oo-admin-onb", "to": "skello-app", "label": "users / postes / licenses REST (legacy steps)",
       "mode": "sync", "condition": "legacy branch — FF off"
     },
@@ -145,7 +169,7 @@ const org_onboarding: ServiceFlow = ServiceFlowSchema.parse({
     },
     {
       "from": "cu-oo-enroll-store", "to": "svc-enrollment", "label": "onboarding progress (JWT)",
-      "mode": "sync", "condition": "FF FEATUREDEV_PLANNING_ONBOARDING_MS_ENROLLMENT — branch selected in App.vue's redirect, outside the modeled units, so the ref stays prose"
+      "mode": "sync", "condition": "FF FEATUREDEV_PLANNING_ONBOARDING_MS_ENROLLMENT on — branch selected by the App shell"
     },
     { "from": "svc-enrollment", "to": "cu-oo-enroll-controller", "label": "onboarding routes", "mode": "sync" },
     { "from": "cu-oo-enroll-controller", "to": "cu-oo-enroll-mgr", "label": "upsert / reads", "mode": "sync" },

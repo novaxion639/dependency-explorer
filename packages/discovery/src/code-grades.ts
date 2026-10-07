@@ -1,6 +1,11 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
+import { escapeRegExp, importedFiles, loadWiring, readerFor, stripComments, wiredGrade, type Wiring } from './code-wiring'
+
+export { stripComments }
+import { routeGrade, type RouteRef } from './route-grades'
+import { loadVueRoutes, routerGrade, type VueRoute } from './router-grades'
 
 export type Grade = 'graph' | 'constant' | 'import' | 'text' | 'none'
 
@@ -56,18 +61,15 @@ export function loadRepoGraph(graphJson: unknown): RepoGraph | null {
   return { builtAt: str(graphJson.built_at_commit), fileEdges, importEdges, classesIn }
 }
 
-const STRING_OR_COMMENT = /("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\/\*[\s\S]*?\*\/|(^|[^:\\])\/\/.*$|(^|\s)#(?![{!]).*$/gm
-
-export function stripComments(source: string): string {
-  return source.replace(STRING_OR_COMMENT, (_whole, literal: string | undefined, slashLead: string | undefined, hashLead: string | undefined) => literal ?? slashLead ?? hashLead ?? '')
-}
 
 export function crossRepoGrade(grade: Grade): Grade {
   return grade === 'none' ? 'none' : 'text'
 }
 
-function escape(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+const GRADE_ORDER: Grade[] = ['graph', 'constant', 'import', 'text', 'none']
+
+export function bestGrade(a: Grade, b: Grade | null): Grade {
+  return b !== null && GRADE_ORDER.indexOf(b) < GRADE_ORDER.indexOf(a) ? b : a
 }
 
 function reachable(edges: Map<string, Set<string>>, from: string, to: string): boolean {
@@ -82,13 +84,13 @@ function stemOf(filePath: string): string {
 function namesDeclared(source: string, declared: string[]): boolean {
   return declared.some(c => {
     const last = c.split('::').pop() ?? c
-    return new RegExp(`\\b${escape(c)}\\b`).test(source) || (last.length > LAST_SEGMENT_MIN && new RegExp(`\\b${escape(last)}\\b`).test(source))
+    return new RegExp(`\\b${escapeRegExp(c)}\\b`).test(source) || (last.length > LAST_SEGMENT_MIN && new RegExp(`\\b${escapeRegExp(last)}\\b`).test(source))
   })
 }
 
 function importsFile(source: string, calleePath: string): boolean {
   const stem = stemOf(calleePath)
-  return new RegExp(`(?:from|require\\(|import\\()\\s*['"][^'"]*\\b${escape(stem)}(?:\\.[a-z]+)?['"]`).test(source)
+  return new RegExp(`(?:from|require\\(|import\\()\\s*['"][^'"]*\\b${escapeRegExp(stem)}(?:\\.[a-z]+)?['"]`).test(source)
 }
 
 function longestToken(label: string): string | null {
@@ -104,18 +106,20 @@ export function gradeEdge(graph: RepoGraph, callerPath: string, calleePath: stri
   if (namesDeclared(code, graph.classesIn.get(calleePath) ?? [])) {
     return 'constant'
   }
-  const importedAndUsed = reachable(graph.importEdges, callerPath, calleePath) && new RegExp(`\\b${escape(stemOf(calleePath))}\\b`, 'i').test(code)
+  const importedAndUsed = reachable(graph.importEdges, callerPath, calleePath) && new RegExp(`\\b${escapeRegExp(stemOf(calleePath))}\\b`, 'i').test(code)
   if (importedAndUsed || importsFile(code, calleePath)) {
     return 'import'
   }
   const token = longestToken(calleeLabel)
-  return token && new RegExp(`\\b${escape(token)}\\b`).test(code) ? 'text' : 'none'
+  return token && new RegExp(`\\b${escapeRegExp(token)}\\b`).test(code) ? 'text' : 'none'
 }
 
 
 export interface GradeFinding { flow: string; kind: 'ungraded-edge' | 'stale-graph'; subject: string; detail: string }
 
-export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: (repo: string) => string | null) {
+const MONOLITH = 'skello-app'
+
+export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: (repo: string) => string | null, routes: ReadonlyArray<RouteRef> = []) {
   const findings: GradeFinding[] = []
   const grades: Record<string, Grade> = {}
   const distribution: Record<Grade, number> = { graph: 0, constant: 0, import: 0, text: 0, none: 0 }
@@ -136,6 +140,30 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
       }
     }
     return graphs.get(repo) ?? null
+  }
+  const wirings = new Map<string, Wiring>()
+  const importedSources = (repo: string, fromPath: string, code: string): string[] => {
+    const read = readerFor(path.join(repoBase, repo))
+    return importedFiles(code, fromPath, wiringFor(repo).aliases, read).map(f => stripComments(read(f) ?? ''))
+  }
+  const wiringFor = (repo: string): Wiring => {
+    const cached = wirings.get(repo)
+    if (cached) {
+      return cached
+    }
+    const wiring = loadWiring(path.join(repoBase, repo))
+    wirings.set(repo, wiring)
+    return wiring
+  }
+  const vueRoutes = new Map<string, VueRoute[]>()
+  const routesFor = (repo: string): VueRoute[] => {
+    const cached = vueRoutes.get(repo)
+    if (cached) {
+      return cached
+    }
+    const loaded = loadVueRoutes(path.join(repoBase, repo), wiringFor(repo).aliases)
+    vueRoutes.set(repo, loaded)
+    return loaded
   }
   const record = (key: string, flow: string, grade: Grade, detail: string) => {
     grades[key] = grade
@@ -163,14 +191,30 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
       }
       if (from.service !== to.service) {
         const empty: RepoGraph = { builtAt: '', fileEdges: new Map(), importEdges: new Map(), classesIn: new Map() }
-        record(key, flow.id, crossRepoGrade(gradeEdge(empty, from.path, to.path, source, to.label)), `${from.service}/${from.path} → ${to.service}/${to.path} (cross-repo)`)
+        const textGrade = crossRepoGrade(gradeEdge(empty, from.path, to.path, source, to.label))
+        const callerCode = stripComments(source)
+        const routed = to.service === MONOLITH ? routeGrade(callerCode, importedSources(from.service, from.path, callerCode), to.path, routes) : null
+        record(key, flow.id, bestGrade(textGrade, routed), `${from.service}/${from.path} → ${to.service}/${to.path} (cross-repo)`)
         continue
       }
       const graph = graphFor(from.service)
       if (!graph) {
         continue
       }
-      record(key, flow.id, gradeEdge(graph, from.path, to.path, source, to.label), `${from.service}/${from.path} → ${to.path}`)
+      const repoDir = path.join(repoBase, from.service)
+      const read = readerFor(repoDir)
+      const base = gradeEdge(graph, from.path, to.path, source, to.label)
+      const wired = base === 'graph' ? null : wiredGrade(wiringFor(from.service), {
+        callerPath: from.path,
+        calleePath: to.path,
+        callerCode: stripComments(source),
+        calleeSource: read(to.path) ?? '',
+        calleeClasses: graph.classesIn.get(to.path) ?? [],
+      }, read)
+      const local = bestGrade(base, wired)
+      const callerCode = stripComments(source)
+      const navigated = local === 'graph' ? null : routerGrade(callerCode, importedSources(from.service, from.path, callerCode), to.path, routesFor(from.service))
+      record(key, flow.id, bestGrade(local, navigated), `${from.service}/${from.path} → ${to.path}`)
     }
   }
   return { findings, grades, distribution, backlog }

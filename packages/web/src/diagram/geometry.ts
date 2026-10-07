@@ -21,6 +21,23 @@ export function fitLabel(text: string, width: number, fontSize: number): string 
   return max < 2 ? '' : `${text.slice(0, max - 1)}…`
 }
 
+export const EDGE_LABEL_FONT = 11
+export const EDGE_LABEL_LINE = 17
+
+export function wrapText(text: string, width: number, fontSize: number): string[] {
+  const max = Math.max(1, Math.floor(width / (fontSize * CHAR_WIDTH)))
+  const words = text.split(/\s+/).filter(Boolean).flatMap(w => (w.length > max ? w.match(new RegExp(`.{1,${max}}`, 'gu')) ?? [w] : [w]))
+  return words.reduce<string[]>((lines, w) => {
+    const last = lines[lines.length - 1]
+    if (last !== undefined && last.length + 1 + w.length <= max) {
+      lines[lines.length - 1] = `${last} ${w}`
+    } else {
+      lines.push(w)
+    }
+    return lines
+  }, [])
+}
+
 export function linesHeight(lines: number, fontSize: number): number {
   return Math.ceil(lines * fontSize * LINE_HEIGHT + 2 * PAD_Y)
 }

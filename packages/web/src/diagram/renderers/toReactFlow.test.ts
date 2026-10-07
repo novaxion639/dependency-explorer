@@ -36,3 +36,21 @@ describe('toReactFlow', () => {
     expect(flow.edges[0]).toMatchObject({ source: 'G', target: 'b', type: 'diagramEdge' })
   })
 })
+
+describe('toReactFlow lanes', () => {
+  const laned: DiagramModel = {
+    ...model,
+    groups: [{ id: 'L', kind: 'lane', label: 'L', members: ['a'], fontSize: 12, x: 0, y: 0, w: 220, h: 80 }],
+    edges: [],
+  }
+  const flow = toReactFlow(laned, emphasise(laned, { spotlight: null, impact: null }))
+
+  it('nests lane members inside their lane, positioned relative to it', () => {
+    expect(flow.nodes.find(n => n.id === 'a')).toMatchObject({ parentId: 'L', extent: 'parent', position: { x: 10, y: 30 } })
+    expect(flow.nodes.find(n => n.id === 'b')?.parentId).toBeUndefined()
+  })
+  it('pins lane members in place and leaves other nodes draggable', () => {
+    expect(flow.nodes.find(n => n.id === 'a')?.draggable).toBe(false)
+    expect(flow.nodes.find(n => n.id === 'b')?.draggable).toBeUndefined()
+  })
+})

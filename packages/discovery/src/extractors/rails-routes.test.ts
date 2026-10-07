@@ -75,6 +75,25 @@ describe('parseRoutesContent', () => {
     expect(r.routes.find(x => x.controller === 'v3/api/plannings/shifts')?.controllerFile).toBe('app/controllers/v3/api/plannings/shifts_controller.rb')
     expect(r.unparsed).toEqual(["mount Sidekiq::Web => '/sidekiq'"])
   })
+  it('applies a multi-name resources block to every name', () => {
+    const { routes } = parseRoutesContent(`
+      resources :shops, :teams, only: [:show] do
+        resources :postes, only: [:index]
+        member do
+          patch :archive
+        end
+      end
+      get '/after', to: 'after#show'
+    `)
+    const paths = routes.map(r => `${r.verb} ${r.path} ${r.controller}#${r.action}`)
+    expect(paths).toEqual(expect.arrayContaining([
+      'GET /shops/:shop_id/postes postes#index',
+      'GET /teams/:team_id/postes postes#index',
+      'PATCH /shops/:id/archive shops#archive',
+      'PATCH /teams/:id/archive teams#archive',
+      'GET /after after#show',
+    ]))
+  })
 })
 
 describe('parseRoutesContent option forms', () => {

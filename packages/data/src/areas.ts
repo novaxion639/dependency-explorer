@@ -258,7 +258,12 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('skello-app', 'monolith',
         'app/services/microservices/labour_law_service.rb', 'app/services/microservices/trackers_service.rb', 'app/services/persisters/*majoration_slices_*.rb', 'app/controllers/v3/api/bulk_rcr_counters_controller.rb', 'app/controllers/v3/api/holidays_controller.rb'),
     ],
-    readingPath: [],
+    readingPath: [
+      { flowId: 'shift-creation', why: "How a new shift updates hours, RCR and paid-leave counters, and that labour-law alerts are fetched separately (GET /alerts), not checked at creation" },
+      { flowId: 'absence-creation', why: "Paid-leave counters and labour-law entitlements when an absence is recorded" },
+      { flowId: 'shift-deletion', why: "Counters recomputed inside the deletion transaction" },
+      { flowId: 'auto-planning-generation', why: "Alerts and counters refreshed after the solver's write-back" }
+    ],
     glossary: [
       {"term": "Paid leaves counter", "definition": "An employee's acquired and taken paid-leave balance.", "anchor": {"repo": "skello-app", "path": "app/models/paid_leaves_counter.rb", "symbol": "PaidLeavesCounter"}},
       {"term": "RCR counter", "definition": "An employee's compensatory rest (repos compensateur de remplacement) balance.", "anchor": {"repo": "skello-app", "path": "app/models/rcr_counter.rb", "symbol": "RcrCounter"}},
@@ -410,7 +415,9 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('skello-app', 'monolith',
         'app/services/microservices/hiring_service.rb'),
     ],
-    readingPath: [],
+    readingPath: [
+      { flowId: 'hiring-open', why: "How opening Hiring provisions the organisation on Join and signs the manager in" }
+    ],
     glossary: [
       {"term": "JOIN company", "definition": "The JOIN applicant-tracking account provisioned for a Skello organisation.", "anchor": {"repo": "svc-hiring", "path": "src/Entity/JoinCompanyStatusEntity.ts", "symbol": "createJoinCompanyStatusEntity"}}
     ],

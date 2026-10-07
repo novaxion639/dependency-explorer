@@ -1,4 +1,5 @@
 import * as fs from 'node:fs'
+import { escapeRegExp } from './code-wiring'
 import * as path from 'node:path'
 import type { ExternalSystem, ProductArea } from '@dependency-explorer/schema'
 import { areasForFile, globToRegExp } from '@dependency-explorer/data'
@@ -51,9 +52,6 @@ export function listRepoFiles(repoDir: string): string[] {
   return out
 }
 
-function escapeRegExp(literal: string): string {
-  return literal.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')
-}
 
 export function symbolPattern(symbol: string): RegExp {
   return new RegExp(`\\b(class|module|interface|type|enum|const|function)\\s+${escapeRegExp(symbol)}\\b`)

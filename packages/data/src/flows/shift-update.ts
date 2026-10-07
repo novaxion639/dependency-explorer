@@ -1,23 +1,23 @@
 import { ServiceFlowSchema } from '@dependency-explorer/schema'
 import type { ServiceFlow } from '@dependency-explorer/schema'
 
-// Code layer traced 2026-06-12 from skello-app source (shifts_controller#update
-// → update_service.rb → callbacks_concern.rb). The previously documented
-// downstream half (svc-shifts metrics, svc-events shift.updated, comms email)
-// had NO code path — the update action neither calls svc-shifts (no client in
-// the monolith), nor enqueues ActivityJob, nor notifies anyone. Removed.
+// Code layer traced from skello-app source (shifts_controller#update
+// → update_service.rb → callbacks_concern.rb), verified at @3f6728f. The update
+// action calls no svc-shifts client, enqueues no ActivityJob and notifies nobody.
 const shift_update: ServiceFlow = ServiceFlowSchema.parse({
   "id": "shift-update",
   "name": "Shift Update",
-  "description": "A planner edits an existing shift. The monolith evaluates labour-law compliance in-process (rules previously synced from svc-labour-laws — no per-operation HTTP call) and persists the change inside a transaction; AR commit callbacks then fan out the same three Sidekiq jobs as creation. Updating does NOT emit a svc-events activity nor notify the employee — notifications happen at planning publication. (Corrected 2026-06-12: the previously documented svc-shifts metrics call, shift.updated event and notification email had no code path.)",
+  "description": "A planner edits an existing shift. The monolith validates the params, the planning-day lock and shop membership, then persists the change inside a transaction, where Shift model validations run on update!; labour-law compliance is not checked at update — alerts are fetched separately. AR commit callbacks then fan out the same three Sidekiq jobs as creation and upsert the shift's PredictedShift. Updating emits no svc-events activity and notifies nobody — notifications happen at planning publication; there is no svc-shifts metrics call, shift.updated event or notification email.",
   "trigger": {"actor": "manager", "role": "planner"},
   "primaryArea": "planning",
   "chapters": [
-    { "title": "A planner edits a shift", "summary": "The planning page sends the change; skello-app checks the planner may update shifts.", "refs": ["skello-app-front", "cu-upd-controller"] },
-    { "title": "The shift is updated", "summary": "One transaction resolves absence clashes and replacements, saves the shift and unlinks its badging when it is unassigned.", "refs": ["cu-upd-service", "cu-upd-replacement", "pg-skello-shifts-upd"] },
-    { "title": "Counters recompute", "summary": "Hours, RCR and paid-leave counters update for the old and the new assignee.", "refs": ["cu-upd-tracker", "pg-skello-counters-upd"] },
-    { "title": "Side effects after commit", "summary": "Model callbacks refresh the shift cache and queue the same three background jobs as creation.", "refs": ["cu-upd-callbacks", "redis-skello-upd", "cu-upd-cb-job", "cu-upd-data-job", "cu-upd-pl-job"] },
-    { "title": "The row is replicated", "summary": "DMS copies the updated row to svc-search.", "refs": ["pg-skello-shifts-upd", "svc-search"] }
+    { "title": "A planner edits a shift", "summary": "The planning page sends the change; skello-app checks the planner may update shifts and passes on the skip-validation and undo flags.", "refs": ["skello-app-front", "cu-upd-controller"] },
+    { "title": "Clashes and replacements resolve", "summary": "Inside one transaction, an absence over work shifts unassigns them, and a manual replacement unassigns and records a replacement row.", "refs": ["cu-upd-service", "cu-upd-replacement", "pg-skello-shifts-upd"] },
+    { "title": "The shift is saved", "summary": "The shift row is updated; when the shift loses its employee, its punch-clock badging is unlinked.", "refs": ["cu-upd-service", "pg-skello-shifts-upd"] },
+    { "title": "Counters recompute", "summary": "Hours, RCR and paid-leave counters update for both the old and the new assignee, still inside the transaction.", "refs": ["cu-upd-tracker", "pg-skello-counters-upd"] },
+    { "title": "The cache refreshes after save", "summary": "The same callbacks as creation reload the first-shift cache and upsert the shift's predicted shift when it starts after the next shop opening.", "refs": ["cu-upd-callbacks", "redis-skello-upd"] },
+    { "title": "Three background jobs follow", "summary": "Through Sidekiq, jobs mark the week's options stale, refresh the shift data payload and recompute paid-leave counters.", "refs": ["cu-upd-callbacks", "redis-skello-upd", "cu-upd-cb-job", "cu-upd-data-job", "cu-upd-pl-job"] },
+    { "title": "The row is replicated", "summary": "DMS copies the updated row to svc-search. No event or employee notice is sent; that waits for planning publication.", "refs": ["pg-skello-shifts-upd", "svc-search"] }
   ],
   "steps": [
     {
@@ -151,6 +151,14 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
     },
     {
       "from": "cu-upd-callbacks",
+      "to": "pg-skello-shifts-upd",
+      "label": "PredictedShift upsert",
+      "mode": "sync",
+      "condition": "starts at or after the next shop opening time",
+      "crud": ["create", "update"]
+    },
+    {
+      "from": "cu-upd-callbacks",
       "to": "cu-upd-cb-job",
       "label": "weekly-option staleness",
       "mode": "async-job"
@@ -174,13 +182,31 @@ const shift_update: ServiceFlow = ServiceFlowSchema.parse({
       "mode": "async-event"
     }
   ],
+  "branches": [
+    {
+      "id": "period-locked",
+      "at": "cu-upd-service",
+      "when": "the shift's new or previous day is locked on the planning (validated, permanent or intermediate lock) and not listed in skip_validation",
+      "outcome": "403 Forbidden (Skello::IllegalOperation); the transaction rolls back",
+      "status": 403,
+      "evidence": { "literal": "validate_operation_allowed_for_day(shift_starts_at, 'update')" }
+    },
+    {
+      "id": "invalid-work-shift",
+      "at": "cu-upd-service",
+      "when": "work-shift params carry absence-only fields (hours_worth or day_absence)",
+      "outcome": "422 Unprocessable Entity (Skello::InvalidParams); the transaction rolls back",
+      "status": 422,
+      "evidence": { "literal": "validate_work_shift_params(shift_params)" }
+    }
+  ],
   "infraNodes": [
     {
       "id": "pg-skello-shifts-upd",
       "type": "postgresql",
-      "label": "skello_production — shifts, shift_replacements, badgings",
-      "resources": ["pg:skello_production.shifts", "pg:skello_production.shift_replacements", "pg:skello_production.badgings"],
-      "description": "Shift row updated in the transaction; badging detached when the shift is unassigned"
+      "label": "skello_production — shifts, shift_replacements, badgings, predicted_shifts",
+      "resources": ["pg:skello_production.shifts", "pg:skello_production.shift_replacements", "pg:skello_production.badgings", "pg:skello_production.predicted_shifts"],
+      "description": "Shift row updated in the transaction; badging detached when the shift is unassigned; the PredictedShift is upserted post-commit by the callback group"
     },
     {
       "id": "pg-skello-counters-upd",

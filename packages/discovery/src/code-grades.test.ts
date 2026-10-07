@@ -3,7 +3,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { ConnectivityMapSchema } from '@dependency-explorer/schema'
-import { loadRepoGraph, gradeEdge, stripComments, checkCodeGrades, crossRepoGrade } from './code-grades'
+import { loadRepoGraph, gradeEdge, stripComments, checkCodeGrades, crossRepoGrade, bestGrade } from './code-grades'
 
 const graphJson = {
   built_at_commit: 'abc123',
@@ -52,6 +52,16 @@ describe('gradeEdge', () => {
   it('keeps comment markers inside string literals', () => {
     expect(stripComments("const g = 'src/**/*.ts'\nfoo() // x")).toBe("const g = 'src/**/*.ts'\nfoo() ")
     expect(stripComments('x = "foo #bar" # note')).toBe('x = "foo #bar" ')
+  })
+  it('reads Ruby char literals without opening a string', () => {
+    expect(stripComments("s.tr(?', 'b # c') # note")).toBe("s.tr(?', 'b # c') ")
+    expect(stripComments('s.tr(?", "b # c") # note')).toBe('s.tr(?", "b # c") ')
+    expect(stripComments("a ?'b' : 'c' // js")).toBe("a ?'b' : 'c' ")
+    expect(stripComments("a ?'' : c // js")).toBe("a ?'' : c ")
+  })
+  it('reads an unformatted ternary with a one-character string as a string', () => {
+    expect(stripComments("c ?' ' : 'x # y' // n")).toBe("c ?' ' : 'x # y' ")
+    expect(stripComments("c ?`\n a # b` : d")).toBe("c ?`\n a # b` : d")
   })
   it('grades a cross-repo edge text at best', () => {
     expect([crossRepoGrade('graph'), crossRepoGrade('import'), crossRepoGrade('text'), crossRepoGrade('none')]).toEqual(['text', 'text', 'text', 'none'])
@@ -135,5 +145,129 @@ describe('checkCodeGrades', () => {
     const r = checkCodeGrades(map, base, () => 'deadbeef')
     expect(r.grades['f#c→m']).toBeUndefined()
     expect(r.findings.filter(f => f.kind === 'stale-graph').map(f => f.detail)).toEqual(['graph stale — run graphify update at deadbeef'])
+  })
+})
+
+describe('bestGrade', () => {
+  it('keeps the better grade and never drops one', () => {
+    expect(bestGrade('none', 'import')).toBe('import')
+    expect(bestGrade('constant', 'text')).toBe('constant')
+    expect(bestGrade('text', null)).toBe('text')
+  })
+})
+
+describe('checkCodeGrades with container wiring', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'wired-'))
+  const write = (rel: string, content: string) => {
+    fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true })
+    fs.writeFileSync(path.join(base, rel), content)
+  }
+  write('svc-x/graphify-out/graph.json', JSON.stringify({
+    built_at_commit: 'abc123',
+    nodes: [
+      { id: 'd', label: 'DocumentManager', source_file: 'src/Manager/DocumentManager.ts', _callable_class: true },
+      { id: 'b', label: 'BedrockLlmProvider', source_file: 'src/Client/Llm/BedrockLlmProvider.ts', _callable_class: true },
+    ],
+    links: [],
+  }))
+  write('svc-x/src/Manager/DocumentManager.ts', 'export class DocumentManager {}\n')
+  write('svc-x/src/Manager/ExtractionManager.ts', 'export class ExtractionManager {}\n')
+  write('svc-x/src/Client/Llm/BedrockLlmProvider.ts', 'export class BedrockLlmProvider {}\n')
+  write('svc-x/src/container.ts', "import {DocumentManager} from './Manager/DocumentManager';\nimport {ExtractionManager} from './Manager/ExtractionManager';\nimport {BedrockLlmProvider} from './Client/Llm/BedrockLlmProvider';\nconst extractionManager = new ExtractionManager(new BedrockLlmProvider(client));\nconst documentManager = new DocumentManager(extractionManager);\n")
+  const map = ConnectivityMapSchema.parse({
+    services: [{ name: 'svc-x', type: 'typescript-microservice', description: 'd', endpoints: [] }],
+    connections: [],
+    flows: [{
+      id: 'f', name: 'F', description: 'd', steps: [],
+      codeUnits: [
+        { id: 'd', service: 'svc-x', kind: 'manager', label: 'DocumentManager', path: 'src/Manager/DocumentManager.ts' },
+        { id: 'b', service: 'svc-x', kind: 'service', label: 'BedrockLlmProvider', path: 'src/Client/Llm/BedrockLlmProvider.ts' },
+      ],
+      codeEdges: [{ from: 'd', to: 'b', label: 'extraction', mode: 'sync' }],
+    }],
+  })
+
+  it('grades an edge the container wires but the graph cannot see', () => {
+    expect(checkCodeGrades(map, base, () => 'abc123').grades['f#d→b']).toBe('graph')
+  })
+})
+
+describe('checkCodeGrades across repos through monolith routes', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'routes-'))
+  const write = (rel: string, content: string) => {
+    fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true })
+    fs.writeFileSync(path.join(base, rel), content)
+  }
+  const SHIFTS = 'app/controllers/v3/api/plannings/shifts_controller.rb'
+  const ORGS = 'app/controllers/v3/api/billing_automation/organisations_controller.rb'
+  write('front/src/store/shifts.js', "import { ENDPOINT_NAMESPACE } from './api/shift';\nimport { util } from './helpers';\nexport const load = () => fetchInChunks(params, `${ENDPOINT_NAMESPACE}`);\n")
+  write('front/src/store/api/shift.js', "export const ENDPOINT_NAMESPACE = '/v3/api/plannings/shifts';\n")
+  write('front/src/store/helpers/index.js', 'export const util = 1;\n')
+  write('billing/tsconfig.json', '{ "compilerOptions": { "paths": { "~/*": ["src/*"] } } }')
+  write('billing/src/Manager/SkelloManager.ts', "import {SkelloRepository} from '~/Repository/SkelloRepository';\n")
+  write('billing/src/Repository/SkelloRepository.ts', "export class SkelloRepository { upsert() { return this.put('/organisations/upsert', {}) } }\n")
+  const map = ConnectivityMapSchema.parse({
+    services: [
+      { name: 'skello-app', type: 'rails-monolith', description: 'd', endpoints: [] },
+      { name: 'front', type: 'typescript-microservice', description: 'd', endpoints: [] },
+      { name: 'billing', type: 'typescript-microservice', description: 'd', endpoints: [] },
+    ],
+    connections: [],
+    flows: [{
+      id: 'f', name: 'F', description: 'd', steps: [],
+      codeUnits: [
+        { id: 'store', service: 'front', kind: 'service', label: 'shifts store', path: 'src/store/shifts.js' },
+        { id: 'shifts', service: 'skello-app', kind: 'controller', label: 'ShiftsController', path: SHIFTS },
+        { id: 'mgr', service: 'billing', kind: 'manager', label: 'SkelloManager', path: 'src/Manager/SkelloManager.ts' },
+        { id: 'orgs', service: 'skello-app', kind: 'controller', label: 'OrganisationsController', path: ORGS },
+        { id: 'lookalike', service: 'billing', kind: 'service', label: 'Lookalike', path: SHIFTS },
+      ],
+      codeEdges: [
+        { from: 'store', to: 'shifts', label: 'GET shifts', mode: 'sync' },
+        { from: 'mgr', to: 'orgs', label: 'upserts', mode: 'sync' },
+        { from: 'store', to: 'orgs', label: 'none', mode: 'sync' },
+        { from: 'store', to: 'lookalike', label: 'not the monolith', mode: 'sync' },
+      ],
+    }],
+  })
+  const routes = [
+    { path: '/v3/api/plannings/shifts', controllerFile: SHIFTS },
+    { path: '/v3/api/billing_automation/organisations/upsert', controllerFile: ORGS },
+  ]
+
+  it('grades cross-repo edges through monolith routes', () => {
+    const { grades } = checkCodeGrades(map, base, () => 'abc123', routes)
+    expect(grades['f#store→shifts']).toBe('import')
+    expect(grades['f#mgr→orgs']).toBe('text')
+    expect(grades['f#store→orgs']).toBe('none')
+    expect(grades['f#store→lookalike']).toBe('none')
+  })
+})
+
+describe('checkCodeGrades through Vue-router route names', () => {
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), 'router-'))
+  const write = (rel: string, content: string) => {
+    fs.mkdirSync(path.dirname(path.join(base, rel)), { recursive: true })
+    fs.writeFileSync(path.join(base, rel), content)
+  }
+  write('front/graphify-out/graph.json', JSON.stringify({ built_at_commit: 'abc123', nodes: [], links: [] }))
+  write('front/apps/vue-app/src/App.vue', "<script>export default { methods: { go(n) { this.$router.push({ name: n }) }, start() { this.go('admin_onboarding') } } }</script>")
+  write('front/apps/vue-app/src/admin_onboarding/AdminOnboarding.vue', '<template><div/></template>')
+  write('front/apps/vue-app/src/admin_onboarding/admin_onboarding_routes.js', "import AdminOnboarding from './AdminOnboarding';\nexport default [{ path: '/v3/shops/:shop_id/admin-onboarding', component: AdminOnboarding, name: 'admin_onboarding' }];\n")
+  const map = ConnectivityMapSchema.parse({
+    services: [{ name: 'front', type: 'vue-frontend', description: 'd', endpoints: [] }],
+    connections: [],
+    flows: [{
+      id: 'f', name: 'F', description: 'd', steps: [],
+      codeUnits: [
+        { id: 'app', service: 'front', kind: 'component', label: 'App', path: 'apps/vue-app/src/App.vue' },
+        { id: 'onb', service: 'front', kind: 'component', label: 'AdminOnboarding', path: 'apps/vue-app/src/admin_onboarding/AdminOnboarding.vue' },
+      ],
+      codeEdges: [{ from: 'app', to: 'onb', label: 'redirect', mode: 'sync' }],
+    }],
+  })
+
+  it('verifies an edge that crosses a router navigation by route name', () => {
+    expect(checkCodeGrades(map, base, () => 'abc123').grades['f#app→onb']).toBe('import')
   })
 })
