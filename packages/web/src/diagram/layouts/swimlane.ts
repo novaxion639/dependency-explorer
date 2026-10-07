@@ -18,7 +18,6 @@ const ARROW_CLEARANCE = 6
 const WRAP_W = LANE_GAP + 2 * PAD - 2 * (ARROW + ARROW_CLEARANCE) - LABEL_PAD - 4
 const LAYOUT_PASSES = 12
 const TRACK = 8
-const TRACKS = Math.floor(LANE_GAP / TRACK) - 2
 const CHANNEL = 19
 const HEADER_Y = 6
 const HEADER_H = 24
@@ -65,20 +64,29 @@ function edgeCondition(e: FlowCodeEdge): string | undefined {
 export function swimlanes(flow: ServiceFlow): DiagramModel {
   let extra = new Map<number, number>()
   let detours = new Set<string>()
-  let result = laneLayout(flow, extra, detours)
-  for (let pass = 1; pass < LAYOUT_PASSES && result.crowded.length > 0; pass++) {
+  let wider = new Map<number, number>()
+  let result = laneLayout(flow, extra, detours, wider)
+  for (let pass = 1; pass < LAYOUT_PASSES && (result.crowded.length > 0 || result.overflow.size > 0); pass++) {
     extra = new Map(extra)
     detours = new Set(detours)
+    wider = new Map(wider)
     for (const { row, h, edge } of result.crowded) {
       extra.set(row, (extra.get(row) ?? 0) + h)
-      detours.add(edge)
+      if (edge) {
+        detours.add(edge)
+      }
     }
-    result = laneLayout(flow, extra, detours)
+    for (const [gutter, missing] of result.overflow) {
+      wider.set(gutter, (wider.get(gutter) ?? 0) + missing * TRACK)
+    }
+    result = laneLayout(flow, extra, detours, wider)
   }
   return result.model
 }
 
-function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detours: ReadonlySet<string>): { model: DiagramModel; crowded: Array<{ row: number; h: number; edge: string }> } {
+interface Crowding { row: number; h: number; edge?: string }
+
+function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detours: ReadonlySet<string>, wider: ReadonlyMap<number, number>): { model: DiagramModel; crowded: Crowding[]; overflow: Map<number, number> } {
   const units = new Map((flow.codeUnits ?? []).map(u => [u.id, u]))
   const infra = new Map((flow.infraNodes ?? []).map(n => [n.id, n]))
   const codeEdges = flow.codeEdges ?? []
@@ -186,6 +194,8 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     nodes.push(nodeOf(id))
   }
   const byId = new Map(nodes.map(n => [n.id, n]))
+  const gutterW = (gutter: number) => LANE_GAP + (wider.get(gutter) ?? 0)
+  const laneX = (i: number) => i * LANE_W + Array.from({ length: Math.max(0, i) }, (_, g) => gutterW(g)).reduce((sum, w) => sum + w, 0)
   const modelId = (id: string) => (units.has(id) ? unitNodeId(id) : infra.has(id) ? infraNodeId(id) : isLaneEndpoint(id) ? requestLane(id) : serviceNodeId(id))
 
   const wrapped = (text: string) => wrapText(text, WRAP_W, EDGE_LABEL_FONT)
@@ -241,7 +251,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     const node = byId.get(modelId(id))
     const row = rowOf.get(id)
     if (node && row !== undefined) {
-      node.x = laneOrder.indexOf(laneOf(id)) * (LANE_W + LANE_GAP) + PAD
+      node.x = laneX(laneOrder.indexOf(laneOf(id))) + PAD
       node.y = rowY[row] ?? top
     }
   }
@@ -255,27 +265,38 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     return lane.endsWith(':bg') ? `${lane.slice(5, -3)} · background` : lane.slice(5)
   }
   const laneIndex = new Map(order.filter(id => !isLaneEndpoint(id)).map(id => [modelId(id), laneOrder.indexOf(laneOf(id))]))
-  const laneX = (i: number) => i * (LANE_W + LANE_GAP)
   const tracks = new Map<number, number>()
+  const overflow = new Map<number, number>()
   const trackX = (gutter: number) => {
     const k = tracks.get(gutter) ?? 0
     tracks.set(gutter, k + 1)
-    return laneX(gutter) + LANE_W + TRACK * (1 + (k % TRACKS))
+    const capacity = Math.floor(gutterW(gutter) / TRACK) - 2
+    if (k >= capacity) {
+      overflow.set(gutter, Math.max(overflow.get(gutter) ?? 0, k - capacity + 1))
+    }
+    return laneX(gutter) + LANE_W + TRACK * (1 + k)
   }
   const channels = new Map<number, number>()
-  const channelY = (rowTop: number) => {
+  const crowded: Crowding[] = []
+  const channelY = (row: number) => {
+    const rowTop = rowY[row] ?? top
     const k = channels.get(rowTop) ?? 0
     channels.set(rowTop, k + 1)
-    return rowTop - CHANNEL - TRACK * k
+    const y = rowTop - CHANNEL - TRACK * k
+    const floor = (row > 0 ? (rowY[row - 1] ?? top) + (rowH[row - 1] ?? 0) : HEADER_Y + HEADER_H) + TRACK
+    if (y < floor) {
+      crowded.push({ row: row - 1, h: TRACK })
+    }
+    return y
   }
-  interface End { box: Box; lane: number; header: boolean }
+  interface End { box: Box; lane: number; header: boolean; row: number }
   const endOf = (id: string): End | null => {
     const node = byId.get(id)
     if (node) {
-      return { box: node, lane: laneIndex.get(id) ?? 0, header: false }
+      return { box: node, lane: laneIndex.get(id) ?? 0, header: false, row: Math.max(0, rowByModel.get(id) ?? 0) }
     }
     const lane = laneOrder.indexOf(id)
-    return lane < 0 ? null : { box: { x: laneX(lane) + PAD, y: HEADER_Y, w: NODE_W, h: HEADER_H }, lane, header: true }
+    return lane < 0 ? null : { box: { x: laneX(lane) + PAD, y: HEADER_Y, w: NODE_W, h: HEADER_H }, lane, header: true, row: 0 }
   }
   const labelSize = (e: DiagramEdge) => {
     const w = Math.max(0, ...(e.labelLines ?? []).map(l => textWidth(l, EDGE_LABEL_FONT)), ...(e.conditionLines ?? []).map(l => textWidth(l, EDGE_LABEL_FONT) + PILL_PAD))
@@ -321,7 +342,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
       return { points: [{ x: start, y: ya }, { x: x1, y: ya }, { x: x1, y: yb }, { x: end, y: yb }], gutter: first }
     }
     const x2 = trackX(last)
-    const channel = drop ?? channelY(b.header ? top : b.box.y)
+    const channel = drop ?? channelY(b.row)
     return { points: [{ x: start, y: ya }, { x: x1, y: ya }, { x: x1, y: channel }, { x: x2, y: channel }, { x: x2, y: yb }, { x: end, y: yb }], gutter: first }
   }
 
@@ -340,14 +361,13 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     return box ? [box] : []
   })
   const placed: Box[] = []
-  const crowded: Array<{ row: number; h: number; edge: string }> = []
   for (const { edge, source } of routed.filter(r => r.gutter === null && (r.edge.label || r.edge.condition))) {
     const { w, h } = labelSize(edge)
     edge.labelBox = { x: Math.max(0, source.x + source.w / 2 - w / 2), y: source.y + source.h + LABEL_MARGIN, w, h }
     placed.push(edge.labelBox)
   }
   const lastLane = laneOrder.length - 1
-  const width = Math.max(0, laneX(lastLane) + LANE_W + (tracks.has(lastLane) ? LANE_GAP : 0))
+  const width = Math.max(0, laneX(lastLane) + LANE_W + (tracks.has(lastLane) ? gutterW(lastLane) : 0))
   const headers = laneOrder.map((_, i) => ({ x: laneX(i), y: 0, w: LANE_W, h: HEADER_Y + HEADER_H }))
   const blocked = (box: Box) => box.x < 0 || box.x + box.w > width || box.y < 0 || [...placed, ...arrows, ...nodes, ...headers].some(o => overlaps(box, o))
   const gutterLabels = routed
@@ -383,6 +403,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
       nodes, groups, edges, renderers: ALL_RENDERERS,
     },
     crowded,
+    overflow,
   }
 }
 

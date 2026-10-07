@@ -206,6 +206,31 @@ describe('swimlane routes', () => {
       expect(model.width, f.id).toBeLessThanOrEqual(reach > lastRight ? lastRight + LANE_GAP : lastRight)
     }
   })
+  it('widens a gutter past its track capacity instead of sharing tracks', () => {
+    const n = 40
+    const wide = ServiceFlowSchema.parse({
+      id: 'wide', name: 'Wide', description: 'd', steps: [],
+      codeUnits: [...Array.from({ length: n }, (_, i) => ({ id: `a${i}`, service: 'x', kind: 'service', label: `A${i}` })), ...Array.from({ length: n }, (_, i) => ({ id: `b${i}`, service: 'y', kind: 'service', label: `B${i}` }))],
+      codeEdges: Array.from({ length: n }, (_, i) => ({ from: `a${i}`, to: `b${i}` })),
+    })
+    const model = swimlanes(wide)
+    expect(new Set(model.edges.map(e => e.route?.[1]?.x)).size).toBe(n)
+    expect(layoutProblems(model)).toEqual([])
+  })
+  it('opens the gap above a row past its channel capacity instead of crossing the row above', () => {
+    const n = 8
+    const deep = ServiceFlowSchema.parse({
+      id: 'deep', name: 'Deep', description: 'd', steps: [],
+      codeUnits: [...Array.from({ length: n }, (_, i) => ({ id: `a${i}`, service: 'x', kind: 'service', label: `A${i}` })), { id: 'mid', service: 'y', kind: 'service', label: 'Mid' }, { id: 'b', service: 'z', kind: 'service', label: 'B' }],
+      codeEdges: [{ from: 'a0', to: 'mid' }, ...Array.from({ length: n }, (_, i) => ({ from: `a${i}`, to: 'b' }))],
+    })
+    const model = swimlanes(deep)
+    const target = model.nodes.find(x => x.id === unitNodeId('b'))
+    const above = Math.max(...model.nodes.filter(x => target && x.y < target.y).map(x => x.y + x.h))
+    expect(model.groups.map(g => g.id)).toEqual(['lane:x', 'lane:y', 'lane:z'])
+    expect(model.edges.filter(e => e.to === unitNodeId('b')).every(e => (e.route?.[2]?.y ?? Infinity) > above)).toBe(true)
+    expect(layoutProblems(model)).toEqual([])
+  })
   it('sets each label against its own route, inside the drawing', () => {
     for (const f of map.flows) {
       const model = swimlanes(f)
