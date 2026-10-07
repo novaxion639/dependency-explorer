@@ -3,7 +3,7 @@ import { connectivityMap as map, ServiceFlowSchema } from '@dependency-explorer/
 import { layoutProblems } from '../layoutProblems'
 import { EDGE_LABEL_FONT, overlaps, textWidth } from '../geometry'
 import type { Box, DiagramModel } from '../model'
-import { arrowBox, chapterFocus, infraNodeId, LANE_GAP, serviceNodeId, swimlanes, unitNodeId, WRAP_W } from './swimlane'
+import { arrowBox, chapterFocus, infraNodeId, LANE_GAP, PAD, serviceNodeId, swimlanes, unitNodeId, WRAP_W } from './swimlane'
 
 function flow(id: string) {
   const f = map.flows.find(x => x.id === id)
@@ -189,7 +189,7 @@ describe('swimlane routes', () => {
       const last = model.groups[model.groups.length - 1]
       const lastRight = last ? last.x + last.w : 0
       const reach = Math.max(lastRight, ...model.edges.flatMap(e => [...(e.route ?? []).map(p => p.x), ...(e.labelBox ? [e.labelBox.x + e.labelBox.w] : [])]))
-      expect(model.width, f.id).toBeLessThanOrEqual(reach > lastRight ? lastRight + LANE_GAP : lastRight)
+      expect(model.width, f.id).toBeLessThanOrEqual(reach > lastRight ? Math.max(lastRight + LANE_GAP, reach + PAD) : lastRight)
     }
   })
   it('widens a gutter past its track capacity instead of sharing tracks', () => {
@@ -228,6 +228,25 @@ describe('swimlane routes', () => {
     expect(first && second && overlaps(first, second)).toBe(false)
     for (const box of [first, second]) {
       expect(model.nodes.some(n => box && overlaps(box, n))).toBe(false)
+    }
+    expect(layoutProblems(model)).toEqual([])
+  })
+  it('keeps crowded trailing-gutter labels inside the drawing', () => {
+    const n = 25
+    const label = 'a long label that needs a wide box in the gutter'
+    const crowded = ServiceFlowSchema.parse({
+      id: 'crowded', name: 'Crowded', description: 'd', steps: [],
+      codeUnits: Array.from({ length: n }, (_, i) => ({ id: `a${i}`, service: 'x', kind: 'service', label: `A${i}` })),
+      codeEdges: [
+        ...Array.from({ length: n - 1 }, (_, i) => ({ from: `a${i}`, to: `a${i + 1}` })),
+        ...Array.from({ length: n - 3 }, (_, i) => ({ from: `a${i}`, to: i % 2 === 0 ? `a${n - 1}` : `a${n - 2}`, label })),
+        ...Array.from({ length: n - 2 }, (_, i) => ({ from: `a${i + 2}`, to: `a${i}`, label })),
+      ],
+    })
+    const model = swimlanes(crowded)
+    for (const e of model.edges.filter(x => x.labelBox)) {
+      const box = e.labelBox ?? { x: 0, y: 0, w: 0, h: 0 }
+      expect(box.x + box.w, e.id).toBeLessThanOrEqual(model.width)
     }
     expect(layoutProblems(model)).toEqual([])
   })

@@ -5,7 +5,7 @@ import { ALL_RENDERERS, type Box, type DiagramEdge, type DiagramGroup, type Diag
 const FONT = 12
 const LANE_W = 250
 export const LANE_GAP = 280
-const PAD = 12
+export const PAD = 12
 const HEAD = 80
 const ROW_GAP = 64
 const NODE_W = LANE_W - 2 * PAD
@@ -374,9 +374,9 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     placed.push(edge.labelBox)
   }
   const lastLane = laneOrder.length - 1
-  const width = Math.max(0, laneX(lastLane) + LANE_W + (tracks.has(lastLane) ? gutterW(lastLane) : 0))
+  const lanesRight = Math.max(0, laneX(lastLane) + LANE_W + (tracks.has(lastLane) ? gutterW(lastLane) : 0))
   const headers = laneOrder.map((_, i) => ({ x: laneX(i), y: 0, w: LANE_W, h: HEADER_Y + HEADER_H }))
-  const blocked = (box: Box) => box.x < 0 || box.x + box.w > width || box.y < 0 || [...placed, ...arrows, ...nodes, ...headers].some(o => overlaps(box, o))
+  const blocked = (box: Box) => box.x < 0 || box.y < 0 || [...placed, ...arrows, ...nodes, ...headers].some(o => overlaps(box, o))
   const gutterLabels = routed
     .filter(r => r.gutter !== null && (r.edge.label || r.edge.condition))
     .map(r => ({ ...r, anchor: r.edge.route?.[1] ?? { x: 0, y: 0 }, length: routeLength(r.edge.route ?? []) }))
@@ -400,6 +400,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
   }
 
   const bottom = Math.max(height, ...placed.map(b => b.y + b.h + PAD))
+  const width = Math.max(lanesRight, ...placed.map(b => b.x + b.w + PAD))
   const groups: DiagramGroup[] = laneOrder.map((lane, i) => ({
     id: lane, kind: 'lane', label: fitLabel(laneLabel(lane), LANE_W, FONT), fontSize: FONT,
     members: order.filter(id => !isLaneEndpoint(id) && laneOf(id) === lane).map(modelId),
