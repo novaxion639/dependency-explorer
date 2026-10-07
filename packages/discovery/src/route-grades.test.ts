@@ -105,4 +105,9 @@ describe('routeGrade', () => {
     expect(routeGrade("const m = `a \\\nb`; fetch('/v3/api/shops/' + id); const n = `x`", [], SHOPS, routes)).toBe('import')
     expect(routeGrade("fetch('/v3/api/\\\nshops')", [], SHOPS, routes)).toBe('import')
   })
+  it('reads a format suffix on the last segment as the route format', () => {
+    expect(routeGrade('fetch(`/v3/api/shops/${id}.json`)', [], SHOPS, routes)).toBe('import')
+    expect(routeGrade("fetch('/v3/api/plannings/shifts.csv')", [], SHIFTS, routes)).toBe('import')
+    expect(routeGrade("fetch('/v3/api/plannings/shifts.v2')", [], SHIFTS, routes)).toBeNull()
+  })
 })
