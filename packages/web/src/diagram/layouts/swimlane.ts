@@ -190,13 +190,30 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
 
   const wrapped = (text: string) => wrapText(text, WRAP_W, EDGE_LABEL_FONT)
   const labelHeight = (lines: number) => (lines > 0 ? lines * EDGE_LABEL_LINE + LABEL_FRAME : 0)
-  const heightOf = (label: string, condition?: string) => labelHeight(wrapped(label).length + (condition ? wrapped(`if ${condition}`).length : 0))
+  const edges: DiagramEdge[] = []
+  const push = (from: string, to: string, mode: EdgeMode, label: string, condition?: string): DiagramEdge | null => {
+    const a = modelId(from)
+    const b = modelId(to)
+    if (a === b) {
+      return null
+    }
+    const edge: DiagramEdge = {
+      id: `e${edges.length}:${a}>${b}`, from: a, to: b, mode, weight: 1, label, directed: true, lane: 0, lanes: 1, labelLines: wrapped(label),
+      ...(condition ? { condition, conditionLines: wrapped(`if ${condition}`) } : {}),
+    }
+    edges.push(edge)
+    return edge
+  }
+  const lineCount = (e: DiagramEdge) => (e.labelLines?.length ?? 0) + (e.conditionLines?.length ?? 0)
   const directGap = new Map<number, number>()
   const directLabelH = new Map<number, number>()
   const pairs = [
-    ...codeEdges.map(e => ({ from: e.from, to: e.to, h: heightOf(edgeText(e.label, e.crud), edgeCondition(e)) })),
-    ...infraLinks.map(e => ({ from: e.from, to: e.to, h: heightOf(edgeText(e.label, e.crud)) })),
-  ]
+    ...codeEdges.map(e => {
+      const mode: EdgeMode = infra.has(e.from) ? 'data-feed' : e.mode === 'async-job' || e.mode === 'async-event' ? 'async' : 'sync'
+      return { from: e.from, to: e.to, edge: push(e.from, e.to, mode, edgeText(e.label, e.crud), edgeCondition(e)) }
+    }),
+    ...infraLinks.map(e => ({ from: e.from, to: e.to, edge: push(e.from, e.to, 'sync', edgeText(e.label, e.crud)) })),
+  ].flatMap(({ from, to, edge }) => (edge ? [{ from, to, h: labelHeight(lineCount(edge)) }] : []))
   for (const p of pairs) {
     const ra = rowOf.get(p.from)
     const rb = rowOf.get(p.to)
@@ -237,26 +254,6 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     }
     return lane.endsWith(':bg') ? `${lane.slice(5, -3)} · background` : lane.slice(5)
   }
-  const edges: DiagramEdge[] = []
-  const push = (from: string, to: string, mode: EdgeMode, label: string, condition?: string) => {
-    const a = modelId(from)
-    const b = modelId(to)
-    if (a === b) {
-      return
-    }
-    edges.push({
-      id: `e${edges.length}:${a}>${b}`, from: a, to: b, mode, weight: 1, label, directed: true, lane: 0, lanes: 1, labelLines: wrapped(label),
-      ...(condition ? { condition, conditionLines: wrapped(`if ${condition}`) } : {}),
-    })
-  }
-  for (const e of codeEdges) {
-    const mode: EdgeMode = infra.has(e.from) ? 'data-feed' : e.mode === 'async-job' || e.mode === 'async-event' ? 'async' : 'sync'
-    push(e.from, e.to, mode, edgeText(e.label, e.crud), edgeCondition(e))
-  }
-  for (const e of infraLinks) {
-    push(e.from, e.to, 'sync', edgeText(e.label, e.crud))
-  }
-
   const laneIndex = new Map(order.filter(id => !isLaneEndpoint(id)).map(id => [modelId(id), laneOrder.indexOf(laneOf(id))]))
   const laneX = (i: number) => i * (LANE_W + LANE_GAP)
   const tracks = new Map<number, number>()
@@ -281,9 +278,8 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     return lane < 0 ? null : { box: { x: laneX(lane) + PAD, y: HEADER_Y, w: NODE_W, h: HEADER_H }, lane, header: true }
   }
   const labelSize = (e: DiagramEdge) => {
-    const lines = [...(e.labelLines ?? []), ...(e.conditionLines ?? [])]
     const w = Math.max(0, ...(e.labelLines ?? []).map(l => textWidth(l, EDGE_LABEL_FONT)), ...(e.conditionLines ?? []).map(l => textWidth(l, EDGE_LABEL_FONT) + PILL_PAD))
-    return { w: w + LABEL_PAD, h: labelHeight(lines.length) }
+    return { w: w + LABEL_PAD, h: labelHeight(lineCount(e)) }
   }
   const rowByModel = new Map(order.map(id => [modelId(id), isLaneEndpoint(id) ? -1 : rowOf.get(id) ?? -1]))
   const bands = new Map<number, number>()
