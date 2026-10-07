@@ -391,7 +391,8 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
       crowded.push({ row: rowByModel.get(edge.from) ?? -1, h: h + 2 * LABEL_MARGIN, edge: edge.id })
     }
     let box = at(spot ?? anchor)
-    for (let hit = spot ? undefined : [...placed, ...arrows].find(o => overlaps(box, o)); hit; hit = [...placed, ...arrows].find(o => overlaps(box, o))) {
+    const obstacles = [...placed, ...arrows]
+    for (let hit = spot ? undefined : obstacles.find(o => overlaps(box, o)); hit; hit = obstacles.find(o => overlaps(box, o))) {
       box = { ...box, y: hit.y + hit.h + LABEL_MARGIN }
     }
     edge.labelBox = box

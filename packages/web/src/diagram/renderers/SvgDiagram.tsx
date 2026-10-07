@@ -1,7 +1,7 @@
 import type { KeyboardEvent, ReactNode } from 'react'
 import type { Emphases, Emphasis } from '../focus'
 import { EDGE_LABEL_FONT, EDGE_LABEL_LINE, edgeSegment, LINE_HEIGHT, PAD_X, PAD_Y, textWidth } from '../geometry'
-import type { Box, DiagramModel, DiagramRef } from '../model'
+import type { Box, DiagramModel, DiagramRef, RoutePoint } from '../model'
 import { edgeName } from '../edgeName'
 import { DASH, EMPHASIS_WORD, NODE_DASH, nodeFill, PAINT, strokeWidth } from '../paint'
 
@@ -88,12 +88,15 @@ export function SvgDiagram({ model, emphases, zoomTo = null, onSelect, standalon
         if (!from || !to) {
           return null
         }
-        const s = edgeSegment(from, to, e.lane, e.lanes)
         const paint = PAINT[emphases.edges.get(e.id) ?? 'normal']
+        const ends = (): RoutePoint[] => {
+          const s = edgeSegment(from, to, e.lane, e.lanes)
+          return [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]
+        }
         return (
           <polyline
             key={e.id}
-            points={(e.route ?? [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]).map(p => `${p.x},${p.y}`).join(' ')}
+            points={(e.route ?? ends()).map(p => `${p.x},${p.y}`).join(' ')}
             fill="none"
             markerEnd={e.directed ? `url(#${prefix}-arrow)` : undefined}
             style={{ stroke: paint.stroke, strokeWidth: strokeWidth(e.weight), strokeDasharray: DASH[e.mode], opacity: paint.opacity }}
@@ -142,8 +145,7 @@ export function SvgDiagram({ model, emphases, zoomTo = null, onSelect, standalon
             </Clickable>
           )
         }
-        const segment = edgeSegment(from, to, e.lane, e.lanes)
-        const s = e.labelBox ? { lx: e.labelBox.x + e.labelBox.w / 2, ly: e.labelBox.y + 9 } : segment
+        const s = e.labelBox ? { lx: e.labelBox.x + e.labelBox.w / 2, ly: e.labelBox.y + 9 } : edgeSegment(from, to, e.lane, e.lanes)
         const paint = PAINT[emphases.edges.get(e.id) ?? 'normal']
         const pill = e.condition ? `if ${e.condition}` : ''
         const w = Math.max(textWidth(e.label, LABEL_FONT), textWidth(pill, LABEL_FONT)) + 8
