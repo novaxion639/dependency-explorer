@@ -10,6 +10,7 @@ const CONSTANT = /\bconst\s+([A-Z][A-Z0-9_]*)\s*=\s*['"`]([^'"`$\n]*)['"`]/g
 const LINE_CONTINUATION = /\\\r?\n/g
 const INTERPOLATION = /\$\{\s*([A-Za-z_$][\w$]*)\s*\}/g
 const URL_SEGMENT = /^[\w.-]+$/
+const PATH_PART = /^(?:\$\{[^}]*\}|[^?#])*/
 const FORMAT_EXTENSION = /\.(?:json|csv|pdf|xlsx?|xml|zip|ics)$/
 const FORMAT_SUFFIX = /\(\.:format\)$/
 const PARAM = ':p'
@@ -52,7 +53,7 @@ function urlSegment(s: string): UrlSegment | null {
 
 function urlRef(literal: string, constants: Map<string, string>): UrlRef | null {
   const expanded = literal.replace(LINE_CONTINUATION, '').replace(INTERPOLATION, (whole, name: string) => constants.get(name) ?? whole)
-  const pathPart = (expanded.split(/[?#]/)[0] ?? '').replace(FORMAT_EXTENSION, '')
+  const pathPart = (PATH_PART.exec(expanded)?.[0] ?? '').replace(FORMAT_EXTENSION, '')
   if (!pathPart.includes('/') || /\s/.test(pathPart)) {
     return null
   }

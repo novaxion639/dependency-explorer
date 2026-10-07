@@ -110,4 +110,8 @@ describe('routeGrade', () => {
     expect(routeGrade("fetch('/v3/api/plannings/shifts.csv')", [], SHIFTS, routes)).toBe('import')
     expect(routeGrade("fetch('/v3/api/plannings/shifts.v2')", [], SHIFTS, routes)).toBeNull()
   })
+  it('keeps the path whole across optional chaining in an interpolation, and still ends it at a query', () => {
+    expect(routeGrade('fetch(`/v3/api/shops/${values?.shopId}`)', [], SHOPS, routes)).toBe('import')
+    expect(routeGrade('fetch(`/v3/api/shops?page=${values?.page}`)', [], SHOPS, routes)).toBe('import')
+  })
 })
