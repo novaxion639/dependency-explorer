@@ -5,13 +5,16 @@ type UrlSegment = string | RegExp
 
 interface UrlRef { absolute: boolean; segments: UrlSegment[] }
 
-const STRING_LITERAL = /'((?:\\.|[^'\\\n])*)'|"((?:\\.|[^"\\\n])*)"|`((?:\\.|[^`\\])*)`/g
+const STRING_LITERAL = /'((?:\\[\s\S]|[^'\\\n])*)'|"((?:\\[\s\S]|[^"\\\n])*)"|`((?:\\[\s\S]|[^`\\])*)`/g
 const CONSTANT = /\bconst\s+([A-Z][A-Z0-9_]*)\s*=\s*['"`]([^'"`$\n]*)['"`]/g
+const LINE_CONTINUATION = /\\\r?\n/g
 const INTERPOLATION = /\$\{\s*([A-Za-z_$][\w$]*)\s*\}/g
 const URL_SEGMENT = /^[\w.-]+$/
+const PATH_PART = /^(?:\$\{[^}]*\}|[^?#])*/
+const FORMAT_EXTENSION = /\.(?:json|csv|pdf|xlsx?|xml|zip|ics)$/
 const FORMAT_SUFFIX = /\(\.:format\)$/
 const PARAM = ':p'
-const SPECIFIER_LEAD = /(?:\bfrom|\bimport\s*\(?|\brequire\s*\(|\b(?:vi|jest)\.mock\s*\()\s*$/
+const SPECIFIER_LEAD = /(?:\bfrom|\bimport\s*\(?|\brequire(?:\.resolve)?\s*\(|\b(?:vi|jest)\.(?:mock|doMock|importActual|requireActual)\s*\()\s*$/
 const SPECIFIER_WINDOW = 40
 const ANY_INTERPOLATION = /\$\{[^}]*\}/
 const DOT_SEGMENT = /^\.{1,2}$/
@@ -49,8 +52,8 @@ function urlSegment(s: string): UrlSegment | null {
 }
 
 function urlRef(literal: string, constants: Map<string, string>): UrlRef | null {
-  const expanded = literal.replace(INTERPOLATION, (whole, name: string) => constants.get(name) ?? whole)
-  const pathPart = expanded.split(/[?#]/)[0] ?? ''
+  const expanded = literal.replace(LINE_CONTINUATION, '').replace(INTERPOLATION, (whole, name: string) => constants.get(name) ?? whole)
+  const pathPart = (PATH_PART.exec(expanded)?.[0] ?? '').replace(FORMAT_EXTENSION, '')
   if (!pathPart.includes('/') || /\s/.test(pathPart)) {
     return null
   }

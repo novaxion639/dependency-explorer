@@ -101,4 +101,23 @@ describe('routeGrade', () => {
     expect(routeGrade("httpClient.get(`/v3/api/${resource}s`)", [], V3_USERS, routes)).toBeNull()
     expect(routeGrade("httpClient.get(`/v3/api/${resource}s`)", [], SHOPS, routes)).toBeNull()
   })
+  it('reads URL literals past a template that continues a line, and joins a continued URL', () => {
+    expect(routeGrade("const m = `a \\\nb`; fetch('/v3/api/shops/' + id); const n = `x`", [], SHOPS, routes)).toBe('import')
+    expect(routeGrade("fetch('/v3/api/\\\nshops')", [], SHOPS, routes)).toBe('import')
+  })
+  it('reads a format suffix on the last segment as the route format', () => {
+    expect(routeGrade('fetch(`/v3/api/shops/${id}.json`)', [], SHOPS, routes)).toBe('import')
+    expect(routeGrade("fetch('/v3/api/plannings/shifts.csv')", [], SHIFTS, routes)).toBe('import')
+    expect(routeGrade("fetch('/v3/api/plannings/shifts.v2')", [], SHIFTS, routes)).toBeNull()
+  })
+  it('keeps the path whole across optional chaining in an interpolation, and still ends it at a query', () => {
+    expect(routeGrade('fetch(`/v3/api/shops/${values?.shopId}`)', [], SHOPS, routes)).toBe('import')
+    expect(routeGrade('fetch(`/v3/api/shops?page=${values?.page}`)', [], SHOPS, routes)).toBe('import')
+  })
+  it('skips specifiers of test-double and resolve helpers', () => {
+    for (const call of ['vi.importActual', 'jest.requireActual', 'vi.doMock', 'jest.doMock', 'require.resolve']) {
+      expect(routeGrade(`${call}('/v3/api/shops')`, [], SHOPS, routes), call).toBeNull()
+    }
+    expect(routeGrade("request('/v3/api/shops')", [], SHOPS, routes)).toBe('import')
+  })
 })

@@ -14,7 +14,7 @@ export interface WiredEdge {
 
 const DECLARATION = /^\s*(?:export\s+)?const\s+(\w+)[^=\n]*=\s*/gm
 const OBJECT_KEY = /([{,]\s*)([A-Za-z_$][\w$]*)(\s*:)(?!:)/g
-const STRING = /'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g
+const STRING = /'(?:\\[\s\S]|[^'\\\n])*'|"(?:\\[\s\S]|[^"\\\n])*"|`(?:\\[\s\S]|[^`\\])*`/g
 const NEW_CALL = /\bnew\s+([A-Z]\w*)\s*(?:<[^>()]*>)?\s*\(/g
 const IDENTIFIER = /\b[A-Za-z_$][\w$]*\b/g
 const NOT_INJECTABLE = new Set(['Map', 'Set', 'Array', 'Object', 'Date', 'Promise', 'URL', 'Error'])
@@ -146,7 +146,7 @@ const NAMED_IMPORT = /import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
 const NAMED_REEXPORT = /export\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
 export const RESOLVE_SUFFIXES = ['', '.js', '.ts', '.tsx', '.vue', '.mjs', '/index.js', '/index.ts', '/index.vue']
 
-const STRING_OR_COMMENT = /((?<=^|[\s(,=[])\?'(?=[\s),\]]|$)(?!.')|(?<=^|[\s(,=[])\?"(?=[\s),\]]|$)(?!.")|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|\/\*[\s\S]*?\*\/|(^|[^:\\])\/\/.*$|(^|\s)#(?![{!]).*$/gm
+const STRING_OR_COMMENT = /((?<=^|[\s(,=[])\?'(?=[\s),\]]|$)(?!.')|(?<=^|[\s(,=[])\?"(?=[\s),\]]|$)(?!.")|"(?:\\[\s\S]|[^"\\\n])*"|'(?:\\[\s\S]|[^'\\\n])*'|`(?:\\[\s\S]|[^`\\])*`)|\/\*[\s\S]*?\*\/|(^|[^:\\])\/\/.*$|(^|\s)#(?![{!]).*$/gm
 
 export function stripComments(source: string): string {
   return source.replace(STRING_OR_COMMENT, (_whole, literal: string | undefined, slashLead: string | undefined, hashLead: string | undefined) => literal ?? slashLead ?? hashLead ?? '')
