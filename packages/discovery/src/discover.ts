@@ -47,6 +47,8 @@ import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
 import { pinRepos, buildGraphs, applyModeError, type PinnedRepo, type PinSkip } from './pinned'
 import { checkCodeGrades, loadRepoGraph, type Grade, type GradeFinding } from './code-grades'
 import { checkBranches } from './branch-check'
+import { checkStateMachines } from './state-machine-check'
+import { machineSection } from './state-machines-report'
 import { extractRailsSchema } from './extractors/rails-schema'
 import { buildRegistry } from './resource-registry'
 import { checkResources, type ResourceFinding } from './resource-check'
@@ -177,6 +179,7 @@ interface Report {
   flowCheck: FlowCheckResult
   codeLayerCheck: CodeLayerCheckResult
   branchCheck: ReturnType<typeof checkBranches>
+  machineCheck: ReturnType<typeof checkStateMachines>
   resourceCheck: { findings: ResourceFinding[]; modelLess: string[]; total: number; byKind: Record<string, number> } | null
   liveResources: Resource[]
   liveRelations: ResourceRelation[]
@@ -255,6 +258,7 @@ function run(): Report {
     flowCheck: checkFlows(connectivityMap),
     codeGrades: PIN ? checkCodeGrades(connectivityMap, REPO_BASE, repo => PIN.pinned.find(p => p.repo === repo)?.sha ?? null, railsRoutes ? railsRoutes.routes : []) : null,
     branchCheck: checkBranches(connectivityMap, REPO_BASE),
+    machineCheck: checkStateMachines(connectivityMap, REPO_BASE),
     codeLayerCheck: checkFlowCodeLayers(connectivityMap, REPO_BASE, railsRoutes ? new Set(railsRoutes.routes.map(r => r.controllerFile)) : undefined),
     ruleCheck: checkDomainRules(connectivityMap, REPO_BASE),
     areaCheck: checkAreas({
@@ -993,6 +997,7 @@ function printMarkdown(r: Report, unscanned: string[]) {
   if (bc.findings.length) {
     console.log(bc.findings.map(f => `- [${f.kind}] **${f.subject}**: ${f.detail}`).join('\n'))
   }
+  console.log(machineSection(r.machineCheck))
 
   const rs = r.resourceCheck
   if (rs) {

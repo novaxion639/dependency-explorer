@@ -17,7 +17,7 @@ export interface SourceState {
 
 export interface SourceMachine { startAt: string; states: SourceState[]; unresolved: string[] }
 
-interface Text { src: string; masked: string }
+export interface Text { src: string; masked: string }
 
 type Entry =
   | { kind: 'object'; name: string; open: number; close: number }
@@ -32,12 +32,12 @@ const QUOTED = /^(['"`])([^'"`]*)\1$/
 const NEXT = /\bNext\s*:\s*(['"`])([^'"`]+)\1/g
 const LAMBDA_KEY = [/formattedLambdaName(?:V2026)?\(\s*['"](\w+)['"]\s*\)/, /['"]Fn::GetAtt['"]\s*:\s*\[\s*['"](\w+?)(?:LambdaFunction)?['"]/]
 
-function textOf(raw: string): Text {
+export function textOf(raw: string): Text {
   const src = stripComments(raw)
   return { src, masked: maskStrings(src) }
 }
 
-function closer(t: Text, open: number): number {
+export function closer(t: Text, open: number): number {
   let depth = 0
   for (let i = open; i < t.masked.length; i++) {
     const c = t.masked[i] ?? ''
