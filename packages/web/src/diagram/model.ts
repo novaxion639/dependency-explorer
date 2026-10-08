@@ -1,8 +1,8 @@
 import type { ServiceConnection } from '@dependency-explorer/data'
 
 export type EdgeMode = 'sync' | 'async' | 'data-feed'
-export type NodeKind = 'service' | 'client' | 'monolith' | 'subject' | 'area' | 'summary' | 'unmapped' | 'unit' | 'job' | 'store'
-export type GroupKind = 'group' | 'band' | 'lane'
+export type NodeKind = 'service' | 'client' | 'monolith' | 'subject' | 'area' | 'summary' | 'unmapped' | 'unit' | 'job' | 'store' | 'choice' | 'state'
+export type GroupKind = 'group' | 'band' | 'lane' | 'machine' | 'frame'
 export type Renderer = 'react-flow' | 'svg' | 'mermaid'
 export type DiagramRef =
   | { type: 'service'; name: string }
