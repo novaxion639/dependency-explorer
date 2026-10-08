@@ -1,5 +1,5 @@
 import type { Emphases, Emphasis } from '../focus'
-import type { DiagramModel, EdgeMode } from '../model'
+import type { DiagramGroup, DiagramModel, EdgeMode } from '../model'
 import { strokeWidth } from '../paint'
 
 const ARROW: Record<EdgeMode, { directed: string; plain: string }> = {
@@ -28,13 +28,18 @@ export function toMermaid(model: DiagramModel, emphases: Emphases, read: (token:
   const id = (key: string) => ids.get(key) ?? key
   const nodeById = new Map(model.nodes.map(n => [n.id, n]))
   const groupById = new Map(model.groups.map(g => [g.id, g]))
-  const nested = new Set(model.groups.flatMap(g => g.members))
+  const within = (inner: DiagramGroup, outer: DiagramGroup) => inner !== outer && inner.members.length > 0 && inner.members.every(m => outer.members.includes(m))
+  const parentOf = new Map(model.groups.flatMap(g => {
+    const holders = model.groups.filter(o => within(g, o)).sort((a, b) => a.members.length - b.members.length)
+    return holders[0] ? [[g.id, holders[0].id] as const] : []
+  }))
+  const nested = new Set([...model.groups.flatMap(g => g.members), ...parentOf.keys()])
   const lines = ['flowchart LR']
   const emitNode = (key: string, indent: string) => {
     const n = nodeById.get(key)
     if (n) {
       const label = [n.label, ...n.detail, ...n.stores.map(s => s.label)].filter(Boolean).map(text).join('<br/>')
-      lines.push(`${indent}${id(key)}["${label}"]`)
+      lines.push(n.kind === 'choice' ? `${indent}${id(key)}{"${label}"}` : `${indent}${id(key)}["${label}"]`)
     }
   }
   const emitGroup = (key: string, indent: string) => {
@@ -45,7 +50,12 @@ export function toMermaid(model: DiagramModel, emphases: Emphases, read: (token:
     }
     lines.push(`${indent}subgraph ${id(key)}["${text(g.label)}"]`)
     lines.push(`${indent}  direction LR`)
-    for (const m of g.members) {
+    const children = model.groups.filter(c => parentOf.get(c.id) === key)
+    const covered = new Set(children.flatMap(c => c.members))
+    for (const c of children) {
+      emitGroup(c.id, `${indent}  `)
+    }
+    for (const m of g.members.filter(x => !covered.has(x))) {
       emitGroup(m, `${indent}  `)
     }
     lines.push(`${indent}end`)

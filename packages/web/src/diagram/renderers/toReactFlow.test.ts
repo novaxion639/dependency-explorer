@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest'
 import { emphasise } from '../focus'
 import type { DiagramModel } from '../model'
 import { toReactFlow } from './toReactFlow'
+import { NO_FOCUS } from '../focus'
+import { autoFlow } from '../layouts/fixtures'
+import { swimlanes } from '../layouts/swimlane'
 
 const model: DiagramModel = {
   id: 'm', title: 'm', width: 600, height: 200, renderers: ['react-flow'],
@@ -52,5 +55,14 @@ describe('toReactFlow lanes', () => {
   it('pins lane members in place and leaves other nodes draggable', () => {
     expect(flow.nodes.find(n => n.id === 'a')?.draggable).toBe(false)
     expect(flow.nodes.find(n => n.id === 'b')?.draggable).toBeUndefined()
+  })
+})
+
+describe('toReactFlow with a state machine', () => {
+  it('parents state nodes to their machine lane and keeps frames unparented', () => {
+    const machineModel = swimlanes(autoFlow)
+    const flow = toReactFlow(machineModel, emphasise(machineModel, NO_FOCUS))
+    expect(flow.nodes.find(n => n.id === 'u:u-fetch')?.parentId).toBe('lane:machine:sm-auto')
+    expect(flow.nodes.find(n => n.id === 'frame:map')?.parentId).toBeUndefined()
   })
 })

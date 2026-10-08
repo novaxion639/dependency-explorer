@@ -18,7 +18,7 @@ export function toReactFlow(model: DiagramModel, emphases: Emphases): { nodes: D
     draggable: false,
     data: { group, emphasis: emphases.groups.get(group.id) ?? 'normal' },
   }))
-  const laneOf = new Map(model.groups.filter(g => g.kind === 'lane').flatMap(g => g.members.map(m => [m, g] as const)))
+  const laneOf = new Map(model.groups.filter(g => g.kind === 'lane' || g.kind === 'machine').flatMap(g => g.members.map(m => [m, g] as const)))
   const nodes = model.nodes.map((node): DiagramNodeType => {
     const lane = laneOf.get(node.id)
     return {

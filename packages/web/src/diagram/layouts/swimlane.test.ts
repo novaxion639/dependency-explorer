@@ -76,6 +76,14 @@ describe('swimlanes', () => {
     })
     expect(swimlanes(odd).nodes.find(n => n.id === infraNodeId('db'))?.ref).toEqual({ type: 'unit', id: 'db' })
   })
+  it('focuses a whole machine, or one state', () => {
+    const model = swimlanes(autoFlow)
+    const whole = chapterFocus(model, autoFlow, ['sm-auto'])
+    expect(whole.has('lane:machine:sm-auto') && whole.has('u:u-fetch') && whole.has('m:empty')).toBe(true)
+    expect([...chapterFocus(model, autoFlow, ['empty'])]).toEqual(['m:empty'])
+    expect([...chapterFocus(model, autoFlow, ['fetch'])]).toEqual(['u:u-fetch'])
+    expect([...chapterFocus(model, autoFlow, ['map'])]).toEqual(['u:u-elig'])
+  })
   it('focuses only the lanes of a role-suffixed service ref, never its units', () => {
     const focus = chapterFocus(m, shift, ['skello-app (data)'])
     expect(focus.has('lane:skello-app')).toBe(true)

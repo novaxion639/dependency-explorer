@@ -1,11 +1,12 @@
 import type { KeyboardEvent, ReactNode } from 'react'
 import type { Emphases, Emphasis } from '../focus'
 import { EDGE_LABEL_FONT, EDGE_LABEL_LINE, edgeSegment, LINE_HEIGHT, PAD_X, PAD_Y, textWidth } from '../geometry'
-import type { Box, DiagramModel, DiagramRef, RoutePoint } from '../model'
+import type { Box, DiagramModel, DiagramRef, GroupKind, RoutePoint } from '../model'
 import { edgeName } from '../edgeName'
 import { DASH, EMPHASIS_WORD, NODE_DASH, nodeFill, PAINT, strokeWidth } from '../paint'
 
 const LABEL_FONT = EDGE_LABEL_FONT
+const GROUP_DASH: Partial<Record<GroupKind, string>> = { lane: '4 4', frame: '3 3' }
 export const MIN_VIEW = { w: 800, h: 450 }
 
 function viewOf(model: DiagramModel, zoomTo: Box | null): Box {
@@ -74,10 +75,10 @@ export function SvgDiagram({ model, emphases, zoomTo = null, onSelect, standalon
       {model.groups.map(g => {
         const emphasis = emphases.groups.get(g.id) ?? 'normal'
         const paint = PAINT[emphasis]
-        const fill = emphasis === 'on' ? 'var(--highlight)' : g.kind === 'group' ? 'var(--paper-2)' : 'var(--paper)'
+        const fill = emphasis === 'on' ? 'var(--highlight)' : g.kind === 'group' ? 'var(--paper-2)' : g.kind === 'frame' ? 'none' : 'var(--paper)'
         return (
           <Clickable key={g.id} label={g.label} target={g.ref} onSelect={onSelect}>
-            <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={6} style={{ fill, stroke: paint.stroke, strokeWidth: 1, strokeDasharray: g.kind === 'lane' ? '4 4' : undefined, opacity: paint.opacity }} />
+            <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={6} style={{ fill, stroke: paint.stroke, strokeWidth: g.kind === 'machine' ? 1.5 : 1, strokeDasharray: GROUP_DASH[g.kind], opacity: paint.opacity }} />
             <text x={g.x + PAD_X} y={baseline(g, g.fontSize, 0)} style={{ fill: paint.text, fontSize: g.fontSize, fontWeight: 600, opacity: paint.opacity }}>{g.label}</text>
           </Clickable>
         )

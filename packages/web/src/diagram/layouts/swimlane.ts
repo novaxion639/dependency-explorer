@@ -573,7 +573,27 @@ export function chapterFocus(model: DiagramModel, flow: ServiceFlow, refs: strin
   const stores = new Set((flow.infraNodes ?? []).map(n => n.id))
   const nodeIds = new Set(model.nodes.map(n => n.id))
   const focus = new Set<string>()
+  const machines = new Set((flow.stateMachines ?? []).map(m => m.id))
+  const states = new Map((flow.stateMachines ?? []).flatMap(m => allStates(m)).map(st => [st.id, st]))
   for (const ref of refs) {
+    if (machines.has(ref)) {
+      const lane = model.groups.find(g => g.id === machineLane(ref))
+      if (lane) {
+        focus.add(lane.id)
+        lane.members.forEach(m => focus.add(m))
+      }
+      continue
+    }
+    const state = states.get(ref)
+    if (state) {
+      const frame = model.groups.find(g => g.id === `frame:${state.id}`)
+      if (frame) {
+        frame.members.forEach(m => focus.add(m))
+      } else {
+        focus.add(state.unit ? unitNodeId(state.unit) : stateNodeId(state.id))
+      }
+      continue
+    }
     if (units.has(ref)) {
       focus.add(unitNodeId(ref))
       continue
