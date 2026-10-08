@@ -229,7 +229,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     if (machineState && !unit) {
       const { state } = machineState
       const choice = state.type === 'choice'
-      const detail = choice ? [] : [state.type]
+      const detail = choice ? [] : [state.type, ...(state.catches ? ['⚠ on error'] : [])]
       return { id: stateNodeId(state.id), kind: choice ? 'choice' : 'state', label: fitLabel(choice ? `◇ ${state.label}` : state.label, NODE_W, FONT), detail, stores: [], fontSize: FONT, x: 0, y: 0, w: NODE_W, h: linesHeight(1 + detail.length, FONT), ref: { type: 'unit', id: state.id } }
     }
     if (unit) {

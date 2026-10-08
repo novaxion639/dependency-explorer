@@ -106,7 +106,7 @@ export function checkStateMachines(map: ConnectivityMap, repoBase: string) {
         report(`definition ${machine.machine} not found in ${machine.file}`)
         continue
       }
-      source.unresolved.forEach(name => report(`helper ${name} not resolved`))
+      source.unresolved.forEach(name => report(`${name}: not read from the definition`))
       const names = new Map(allStates(machine).map(s => [s.id, s.name]))
       const nameOf = (id: string | undefined) => (id === undefined ? undefined : names.get(id) ?? id)
       const startName = nameOf(machine.start)

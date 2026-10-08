@@ -10,6 +10,7 @@ function stateLabel(machine: StateMachine, id: string | undefined): string {
 function machineSummary(flow: ServiceFlow, machine: StateMachine): Fact[] {
   const byKey = new Map(allStates(machine).map(s => [stateKey(s), s]))
   const targets = catchTargets(machine)
+  const falling = allStates(machine).filter(s => s.catches && s.catchTo === undefined && !targets.has(s.id)).map(s => s.label)
   const storeLabel = (id: string) => (flow.infraNodes ?? []).find(n => n.id === id)?.label ?? id
   return [
     { label: 'Service', value: machine.service },
@@ -18,7 +19,7 @@ function machineSummary(flow: ServiceFlow, machine: StateMachine): Fact[] {
       const state = byKey.get(key)
       return state ? [`${state.label} (${state.type})`] : []
     }).join(', ') },
-    { label: 'Falls to the error handler', value: allStates(machine).filter(s => s.catches && !targets.has(s.id)).map(s => s.label).join(', ') },
+    ...(falling.length > 0 ? [{ label: 'Falls to the error handler', value: falling.join(', ') }] : []),
     ...machineStores(machine).map(s => ({ label: storeLabel(s.store), value: s.label })),
   ]
 }

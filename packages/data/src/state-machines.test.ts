@@ -49,4 +49,14 @@ describe('state machines', () => {
     const parallel = { ...machine, start: 'par', states: [{ id: 'par', name: 'Par', type: 'parallel', label: 'p', branches: ['x'], states: [{ id: 'y', name: 'Y', type: 'pass', label: 'y' }] }, errState] }
     expect(machineProblems(flow(parallel))).toEqual(['f#sm: par branch "x" is not one of its states'])
   })
+  it('reject an error handler that is not a top-level state', () => {
+    expect(machineProblems(flow({ ...machine, errorHandler: 'nope' }))).toEqual(['f#sm: errorHandler "nope" is not a top-level state'])
+  })
+  it('reject a unit backing two states and a state id that repeats another flow id', () => {
+    const shared = { ...machine, states: [fetchState, checkState, mapState, { ...errState, unit: 'h-fetch' }, { id: 'jobs', name: 'Dup', type: 'pass', label: 'dup' }] }
+    expect(machineProblems(flow(shared))).toEqual([
+      'f#sm: unit "h-fetch" backs more than one state (fetch, err)',
+      'f#sm: state id "jobs" repeats another id of the flow',
+    ])
+  })
 })

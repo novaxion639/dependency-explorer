@@ -19,7 +19,9 @@ const teamIds = new Set((teams ?? []).map(t => t.id))
  *   - a role-qualified duplicate           e.g. "skello-app (data)"
  */
 function isValidStepNode(name: string): boolean {
-  if (serviceNames.has(name)) return true
+  if (serviceNames.has(name)) {
+    return true
+  }
   const base = name.replace(/ \([^)]*\)$/, '')
   return serviceNames.has(base)
 }

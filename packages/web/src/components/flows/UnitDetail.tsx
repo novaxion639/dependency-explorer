@@ -80,8 +80,8 @@ export function UnitDetail({ flow, id, onOpenFlow, onOpenResource, onClose }: Pr
         <section>
           <h3>State machine</h3>
           <dl>
-            {facts.lines.map(f => (
-              <div key={f.label}>
+            {facts.lines.map((f, i) => (
+              <div key={`${i}:${f.label}`}>
                 <dt>{f.label}</dt>
                 <dd>{f.value}</dd>
               </div>

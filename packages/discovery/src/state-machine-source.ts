@@ -21,6 +21,7 @@ export interface Text { src: string; masked: string }
 
 type Entry =
   | { kind: 'object'; name: string; open: number; close: number }
+  | { kind: 'unread'; text: string }
   | { kind: 'spread'; callee: string; args: string[] }
   | { kind: 'value'; name: string; start: number; end: number }
 
@@ -28,9 +29,13 @@ interface Context { file: string; aliases: Alias[]; read: Read; unresolved: stri
 
 const OPENERS = new Set(['{', '[', '('])
 const CLOSERS = new Set(['}', ']', ')'])
-const QUOTED = /^(['"`])([^'"`]*)\1$/
-const NEXT = /\bNext\s*:\s*(['"`])([^'"`]+)\1/g
+const QUOTED = /^(['"`])((?:\\.|(?!\1)[^\\])*)\1$/
+const NEXT = /\bNext\s*:\s*(['"`])((?:\\.|(?!\1)[^\\])*)\1/g
 const LAMBDA_KEY = [/formattedLambdaName(?:V2026)?\(\s*['"](\w+)['"]\s*\)/, /['"]Fn::GetAtt['"]\s*:\s*\[\s*['"](\w+?)(?:LambdaFunction)?['"]/]
+
+function unescape(s: string): string {
+  return s.replace(/\\(.)/g, '$1')
+}
 
 export function textOf(raw: string): Text {
   const src = stripComments(raw)
@@ -70,14 +75,15 @@ function valueEnd(t: Text, from: number, to: number): number {
 }
 
 function keyAt(t: Text, at: number): { name: string; end: number } | null {
-  const quoted = /^(['"])([^'"]*)\1/.exec(t.src.slice(at))
+  const quoted = /^(['"])((?:\\.|(?!\1)[^\\])*)\1/.exec(t.src.slice(at))
   if (quoted) {
-    return { name: quoted[2] ?? '', end: at + quoted[0].length }
+    return { name: unescape(quoted[2] ?? ''), end: at + quoted[0].length }
   }
   if (t.src[at] === '[') {
     const close = closer(t, at)
     const expr = t.src.slice(at + 1, close).trim()
-    return { name: QUOTED.exec(expr)?.[2] ?? expr, end: close + 1 }
+    const literal = QUOTED.exec(expr)?.[2]
+    return { name: literal === undefined ? expr : unescape(literal), end: close + 1 }
   }
   const ident = /^[\w$]+/.exec(t.src.slice(at))
   return ident ? { name: ident[0], end: at + ident[0].length } : null
@@ -94,6 +100,12 @@ function entries(t: Text, open: number, close: number): Entry[] {
       const args = [...t.src.slice(paren + 1, end).matchAll(/(['"`])([^'"`]*)\1/g)].map(m => m[2] ?? '')
       found.push({ kind: 'spread', callee: spread[1] ?? '', args })
       at = skipBlank(t, end + 1, close)
+      continue
+    }
+    if (t.src.startsWith('...', at)) {
+      const end = valueEnd(t, at, close)
+      found.push({ kind: 'unread', text: t.src.slice(at, end).trim() })
+      at = skipBlank(t, end, close)
       continue
     }
     const key = keyAt(t, at)
@@ -127,7 +139,8 @@ function raw(t: Text, list: Entry[], name: string): string | undefined {
 
 function str(t: Text, list: Entry[], name: string): string | undefined {
   const value = raw(t, list, name)
-  return value === undefined ? undefined : QUOTED.exec(value)?.[2]
+  const literal = value === undefined ? undefined : QUOTED.exec(value)?.[2]
+  return literal === undefined ? undefined : unescape(literal)
 }
 
 function object(list: Entry[], name: string): { open: number; close: number } | undefined {
@@ -153,7 +166,7 @@ function arrayObjects(t: Text, list: Entry[], name: string): Array<{ open: numbe
 }
 
 function nexts(text: string): string[] {
-  return [...text.matchAll(NEXT)].map(m => m[2] ?? '')
+  return [...text.matchAll(NEXT)].map(m => unescape(m[2] ?? ''))
 }
 
 function spreadCatches(t: Text, list: Entry[], ctx: Context): string[] {
@@ -250,6 +263,7 @@ function statesIn(t: Text, open: number, close: number, ctx: Context): SourceSta
       }
       return statesIn(helper, 0, closer(helper, 0), ctx)
     }
+    ctx.unresolved.push(e.kind === 'unread' ? e.text : e.name)
     return []
   })
 }

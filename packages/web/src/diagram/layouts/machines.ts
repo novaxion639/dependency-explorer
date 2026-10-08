@@ -110,7 +110,7 @@ export function machineTransitions(machine: StateMachine): Transition[] {
     return [stateKey(state)]
   }
   const exits = (state: MachineState): string[] => (isContainer(state)
-    ? (state.states ?? []).filter(s => s.next === undefined && !skip.has(s.id)).flatMap(exits)
+    ? (state.states ?? []).filter(s => s.next === undefined && s.type !== 'choice' && !skip.has(s.id)).flatMap(exits)
     : [stateKey(state)])
   return allStates(machine).filter(s => !skip.has(s.id)).flatMap(state => {
     const targets: Array<{ to: string; label?: string }> = [
@@ -128,7 +128,7 @@ export function machineFrames(machine: StateMachine): Array<{ id: string; state:
   return allStates(machine).filter(isContainer).map(state => ({
     id: `frame:${state.id}`,
     state: state.id,
-    label: state.type === 'map' ? (state.concurrency ? `map ×${state.concurrency}` : 'map') : 'parallel',
+    label: `${state.type === 'map' ? (state.concurrency ? `map ×${state.concurrency}` : 'map') : 'parallel'}${state.catches ? ' ⚠' : ''}`,
     members: nested(state).filter(s => !isContainer(s) && !skip.has(s.id)).map(stateKey),
   }))
 }

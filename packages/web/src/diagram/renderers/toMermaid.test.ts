@@ -72,3 +72,24 @@ describe('toMermaid with a state machine', () => {
     expect(source.split('\n').filter(l => l.includes('eligibility per batch') && /\["|\{"/.test(l))).toHaveLength(1)
   })
 })
+
+describe('toMermaid with nested groups of equal members', () => {
+  it('keeps a lane and a frame that hold the same nodes, the frame inside the lane', () => {
+    const node = (id: string, x: number): DiagramNode => ({ id, kind: 'unit', label: id, detail: [], stores: [], fontSize: 12, x, y: 40, w: 80, h: 30 })
+    const model: DiagramModel = {
+      id: 'eq', title: 'eq', width: 400, height: 200, renderers: ['mermaid'],
+      groups: [
+        { id: 'lane', kind: 'machine', label: 'Machine', members: ['a'], fontSize: 12, x: 0, y: 0, w: 200, h: 200 },
+        { id: 'frame', kind: 'frame', label: 'map ×2', members: ['a'], fontSize: 12, x: 5, y: 20, w: 190, h: 60 },
+      ],
+      nodes: [node('a', 10)],
+      edges: [],
+    }
+    const lines = toMermaid(model, emphasise(model, NO_FOCUS), () => '').split('\n')
+    const lane = lines.findIndex(l => l.includes('subgraph') && l.includes('Machine'))
+    const frame = lines.findIndex(l => l.includes('subgraph') && l.includes('map ×2'))
+    expect(lane).toBeGreaterThan(-1)
+    expect(frame).toBeGreaterThan(lane)
+    expect(lines.filter(l => l.includes('["a"]'))).toHaveLength(1)
+  })
+})

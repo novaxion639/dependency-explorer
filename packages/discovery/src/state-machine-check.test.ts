@@ -63,6 +63,12 @@ write('serverless/sfn/auto.ts', `export const getAuto = () => ({
 })
 `)
 
+write('serverless/sfn/bad.ts', `export const getBad = () => ({ BadMachine: { definition: { StartAt: 'A', States: {
+  A: { Type: 'Pass', End: true },
+  ...missing(),
+} } } })
+`)
+
 const soundMachine = {
   id: 'sm', service: 'svc', machine: 'AutoStepFunction', label: 'Auto', file: 'serverless/sfn/auto.ts', start: 'fetch', errorHandler: 'error',
   states: [
@@ -130,5 +136,9 @@ describe('checkStateMachines', () => {
   it('skips a service that is not checked out', () => {
     const absent = { ...soundMachine, service: 'absent', states: [{ id: 'x', name: 'X', type: 'task', label: 'x', unit: 'u-absent' }], start: 'x', errorHandler: undefined }
     expect(checkStateMachines(mapWith(absent), base).skippedRepos).toEqual(['absent'])
+  })
+  it('reports a States entry it cannot read', () => {
+    const bad = { id: 'sm', service: 'svc', machine: 'BadMachine', label: 'Bad', file: 'serverless/sfn/bad.ts', start: 'a', states: [{ id: 'a', name: 'A', type: 'pass', label: 'a' }] }
+    expect(checkStateMachines(mapWith(bad), base).findings.map(f => f.detail)).toEqual(['missing: not read from the definition'])
   })
 })

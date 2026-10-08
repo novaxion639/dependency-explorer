@@ -28,7 +28,9 @@ export function toMermaid(model: DiagramModel, emphases: Emphases, read: (token:
   const id = (key: string) => ids.get(key) ?? key
   const nodeById = new Map(model.nodes.map(n => [n.id, n]))
   const groupById = new Map(model.groups.map(g => [g.id, g]))
+  const order = new Map(model.groups.map((g, i) => [g.id, i]))
   const within = (inner: DiagramGroup, outer: DiagramGroup) => inner !== outer && inner.members.length > 0 && inner.members.every(m => outer.members.includes(m))
+    && (outer.members.length > inner.members.length || (order.get(outer.id) ?? 0) < (order.get(inner.id) ?? 0))
   const parentOf = new Map(model.groups.flatMap(g => {
     const holders = model.groups.filter(o => within(g, o)).sort((a, b) => a.members.length - b.members.length)
     return holders[0] ? [[g.id, holders[0].id] as const] : []

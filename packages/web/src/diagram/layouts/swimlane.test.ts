@@ -266,12 +266,22 @@ describe('swimlane routes', () => {
     const order = ['u:u-fetch', 'm:empty', 'u:u-filter', 'm:filtered', 'u:u-elig', 'u:u-agg', 'u:u-solve', 'u:u-assign', 'u:u-finish']
     expect(order.map(y)).toEqual([...order.map(y)].sort((a, b) => a - b))
     expect(new Set(order.map(y)).size).toBe(order.length)
-    expect(model.groups.find(g => g.id === 'frame:map')).toMatchObject({ kind: 'frame', label: 'map ×10', members: ['u:u-elig'] })
+    expect(model.groups.find(g => g.id === 'frame:map')).toMatchObject({ kind: 'frame', label: 'map ×10 ⚠', members: ['u:u-elig'] })
     expect(model.edges.filter(e => e.from === machineLane('sm-auto') && e.to.startsWith('i:')).map(e => e.to).sort()).toEqual(['i:jobs', 'i:s3', 'i:ws'])
     expect(model.edges.find(e => e.to === 'u:u-err')).toMatchObject({ from: machineLane('sm-auto'), label: 'on error', mode: 'async' })
     expect(model.groups.find(g => g.id === 'lane:svc:bg')?.members).toContain('u:u-err')
     expect(model.nodes.find(n => n.id === 'u:u-fetch')?.detail.slice(0, 2)).toEqual(['fetch data', '⚠ on error'])
     expect(layoutProblems(model)).toEqual([])
+  })
+  it('marks a catching task without a handler unit', () => {
+    const flow = ServiceFlowSchema.parse({
+      id: 'unitless', name: 'Unitless', description: 'd', steps: [], codeUnits: [{ id: 'u-e', service: 'svc', kind: 'job', label: 'E' }],
+      stateMachines: [{ id: 'sm', service: 'svc', machine: 'M', label: 'M', file: 'f.ts', start: 'x', errorHandler: 'e', states: [
+        { id: 'x', name: 'X', type: 'task', label: 'notify', catches: true },
+        { id: 'e', name: 'E', type: 'task', label: 'error handler', unit: 'u-e' },
+      ] }],
+    })
+    expect(swimlanes(flow).nodes.find(n => n.id === 'm:x')?.detail).toEqual(['task', '⚠ on error'])
   })
   it('layouts a loop back without crossing nodes', () => {
     const model = swimlanes(dpaeFlow)

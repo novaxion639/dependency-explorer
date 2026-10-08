@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { autoFlow } from '../../diagram/layouts/fixtures'
+import { ServiceFlowSchema } from '@dependency-explorer/data'
+import { autoFlow, dpaeFlow } from '../../diagram/layouts/fixtures'
 import { machineFacts, panelIds } from './machineFacts'
 
 describe('machineFacts', () => {
@@ -29,5 +30,18 @@ describe('machineFacts', () => {
     const ids = panelIds(autoFlow)
     expect(['u-fetch', 'jobs', 'sm-auto', 'empty', 'map'].every(id => ids.has(id))).toBe(true)
     expect(ids.has('svc')).toBe(false)
+  })
+  it('names only the states that fall to the machine error handler, and leaves the row out when none does', () => {
+    expect(machineFacts(dpaeFlow, 'sm-dpae')?.lines.map(l => l.label)).not.toContain('Falls to the error handler')
+    const flow = ServiceFlowSchema.parse({
+      id: 'own', name: 'Own', description: 'd', steps: [], codeUnits: [{ id: 'u-a', service: 'svc', kind: 'job', label: 'A' }, { id: 'u-e', service: 'svc', kind: 'job', label: 'E' }],
+      stateMachines: [{ id: 'sm', service: 'svc', machine: 'M', label: 'M', file: 'f.ts', start: 'a', errorHandler: 'e', states: [
+        { id: 'a', name: 'A', type: 'task', label: 'a', unit: 'u-a', catches: true, catchTo: 'own', next: 'b' },
+        { id: 'b', name: 'B', type: 'task', label: 'b', catches: true },
+        { id: 'own', name: 'Own', type: 'task', label: 'own notifier' },
+        { id: 'e', name: 'E', type: 'task', label: 'error handler', unit: 'u-e' },
+      ] }],
+    })
+    expect(machineFacts(flow, 'sm')?.lines).toContainEqual({ label: 'Falls to the error handler', value: 'b' })
   })
 })

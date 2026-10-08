@@ -60,6 +60,16 @@ export const getPar = () => ({ ParMachine: { definition: { StartAt: 'Init', Stat
 } } } })
 `)
 
+write('serverless/sfn/odd.ts', `const common = {};
+export const getOdd = () => ({ OddMachine: { definition: { StartAt: 'Check', States: {
+  Check: { Type: 'Choice', Choices: [{ Variable: '$.x', IsPresent: true, Next: 'Don\\'t retry' }], Default: "Don't retry" },
+  "Don't retry": { Type: 'Pass', End: true },
+  ...common,
+  ...helpers.more(),
+  Later: laterState,
+} } } })
+`)
+
 describe('readMachine', () => {
   const auto = readMachine(repo, 'serverless/sfn/auto.ts', 'AutoStepFunction')
   const names = (states: Array<{ name: string }> = []) => states.map(s => s.name)
@@ -93,5 +103,11 @@ describe('readMachine', () => {
   it('is null for a missing file or machine', () => {
     expect(readMachine(repo, 'serverless/sfn/none.ts', 'X')).toBeNull()
     expect(readMachine(repo, 'serverless/sfn/auto.ts', 'Nope')).toBeNull()
+  })
+  it('reads names and targets holding escaped quotes, and reports every entry it cannot read', () => {
+    const odd = readMachine(repo, 'serverless/sfn/odd.ts', 'OddMachine')
+    expect(names(odd?.states)).toEqual(['Check', "Don't retry"])
+    expect(odd?.states[0]).toMatchObject({ choiceNexts: ["Don't retry"], default: "Don't retry" })
+    expect(odd?.unresolved).toEqual(['...common', '...helpers.more()', 'Later'])
   })
 })
