@@ -17,7 +17,7 @@ interface Props {
   onBack: () => void
 }
 
-const NOTES = ['if = condition or feature flag', '⎇ = alternative outcome', 'dashed box = background job']
+const NOTES = ['if = condition or feature flag', '⎇ = alternative outcome', 'dashed box = background job', '◇ = choice', '⚠ = falls to the error handler', 'solid frame = state machine']
 
 export function FlowPage({ flow, url, patch, onBack }: Props) {
   const model = useMemo(() => swimlanes(flow), [flow])

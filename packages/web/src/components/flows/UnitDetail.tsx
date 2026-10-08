@@ -2,6 +2,7 @@ import { codeEdgeGrades, connectivityMap, resourceSurface, type FlowCodeUnit, ty
 import { STORE_META } from '../storeTypes'
 import { edgeFacts } from './edgeFacts'
 import styles from './flows.module.css'
+import { machineFacts } from './machineFacts'
 
 const KIND_LABEL: Record<FlowCodeUnit['kind'], string> = {
   controller: 'Controller', service: 'Service', manager: 'Manager', job: 'Background job',
@@ -65,7 +66,8 @@ export function UnitDetail({ flow, id, onOpenFlow, onOpenResource, onClose }: Pr
     ...(flow.codeEdges ?? []).filter(e => e.to === id).map(e => ({ e, text: `← ${labelOf(e.from)}` })),
     ...(flow.codeEdges ?? []).filter(e => e.from === id).map(e => ({ e, text: `→ ${labelOf(e.to)}` })),
   ]
-  const title = unit?.label ?? store?.label ?? id
+  const facts = machineFacts(flow, id)
+  const title = unit?.label ?? store?.label ?? facts?.title ?? id
   return (
     <article aria-label={title} className={styles.detail}>
       <header className={styles.detailHead}>
@@ -74,6 +76,19 @@ export function UnitDetail({ flow, id, onOpenFlow, onOpenResource, onClose }: Pr
       </header>
       {unit && <UnitFacts unit={unit} flow={flow} onOpenFlow={onOpenFlow} />}
       {store && <StoreFacts store={store} onOpenResource={onOpenResource} />}
+      {facts && (
+        <section>
+          <h3>State machine</h3>
+          <dl>
+            {facts.lines.map(f => (
+              <div key={f.label}>
+                <dt>{f.label}</dt>
+                <dd>{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
       {calls.length > 0 && (
         <section>
           <h3>{`Calls · ${calls.length}`}</h3>
