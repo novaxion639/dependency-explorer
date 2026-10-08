@@ -403,6 +403,53 @@ export const FlowChapterSchema = z.object({
 })
 export type FlowChapter = z.infer<typeof FlowChapterSchema>
 
+export const MachineStateTypeSchema = z.enum(['task', 'choice', 'map', 'parallel', 'pass', 'wait'])
+
+export interface MachineStateShape {
+  id: string
+  name: string
+  type: z.infer<typeof MachineStateTypeSchema>
+  label: string
+  next?: string
+  unit?: string
+  catches?: boolean
+  catchTo?: string
+  stores?: Array<{ store: string; label?: string; crud?: Array<z.infer<typeof CrudOperationSchema>> }>
+  choices?: Array<{ when: string; next: string }>
+  default?: string
+  states?: MachineStateShape[]
+  branches?: string[]
+  concurrency?: number
+}
+
+export const MachineStateSchema: z.ZodType<MachineStateShape> = z.lazy(() => z.object({
+  id: z.string(),
+  name: z.string(),
+  type: MachineStateTypeSchema,
+  label: z.string(),
+  next: z.string().optional(),
+  unit: z.string().optional(),
+  catches: z.boolean().optional(),
+  catchTo: z.string().optional(),
+  stores: z.array(z.object({ store: z.string(), label: z.string().optional(), crud: z.array(CrudOperationSchema).optional() })).optional(),
+  choices: z.array(z.object({ when: z.string(), next: z.string() })).optional(),
+  default: z.string().optional(),
+  states: z.array(MachineStateSchema).optional(),
+  branches: z.array(z.string()).optional(),
+  concurrency: z.number().int().positive().optional(),
+}))
+
+export const StateMachineSchema = z.object({
+  id: z.string(),
+  service: z.string(),
+  machine: z.string(),
+  label: z.string(),
+  file: z.string(),
+  start: z.string(),
+  states: z.array(MachineStateSchema).min(1),
+  errorHandler: z.string().optional(),
+})
+
 export const ServiceFlowSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -418,6 +465,7 @@ export const ServiceFlowSchema = z.object({
   infraEdges: z.array(FlowInfraEdgeSchema).optional(),
   codeUnits: z.array(FlowCodeUnitSchema).optional(),
   codeEdges: z.array(FlowCodeEdgeSchema).optional(),
+  stateMachines: z.array(StateMachineSchema).optional(),
   branches: z.array(FlowBranchSchema).optional(),
   chapters: z.array(FlowChapterSchema).min(1).optional(),
 })
@@ -566,6 +614,8 @@ export type FlowInfraNode = z.infer<typeof FlowInfraNodeSchema>
 export type FlowInfraEdge = z.infer<typeof FlowInfraEdgeSchema>
 export type FlowCodeUnit = z.infer<typeof FlowCodeUnitSchema>
 export type FlowCodeEdge = z.infer<typeof FlowCodeEdgeSchema>
+export type StateMachine = z.infer<typeof StateMachineSchema>
+export type MachineState = MachineStateShape
 export type ServiceFlow = z.infer<typeof ServiceFlowSchema>
 export type FeatureFlagRef = z.infer<typeof FeatureFlagRefSchema>
 export type FlowFailure = z.infer<typeof FlowFailureSchema>

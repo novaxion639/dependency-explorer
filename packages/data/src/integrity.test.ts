@@ -5,6 +5,7 @@ import { resourceNotes } from './resource-notes'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { getFlowAreas } from './areas-derive'
 import { flowRefIds } from './flow-chapters'
+import { machineProblems } from './state-machines'
 import discoveredJson from './generated/discovered.json'
 
 const { services, connections, flows, teams, rules, areas, externals } = connectivityMap
@@ -75,6 +76,10 @@ describe('flows', () => {
   it('have unique ids', () => {
     const ids = flows.map(f => f.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('declare sound state machines', () => {
+    expect(flows.flatMap(machineProblems)).toEqual([])
   })
 
   it('only reference valid step nodes', () => {
@@ -523,7 +528,7 @@ describe('flow chapters', () => {
   it('cover every code unit and store of the flow', () => {
     for (const flow of authored) {
       const covered = new Set((flow.chapters ?? []).flatMap(c => c.refs))
-      for (const id of [...(flow.codeUnits ?? []).map(u => u.id), ...(flow.infraNodes ?? []).map(n => n.id)]) {
+      for (const id of [...(flow.codeUnits ?? []).map(u => u.id), ...(flow.infraNodes ?? []).map(n => n.id), ...(flow.stateMachines ?? []).map(m => m.id)]) {
         expect(covered.has(id), `${flow.id}: no chapter covers ${id}`).toBe(true)
       }
     }
