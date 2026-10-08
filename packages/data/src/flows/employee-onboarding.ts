@@ -12,15 +12,65 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
   "id": "employee-onboarding",
   "name": "Employee Onboarding",
   "description": "A manager creates a new employee. One transactional service builds the whole record — User, Contract, schedule amendments, planning config, extended info, team memberships — then invitation emails go out through comms-v2 and the internal Skello-team mailer. The legal leg runs through svc-employees: the DPAE (pre-hiring declaration to URSSAF, via the Fortify cluster per the GLOBAL board) is tracked as DpaeDeposit rows in the monolith, submitted and followed up by svc-employees' DPAE step function, which writes the resulting status BACK into the monolith's dpae_deposits#update — an endpoint the code marks 'called only by svc-employee'.",
-  "trigger": {"actor": "manager", "role": "HR"},
+  "trigger": {
+    "actor": "manager",
+    "role": "HR"
+  },
   "primaryArea": "employees-hr",
   "chapters": [
-    { "title": "A manager creates an employee", "summary": "The employee form posts the new hire to skello-app, which resolves their license.", "refs": ["skello-app-front", "cu-eo-controller"] },
-    { "title": "The employee record is built", "summary": "One transaction creates the user, contract, schedule, planning config and team memberships.", "refs": ["cu-eo-create-service", "cu-eo-memberships", "pg-skello-onboarding"] },
-    { "title": "Invitations are sent", "summary": "A background job sends the invitation and onboarding emails through svc-communications-v2.", "refs": ["cu-eo-mailer", "svc-communications-v2"] },
-    { "title": "The hiring declaration is filed", "summary": "The manager records the DPAE deposit; svc-employees submits it to URSSAF and follows it up.", "refs": ["cu-eo-dpae-controller", "cu-eo-dpae-manager", "dynamo-employees-onboarding"] },
-    { "title": "The DPAE status comes back", "summary": "A step-function step writes the declaration status back into skello-app.", "refs": ["cu-eo-dpae-sfn", "svc-employees", "skello-app"] },
-    { "title": "The rows are replicated", "summary": "DMS copies the employee and contract rows to svc-search.", "refs": ["pg-skello-onboarding", "svc-search"] }
+    {
+      "title": "A manager creates an employee",
+      "summary": "The employee form posts the new hire to skello-app, which resolves their license.",
+      "refs": [
+        "skello-app-front",
+        "cu-eo-controller"
+      ]
+    },
+    {
+      "title": "The employee record is built",
+      "summary": "One transaction creates the user, contract, schedule, planning config and team memberships.",
+      "refs": [
+        "cu-eo-create-service",
+        "cu-eo-memberships",
+        "pg-skello-onboarding"
+      ]
+    },
+    {
+      "title": "Invitations are sent",
+      "summary": "A background job sends the invitation and onboarding emails through svc-communications-v2.",
+      "refs": [
+        "cu-eo-mailer",
+        "svc-communications-v2"
+      ]
+    },
+    {
+      "title": "The hiring declaration is filed",
+      "summary": "The manager records the DPAE deposit; svc-employees submits it to URSSAF and follows it up.",
+      "refs": [
+        "cu-eo-dpae-controller",
+        "cu-eo-dpae-manager",
+        "dynamo-employees-onboarding"
+      ]
+    },
+    {
+      "title": "The DPAE status comes back",
+      "summary": "A follow-up state machine waits, checks URSSAF until the declaration leaves pending, then writes its status back into skello-app.",
+      "refs": [
+        "sm-dpae",
+        "cu-eo-dpae-check",
+        "cu-eo-dpae-sfn",
+        "svc-employees",
+        "skello-app"
+      ]
+    },
+    {
+      "title": "The rows are replicated",
+      "summary": "DMS copies the employee and contract rows to svc-search.",
+      "refs": [
+        "pg-skello-onboarding",
+        "svc-search"
+      ]
+    }
   ],
   "steps": [
     {
@@ -89,6 +139,14 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "description": "Drives the DPAE lifecycle on the service side — submission to URSSAF through the Fortify integration and follow-up status checks (CheckDpaeStatusSfnJobHandler)"
     },
     {
+      "id": "cu-eo-dpae-check",
+      "service": "svc-employees",
+      "kind": "job",
+      "label": "CheckDpaeStatusSfnJobHandler",
+      "path": "src/Handler/Job/Dpae/CheckDpaeStatusSfnJobHandler.ts",
+      "description": "Step-function step asking URSSAF (through the Fortify DPAE API) for the declaration status; on error code 50 it requests an SST refresh"
+    },
+    {
       "id": "cu-eo-dpae-sfn",
       "service": "svc-employees",
       "kind": "job",
@@ -117,7 +175,9 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "label": "User + Contract + configs + schedule amendments",
       "mode": "sync",
       "inTransaction": true,
-      "crud": ["create"]
+      "crud": [
+        "create"
+      ]
     },
     {
       "from": "cu-eo-create-service",
@@ -150,7 +210,10 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "label": "DpaeDeposit row (previous dpae_done reset)",
       "mode": "sync",
       "inTransaction": true,
-      "crud": ["create", "update"]
+      "crud": [
+        "create",
+        "update"
+      ]
     },
     {
       "from": "cu-eo-dpae-sfn",
@@ -169,6 +232,99 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "to": "svc-search",
       "label": "DMS CDC → raw employees/contracts replicas",
       "mode": "async-event"
+    },
+    {
+      "from": "cu-eo-dpae-manager",
+      "to": "sm-dpae",
+      "label": "start DPAE follow-up",
+      "mode": "async-job"
+    },
+    {
+      "from": "cu-eo-dpae-check",
+      "to": "cu-eo-dpae-manager",
+      "label": "check URSSAF status",
+      "mode": "sync"
+    }
+  ],
+  "stateMachines": [
+    {
+      "id": "sm-dpae",
+      "service": "svc-employees",
+      "machine": "dpaeFollowUp",
+      "label": "DPAE follow-up",
+      "file": "serverless/resources/stepFunctions/index.ts",
+      "start": "smd-init",
+      "states": [
+        {
+          "id": "smd-init",
+          "name": "Init retry counter",
+          "type": "pass",
+          "label": "init retry counter",
+          "next": "smd-wait"
+        },
+        {
+          "id": "smd-wait",
+          "name": "Wait",
+          "type": "wait",
+          "label": "wait",
+          "next": "smd-check"
+        },
+        {
+          "id": "smd-check",
+          "name": "Check DPAE Status",
+          "type": "task",
+          "label": "check URSSAF status",
+          "unit": "cu-eo-dpae-check",
+          "next": "smd-pending"
+        },
+        {
+          "id": "smd-pending",
+          "name": "Is request pending?",
+          "type": "choice",
+          "label": "pending?",
+          "choices": [
+            {
+              "when": "pending",
+              "next": "smd-increment"
+            }
+          ],
+          "default": "smd-update"
+        },
+        {
+          "id": "smd-increment",
+          "name": "Increment retry counter",
+          "type": "pass",
+          "label": "increment counter",
+          "next": "smd-exhausted"
+        },
+        {
+          "id": "smd-exhausted",
+          "name": "Choice",
+          "type": "choice",
+          "label": "retries exhausted?",
+          "choices": [
+            {
+              "when": "counter ≥ max",
+              "next": "smd-clean"
+            }
+          ],
+          "default": "smd-wait"
+        },
+        {
+          "id": "smd-clean",
+          "name": "Remove fields dedicated to step function logic",
+          "type": "pass",
+          "label": "clean fields",
+          "next": "smd-update"
+        },
+        {
+          "id": "smd-update",
+          "name": "Update Skello DPAE status",
+          "type": "task",
+          "label": "update skello status",
+          "unit": "cu-eo-dpae-sfn"
+        }
+      ]
     }
   ],
   "infraNodes": [
@@ -176,14 +332,21 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "id": "pg-skello-onboarding",
       "type": "postgresql",
       "label": "skello_production — users, contracts, memberships, dpae_deposits",
-      "resources": ["pg:skello_production.users", "pg:skello_production.contracts", "pg:skello_production.memberships", "pg:skello_production.dpae_deposits"],
+      "resources": [
+        "pg:skello_production.users",
+        "pg:skello_production.contracts",
+        "pg:skello_production.memberships",
+        "pg:skello_production.dpae_deposits"
+      ],
       "description": "The employee's core rows, built in one transaction; DPAE deposits tracked per contract"
     },
     {
       "id": "dynamo-employees-onboarding",
       "type": "dynamodb",
       "label": "SvcEmployees ({env})",
-      "resources": ["ddb:svcEmployees-restaure"],
+      "resources": [
+        "ddb:svcEmployees-restaure"
+      ],
       "description": "svc-employees' own store — DPAE submission state and step-function follow-up"
     }
   ],
@@ -192,13 +355,18 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "from": "skello-app",
       "to": "pg-skello-onboarding",
       "label": "employee record",
-      "crud": ["create"]
+      "crud": [
+        "create"
+      ]
     },
     {
       "from": "svc-employees",
       "to": "dynamo-employees-onboarding",
       "label": "DPAE lifecycle state",
-      "crud": ["create", "update"]
+      "crud": [
+        "create",
+        "update"
+      ]
     }
   ]
 })
