@@ -41,13 +41,15 @@ function resolveFile(spec: string, from: string, aliases: Alias[], read: Read): 
 
 function classFile(statement: string, from: string, aliases: Alias[], read: Read): string | null {
   const container = read(CONTAINER) ?? ''
-  const ids = [...new Set(statement.match(/[A-Za-z_$][\w$]*/g) ?? [])].sort((a, b) => Number(/handler$/i.test(b)) - Number(/handler$/i.test(a)))
+  const rank = (id: string) => (/handler$/i.test(id) ? 2 : /handler|job/i.test(id) ? 1 : 0)
+  const ids = [...new Set(statement.match(/[A-Za-z_$][\w$]*/g) ?? [])].sort((a, b) => rank(b) - rank(a))
   for (const id of ids) {
     const declared = statementOf(container, id)
     const cls = declared === null ? undefined : /\bnew\s+([A-Z][\w$]*)\s*\(/.exec(declared)?.[1]
     const spec = cls === undefined || declared === null ? undefined : importSpec(declared, cls) ?? importSpec(container, cls)
-    if (spec !== undefined) {
-      return resolveFile(spec, CONTAINER, aliases, read)
+    const file = spec === undefined ? null : resolveFile(spec, CONTAINER, aliases, read)
+    if (file !== null) {
+      return file
     }
   }
   const own = /\bnew\s+([A-Z][\w$]*)\s*\(/.exec(statement)?.[1]

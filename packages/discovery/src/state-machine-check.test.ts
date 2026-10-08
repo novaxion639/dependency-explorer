@@ -16,6 +16,7 @@ write('serverless/functions/sfn.ts', `export const sfnFunctions = () => ({
   JobSfnFetch: { handler: 'src/handlers.fetch', timeout: 30 },
   JobSfnLazy: { handler: 'src/handlers.lazy' },
   JobSfnSolver: { handler: 'solver/handler.lambda_handler' },
+  JobSfnError: { handler: 'src/handlers.sfnError' },
 })
 `)
 write('src/handlers.ts', `import {fetchHandler} from '~/container';
@@ -24,9 +25,20 @@ export const lazy = async (e) => {
   const handler = await cache('lazy', async () => { const { getLazyHandler } = await import('~/container'); return getLazyHandler() });
   return handler.handle(e);
 };
+export const sfnError = async (e) => {
+  try { await initMongoConnection() } catch (error) { logger.error('failed', { error }) }
+  const handler = await cache('err', async () => { const { getSfnErrorHandlerJob } = await import('~/container'); return getSfnErrorHandlerJob() });
+  return handler.handle(e);
+};
 `)
 write('src/container.ts', `import {FetchHandler} from '~/Handler/FetchHandler';
 export const fetchHandler = new FetchHandler(repo);
+import {Logger} from '@skelloapp/logger';
+export const logger = new Logger(config);
+export const getSfnErrorHandlerJob = async () => {
+  const { SfnErrorHandlerJob } = await import('~/Handler/Error/SfnErrorHandlerJob');
+  return new SfnErrorHandlerJob(jobs);
+};
 export const getLazyHandler = async () => {
   const { LazyHandler } = await import('~/Handler/Lazy/LazyHandler');
   return new LazyHandler(manager);
@@ -34,6 +46,7 @@ export const getLazyHandler = async () => {
 `)
 write('src/Handler/FetchHandler.ts', 'export class FetchHandler {}')
 write('src/Handler/Lazy/LazyHandler.ts', 'export class LazyHandler {}')
+write('src/Handler/Error/SfnErrorHandlerJob.ts', 'export class SfnErrorHandlerJob {}')
 write('solver/handler.py', 'def lambda_handler(event, context): pass')
 write('serverless/sfn/auto.ts', `export const getAuto = () => ({
   AutoStepFunction: { definition: { StartAt: 'sfnFetch', States: {
@@ -92,6 +105,7 @@ describe('handlerFileOf', () => {
     expect(handlerFileOf(repo, 'JobSfnFetch')).toBe('src/Handler/FetchHandler.ts')
     expect(handlerFileOf(repo, 'JobSfnLazy')).toBe('src/Handler/Lazy/LazyHandler.ts')
     expect(handlerFileOf(repo, 'JobSfnSolver')).toBe('solver/handler.py')
+    expect(handlerFileOf(repo, 'JobSfnError')).toBe('src/Handler/Error/SfnErrorHandlerJob.ts')
     expect(handlerFileOf(repo, 'JobSfnNope')).toBeNull()
   })
 })

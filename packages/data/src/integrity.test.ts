@@ -16,13 +16,12 @@ const teamIds = new Set((teams ?? []).map(t => t.id))
 /**
  * Step nodes follow the conventions of docs/flow-authoring-guide.md:
  *   - a service name                       e.g. "svc-shifts"
- *   - an internal Step Functions step      e.g. "sfn-dataFetcher"
  *   - a role-qualified duplicate           e.g. "skello-app (data)"
  */
 function isValidStepNode(name: string): boolean {
-  if (serviceNames.has(name) || name.startsWith('sfn-')) return true
+  if (serviceNames.has(name)) return true
   const base = name.replace(/ \([^)]*\)$/, '')
-  return serviceNames.has(base) || base.startsWith('sfn-')
+  return serviceNames.has(base)
 }
 
 describe('services', () => {
