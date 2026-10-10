@@ -251,18 +251,19 @@ describe('extractListeners', () => {
   })
 })
 
+const extractFilesFor = (sources: Record<string, string>) => {
+  const models = Object.keys(sources).flatMap(f => parseModelFile(f, sources[f] ?? '') ?? [])
+  return extractListeners({
+    models,
+    tables: models.map(m => m.table),
+    files: Object.entries(sources).map(([file, source]) => ({ file, source })),
+    read: p => sources[p] ?? null,
+    graph: null,
+  })
+}
+
 describe('extractListeners on a mini model', () => {
-  const extract = (model: string) => {
-    const sources: Record<string, string> = { 'app/models/shift.rb': model }
-    const models = Object.keys(sources).flatMap(f => parseModelFile(f, sources[f] ?? '') ?? [])
-    return extractListeners({
-      models,
-      tables: models.map(m => m.table),
-      files: Object.entries(sources).map(([file, source]) => ({ file, source })),
-      read: p => sources[p] ?? null,
-      graph: null,
-    })
-  }
+  const extract = (model: string) => extractFilesFor({ 'app/models/shift.rb': model })
   it('reports one finding when a def behind two callback declarations enqueues an unresolvable job', () => {
     const { findings } = extract([
       'class Shift < ApplicationRecord',
@@ -288,5 +289,76 @@ describe('extractListeners on a mini model', () => {
       ['shifts.after_commit.foo', 'create'],
       ['shifts.after_commit.foo@shift.rb:3', 'update'],
     ])
+  })
+})
+
+describe('standalone run_callbacks sites', () => {
+  const fires = (model: string, call: string) => {
+    const { writeSites } = extractFilesFor({
+      'app/models/shift.rb': model,
+      'app/services/runner.rb': ['class Runner', '  def run', `    ${call}`, '  end', 'end'].join('\n'),
+    })
+    return writeSites.filter(s => s.file === 'app/services/runner.rb').map(s => [s.table, s.call, s.runs, s.grade, s.fires])
+  }
+  const model = (...callbacks: string[]) => ['class Shift < ApplicationRecord', ...callbacks.map(c => `  ${c}`), '  def a; end', '  def b; end', '  def c; end', '  def d; end', '  def e; end', 'end'].join('\n')
+
+  it('fires only the save chain listeners for run_callbacks(:save)', () => {
+    expect(fires(model('before_save :a', 'after_commit :b'), 'shift.run_callbacks(:save) { false }')).toEqual([
+      ['pg:skello_production.shifts', 'run_callbacks(:save)', 'subset', 'text', ['shifts.before_save.a']],
+    ])
+  })
+  it('fires the before and after update listeners but not the save chain for run_callbacks(:update)', () => {
+    expect(fires(model('before_update :c', 'after_update :d', 'before_save :e'), 'shift.run_callbacks(:update) { false }')).toEqual([
+      ['pg:skello_production.shifts', 'run_callbacks(:update)', 'subset', 'text', ['shifts.before_update.c', 'shifts.after_update.d']],
+    ])
+  })
+  it('keeps a subset site with no fires when the model has no listener for the chain', () => {
+    expect(fires(model('before_save :a'), 'shift.run_callbacks(:create) { false }')).toEqual([
+      ['pg:skello_production.shifts', 'run_callbacks(:create)', 'subset', 'text', []],
+    ])
+  })
+})
+
+describe('hand-fire helper attribution', () => {
+  const sites = (call: string) => {
+    const { writeSites } = extractFilesFor({
+      'app/models/shift.rb': ['class Shift < ApplicationRecord', '  after_commit :a', '  def a; end', '  def run_x!', '    a', '  end', 'end'].join('\n'),
+      'app/models/poste.rb': 'class Poste < ApplicationRecord\nend',
+      'app/services/runner.rb': ['class Runner', '  def run', `    ${call}`, '  end', 'end'].join('\n'),
+    })
+    return writeSites.filter(s => s.file === 'app/services/runner.rb').map(s => [s.table, s.call, s.fires])
+  }
+  it('attributes a helper call to the model of its receiver', () => {
+    expect(sites('shift.run_x!')).toEqual([['pg:skello_production.shifts', 'run_x!', ['shifts.after_commit.a']]])
+  })
+  it('does not attribute a helper call whose receiver resolves to another model', () => {
+    expect(sites('poste.run_x!')).toEqual([])
+  })
+  it('attributes a helper call on an unresolvable receiver to the only model defining it', () => {
+    expect(sites('thing.run_x!')).toEqual([['pg:skello_production.shifts', 'run_x!', ['shifts.after_commit.a']]])
+  })
+})
+
+describe('extractListeners file filter', () => {
+  it('ignores sources under spec/ and test/ directories', () => {
+    const write = 'Shift.update_all(a: 1)'
+    const { writeSites } = extractFilesFor({
+      'app/models/shift.rb': 'class Shift < ApplicationRecord\nend',
+      'app/services/real.rb': write,
+      'spec/services/fake.rb': write,
+      'test/fake.rb': write,
+      'lib/test/fake.rb': write,
+      'app/spec/fake.rb': write,
+    })
+    expect(writeSites.map(s => s.file)).toEqual(['app/services/real.rb'])
+  })
+})
+
+describe('listener id uniqueness', () => {
+  it('keeps every suffixed id unique when duplicates share a file and line', () => {
+    const { listeners } = extractFilesFor({
+      'app/models/shift.rb': ['class Shift < ApplicationRecord', '  after_commit :foo, :foo, :foo', '  def foo; end', 'end'].join('\n'),
+    })
+    expect(listeners.map(l => l.id)).toEqual(['shifts.after_commit.foo', 'shifts.after_commit.foo@shift.rb:2', 'shifts.after_commit.foo@shift.rb:2#2'])
   })
 })

@@ -377,7 +377,6 @@ export function gemListeners(entry: ModelEntry, ctx: ListenerContext): Listener[
   })
 }
 
-
 const RUN_CALLBACKS = /\brun_callbacks\(\s*:(\w+)/
 const BARE_CALL = /^\s*(\w+[!?]?)\s*$/
 const PHASE_OF_CHAIN: Record<string, (l: Listener) => boolean> = {
@@ -447,7 +446,7 @@ function firedSites(file: string, lines: ReturnType<typeof linesOf>, self: Model
       }
       const candidates = helpers.filter(h => h.name === name)
       const receiver = receiverOf(text.slice(0, call.index), self, ctx)
-      const owner = candidates.find(h => receiver !== null && tableId(h.entry.table) === tableId(receiver.table)) ?? (candidates.length === 1 ? candidates[0] : undefined)
+      const owner = candidates.find(h => receiver !== null && tableId(h.entry.table) === tableId(receiver.table)) ?? (receiver === null && candidates.length === 1 ? candidates[0] : undefined)
       if (owner) {
         out.push({ table: tableId(owner.entry.table), file, line, call: name, events: FIRED_EVENTS, runs: 'subset', fires: owner.fires, grade: receiver !== null && receiver.grade === 'constant' ? 'constant' : 'text' })
       }
@@ -502,7 +501,13 @@ function uniqueIds(listeners: Listener[]): Listener[] {
       return listener
     }
     const basename = listener.declaredAt.file.split('/').pop() ?? listener.declaredAt.file
-    return { ...listener, id: `${listener.id}@${basename}:${listener.declaredAt.line}` }
+    const located = `${listener.id}@${basename}:${listener.declaredAt.line}`
+    let id = located
+    for (let n = 2; seen.has(id); n++) {
+      id = `${located}#${n}`
+    }
+    seen.add(id)
+    return { ...listener, id }
   })
 }
 
