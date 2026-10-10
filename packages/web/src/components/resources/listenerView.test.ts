@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { ListenerSchema } from '@dependency-explorer/data'
-import { effectText, filterListeners, sourceHref } from './listenerView'
+import { effectText, filterListeners, listenerLabel, sourceHref } from './listenerView'
 
 const at = { file: 'app/models/shift.rb', line: 196 }
 const make = (id: string, kind: string, events: string[], grade: string) => ListenerSchema.parse({
@@ -40,5 +40,16 @@ describe('effectText without runs', () => {
 describe('sourceHref', () => {
   it('links a line at the pinned commit', () => {
     expect(sourceHref(at, { 'skello-app': 'abc' })).toBe('https://github.com/skelloapp/skello-app/blob/abc/app/models/shift.rb#L196')
+  })
+})
+
+describe('listenerLabel', () => {
+  const labelled = (kind: string, id: string, hook: string, method?: string) => ListenerSchema.parse({ id, table: 'pg:skello_production.shifts', kind, hook, method, events: ['update'], phase: 'commit', declaredAt: at, grade: 'code', effects: [] })
+  it('names a callback by method or block, a cascade or touch by its target, a gem by its macro', () => {
+    expect(listenerLabel(labelled('callback', 'shifts.after_commit.x', 'after_commit', 'update_paid_leaves'))).toBe('update_paid_leaves')
+    expect(listenerLabel(labelled('callback', 'shifts.after_commit.y', 'after_commit'))).toBe('block')
+    expect(listenerLabel(labelled('cascade', 'shifts.dependent.shift_swaps', 'dependent: :delete_all'))).toBe('dependent: :delete_all shift_swaps')
+    expect(listenerLabel(labelled('touch', 'contracts.touch.user', 'touch: true'))).toBe('touch: true user')
+    expect(listenerLabel(labelled('gem', 'api_keys.has_secure_token', 'has_secure_token'))).toBe('has_secure_token')
   })
 })

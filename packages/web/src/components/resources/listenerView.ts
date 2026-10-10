@@ -8,7 +8,8 @@ export const LISTENER_KINDS: ReadonlyArray<Listener['kind']> = ['callback', 'cas
 export const LISTENER_GRADES: readonly string[] = ['verified', 'text']
 
 export const hasText = (l: Listener) => l.effects.some(e => e.grade === 'text')
-export const gradeLabel = (unverified: boolean) => (unverified ? 'unverified, receiver named after a model' : 'verified')
+const MODEL_RECEIVER_REASON = 'unverified, receiver named after a model'
+export const gradeLabel = (unverified: boolean, reason = MODEL_RECEIVER_REASON) => (unverified ? reason : 'verified')
 export const gradeGlyph = (unverified: boolean) => (unverified ? '~' : '✓')
 
 export function filterListeners(listeners: Listener[], f: Pick<ListenerUrl, 'lev' | 'lkind' | 'lgrade'>): Listener[] {
@@ -18,6 +19,15 @@ export function filterListeners(listeners: Listener[], f: Pick<ListenerUrl, 'lev
 export function tableName(id: string): string {
   return id.split('.').pop() ?? id
 }
+
+export function listenerLabel(l: Listener): string {
+  if (l.kind === 'callback') {
+    return l.method ?? 'block'
+  }
+  return l.kind === 'gem' ? l.hook : `${l.hook} ${tableName(l.id)}`
+}
+
+export const listenerHeading = (l: Listener) => (l.kind === 'callback' ? `${l.hook} ${listenerLabel(l)}` : listenerLabel(l))
 
 export function effectText(e: ListenerEffect): string {
   const tail = `${e.mode === 'async-job' ? ' · async' : ''}${e.via ? ` · via ${e.via}` : ''}`

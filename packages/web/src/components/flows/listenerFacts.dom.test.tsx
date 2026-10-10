@@ -1,9 +1,13 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { connectivityMap } from '@dependency-explorer/data'
 import { ListenerFacts } from './ListenerFacts'
+
+beforeAll(() => {
+  Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+})
 
 const flowOf = (id: string) => connectivityMap.flows.find(f => f.id === id)
 
@@ -58,5 +62,26 @@ describe('ListenerFacts', () => {
   it('renders nothing for a unit with no writes and no callbacks', () => {
     const host = mount('cu-upd-controller')
     expect(host.querySelector('h3')).toBeNull()
+  })
+  it('shows a cascade hop under a text-graded write as unverified', () => {
+    const host = mount('cu-upd-service')
+    const hop = [...host.querySelectorAll('ul ul li')].find(li => li.querySelector('button')?.textContent === 'paid_leaves_counters')
+    expect(hop?.querySelector('[role="img"]')?.getAttribute('aria-label')).toMatch(/^unverified/)
+  })
+  it('shows each write site’s source, and none on a table-event row', () => {
+    const host = mount('cu-upd-service')
+    expect(host.querySelector('section')?.textContent).toMatch(/app\/\S+\.rb:\d+/)
+    const event = mount('cu-ss-prospect', () => {}, 'self-serve-signup')
+    const tableEventRow = [...event.querySelectorAll('section > ul > li')].find(li => li.textContent?.includes('by table event'))
+    expect(tableEventRow?.textContent?.split('→')[0]).not.toMatch(/\.rb:\d+/)
+  })
+  it('announces a table-event row as matched by table event', () => {
+    const host = mount('cu-ss-prospect', () => {}, 'self-serve-signup')
+    expect(host.querySelector('[role="img"][aria-label="unverified, matched by table event"]')).not.toBeNull()
+  })
+  it('prefixes each derived listener with its table', () => {
+    const host = mount('cu-upd-callbacks')
+    const derived = [...host.querySelectorAll('section:last-of-type li')].map(li => li.textContent)
+    expect(derived.some(text => text?.startsWith('shifts · after_commit '))).toBe(true)
   })
 })
