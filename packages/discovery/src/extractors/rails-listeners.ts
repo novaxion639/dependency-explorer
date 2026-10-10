@@ -1,9 +1,9 @@
-import type { ListenerEffect } from '@dependency-explorer/schema'
-import { associationMap, parseAssociations, type Read } from '../code-wiring'
+import type { Listener, ListenerEffect, ListenerPhase, WriteEvent } from '@dependency-explorer/schema'
+import { associationMap, parseAssociations, stripComments, type Read } from '../code-wiring'
 import { reachable, type RepoGraph } from '../code-grades'
 import { tableId } from '../resource-registry'
-import type { ModelEntry, SpanAt } from './rails-model-index'
-import { methodSpans, resolveConstant } from './ruby-source'
+import { declarationsOf, type DeclarationAt, type ModelEntry, type SpanAt } from './rails-model-index'
+import { blockEnd, methodSpans, resolveConstant, rubyCode } from './ruby-source'
 import { linesOf, sqlWritesIn, writesIn, type WriteResolver } from './rails-writes'
 
 export type ListenerFindingKind = 'surface-drift' | 'unresolved-callback' | 'unresolved-job' | 'unknown-gem-macro' | 'cdc-unknown-table' | 'flow-listener-missing' | 'flow-listener-unsupported'
@@ -23,7 +23,7 @@ export const SERVICE_ROOTS = ['app/services', 'app/models/concerns', 'app/models
 const CONSTANT = '((?:[A-Z]\\w*::)*[A-Z]\\w*)'
 const ENQUEUE = new RegExp(`\\b${CONSTANT}(?:\\.set\\([^)]*\\))?\\.(perform_later|perform_async|perform_in|perform_at)\\b`, 'g')
 const DELAYED = new RegExp(`\\b${CONSTANT}\\.delay(?:\\([^)]*\\))?\\.(\\w+[!?]?)`, 'g')
-const SERVICE_ENTRY = new RegExp(`\\b${CONSTANT}\\.new\\b[^\\n]*?\\.(run!?|call|perform)\\b`, 'g')
+const SERVICE_ENTRY = new RegExp(`\\b${CONSTANT}\\.new\\b[^\\n]*?\\.(run!?|call|perform)(?![\\w])`, 'g')
 const CLASS_CALL = new RegExp(`\\b${CONSTANT}\\.([a-z_]\\w*[!?]?)`, 'g')
 const SKIPPED_METHODS = new Set(['new', 'delay', 'set', 'perform_later', 'perform_async', 'perform_in', 'perform_at', 'perform_now'])
 
@@ -133,4 +133,100 @@ function dedupeEffects(effects: ListenerEffect[]): ListenerEffect[] {
 
 export function effectsOf(span: SpanAt, self: ModelEntry | null, ctx: ListenerContext): ListenerEffect[] {
   return dedupeEffects([...enqueueEffects(span, ctx), ...callEffects(span, ctx, 'sync', undefined), ...writeEffects(span, self, ctx, 'sync', undefined)])
+}
+
+const CALLBACK_START = /^\s*(?:before|after|around)_(?:validation|save|create|update|destroy|commit|rollback|touch)\b/
+const CALLBACK = /^\s*((?:before|after|around)_(validation|save|create|update|destroy|commit|rollback|touch))\b([\s\S]*)$/
+const SYMBOL = /^:(\w+[!?]?)$/
+const OPTION = /^(on|if|unless|prepend):\s*([\s\S]+)$/
+const EVENTS: readonly WriteEvent[] = ['create', 'update', 'destroy']
+const PHASE: Record<string, ListenerPhase> = { validation: 'validation', save: 'save', create: 'event', update: 'event', destroy: 'event', commit: 'commit', rollback: 'rollback', touch: 'touch' }
+
+function splitArgs(rest: string): string[] {
+  const out: string[] = []
+  let depth = 0
+  let current = ''
+  for (const ch of rest) {
+    if (ch === '(' || ch === '[' || ch === '{') {
+      depth += 1
+    } else if (ch === ')' || ch === ']' || ch === '}') {
+      depth -= 1
+    }
+    if (ch === ',' && depth === 0) {
+      out.push(current.trim())
+      current = ''
+    } else {
+      current += ch
+    }
+  }
+  return [...out, current.trim()].filter(a => a !== '')
+}
+
+function eventsOf(phaseWord: string, on: string | undefined): WriteEvent[] {
+  const named = EVENTS.filter(e => e === phaseWord)
+  if (named.length) {
+    return named
+  }
+  if (phaseWord === 'touch') {
+    return ['update']
+  }
+  const listed = on === undefined ? [] : EVENTS.filter(e => new RegExp(`\\b${e}\\b`).test(on))
+  if (listed.length) {
+    return listed
+  }
+  return phaseWord === 'commit' || phaseWord === 'rollback' ? [...EVENTS] : ['create', 'update']
+}
+
+function blockSpan(decl: DeclarationAt, ctx: ListenerContext): SpanAt {
+  const source = ctx.read(decl.file) ?? ''
+  const code = rubyCode(source).split('\n')
+  const raw = stripComments(source).split('\n')
+  const end = blockEnd(code, decl.line - 1)
+  return {
+    name: 'block',
+    line: decl.line,
+    body: code.slice(decl.line - 1, end + 1).join('\n'),
+    raw: raw.slice(decl.line - 1, end + 1).join('\n'),
+    file: decl.file,
+  }
+}
+
+export function callbackListeners(entry: ModelEntry, ctx: ListenerContext): Listener[] {
+  return declarationsOf(entry, CALLBACK_START).flatMap(decl => {
+    const m = CALLBACK.exec(decl.text)
+    if (!m) {
+      return []
+    }
+    const hook = m[1] ?? ''
+    const args = splitArgs(m[3] ?? '')
+    const options = new Map(args.flatMap(a => {
+      const o = OPTION.exec(a)
+      return o ? [[o[1] ?? '', (o[2] ?? '').trim()] as const] : []
+    }))
+    const condition = ['if', 'unless'].flatMap(k => (options.has(k) ? [`${k}: ${options.get(k) ?? ''}`] : [])).join(', ')
+    const base = {
+      table: tableId(entry.table),
+      kind: 'callback' as const,
+      hook,
+      events: eventsOf(m[2] ?? '', options.get('on')),
+      phase: PHASE[m[2] ?? ''] ?? 'event',
+      ...(condition ? { condition } : {}),
+      declaredAt: { file: decl.file, line: decl.line },
+      grade: 'code' as const,
+    }
+    const symbols = args.flatMap(a => SYMBOL.exec(a)?.[1] ?? [])
+    const bodies = args.filter(a => !SYMBOL.test(a) && !OPTION.test(a))
+    const bySymbol = symbols.map((method): Listener => {
+      const span = entry.methods.get(method)
+      if (!span) {
+        ctx.findings.push({ kind: 'unresolved-callback', subject: `${entry.className}#${method}`, detail: `${decl.file}:${decl.line} names a method neither ${entry.className} nor its included modules define` })
+      }
+      return { ...base, id: `${entry.table}.${hook}.${method}`, method, ...(span ? { definedAt: { file: span.file, line: span.line } } : {}), effects: span ? effectsOf(span, entry, ctx) : [] }
+    })
+    const byBody = bodies.map((body): Listener => {
+      const span = /\bdo\b/.test(body) ? blockSpan(decl, ctx) : { name: 'block', line: decl.line, body, raw: body, file: decl.file }
+      return { ...base, id: `${entry.table}.${hook}.block@${decl.line}`, effects: effectsOf(span, entry, ctx) }
+    })
+    return [...bySymbol, ...byBody]
+  })
 }
