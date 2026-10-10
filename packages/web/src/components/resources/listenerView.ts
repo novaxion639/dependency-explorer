@@ -6,9 +6,10 @@ export type ListenerUrl = Pick<UrlState, 'event' | 'listener' | 'lev' | 'lkind' 
 export const LISTENER_EVENTS: readonly WriteEvent[] = ['create', 'update', 'destroy']
 export const LISTENER_KINDS: ReadonlyArray<Listener['kind']> = ['callback', 'cascade', 'touch', 'gem']
 export const LISTENER_GRADES: readonly string[] = ['verified', 'text']
-export const EFFECT_BADGE: Record<ListenerEffect['grade'], string> = { graph: '✓', constant: '✓', text: '~' }
 
-const hasText = (l: Listener) => l.effects.some(e => e.grade === 'text')
+export const hasText = (l: Listener) => l.effects.some(e => e.grade === 'text')
+export const gradeLabel = (unverified: boolean) => (unverified ? 'unverified, receiver named after a model' : 'verified')
+export const gradeGlyph = (unverified: boolean) => (unverified ? '~' : '✓')
 
 export function filterListeners(listeners: Listener[], f: Pick<ListenerUrl, 'lev' | 'lkind' | 'lgrade'>): Listener[] {
   return listeners.filter(l => (f.lev === null || l.events.some(e => e === f.lev)) && (f.lkind === null || l.kind === f.lkind) && (f.lgrade === null || (f.lgrade === 'text') === hasText(l)))

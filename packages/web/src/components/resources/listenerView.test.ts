@@ -14,6 +14,7 @@ describe('filterListeners', () => {
     expect(filterListeners(listeners, { lev: 'destroy', lkind: null, lgrade: null }).map(l => l.id)).toEqual(['b'])
     expect(filterListeners(listeners, { lev: null, lkind: 'callback', lgrade: null }).map(l => l.id)).toEqual(['a'])
     expect(filterListeners(listeners, { lev: null, lkind: null, lgrade: 'text' }).map(l => l.id)).toEqual(['b'])
+    expect(filterListeners(listeners, { lev: null, lkind: null, lgrade: 'verified' }).map(l => l.id)).toEqual(['a'])
   })
 })
 
