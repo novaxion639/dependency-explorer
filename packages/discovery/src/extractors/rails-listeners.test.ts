@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest'
 import type { ListenerEffect } from '@dependency-explorer/schema'
 import { buildModelIndex } from './rails-model-index'
 import type { Read } from '../code-wiring'
-import { associationListeners, callbackListeners, effectsOf, gemListeners, joinTableName, listenerContext } from './rails-listeners'
+import { associationListeners, callbackListeners, effectsOf, extractListeners, gemListeners, joinTableName, listenerContext } from './rails-listeners'
 import { parseModelFile } from './rails-schema'
-import { FIXTURE_TABLES, fixtureModels, fixtureRead } from './__fixtures__/listeners'
+import { FIXTURE_FILES, FIXTURE_TABLES, fixtureModels, fixtureRead } from './__fixtures__/listeners'
 
 const index = buildModelIndex(fixtureModels, fixtureRead)
 const shift = index.find(e => e.className === 'Shift')
@@ -206,5 +206,87 @@ describe('dependent cascade table gate', () => {
   })
   it('emits the listener when the child table is in tables', () => {
     expect(dependent(['shifts', 'shift_swaps'])).toEqual(['shifts.dependent.shift_swaps'])
+  })
+})
+
+describe('belongs_to touch table gate', () => {
+  const touch = (tables: string[]) => {
+    const { entries, c } = miniContext({
+      'app/models/contract.rb': 'class Contract < ApplicationRecord\n  belongs_to :user, touch: true\nend',
+      'app/models/user.rb': 'class User < ApplicationRecord\nend',
+    }, tables)
+    const entry = entries.find(e => e.className === 'Contract')
+    return entry ? associationListeners(entry, c).map(l => l.id) : []
+  }
+  it('emits no listener when the parent table is not in tables', () => {
+    expect(touch(['contracts'])).toEqual([])
+  })
+  it('emits the listener when the parent table is in tables', () => {
+    expect(touch(['contracts', 'users'])).toEqual(['contracts.touch.user'])
+  })
+})
+
+describe('extractListeners', () => {
+  const files = Object.entries(FIXTURE_FILES).map(([file, source]) => ({ file, source }))
+  const result = extractListeners({ models: fixtureModels, tables: FIXTURE_TABLES, files, read: fixtureRead, graph: null })
+  const sitesIn = (file: string) => result.writeSites.filter(s => s.file === file).map(s => [s.table, s.call, s.runs, s.grade, (s.fires ?? []).join(' ')])
+
+  it('classifies a callback-skipping import and a hand-fired helper in a service', () => {
+    expect(sitesIn('app/services/v3/shifts/bulk_create_service.rb')).toEqual([
+      ['pg:skello_production.shifts', 'import!', 'none', 'constant', ''],
+      ['pg:skello_production.shifts', 'run_generic_callbacks!', 'subset', 'text', 'shifts.after_commit.update_paid_leaves shifts.after_commit.set_weekly_option_not_up_to_date'],
+    ])
+  })
+  it('expands run_callbacks(:commit) inside a helper to every commit listener of the model', () => {
+    expect(sitesIn('app/controllers/api/v2/shifts_controller.rb')).toEqual([
+      ['pg:skello_production.shifts', 'run_shift_callbacks!', 'subset', 'text', 'shifts.after_commit.set_weekly_option_not_up_to_date shifts.after_commit.update_paid_leaves'],
+    ])
+  })
+  it('never records a helper body or an unresolvable receiver as a write site', () => {
+    expect(sitesIn('app/models/concerns/shifts/callbacks_concern.rb').map(s => s[1])).toEqual(['update!'])
+  })
+  it('collects every listener kind and finding', () => {
+    expect(new Set(result.listeners.map(l => l.kind))).toEqual(new Set(['callback', 'cascade', 'touch', 'gem']))
+    expect(result.findings.map(f => f.kind).sort()).toEqual(['unknown-gem-macro', 'unresolved-callback'])
+  })
+})
+
+describe('extractListeners on a mini model', () => {
+  const extract = (model: string) => {
+    const sources: Record<string, string> = { 'app/models/shift.rb': model }
+    const models = Object.keys(sources).flatMap(f => parseModelFile(f, sources[f] ?? '') ?? [])
+    return extractListeners({
+      models,
+      tables: models.map(m => m.table),
+      files: Object.entries(sources).map(([file, source]) => ({ file, source })),
+      read: p => sources[p] ?? null,
+      graph: null,
+    })
+  }
+  it('reports one finding when a def behind two callback declarations enqueues an unresolvable job', () => {
+    const { findings } = extract([
+      'class Shift < ApplicationRecord',
+      '  after_commit :a, on: :create',
+      '  after_commit :a, on: :update',
+      '  def a',
+      '    GhostJob.perform_later(id)',
+      '  end',
+      'end',
+    ].join('\n'))
+    expect(findings.filter(f => f.kind === 'unresolved-job')).toHaveLength(1)
+  })
+  it('suffixes a later duplicate listener id with the declaring file and line', () => {
+    const { listeners } = extract([
+      'class Shift < ApplicationRecord',
+      '  after_commit :foo, on: :create',
+      '  after_commit :foo, on: :update',
+      '  def foo',
+      '  end',
+      'end',
+    ].join('\n'))
+    expect(listeners.map(l => [l.id, l.events.join(',')])).toEqual([
+      ['shifts.after_commit.foo', 'create'],
+      ['shifts.after_commit.foo@shift.rb:3', 'update'],
+    ])
   })
 })

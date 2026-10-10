@@ -1,10 +1,11 @@
-import type { Listener, ListenerEffect, ListenerPhase, Runs, WriteEvent } from '@dependency-explorer/schema'
-import { associationMap, parseAssociations, stripComments, type Read } from '../code-wiring'
+import type { Listener, ListenerEffect, ListenerPhase, Runs, WriteEvent, WriteSite } from '@dependency-explorer/schema'
+import { associationMap, escapeRegExp, parseAssociations, stripComments, type Read } from '../code-wiring'
 import { reachable, type RepoGraph } from '../code-grades'
 import { tableId } from '../resource-registry'
-import { declarationsOf, type DeclarationAt, type ModelEntry, type SpanAt } from './rails-model-index'
+import { buildModelIndex, declarationsOf, type DeclarationAt, type ModelEntry, type SpanAt } from './rails-model-index'
+import type { RailsModel } from './rails-schema'
 import { blockEnd, classify, methodSpans, resolveConstant, rubyCode } from './ruby-source'
-import { linesOf, sqlWritesIn, writesIn, type WriteResolver } from './rails-writes'
+import { joinStatements, linesOf, receiverOf, sqlWritesIn, writesIn, type WriteResolver } from './rails-writes'
 
 export type ListenerFindingKind = 'surface-drift' | 'unresolved-callback' | 'unresolved-job' | 'unknown-gem-macro' | 'cdc-unknown-table' | 'flow-listener-missing' | 'flow-listener-unsupported'
 export interface ListenerFinding { kind: ListenerFindingKind; subject: string; detail: string }
@@ -285,7 +286,7 @@ export function associationListeners(entry: ModelEntry, ctx: ListenerContext): L
     const at = { file: decl.file, line: decl.line }
     const own = tableId(entry.table)
     if (macro === 'belongs_to') {
-      if (!TOUCH.test(rest) || other === null) {
+      if (!TOUCH.test(rest) || other === null || !ctx.tables.has(other)) {
         return []
       }
       return [{
@@ -374,4 +375,154 @@ export function gemListeners(entry: ModelEntry, ctx: ListenerContext): Listener[
     })
     return [{ id: `${entry.table}.${macro}`, table: tableId(entry.table), kind: 'gem', hook: macro, events: known.events, phase: known.phase, declaredAt: at, effects, grade: 'config' }]
   })
+}
+
+
+const RUN_CALLBACKS = /\brun_callbacks\(\s*:(\w+)/
+const BARE_CALL = /^\s*(\w+[!?]?)\s*$/
+const PHASE_OF_CHAIN: Record<string, (l: Listener) => boolean> = {
+  commit: l => l.phase === 'commit',
+  rollback: l => l.phase === 'rollback',
+  save: l => l.phase === 'save',
+  validation: l => l.phase === 'validation',
+  touch: l => l.phase === 'touch',
+  create: l => l.phase === 'event' && l.hook.endsWith('_create'),
+  update: l => l.phase === 'event' && l.hook.endsWith('_update'),
+  destroy: l => l.phase === 'event' && l.hook.endsWith('_destroy'),
+}
+const FIRED_EVENTS: WriteEvent[] = ['create', 'update', 'destroy']
+
+interface SourceFile { file: string; source: string }
+interface Helper { name: string; entry: ModelEntry; fires: string[]; file: string; from: number; to: number }
+
+function chainListeners(chain: string, own: Listener[]): Listener[] {
+  return Object.hasOwn(PHASE_OF_CHAIN, chain) ? own.filter(PHASE_OF_CHAIN[chain]) : []
+}
+
+function callbackListenersOf(entry: ModelEntry, listeners: Listener[]): Listener[] {
+  return listeners.filter(l => l.table === tableId(entry.table) && l.kind === 'callback')
+}
+
+function helpersOf(entries: ModelEntry[], listeners: Listener[]): Helper[] {
+  return entries.flatMap(entry => {
+    const own = callbackListenersOf(entry, listeners)
+    return [...entry.methods.values()].flatMap(span => {
+      const bodyLines = span.body.split('\n')
+      const inner = bodyLines.slice(1, -1).map(l => l.trim()).filter(l => l !== '')
+      const fired = inner.map(line => {
+        const chain = RUN_CALLBACKS.exec(line)?.[1]
+        const bare = BARE_CALL.exec(line)?.[1]
+        return chain !== undefined ? chainListeners(chain, own) : own.filter(l => l.method !== undefined && l.method === bare)
+      })
+      if (span.name.startsWith('self.') || inner.length === 0 || fired.some(f => f.length === 0)) {
+        return []
+      }
+      const fires = [...new Set(fired.flat().map(l => l.id))]
+      return [{ name: span.name, entry, fires, file: span.file, from: span.line, to: span.line + bodyLines.length - 1 }]
+    })
+  })
+}
+
+function selfByFile(entries: ModelEntry[]): Map<string, ModelEntry> {
+  const hosts = new Map<string, ModelEntry[]>()
+  for (const entry of entries) {
+    for (const file of [entry.file, ...entry.modules]) {
+      hosts.set(file, [...(hosts.get(file) ?? []), entry])
+    }
+  }
+  return new Map([...hosts].flatMap(([file, list]) => (list.length === 1 && list[0] ? [[file, list[0]] as const] : [])))
+}
+
+function firedSites(file: string, lines: ReturnType<typeof linesOf>, self: ModelEntry | null, listeners: Listener[], entries: ModelEntry[], helpers: Helper[], ctx: ListenerContext): WriteSite[] {
+  const inHelper = (line: number) => helpers.some(h => h.file === file && line >= h.from && line <= h.to)
+  return joinStatements(lines).flatMap(({ text, line }) => {
+    if (inHelper(line)) {
+      return []
+    }
+    const out: WriteSite[] = []
+    for (const name of new Set(helpers.map(h => h.name))) {
+      const call = new RegExp(`(?:\\.|&:)${escapeRegExp(name)}(?![\\w!?])`).exec(text)
+      if (!call) {
+        continue
+      }
+      const candidates = helpers.filter(h => h.name === name)
+      const receiver = receiverOf(text.slice(0, call.index), self, ctx)
+      const owner = candidates.find(h => receiver !== null && tableId(h.entry.table) === tableId(receiver.table)) ?? (candidates.length === 1 ? candidates[0] : undefined)
+      if (owner) {
+        out.push({ table: tableId(owner.entry.table), file, line, call: name, events: FIRED_EVENTS, runs: 'subset', fires: owner.fires, grade: receiver !== null && receiver.grade === 'constant' ? 'constant' : 'text' })
+      }
+    }
+    const chain = RUN_CALLBACKS.exec(text)
+    if (chain) {
+      const receiver = receiverOf(text.slice(0, Math.max(0, text.indexOf('run_callbacks') - 1)), self, ctx)
+      const model = receiver ? entries.find(e => e.table === receiver.table) : undefined
+      if (receiver && model) {
+        const phase = chain[1] ?? ''
+        out.push({ table: tableId(model.table), file, line, call: `run_callbacks(:${phase})`, events: FIRED_EVENTS, runs: 'subset', fires: chainListeners(phase, callbackListenersOf(model, listeners)).map(l => l.id), grade: receiver.grade })
+      }
+    }
+    return out
+  })
+}
+
+export function writeSites(files: SourceFile[], listeners: Listener[], entries: ModelEntry[], ctx: ListenerContext): WriteSite[] {
+  const selfOf = selfByFile(entries)
+  const helpers = helpersOf(entries, listeners)
+  return files.flatMap(({ file, source }) => {
+    const self = selfOf.get(file) ?? null
+    const lines = linesOf(rubyCode(source), 1)
+    const direct = [...writesIn(lines, self, ctx), ...sqlWritesIn(linesOf(stripComments(source), 1), ctx.tables)].map((hit): WriteSite => ({
+      table: tableId(hit.table),
+      file,
+      line: hit.line,
+      call: hit.call,
+      events: hit.kind.events,
+      runs: hit.kind.runs,
+      grade: hit.grade,
+    }))
+    return [...direct, ...firedSites(file, lines, self, listeners, entries, helpers, ctx)]
+  })
+}
+
+function memo(read: Read): Read {
+  const cache = new Map<string, string | null>()
+  return p => {
+    if (!cache.has(p)) {
+      cache.set(p, read(p))
+    }
+    return cache.get(p) ?? null
+  }
+}
+
+function uniqueIds(listeners: Listener[]): Listener[] {
+  const seen = new Set<string>()
+  return listeners.map(listener => {
+    if (!seen.has(listener.id)) {
+      seen.add(listener.id)
+      return listener
+    }
+    const basename = listener.declaredAt.file.split('/').pop() ?? listener.declaredAt.file
+    return { ...listener, id: `${listener.id}@${basename}:${listener.declaredAt.line}` }
+  })
+}
+
+function uniqueFindings(findings: ListenerFinding[]): ListenerFinding[] {
+  const seen = new Set<string>()
+  return findings.filter(f => {
+    const key = `${f.kind}|${f.subject}|${f.detail}`
+    if (seen.has(key)) {
+      return false
+    }
+    seen.add(key)
+    return true
+  })
+}
+
+export function extractListeners(input: { models: RailsModel[]; tables: string[]; files: SourceFile[]; read: Read; graph: RepoGraph | null }): { listeners: Listener[]; writeSites: WriteSite[]; findings: ListenerFinding[] } {
+  const read = memo(input.read)
+  const entries = buildModelIndex(input.models, read)
+  const ctx = listenerContext(entries, read, input.graph, input.tables)
+  const listeners = uniqueIds(entries.flatMap(entry => [...callbackListeners(entry, ctx), ...associationListeners(entry, ctx), ...gemListeners(entry, ctx)]))
+  const scanned = input.files.filter(f => /^(app|lib)\//.test(f.file) && !/(^|\/)(spec|test)\//.test(f.file))
+  return { listeners, writeSites: writeSites(scanned, listeners, entries, ctx), findings: uniqueFindings(ctx.findings) }
 }
