@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseRoutesContent } from './rails-routes'
+import { parseRoutesContent, singularize } from './rails-routes'
 
 const SRC = `
 Rails.application.routes.draw do
@@ -197,5 +197,18 @@ end
     expect(routes).toContain('GET /gammas/:id gammas#show')
     expect(routes).toContain('GET /deltas other_deltas#index')
     expect(routes.some(r => r.startsWith('GET /alphas/:id'))).toBe(false)
+  })
+})
+
+describe('singularize', () => {
+  it('singularizes -sses, -uses and -ses plurals without eating the stem', () => {
+    expect(singularize('addresses')).toBe('address')
+    expect(singularize('user_addresses')).toBe('user_address')
+    expect(singularize('statuses')).toBe('status')
+    expect(singularize('buses')).toBe('bus')
+  })
+  it('keeps the regular rules', () => {
+    expect(singularize('licenses')).toBe('license')
+    expect(singularize('shift_swaps')).toBe('shift_swap')
   })
 })

@@ -5,10 +5,11 @@ import { underscore } from './rails-schema'
 export interface Span { name: string; line: number; body: string; raw: string }
 export interface Declaration { text: string; line: number }
 
-const STATEMENT_OPEN = /^\s*(?:def|class|module|if|unless|while|until|case|begin|for)\b|(?:[^=!<>]=|\|\|=|&&=)\s*(?:if|unless|case|begin)\b/
-const DO_OPEN = /\bdo\s*(?:\|[^|]*\|)?\s*$/
+const STATEMENT_OPEN = /^\s*(?:(?:private|protected|public)\s+)?(?:def|class|module|if|unless|while|until|case|begin|for)\b|(?:[^=!<>]=|\|\|=|&&=)\s*(?:if|unless|case|begin)\b/
+const LOOP_STATEMENT = /^\s*(?:while|until|for)\b/
+const DO_BLOCK = /(?<![.:\w])do\b(?!:)/g
 const END = /(?<![.:\w])end\b/g
-const DEF = /^\s*def\s+(self\.)?(\w+[!?=]?)/
+const DEF = /^\s*(?:(?:private|protected|public)\s+)?def\s+(self\.)?(\w+[!?=]?)/
 const SINGLETON = /^\s*class\s*<<\s*self\b/
 const HEREDOC = /<<[~-]?(['"]?)([A-Z_]\w*)\1[^\n]*\n([\s\S]*?)^[ \t]*\2\b/gm
 
@@ -17,12 +18,13 @@ function maskHeredocs(code: string): string {
 }
 
 export function rubyCode(source: string): string {
-  return maskHeredocs(maskStrings(stripComments(source)))
+  return maskStrings(maskHeredocs(stripComments(source)))
 }
 
 function delta(line: string): number {
-  const opens = (STATEMENT_OPEN.test(line) ? 1 : 0) + (DO_OPEN.test(line) ? 1 : 0)
-  return opens - (line.match(END) ?? []).length
+  const statementOpens = STATEMENT_OPEN.test(line) ? 1 : 0
+  const blockOpens = LOOP_STATEMENT.test(line) ? 0 : (line.match(DO_BLOCK) ?? []).length
+  return statementOpens + blockOpens - (line.match(END) ?? []).length
 }
 
 export function blockEnd(lines: string[], start: number): number {
