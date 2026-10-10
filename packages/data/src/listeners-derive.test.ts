@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { ListenerSurfaceSchema, ServiceFlowSchema } from '@dependency-explorer/schema'
-import { alsoChanges, cascadeFrom, firedListeners, flowListenerDrift, flowListeners, inRailsOrder, listenerMetrics, listenersRun } from './listeners-derive'
+import { alsoChanges, cascadeFrom, cascadeOf, firedListeners, flowListenerDrift, flowListeners, inRailsOrder, listenerMetrics, listenersRun } from './listeners-derive'
 
 const t = (name: string) => `pg:skello_production.${name}`
 const at = { file: 'app/models/x.rb', line: 1 }
@@ -52,6 +52,14 @@ describe('listenersRun', () => {
     expect(ids(listenersRun({ runs: 'touch', events: ['update'] }, shifts))).toEqual(['shifts.after_commit.set_weekly', 'shifts.after_commit.manage_predicted'])
     expect(ids(listenersRun({ runs: 'touch', events: ['update'] }, contracts))).toEqual(['contracts.touch.user'])
     expect(ids(listenersRun({ runs: 'subset', events: ['update'], fires: ['shifts.after_commit.set_weekly'] }, shifts))).toEqual(['shifts.after_commit.set_weekly'])
+  })
+})
+
+describe('cascadeOf', () => {
+  it('starts the chain at the given grade so every hop carries it', () => {
+    const start = shifts.filter(l => l.id === 'shifts.before_save.set_poste')
+    const hop = (grade?: 'text') => cascadeOf(SURFACE, start, [`${t('shifts')}|update`], grade)[0]?.hops[0]
+    expect([hop()?.grade, hop('text')?.grade]).toEqual(['constant', 'text'])
   })
 })
 

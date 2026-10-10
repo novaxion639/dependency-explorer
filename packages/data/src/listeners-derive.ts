@@ -54,7 +54,7 @@ export function listenersByTable(surface: ListenerTables): Map<string, Listener[
   return out
 }
 
-export function cascadeOf(surface: ListenerTables, start: Listener[], origin: string[]): CascadeNode[] {
+export function cascadeOf(surface: ListenerTables, start: Listener[], origin: string[], grade: ChainGrade = 'graph'): CascadeNode[] {
   const tables = listenersByTable(surface)
   const expand = (listeners: Listener[], path: Set<string>, async: boolean, grade: ChainGrade): CascadeNode[] =>
     listeners.map(listener => ({ listener, hops: listener.effects.filter(e => e.kind === 'writes').map(effect => hop(effect, path, async, grade)) }))
@@ -72,7 +72,7 @@ export function cascadeOf(surface: ListenerTables, start: Listener[], origin: st
     const next = fresh.length === 0 ? [] : expand(inRailsOrder(listenersRun({ runs: effect.runs, events: fresh }, candidates)), new Set([...path, ...freshKeys]), nextAsync, nextGrade)
     return { effect, table: effect.target, mode, grade: nextGrade, skipped: 0, cycle: fresh.length < events.length, next }
   }
-  return expand(inRailsOrder(start), new Set(origin), false, 'graph')
+  return expand(inRailsOrder(start), new Set(origin), false, grade)
 }
 
 export function cascadeFrom(surface: ListenerTables, table: string, event: WriteEvent): CascadeNode[] {
