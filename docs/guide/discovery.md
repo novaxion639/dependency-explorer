@@ -56,7 +56,7 @@ pnpm docs:gen                 # rewrite the generated sections of the inventory 
 
 ## Listener drift (👂)
 
-The 👂 section checks the table listener surface at the pinned commit. A skello-app that is not pinned is skipped. Findings carry a kind, a subject and a detail; accepted findings enter `packages/discovery/baseline.json` through `pnpm discover:baseline`. `surface-drift` and `cdc-unknown-table` come from the full `pnpm discover` run; `discover:listeners` prints the extraction kinds only.
+The 👂 section checks the table listener surface at the pinned commit. A skello-app that is not pinned is skipped. Findings carry a kind, a subject and a detail; accepted findings enter `packages/discovery/baseline.json` through `pnpm discover:baseline`. `surface-drift`, `cdc-unknown-table` and the two `flow-listener-*` kinds come from the full `pnpm discover` run; `discover:listeners` prints the extraction kinds only.
 
 | Kind | Meaning |
 |---|---|
@@ -65,6 +65,15 @@ The 👂 section checks the table listener surface at the pinned commit. A skell
 | `unresolved-job` | an enqueued constant with no file under `app/jobs/` |
 | `unknown-gem-macro` | a class macro outside Rails associations and `KNOWN_GEM_LISTENERS` |
 | `cdc-unknown-table` | a CDC selection rule naming a table absent from `db/schema.rb`; `ar_internal_metadata`, `schema_migrations` and `pg_stat_statements` are exempt |
+| `flow-listener-missing` | a listener a flow fires that its `model-callback` units do not draw, for example `shifts.before_save.set_new_default_poste writes memberships` on `shift-update` |
+| `flow-listener-unsupported` | an edge drawn from a `model-callback` unit that no fired listener backs |
+
+The flow rows come from `flowListenerDrift(flow, surface)` in `packages/data`. A flow's `model-callback` units are compared with the listeners its write-site links fire:
+- edges into job units match the fired listeners' direct `enqueues` effects by `targetFile`;
+- edges into `postgresql` stores match their direct `writes` effects (no `via`) by table;
+- table-event fallback links are not compared;
+- a flow without a `model-callback` unit is not compared;
+- edges into non-table stores such as Redis are not compared.
 
 At `3f6728f`, `cdc-unknown-table` reports `audits`, `organisation_monthly_stats`, `shop_holiday_settings` and `user_holiday_settings`.
 

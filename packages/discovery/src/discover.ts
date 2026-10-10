@@ -22,7 +22,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
+import { connectivityMap, flowListenerDrift, resourceSurface } from '@dependency-explorer/data'
 import { ListenerSurfaceSchema, type DiscoveredOverlay, type Listener, type Resource, type ResourceRelation, type WriteSite } from '@dependency-explorer/schema'
 import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService, tfRepoToService } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
@@ -733,6 +733,7 @@ function run(): Report {
         findings: [
           ...extraction.findings,
           ...cdc.findings,
+          ...connectivityMap.flows.flatMap(f => flowListenerDrift(f, extraction)),
           ...surfaceDrift({ listeners: extraction.listeners, writeSites: extraction.writeSites, cdc: cdc.relations }, { surface: readCommittedListeners(), relations: resourceSurface.relations }),
         ],
         listeners: extraction.listeners.length,
