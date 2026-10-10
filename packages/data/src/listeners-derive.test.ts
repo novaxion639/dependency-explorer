@@ -159,4 +159,17 @@ describe('listenerMetrics', () => {
     expect(m.get(t('shifts'))).toEqual({ listeners: 4, alsoChanges: 3, async: 1, bypassing: 1, onCycle: false })
     expect(m.get(t('a'))?.onCycle).toBe(true)
   })
+
+  it('marks only the tables a cascade from them returns to', () => {
+    const chain = ListenerSurfaceSchema.parse({
+      listeners: [
+        cb('a.after_save.x', 'a', 'after_save', 'save', ['update'], [writes('b', 'all', ['update'])]),
+        cb('b.after_save.y', 'b', 'after_save', 'save', ['update'], [writes('c', 'all', ['update'])]),
+        cb('c.after_save.z', 'c', 'after_save', 'save', ['update'], [writes('b', 'all', ['update'])]),
+      ],
+      writeSites: [],
+    })
+    const m = listenerMetrics(chain)
+    expect([t('a'), t('b'), t('c')].map(table => m.get(table)?.onCycle)).toEqual([false, true, true])
+  })
 })

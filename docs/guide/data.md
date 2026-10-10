@@ -109,7 +109,7 @@ Write sites carry the same `constant` and `text` grades. At `3f6728f`, `shifts.a
 
 ### Execution order
 
-A write runs its listeners in Rails order: validation, save before, event before, event after, save after, touch, then commit and rollback. Within each hook, listeners run in declaration order; `after_commit` and `after_rollback` listeners run in reverse declaration order.
+A write runs its listeners in Rails order: validation, save before, event before, event after, save after, touch, then commit and rollback. Within a rank, listeners run in declaration order; `after_commit` and `after_rollback` listeners run in reverse declaration order.
 
 ### Cascades
 
@@ -119,7 +119,7 @@ A write runs its listeners in Rails order: validation, save before, event before
 - a `none` effect is a leaf that carries the number of target listeners it skips;
 - the mode is `sync` until the first `async-job` effect and `async` after it;
 - the grade of a chain is its weakest hop: `text` < `constant` < `graph`, with `config` gem entries ranking with `constant`;
-- a `(table, event)` pair already on the current path ends the walk with a cycle mark (↻), per table and event.
+- a `(table, event)` pair already on the current path ends the walk for that pair; the hop is marked ↻ and continues for its fresh events.
 
 ### Also changes
 
@@ -134,7 +134,7 @@ A write runs its listeners in Rails order: validation, save before, event before
 
 ### Index metrics
 
-`listenerMetrics(surface)` returns one entry per table, shown on the `pg` cards of the resources index:
+`listenerMetrics(surface)` returns one entry per table that has a listener:
 
 | Metric | Meaning |
 |---|---|
@@ -142,7 +142,7 @@ A write runs its listeners in Rails order: validation, save before, event before
 | `alsoChanges` | distinct tables in the table's `alsoChanges` |
 | `async` | listeners with an `async-job` effect |
 | `bypassing` | write sites on the table with `runs: none` |
-| `onCycle` | the table sits on a cascade cycle for some event |
+| `onCycle` | the table sits on a cascade cycle: a cascade from it returns to it |
 
 ## Contributing data
 

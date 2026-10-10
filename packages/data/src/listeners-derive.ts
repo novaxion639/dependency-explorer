@@ -113,8 +113,8 @@ function tableName(id: string): string {
   return id.split('.').pop() ?? id
 }
 
-function hasCycle(nodes: CascadeNode[]): boolean {
-  return nodes.some(n => n.hops.some(h => h.cycle || hasCycle(h.next)))
+function returnsTo(nodes: CascadeNode[], table: string): boolean {
+  return nodes.some(n => n.hops.some(h => (h.cycle && h.table === table) || returnsTo(h.next, table)))
 }
 
 export function flowListeners(flow: ServiceFlow, surface: ListenerTables): FlowListenerLink[] {
@@ -183,6 +183,6 @@ export function listenerMetrics(surface: ListenerTables): Map<string, TableListe
     alsoChanges: alsoChanges(surface, table).length,
     async: listeners.filter(l => l.effects.some(e => e.mode === 'async-job')).length,
     bypassing: surface.writeSites.filter(s => s.table === table && s.runs === 'none').length,
-    onCycle: WRITE_EVENTS.some(e => hasCycle(cascadeFrom(surface, table, e))),
+    onCycle: WRITE_EVENTS.some(e => returnsTo(cascadeFrom(surface, table, e), table)),
   }]))
 }

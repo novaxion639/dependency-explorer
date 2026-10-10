@@ -71,6 +71,7 @@ The 👂 section checks the table listener surface at the pinned commit. A skell
 The flow rows come from `flowListenerDrift(flow, surface)` in `packages/data`. A flow's `model-callback` units are compared with the listeners its write-site links fire:
 - edges into job units match the fired listeners' direct `enqueues` effects by `targetFile`;
 - edges into `postgresql` stores match their direct `writes` effects (no `via`) by table;
+- edges from a `model-callback` unit to non-job code units are not compared;
 - table-event fallback links are not compared;
 - a flow without a `model-callback` unit is not compared;
 - edges into non-table stores such as Redis are not compared.
