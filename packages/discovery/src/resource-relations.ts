@@ -2,7 +2,7 @@ import type { Resource, ResourceRelation } from '@dependency-explorer/schema'
 import type { RailsModel } from './extractors/rails-schema'
 import { type RepoGraph } from './code-grades'
 import { escapeRegExp, stripComments } from './code-wiring'
-import { OWNING_ROLES, READING_ROLES, type TerraformFacts } from './extractors/terraform'
+import { OWNING_ROLES, READING_ROLES, type TerraformFacts, type TfDmsTask } from './extractors/terraform'
 import { normalizeResourceName } from '@dependency-explorer/data'
 import type { ServerlessFacts } from './extractors/serverless'
 
@@ -191,7 +191,7 @@ export function atlasRelations(terraform: Array<{ service: string; facts: Terraf
   return out
 }
 
-const MONOLITH = 'skello-app'
+export const MONOLITH = 'skello-app'
 
 function compactName(repo: string): string {
   return repo.replace(/[^a-z0-9]/gi, '').toLowerCase()
@@ -205,7 +205,7 @@ function productionBranch(source: string): string {
   return (m[1] === '!=' ? m[3] : m[2]) ?? source
 }
 
-function dmsSourceRepo(source: string | undefined, repos: string[], fallback: string): string {
+export function dmsSourceRepo(source: string | undefined, repos: string[], fallback: string): string {
   const compact = compactName(productionBranch(source ?? ''))
   const matches = repos.filter(repo => compact.includes(compactName(repo)))
   return matches.sort((a, b) => compactName(b).length - compactName(a).length)[0] ?? fallback
@@ -223,16 +223,20 @@ export function dedupeRelations(rels: ResourceRelation[]): ResourceRelation[] {
   })
 }
 
+export function dmsTaskStream(t: { service: string; facts: TerraformFacts }, task: TfDmsTask, resources: Resource[]): Resource | undefined {
+  const streamByEndpoint = new Map(t.facts.dmsEndpoints.flatMap(e => (e.streamLabel ? [[e.label, e.streamLabel] as const] : [])))
+  const nameByLabel = new Map(t.facts.resources.filter(r => r.tfType === 'aws_kinesis_stream' && r.name).map(r => [r.label, normalizeResourceName(r.name ?? '', 'kinesis').name]))
+  const endpoint = task.target?.match(/aws_dms_endpoint\.([\w-]+)/)?.[1]
+  const name = nameByLabel.get(streamByEndpoint.get(endpoint ?? '') ?? '')
+  return resources.find(r => r.store === 'kinesis' && r.name === name && (!r.owner || r.owner === t.service))
+}
+
 export function dmsRelations(terraform: Array<{ service: string; facts: TerraformFacts }>, resources: Resource[]): ResourceRelation[] {
   const out: ResourceRelation[] = []
   const repos = [...new Set([MONOLITH, ...resources.flatMap(r => (r.owner ? [r.owner] : [])), ...terraform.map(t => t.service)])]
   for (const t of terraform) {
-    const streamByEndpoint = new Map(t.facts.dmsEndpoints.flatMap(e => (e.streamLabel ? [[e.label, e.streamLabel] as const] : [])))
-    const nameByLabel = new Map(t.facts.resources.filter(r => r.tfType === 'aws_kinesis_stream' && r.name).map(r => [r.label, normalizeResourceName(r.name ?? '', 'kinesis').name]))
     for (const task of t.facts.dmsTasks) {
-      const endpoint = task.target?.match(/aws_dms_endpoint\.([\w-]+)/)?.[1]
-      const name = nameByLabel.get(streamByEndpoint.get(endpoint ?? '') ?? '')
-      const stream = resources.find(r => r.store === 'kinesis' && r.name === name && (!r.owner || r.owner === t.service))
+      const stream = dmsTaskStream(t, task, resources)
       const service = dmsSourceRepo(task.source, repos, t.service)
       if (stream && !out.some(r => r.resource === stream.id && r.service === service)) {
         out.push({ resource: stream.id, relation: 'produces', service, grade: 'config' })
