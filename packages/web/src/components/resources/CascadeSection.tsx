@@ -11,7 +11,7 @@ interface Props {
   onOpenResource: (id: string) => void
 }
 
-function Hops({ nodes, onOpenResource }: { nodes: CascadeNode[]; onOpenResource: (id: string) => void }) {
+export function CascadeHops({ nodes, onOpenResource }: { nodes: CascadeNode[]; onOpenResource: (id: string) => void }) {
   return (
     <ul className={styles.tree}>
       {nodes.flatMap(n => n.hops.map((h, i) => (
@@ -23,7 +23,7 @@ function Hops({ nodes, onOpenResource }: { nodes: CascadeNode[]; onOpenResource:
             {(h.effect.runs ?? 'none') === 'none' ? ` · runs none, skips ${plural(h.skipped, 'listener')}` : ''}
             {h.cycle ? ' · ↻ cycle' : ''}
           </span>
-          {h.next.length > 0 && <Hops nodes={h.next} onOpenResource={onOpenResource} />}
+          {h.next.length > 0 && <CascadeHops nodes={h.next} onOpenResource={onOpenResource} />}
         </li>
       )))}
     </ul>
@@ -44,7 +44,7 @@ export function CascadeSection({ table, event, onEvent, onOpenResource }: Props)
         {LISTENER_EVENTS.map(e => <button key={e} type="button" className={styles.chip} aria-pressed={e === selected} onClick={() => onEvent(e)}>{e}</button>)}
       </div>
       {nodes.some(n => n.hops.length > 0)
-        ? <Hops nodes={nodes} onOpenResource={onOpenResource} />
+        ? <CascadeHops nodes={nodes} onOpenResource={onOpenResource} />
         : <p className={styles.meta}>{`No table changes on ${selected}.`}</p>}
     </section>
   )

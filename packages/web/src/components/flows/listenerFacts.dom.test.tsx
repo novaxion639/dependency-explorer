@@ -5,12 +5,12 @@ import { createRoot } from 'react-dom/client'
 import { connectivityMap } from '@dependency-explorer/data'
 import { ListenerFacts } from './ListenerFacts'
 
-const flow = connectivityMap.flows.find(f => f.id === 'shift-update')
-const unit = (id: string) => (flow?.codeUnits ?? []).find(u => u.id === id)
+const flowOf = (id: string) => connectivityMap.flows.find(f => f.id === id)
 
-function mount(id: string, onOpenResource: (id: string) => void = () => {}) {
+function mount(id: string, onOpenResource: (id: string) => void = () => {}, flowId = 'shift-update') {
   const host = document.createElement('div')
-  const u = unit(id)
+  const flow = flowOf(flowId)
+  const u = (flow?.codeUnits ?? []).find(x => x.id === id)
   act(() => {
     createRoot(host).render(flow && u ? <ListenerFacts flow={flow} unit={u} onOpenResource={onOpenResource} /> : null)
   })
@@ -41,12 +41,22 @@ describe('ListenerFacts', () => {
     expect(host.textContent).toContain('⚠ unsupported')
     expect(host.textContent).toContain('app/jobs/shifts/shift_data_updater_job.rb')
   })
+  it('shows the cascade reached through the shifts listeners', () => {
+    const host = mount('cu-upd-service')
+    const fires = host.querySelector('section')
+    const reached = [...(fires?.querySelectorAll('ul ul button') ?? [])].map(b => b.textContent)
+    expect(reached).toContain('paid_leaves_counters')
+  })
+  it('reads runs none with the call for a write that skips every listener', () => {
+    const host = mount('cu-upd-service')
+    expect(host.textContent).toContain('runs none (update_all)')
+  })
+  it('labels a table-event link unverified', () => {
+    const host = mount('cu-ss-prospect', () => {}, 'self-serve-signup')
+    expect(host.textContent).toContain('by table event — unverified')
+  })
   it('renders nothing for a unit with no writes and no callbacks', () => {
-    const other = (flow?.codeUnits ?? []).find(u => u.kind === 'controller')
-    const host = document.createElement('div')
-    act(() => {
-      createRoot(host).render(flow && other ? <ListenerFacts flow={flow} unit={other} onOpenResource={() => {}} /> : null)
-    })
+    const host = mount('cu-upd-controller')
     expect(host.querySelector('h3')).toBeNull()
   })
 })
