@@ -1,4 +1,4 @@
-import { alsoChanges, cascadeFrom, listenerSurface, type CascadeNode, type WriteEvent } from '@dependency-explorer/data'
+import { WRITE_EVENTS, alsoChanges, cascadeFrom, listenerSurface, type CascadeNode, type WriteEvent } from '@dependency-explorer/data'
 import { plural } from '../../utils/plural'
 import { GradeGlyph } from './ListenersSection'
 import { LISTENER_EVENTS, tableName } from './listenerView'
@@ -19,7 +19,7 @@ function Hops({ nodes, onOpenResource }: { nodes: CascadeNode[]; onOpenResource:
           <GradeGlyph unverified={h.grade === 'text'} />
           <button type="button" className={styles.link} onClick={() => onOpenResource(h.table)}>{tableName(h.table)}</button>
           <span className={styles.meta}>
-            {` ← ${n.listener.method ?? n.listener.hook} · ${h.mode}`}
+            {` ← ${n.listener.method ?? n.listener.hook} · ${h.mode} · ${(h.effect.events ?? WRITE_EVENTS).join(' ')}`}
             {(h.effect.runs ?? 'none') === 'none' ? ` · runs none, skips ${plural(h.skipped, 'listener')}` : ''}
             {h.cycle ? ' · ↻ cycle' : ''}
           </span>
@@ -39,8 +39,8 @@ export function CascadeSection({ table, event, onEvent, onOpenResource }: Props)
   const nodes = cascadeFrom(listenerSurface, table, selected)
   return (
     <section aria-label="Also changes" className={styles.section}>
-      <h2>{`Also changes · ${plural(reached.length, 'table')}`}</h2>
-      <div role="group" aria-label="Event" className={styles.filters}>
+      <h2>{`Also changes · ${plural(reached.length, 'table')} across all events`}</h2>
+      <div role="group" aria-label="Cascade event" className={styles.filters}>
         {LISTENER_EVENTS.map(e => <button key={e} type="button" className={styles.chip} aria-pressed={e === selected} onClick={() => onEvent(e)}>{e}</button>)}
       </div>
       {nodes.some(n => n.hops.length > 0)

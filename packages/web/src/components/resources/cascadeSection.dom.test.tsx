@@ -26,9 +26,19 @@ describe('CascadeSection', () => {
     act(() => [...host.querySelectorAll('button')].find(b => b.textContent === 'destroy')?.click())
     expect(calls).toEqual(['event:destroy'])
   })
-  it('labels the event group', () => {
+  it('labels the cascade event group', () => {
     const host = mount('pg:skello_production.shifts', null, [])
-    expect(host.querySelector('[role="group"][aria-label="Event"] button[aria-pressed="true"]')?.textContent).toBe('update')
+    expect(host.querySelector('[role="group"][aria-label="Cascade event"] button[aria-pressed="true"]')?.textContent).toBe('update')
+  })
+  it('counts the reached tables across all events in the heading', () => {
+    const host = mount('pg:skello_production.shifts', null, [])
+    expect(host.querySelector('section[aria-label="Also changes"] h2')?.textContent).toMatch(/^Also changes · \d+ tables across all events$/)
+  })
+  it('names the events each hop writes', () => {
+    const host = mount('pg:skello_production.shifts', null, [])
+    const hops = [...host.querySelectorAll('section[aria-label="Also changes"] li')]
+    expect(hops.length).toBeGreaterThan(0)
+    expect(hops.every(h => /← \S+ · (sync|async) · (create|update|destroy)( (create|update|destroy))*/.test(h.textContent ?? ''))).toBe(true)
   })
   it('says so when the selected event reaches no table', () => {
     const host = mount('pg:skello_production.billing_infos', 'create', [])

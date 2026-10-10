@@ -42,6 +42,13 @@ describe('ResourcePage', () => {
     expect(html).toContain('aria-label="Write paths"')
     expect(html).toContain('Runs no listener')
   })
+  it('shows the CDC feed and its target stream inside the Feeds section', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
+    const [, afterFeeds = ''] = html.split('aria-label="Feeds"')
+    const feeds = afterFeeds.split('</section>')[0] ?? ''
+    expect(afterFeeds).not.toBe('')
+    expect(feeds).toContain('kinesis:skelloapp-bus')
+  })
 })
 
 describe('ResourcesIndex', () => {
@@ -51,10 +58,5 @@ describe('ResourcesIndex', () => {
       expect(html).toContain(`aria-label="${store}"`)
     }
     expect(html).toContain('aria-label="Owner"')
-  })
-  it('shows the CDC feed and its target stream', () => {
-    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
-    expect(html).toContain('aria-label="Feeds"')
-    expect(html).toContain('kinesis:skelloapp-bus')
   })
 })

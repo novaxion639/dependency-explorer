@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import type { Resource } from '@dependency-explorer/data'
 import { listenerMetrics, listenerSurface, resourceSurface } from '@dependency-explorer/data'
+import { plural } from '../../utils/plural'
 import { filterResources, type ResourceSort } from './resourceFilter'
 import styles from './ResourcesIndex.module.css'
 
 const metrics = listenerMetrics(listenerSurface)
 const SORTS: readonly ResourceSort[] = ['name', 'listeners', 'alsoChanges', 'bypassing']
 const SORT_LABEL: Record<ResourceSort, string> = { name: 'name', listeners: 'listeners', alsoChanges: 'also changes', bypassing: 'bypassing writes' }
+const NO_METRICS = { listeners: 0, alsoChanges: 0, bypassing: 0 }
+const isPgTable = (r: Resource) => r.kind === 'table' && r.id.startsWith('pg:')
 const owners = [...new Set(resourceSurface.resources.flatMap(r => (r.owner ? [r.owner] : [])))].sort()
 
 export function ResourcesIndex({ onOpenResource }: { onOpenResource: (id: string) => void }) {
@@ -33,14 +36,17 @@ export function ResourcesIndex({ onOpenResource }: { onOpenResource: (id: string
         <section key={store} aria-label={store}>
           <h2 className={styles.store}>{store}</h2>
           <ul className={styles.grid}>
-            {visible.filter(r => r.store === store).map(r => (
-              <li key={r.id}>
-                <button type="button" className={styles.card} onClick={() => onOpenResource(r.id)}>
-                  {r.name}<small>{r.kind}{r.owner ? ` · ${r.owner}` : ''}</small>
-                  {metrics.get(r.id) && <small>{`${metrics.get(r.id)?.listeners ?? 0} listeners · ${metrics.get(r.id)?.alsoChanges ?? 0} also · ${metrics.get(r.id)?.bypassing ?? 0} bypassing`}</small>}
-                </button>
-              </li>
-            ))}
+            {visible.filter(r => r.store === store).map(r => {
+              const m = metrics.get(r.id) ?? NO_METRICS
+              return (
+                <li key={r.id}>
+                  <button type="button" className={styles.card} onClick={() => onOpenResource(r.id)}>
+                    {r.name}<small>{r.kind}{r.owner ? ` · ${r.owner}` : ''}</small>
+                    {isPgTable(r) && <small>{`${plural(m.listeners, 'listener')} · ${plural(m.alsoChanges, 'also change')} · ${plural(m.bypassing, 'bypassing write')}`}</small>}
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </section>
       ))}

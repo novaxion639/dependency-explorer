@@ -47,7 +47,7 @@ export function ListenersSection({ listeners, filters, open, onFilters, onToggle
     <section aria-label="Listeners" className={styles.section}>
       <h2>{`Listeners · ${visible.length} of ${listeners.length}`}</h2>
       <div className={styles.filters}>
-        <FilterSelect label="Event" value={active.lev} options={LISTENER_EVENTS} onChange={lev => onFilters({ lev })} />
+        <FilterSelect label="Listener event" value={active.lev} options={LISTENER_EVENTS} onChange={lev => onFilters({ lev })} />
         <FilterSelect label="Kind" value={active.lkind} options={LISTENER_KINDS} onChange={lkind => onFilters({ lkind })} />
         <FilterSelect label="Grade" value={active.lgrade} options={LISTENER_GRADES} onChange={lgrade => onFilters({ lgrade })} />
       </div>

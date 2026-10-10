@@ -65,6 +65,11 @@ describe('ListenersSection', () => {
     const host = mount('shifts.after_commit.update_paid_leaves', [])
     expect(host.querySelectorAll('[role="img"][aria-label="verified"]').length).toBe(2)
   })
+  it('labels the event filter Listener event', () => {
+    const host = mount(null, [])
+    expect(host.querySelector('select[aria-label="Listener event"]')).toHaveProperty('value', 'all')
+    expect(host.querySelector('select[aria-label="Event"]')).toBeNull()
+  })
   it('treats a filter value outside its options as no filter', () => {
     const host = mount(null, [], { lev: null, lkind: 'bogus', lgrade: null })
     expect(host.querySelector('h2')?.textContent).toBe('Listeners · 1 of 1')
