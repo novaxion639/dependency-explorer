@@ -90,7 +90,7 @@ export function SearchModal({ index, onNavigate, onClose }: Props) {
           {!query && (
             <p className={styles.hint}>
               Type to search across {index.length.toLocaleString()} entries — services, endpoints,
-              connections, flows, areas, glossary terms, external systems, databases and queues.<br />
+              connections, flows, areas, glossary terms, external systems, databases, queues, listeners and jobs.<br />
               Examples: <Hint q="credit-balance" /> <Hint q="mergeShop" /> <Hint q="svc-users → skello-app" /> <Hint q="shift creation" /> <Hint q="poste" />
             </p>
           )}
