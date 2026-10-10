@@ -1,7 +1,9 @@
 import type { ResourceRelation } from '@dependency-explorer/data'
-import { allResourceRelations, connectivityMap, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
+import { allResourceRelations, connectivityMap, inRailsOrder, listenerSurface, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
 import { evidenceHref } from '../../utils/evidenceLink'
 import { plural } from '../../utils/plural'
+import { ListenersSection } from './ListenersSection'
+import type { ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
 
 const GRADE_BADGE: Record<ResourceRelation['grade'], { symbol: string; title: string }> = {
@@ -23,15 +25,18 @@ interface Props {
   onOpenFlow: (id: string) => void
   onSelectService: (name: string) => void
   onBlast: (id: string) => void
+  listeners: ListenerUrl
+  onListeners: (p: Partial<ListenerUrl>) => void
 }
 
-export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSelectService, onBlast }: Props) {
+export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSelectService, onBlast, listeners, onListeners }: Props) {
   const impact = resourceImpact(id, connectivityMap, resourceSurface.resources, allResourceRelations)
   if (!impact) {
     return null
   }
   const { resource, byService, flows, dlq, counts } = impact
   const note = resourceNotes[id]
+  const tableListeners = resource.kind === 'table' ? inRailsOrder(listenerSurface.listeners.filter(l => l.table === id)) : []
   const tables = resource.kind === 'database' ? resourceSurface.resources.filter(r => r.id.startsWith(`${id}.`)) : []
   return (
     <section aria-label={resource.name} className={styles.page}>
@@ -82,6 +87,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
           </section>
         )
       })}
+      <ListenersSection listeners={tableListeners} filters={listeners} open={listeners.listener} onFilters={onListeners} onToggle={listener => onListeners({ listener })} onOpenResource={onOpenResource} />
       {dlq && <p className={styles.meta}>Dead letters go to <button type="button" className={styles.link} onClick={() => onOpenResource(dlq)}>{dlq}</button></p>}
       {(resource.related ?? []).length > 0 && (
         <section aria-label="Related tables" className={styles.section}>

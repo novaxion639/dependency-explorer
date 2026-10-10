@@ -5,7 +5,7 @@ import { ResourcePage } from './ResourcePage'
 import { ResourcesIndex } from './ResourcesIndex'
 
 const noop = () => {}
-const props = { onOpenResource: noop, onOpenFile: noop, onOpenFlow: noop, onSelectService: noop, onBlast: noop }
+const props = { onOpenResource: noop, onOpenFile: noop, onOpenFlow: noop, onSelectService: noop, onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
 
 describe('ResourcePage', () => {
   it('shows the change impact of the shifts table with graded files and flows', () => {
@@ -25,6 +25,11 @@ describe('ResourcePage', () => {
     const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production" {...props} />)
     expect(html).toContain('aria-label="Tables"')
     expect(html).toContain('>shifts</button>')
+  })
+  it('lists the shifts table listeners from the committed surface', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
+    expect(html).toContain('aria-label="Listeners"')
+    expect(html).toContain('update_paid_leaves')
   })
   it('renders a resource with no relations without throwing', () => {
     const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))
