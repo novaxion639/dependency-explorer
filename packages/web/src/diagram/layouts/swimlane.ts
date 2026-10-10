@@ -1,5 +1,6 @@
-import type { FlowCodeEdge, FlowCodeUnit, ServiceFlow } from '@dependency-explorer/data'
+import { allStates, type FlowCodeEdge, type FlowCodeUnit, type MachineState, type ServiceFlow, type StateMachine } from '@dependency-explorer/data'
 import { EDGE_LABEL_FONT, EDGE_LABEL_LINE, fitLabel, linesHeight, overlaps, textWidth, wrapText } from '../geometry'
+import { catchTargets, machineFrames, machineLane, machineOrder, machineStores, machineTransitions, stateKey, stateNodeId } from './machines'
 import { ALL_RENDERERS, type Box, type DiagramEdge, type DiagramGroup, type DiagramModel, type DiagramNode, type EdgeMode, type RoutePoint } from '../model'
 
 const FONT = 12
@@ -22,6 +23,8 @@ const CHANNEL = 19
 const HEADER_Y = 6
 const HEADER_H = 24
 const LABEL_STEP = 4
+const FRAME_PAD = 10
+const FRAME_HEAD = 22
 const PORT = { inLeft: 1 / 5, inRight: 2 / 5, outLeft: 3 / 5, outRight: 4 / 5 }
 
 export const STORES_LANE = 'lane:stores'
@@ -92,6 +95,30 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
   const codeEdges = flow.codeEdges ?? []
   const asyncTargets = new Set(codeEdges.filter(e => e.mode === 'async-job').map(e => e.to))
   const unitServices = new Set([...units.values()].map(u => u.service))
+  const machines = flow.stateMachines ?? []
+  const machineById = new Map(machines.map(m => [m.id, m]))
+  const stateByKey = new Map<string, { state: MachineState; machine: StateMachine; outside: boolean }>()
+  for (const m of machines) {
+    const targets = catchTargets(m)
+    for (const state of allStates(m).filter(x => x.type !== 'map' && x.type !== 'parallel')) {
+      stateByKey.set(stateKey(state), { state, machine: m, outside: targets.has(state.id) })
+    }
+  }
+  const machineKeys = new Map(machines.map(m => [m.id, machineOrder(m)]))
+  const machineOfKey = new Map([...machineKeys].flatMap(([id, keys]) => keys.map(k => [k, id] as const)))
+  const machineEdges: FlowCodeEdge[] = machines.flatMap(m => {
+    const byId = new Map(allStates(m).map(st => [st.id, st]))
+    const keyOf = (id: string) => {
+      const target = byId.get(id)
+      return target ? stateKey(target) : id
+    }
+    return [
+      ...machineTransitions(m).map((t): FlowCodeEdge => ({ from: t.from, to: t.to, label: t.label, mode: 'sync' })),
+      ...machineStores(m).map((st): FlowCodeEdge => ({ from: m.id, to: st.store, mode: 'sync' })),
+      ...(m.errorHandler === undefined ? [] : [{ from: m.id, to: keyOf(m.errorHandler), mode: 'async-event' as const }]),
+      ...allStates(m).flatMap(st => (st.catchTo === undefined ? [] : [{ from: stateKey(st), to: keyOf(st.catchTo), mode: 'async-event' as const }])),
+    ]
+  })
 
   const ids: string[] = []
   const add = (id: string) => {
@@ -109,6 +136,13 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
   for (const id of infra.keys()) {
     add(id)
   }
+  for (const e of machineEdges) {
+    add(e.from)
+    add(e.to)
+  }
+  for (const id of stateByKey.keys()) {
+    add(id)
+  }
   const infraLinks = (flow.infraEdges ?? []).filter(e => {
     const store = infra.has(e.to) ? e.to : e.from
     const owner = store === e.to ? e.from : e.to
@@ -120,21 +154,45 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
   }
 
   const out = new Map<string, FlowCodeEdge[]>()
-  for (const e of codeEdges) {
+  for (const e of [...codeEdges, ...machineEdges]) {
     out.set(e.from, [...(out.get(e.from) ?? []), e])
   }
   for (const list of out.values()) {
     list.sort((a, b) => MODE_RANK[a.mode ?? 'sync'] - MODE_RANK[b.mode ?? 'sync'])
   }
-  const incoming = new Set(codeEdges.map(e => e.to))
+  const incoming = new Set([...codeEdges, ...machineEdges].map(e => e.to))
   const depth = new Map<string, number>()
   const order: string[] = []
+  const placedMachines = new Set<string>()
+  const placeMachine = (id: string, d: number) => {
+    placedMachines.add(id)
+    const keys = machineKeys.get(id) ?? []
+    keys.forEach((k, i) => {
+      if (!depth.has(k)) {
+        depth.set(k, d + i)
+        order.push(k)
+      }
+    })
+    keys.forEach((k, i) => {
+      for (const e of out.get(k) ?? []) {
+        visit(e.to, d + i + 1)
+      }
+    })
+  }
   const visit = (id: string, d: number) => {
     if (depth.has(id)) {
       return
     }
+    const machine = machineOfKey.get(id)
+    if (machine !== undefined && !placedMachines.has(machine)) {
+      placeMachine(machine, d)
+      return
+    }
     depth.set(id, d)
     order.push(id)
+    if (machineById.has(id) && !placedMachines.has(id)) {
+      placeMachine(id, d + 1)
+    }
     for (const e of out.get(id) ?? []) {
       visit(e.to, d + 1)
     }
@@ -147,6 +205,13 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
   }
 
   const laneOf = (id: string): string => {
+    const state = stateByKey.get(id)
+    if (state) {
+      return state.outside ? backgroundLane(state.machine.service) : machineLane(state.machine.id)
+    }
+    if (machineById.has(id)) {
+      return machineLane(id)
+    }
     const unit = units.get(id)
     if (unit) {
       return unit.kind === 'job' || asyncTargets.has(id) ? backgroundLane(unit.service) : requestLane(unit.service)
@@ -156,12 +221,20 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     }
     return unitServices.has(id) ? requestLane(id) : OTHERS_LANE
   }
-  const isLaneEndpoint = (id: string) => !units.has(id) && !infra.has(id) && unitServices.has(id)
+  const isLaneEndpoint = (id: string) => machineById.has(id) || (!units.has(id) && !infra.has(id) && !stateByKey.has(id) && unitServices.has(id))
 
   const nodeOf = (id: string): DiagramNode => {
     const unit = units.get(id)
+    const machineState = stateByKey.get(id)
+    if (machineState && !unit) {
+      const { state } = machineState
+      const choice = state.type === 'choice'
+      const detail = choice ? [] : [state.type, ...(state.catches ? ['⚠ on error'] : [])]
+      return { id: stateNodeId(state.id), kind: choice ? 'choice' : 'state', label: fitLabel(choice ? `◇ ${state.label}` : state.label, NODE_W, FONT), detail, stores: [], fontSize: FONT, x: 0, y: 0, w: NODE_W, h: linesHeight(1 + detail.length, FONT), ref: { type: 'unit', id: state.id } }
+    }
     if (unit) {
       const lines = [
+        ...(machineState ? [machineState.state.label, ...(machineState.state.catches ? ['⚠ on error'] : [])] : []),
         KIND_LABEL[unit.kind],
         ...(unit.flags ?? []).map(f => `🚩 ${f.name}`),
         ...(flow.branches ?? []).filter(b => b.at === id).map(b => `⎇ ${b.status ? `${b.status} · ` : ''}${b.when}`),
@@ -196,7 +269,21 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
   const byId = new Map(nodes.map(n => [n.id, n]))
   const gutterW = (gutter: number) => LANE_GAP + (wider.get(gutter) ?? 0)
   const laneX = (i: number) => i * LANE_W + Array.from({ length: Math.max(0, i) }, (_, g) => gutterW(g)).reduce((sum, w) => sum + w, 0)
-  const modelId = (id: string) => (units.has(id) ? unitNodeId(id) : infra.has(id) ? infraNodeId(id) : isLaneEndpoint(id) ? requestLane(id) : serviceNodeId(id))
+  const modelId = (id: string) => {
+    if (units.has(id)) {
+      return unitNodeId(id)
+    }
+    if (infra.has(id)) {
+      return infraNodeId(id)
+    }
+    if (machineById.has(id)) {
+      return machineLane(id)
+    }
+    if (stateByKey.has(id)) {
+      return id
+    }
+    return isLaneEndpoint(id) ? requestLane(id) : serviceNodeId(id)
+  }
 
   const wrapped = (text: string) => wrapText(text, WRAP_W, EDGE_LABEL_FONT)
   const labelHeight = (lines: number) => (lines > 0 ? lines * EDGE_LABEL_LINE + LABEL_FRAME : 0)
@@ -224,6 +311,19 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
       return { from: e.from, to: e.to, edge: push(e.from, e.to, mode, edgeText(e.label, e.crud), edgeCondition(e)) }
     }),
     ...infraLinks.map(e => ({ from: e.from, to: e.to, edge: push(e.from, e.to, 'sync', edgeText(e.label, e.crud)) })),
+    ...machines.flatMap(m => {
+      const stores = new Map(machineStores(m).map(st => [st.store, st]))
+      return machineEdges.filter(e => e.from === m.id || machineOfKey.get(e.from) === m.id || stateByKey.get(e.from)?.machine.id === m.id).map(e => {
+        const store = e.from === m.id ? stores.get(e.to) : undefined
+        const edge = store
+          ? push(e.from, e.to, 'sync', edgeText(store.label, store.crud))
+          : push(e.from, e.to, e.mode === 'async-event' ? 'async' : 'sync', e.mode === 'async-event' ? 'on error' : e.label ?? '')
+        if (edge) {
+          edge.ref = store ? { type: 'unit', id: store.store } : { type: 'unit', id: e.mode === 'async-event' ? m.id : stateByKey.get(e.from)?.state.id ?? m.id }
+        }
+        return { from: e.from, to: e.to, edge }
+      })
+    }),
   ].flatMap(({ from, to, edge }) => (edge ? [{ from, to, h: labelHeight(lineCount(edge)) }] : []))
   for (const p of pairs) {
     const ra = rowOf.get(p.from)
@@ -265,6 +365,10 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     }
     if (lane === OTHERS_LANE) {
       return 'Other services'
+    }
+    const machine = machines.find(m => machineLane(m.id) === lane)
+    if (machine) {
+      return machine.label
     }
     return lane.endsWith(':bg') ? `${lane.slice(5, -3)} · background` : lane.slice(5)
   }
@@ -401,11 +505,32 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
 
   const bottom = Math.max(height, ...placed.map(b => b.y + b.h + PAD))
   const width = Math.max(lanesRight, ...placed.map(b => b.x + b.w + PAD))
-  const groups: DiagramGroup[] = laneOrder.map((lane, i) => ({
-    id: lane, kind: 'lane', label: fitLabel(laneLabel(lane), LANE_W, FONT), fontSize: FONT,
-    members: order.filter(id => !isLaneEndpoint(id) && laneOf(id) === lane).map(modelId),
-    x: laneX(i), y: 0, w: LANE_W, h: bottom,
+  const lanes: DiagramGroup[] = laneOrder.map((lane, i) => {
+    const machine = machines.find(m => machineLane(m.id) === lane)
+    return {
+      id: lane, kind: machine ? 'machine' : 'lane', label: fitLabel(laneLabel(lane), LANE_W, FONT), fontSize: FONT,
+      members: order.filter(id => !isLaneEndpoint(id) && laneOf(id) === lane).map(modelId),
+      x: laneX(i), y: 0, w: LANE_W, h: bottom,
+      ...(machine ? { ref: { type: 'unit' as const, id: machine.id } } : {}),
+    }
+  })
+  const frames: DiagramGroup[] = machines.flatMap(m => machineFrames(m).flatMap(frame => {
+    const members = frame.members.map(modelId).flatMap(id => {
+      const node = byId.get(id)
+      return node ? [node] : []
+    })
+    if (members.length === 0) {
+      return []
+    }
+    const x = Math.min(...members.map(n => n.x)) - FRAME_PAD
+    const y = Math.min(...members.map(n => n.y)) - FRAME_HEAD
+    return [{
+      id: frame.id, kind: 'frame' as const, label: frame.label, fontSize: FONT, members: members.map(n => n.id),
+      x, y, w: Math.max(...members.map(n => n.x + n.w)) + FRAME_PAD - x, h: Math.max(...members.map(n => n.y + n.h)) + FRAME_PAD - y,
+      ref: { type: 'unit' as const, id: frame.state },
+    }]
   }))
+  const groups = [...lanes, ...frames]
   return {
     model: {
       id: `flow:${flow.id}`, title: `${flow.name} — swimlanes`, width, height: bottom,
@@ -448,7 +573,27 @@ export function chapterFocus(model: DiagramModel, flow: ServiceFlow, refs: strin
   const stores = new Set((flow.infraNodes ?? []).map(n => n.id))
   const nodeIds = new Set(model.nodes.map(n => n.id))
   const focus = new Set<string>()
+  const machines = new Set((flow.stateMachines ?? []).map(m => m.id))
+  const states = new Map((flow.stateMachines ?? []).flatMap(m => allStates(m)).map(st => [st.id, st]))
   for (const ref of refs) {
+    if (machines.has(ref)) {
+      const lane = model.groups.find(g => g.id === machineLane(ref))
+      if (lane) {
+        focus.add(lane.id)
+        lane.members.forEach(m => focus.add(m))
+      }
+      continue
+    }
+    const state = states.get(ref)
+    if (state) {
+      const frame = model.groups.find(g => g.id === `frame:${state.id}`)
+      if (frame) {
+        frame.members.forEach(m => focus.add(m))
+      } else {
+        focus.add(state.unit ? unitNodeId(state.unit) : stateNodeId(state.id))
+      }
+      continue
+    }
     if (units.has(ref)) {
       focus.add(unitNodeId(ref))
       continue

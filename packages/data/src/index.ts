@@ -262,3 +262,4 @@ export { flowRelations, resourceImpact, resourceIdForDatabase, type ResourceImpa
 export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getSharedExternals, getServiceLane, getCrossAreaEdges, buildContextLanes } from './areas-derive'
 export type { CrossAreaEdge, ContextLanes } from './areas-derive'
 export { deriveChapters, flowChapters, flowRefIds } from './flow-chapters'
+export { allStates, machineProblems } from './state-machines'

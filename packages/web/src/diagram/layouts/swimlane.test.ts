@@ -3,6 +3,8 @@ import { connectivityMap as map, ServiceFlowSchema } from '@dependency-explorer/
 import { layoutProblems } from '../layoutProblems'
 import { EDGE_LABEL_FONT, overlaps, textWidth } from '../geometry'
 import type { Box, DiagramModel } from '../model'
+import { autoFlow, autoFlowWithJob, dpaeFlow, machineFixtures } from './fixtures'
+import { machineLane } from './machines'
 import { arrowBox, chapterFocus, infraNodeId, LANE_GAP, PAD, serviceNodeId, swimlanes, unitNodeId, WRAP_W } from './swimlane'
 
 function flow(id: string) {
@@ -19,7 +21,7 @@ describe('swimlanes', () => {
   const edgeTo = (to: string) => m.edges.find(e => e.to === to)
 
   it('lay out every flow soundly, drawing each unit and store once', () => {
-    for (const f of map.flows) {
+    for (const f of [...map.flows, ...machineFixtures]) {
       const model = swimlanes(f)
       expect(layoutProblems(model), f.id).toEqual([])
       for (const u of f.codeUnits ?? []) {
@@ -74,6 +76,14 @@ describe('swimlanes', () => {
     })
     expect(swimlanes(odd).nodes.find(n => n.id === infraNodeId('db'))?.ref).toEqual({ type: 'unit', id: 'db' })
   })
+  it('focuses a whole machine, or one state', () => {
+    const model = swimlanes(autoFlow)
+    const whole = chapterFocus(model, autoFlow, ['sm-auto'])
+    expect(whole.has('lane:machine:sm-auto') && whole.has('u:u-fetch') && whole.has('m:empty')).toBe(true)
+    expect([...chapterFocus(model, autoFlow, ['empty'])]).toEqual(['m:empty'])
+    expect([...chapterFocus(model, autoFlow, ['fetch'])]).toEqual(['u:u-fetch'])
+    expect([...chapterFocus(model, autoFlow, ['map'])]).toEqual(['u:u-elig'])
+  })
   it('focuses only the lanes of a role-suffixed service ref, never its units', () => {
     const focus = chapterFocus(m, shift, ['skello-app (data)'])
     expect(focus.has('lane:skello-app')).toBe(true)
@@ -114,7 +124,7 @@ function collinearOverlap([a, b]: [Pt, Pt], [c, d]: [Pt, Pt]): number {
 
 describe('swimlane routes', () => {
   it('routes every edge orthogonally, never through another node', () => {
-    for (const f of map.flows) {
+    for (const f of [...map.flows, ...machineFixtures]) {
       const model = swimlanes(f)
       for (const e of nodeEdges(model)) {
         const route = e.route ?? []
@@ -130,7 +140,7 @@ describe('swimlane routes', () => {
     }
   })
   it('keeps every edge label clear of nodes, other labels and arrowheads', () => {
-    for (const f of map.flows) {
+    for (const f of [...map.flows, ...machineFixtures]) {
       const model = swimlanes(f)
       const labelled = nodeEdges(model).filter(e => e.label || e.condition)
       const arrows = nodeEdges(model).flatMap(e => {
@@ -157,7 +167,7 @@ describe('swimlane routes', () => {
   })
   it('carries every edge label and condition in full, wrapped to fit between lanes', () => {
     const squash = (t: string) => t.replace(/\s/g, '')
-    for (const f of map.flows) {
+    for (const f of [...map.flows, ...machineFixtures]) {
       for (const e of nodeEdges(swimlanes(f))) {
         expect(squash((e.labelLines ?? []).join('')), `${f.id} ${e.id}`).toBe(squash(e.label))
         expect(squash((e.conditionLines ?? []).join('')), `${f.id} ${e.id}`).toBe(e.condition ? squash(`if ${e.condition}`) : '')
@@ -170,7 +180,7 @@ describe('swimlane routes', () => {
     expect(replacement.edges.map(e => e.label)).toContain('GET /shifts/{shiftId}/employee_replacements')
   })
   it('never runs two edges along one line unless they leave or enter the same unit', () => {
-    for (const f of map.flows) {
+    for (const f of [...map.flows, ...machineFixtures]) {
       const edges = swimlanes(f).edges
       edges.forEach((e, i) => {
         for (const o of edges.slice(i + 1).filter(o => o.from !== e.from && o.to !== e.to)) {
@@ -184,10 +194,9 @@ describe('swimlane routes', () => {
     }
   })
   it('ends the drawing at the last lane, or at its gutter when a route uses it', () => {
-    for (const f of map.flows) {
+    for (const f of [...map.flows, ...machineFixtures]) {
       const model = swimlanes(f)
-      const last = model.groups[model.groups.length - 1]
-      const lastRight = last ? last.x + last.w : 0
+      const lastRight = Math.max(0, ...model.groups.filter(g => g.kind !== 'frame').map(g => g.x + g.w))
       const reach = Math.max(lastRight, ...model.edges.flatMap(e => [...(e.route ?? []).map(p => p.x), ...(e.labelBox ? [e.labelBox.x + e.labelBox.w] : [])]))
       expect(model.width, f.id).toBeLessThanOrEqual(reach > lastRight ? Math.max(lastRight + LANE_GAP, reach + PAD) : lastRight)
     }
@@ -250,8 +259,46 @@ describe('swimlane routes', () => {
     }
     expect(layoutProblems(model)).toEqual([])
   })
+  it('draws a state machine as its own lane, states in run order, frames, one store edge each and one error exit', () => {
+    const model = swimlanes(autoFlow)
+    expect(model.groups.find(g => g.id === machineLane('sm-auto'))).toMatchObject({ kind: 'machine', label: 'AutoAssign state machine', ref: { type: 'unit', id: 'sm-auto' } })
+    const y = (id: string) => model.nodes.find(n => n.id === id)?.y ?? -1
+    const order = ['u:u-fetch', 'm:empty', 'u:u-filter', 'm:filtered', 'u:u-elig', 'u:u-agg', 'u:u-solve', 'u:u-assign', 'u:u-finish']
+    expect(order.map(y)).toEqual([...order.map(y)].sort((a, b) => a - b))
+    expect(new Set(order.map(y)).size).toBe(order.length)
+    expect(model.groups.find(g => g.id === 'frame:map')).toMatchObject({ kind: 'frame', label: 'map ×10 ⚠', members: ['u:u-elig'] })
+    expect(model.edges.filter(e => e.from === machineLane('sm-auto') && e.to.startsWith('i:')).map(e => e.to).sort()).toEqual(['i:jobs', 'i:s3', 'i:ws'])
+    expect(model.edges.find(e => e.to === 'u:u-err')).toMatchObject({ from: machineLane('sm-auto'), label: 'on error', mode: 'async' })
+    expect(model.groups.find(g => g.id === 'lane:svc:bg')?.members).toContain('u:u-err')
+    expect(model.nodes.find(n => n.id === 'u:u-fetch')?.detail.slice(0, 2)).toEqual(['fetch data', '⚠ on error'])
+    expect(layoutProblems(model)).toEqual([])
+  })
+  it('marks a catching task without a handler unit', () => {
+    const flow = ServiceFlowSchema.parse({
+      id: 'unitless', name: 'Unitless', description: 'd', steps: [], codeUnits: [{ id: 'u-e', service: 'svc', kind: 'job', label: 'E' }],
+      stateMachines: [{ id: 'sm', service: 'svc', machine: 'M', label: 'M', file: 'f.ts', start: 'x', errorHandler: 'e', states: [
+        { id: 'x', name: 'X', type: 'task', label: 'notify', catches: true },
+        { id: 'e', name: 'E', type: 'task', label: 'error handler', unit: 'u-e' },
+      ] }],
+    })
+    expect(swimlanes(flow).nodes.find(n => n.id === 'm:x')?.detail).toEqual(['task', '⚠ on error'])
+  })
+  it('layouts a loop back without crossing nodes', () => {
+    const model = swimlanes(dpaeFlow)
+    expect(model.edges.find(e => e.from === 'm:exhausted' && e.to === 'm:wait')?.route?.length).toBeGreaterThan(2)
+    expect(layoutProblems(model)).toEqual([])
+  })
+  it('keeps a choice rule to the next state as its own labelled edge', () => {
+    const edges = swimlanes(dpaeFlow).edges.filter(e => e.from === 'm:pending')
+    expect(edges.map(e => e.label).sort()).toEqual(['', 'pending'])
+  })
+  it('keeps ordinary jobs out of the machine', () => {
+    const model = swimlanes(autoFlowWithJob)
+    expect(model.groups.find(g => g.id === machineLane('sm-auto'))?.members).not.toContain('u:u-other-job')
+    expect(model.groups.find(g => g.id === 'lane:svc:bg')?.members).toContain('u:u-other-job')
+  })
   it('sets each label against its own route, inside the drawing', () => {
-    for (const f of map.flows) {
+    for (const f of [...map.flows, ...machineFixtures]) {
       const model = swimlanes(f)
       for (const e of model.edges.filter(e => e.labelBox)) {
         const box = e.labelBox ?? { x: 0, y: 0, w: 0, h: 0 }

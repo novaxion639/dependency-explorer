@@ -24,7 +24,8 @@
   - external-system evidence.
 - **Flow verification** at the pinned commit:
   - unit paths and call-edge grades (see [flows.md](flows.md#the-code-layer-and-its-grades));
-  - branch literals, domain-rule stamps, flags, DLQs, auth refs and PII refs.
+  - branch literals, domain-rule stamps, flags, DLQs, auth refs and PII refs;
+  - ⚙ state machines: each authored machine against its Step Functions definition — states, types, transitions, catches, concurrency, task handler files, and states in code the flow does not declare (see [flows.md](flows.md#state-machines)).
 - **Live AWS state** (Layer 4), compared with the map: a read-only account snapshot of event source mappings, subscriptions and filter policies, DMS tasks, bucket notifications and schedules.
   - Snapshots are gitignored.
   - Sandbox account only, per the credentials story (`research/aws-live-verification-credentials.md` in the shared docs).
@@ -39,6 +40,7 @@ pnpm discover:baseline        # pinned run + rewrite packages/discovery/baseline
 pnpm discover -- --pinned --fail-on-new   # exit 1 when a finding is not in the baseline, or a baseline repo was not scanned
 pnpm --filter @dependency-explorer/discovery discover:unit-paths   # exit 1 when a flow unit's file is missing at its pinned commit; counts units it skips (repo not cloned or not pinned)
 pnpm --filter @dependency-explorer/discovery discover:grades       # replay call-edge grades against the existing pinned worktrees, no re-pin
+pnpm --filter @dependency-explorer/discovery discover:machines     # check flow state machines against the pinned definitions (⚙), no re-pin
 pnpm discover -- --aws [dir]  # + 🛰 live AWS snapshot diff (defaults to the latest snapshot)
 pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (~215 calls, MFA'd session required)
 pnpm docs:gen                 # rewrite the generated sections of the inventory docs (CI fails on drift)

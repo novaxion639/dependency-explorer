@@ -65,6 +65,16 @@ The full rules are in the Verified Paths spec (`docs/specs/VerifiedPaths.md` in 
 
 **Branches** are alternative outcomes (409 lock held, 422 not pending…). Each anchors to a code unit by a literal that 🔀 verifies in the pinned source.
 
+## State machines
+
+A flow that runs through an AWS Step Function declares it as a state machine (auto-planning-generation, employee-onboarding, subscription-upgrade):
+- the machine is its own lane, framed with a solid border and titled with its name; its states run top to bottom in execution order;
+- a task is its handler's code unit, with the state's name and `⚠ on error` when it catches; a choice is a `◇` node whose rules are labelled edges; a pass or wait is a small node; a map or parallel is a dashed frame (`map ×10`);
+- each store the machine touches has one edge from the lane's header, labelled with the states that use it; the error handler sits in the service's background lane, joined by one dashed `on error` edge;
+- the machine's lane, a state or a store edge opens the panel on it; chapters can name a machine or a state.
+
+⚙ checks every authored machine against its definition at the pin ([discovery](discovery.md)). The full rules are in the State Machines spec (`docs/specs/StateMachines.md` in the shared docs).
+
 ## Unit detail panel
 
 Clicking a unit in the swimlanes opens its story in the detail panel:

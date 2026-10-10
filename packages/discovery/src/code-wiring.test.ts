@@ -348,3 +348,13 @@ describe('string tokenizing across line continuations', () => {
     expect(maskStrings("const p = 'C:\\\\'; new Bar()")).toContain('new Bar()')
   })
 })
+
+describe('parseTsconfigPaths', () => {
+  it('reads named tilde aliases next to the bare tilde', () => {
+    expect(parseTsconfigPaths('"~/*": ["src/*"], "~serverless/*": ["serverless/*"], "@shared/*": ["lib/*"]', '')).toEqual([
+      { prefix: '~', dir: 'src', scope: '' },
+      { prefix: '~serverless', dir: 'serverless', scope: '' },
+      { prefix: '@shared', dir: 'lib', scope: '' },
+    ])
+  })
+})

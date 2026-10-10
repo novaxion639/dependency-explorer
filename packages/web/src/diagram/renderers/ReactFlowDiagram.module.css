@@ -14,5 +14,8 @@
 .node[data-kind='job'] { border-style: dashed; }
 .node[data-kind='store'] { background: var(--paper-2); }
 .group[data-kind='lane'] { background: var(--paper); border-style: dashed; border-color: var(--rule-strong); }
+.group[data-kind='machine'] { background: var(--paper); border: 1.5px solid var(--ink); }
+.group[data-kind='frame'] { background: transparent; border: 1px dashed var(--rule-strong); }
+.node[data-kind='choice'] { border-radius: 999px; }
 .pill { display: block; margin-top: 2px; padding: 0 var(--space-2); border: 1px solid var(--ink); border-radius: 999px; background: var(--highlight); color: var(--ink); }
 .edgeLabel[data-wrapped='true'] .pill { margin-top: 0; }

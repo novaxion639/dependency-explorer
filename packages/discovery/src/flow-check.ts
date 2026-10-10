@@ -11,8 +11,7 @@
  *     the target service's (code-verified) endpoints — catches paths that
  *     drifted, e.g. after the endpoint scaffold.
  *
- * sfn-* nodes are internal Step Functions steps; "service (qualifier)" nodes
- * resolve to their base service (authoring guide §2.1).
+ * "service (qualifier)" nodes resolve to their base service (authoring guide §2.1).
  */
 
 import * as fs from 'node:fs'
@@ -558,10 +557,9 @@ export function checkDomainRules(map: ConnectivityMap, repoBase: string): RuleCh
 
 function stepBase(name: string, serviceNames: Set<string>): string | null {
   if (serviceNames.has(name)) return name
-  if (name.startsWith('sfn-')) return null
   const base = name.replace(/ \([^)]*\)$/, '')
   if (serviceNames.has(base)) return base
-  return null // sfn qualifier variants and other internal nodes
+  return null
 }
 
 export function checkFlows(map: ConnectivityMap): FlowCheckResult {

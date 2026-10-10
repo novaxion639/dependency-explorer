@@ -3,6 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { emphasise, NO_FOCUS } from '../focus'
 import type { Box, DiagramModel } from '../model'
 import { MIN_VIEW, SvgDiagram } from './SvgDiagram'
+import { autoFlow } from '../layouts/fixtures'
+import { swimlanes } from '../layouts/swimlane'
 
 const model: DiagramModel = {
   id: 'svc', title: 'svc-x — grouped by how they talk', width: 600, height: 200, renderers: ['svg'],
@@ -80,5 +82,14 @@ describe('SvgDiagram routes', () => {
     expect(html).toContain('points="200,40 250,40 250,44 310,44"')
     expect(html).toContain('>GET /long/route</text>')
     expect(html).toContain('>/name</text>')
+  })
+})
+
+describe('SvgDiagram with a state machine', () => {
+  it('draws a machine lane with a solid border and a frame with a short dash', () => {
+    const machineModel = swimlanes(autoFlow)
+    const html = renderToStaticMarkup(<SvgDiagram model={machineModel} emphases={emphasise(machineModel, NO_FOCUS)} />)
+    expect(html).toMatch(/stroke-dasharray:3 3/)
+    expect(html).toContain('AutoAssign state machine')
   })
 })

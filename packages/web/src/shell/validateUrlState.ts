@@ -1,6 +1,7 @@
 import { flowChapters } from '@dependency-explorer/data'
 import { EDGE_LIST_SEP, edgeKey, type UrlState } from '../hooks/useUrlState'
 import { areaById, fileIndex, flagRegistry, map, resourceIds } from './dataIndexes'
+import { panelIds } from '../components/flows/machineFacts'
 
 export function validateUrlState(st: UrlState): UrlState {
   const serviceNames = new Set(map.services.map(s => s.name))
@@ -27,7 +28,7 @@ export function validateUrlState(st: UrlState): UrlState {
     next.unit = null
     next.chapter = null
   } else {
-    const ids = new Set([...(openFlow.codeUnits ?? []).map(u => u.id), ...(openFlow.infraNodes ?? []).map(n => n.id)])
+    const ids = panelIds(openFlow)
     if (next.unit && !ids.has(next.unit)) {
       next.unit = null
     }

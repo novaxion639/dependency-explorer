@@ -138,7 +138,7 @@ export function injectionReach(injects: Map<string, Set<string>>, from: string[]
   return firstHop.some(c => targets.has(c) || [...(injects.get(c) ?? [])].some(d => targets.has(d)))
 }
 
-const TSCONFIG_PATH = /"((?:~|@[\w-]+))\/\*"\s*:\s*\[\s*"([^"*]*)\*"/g
+const TSCONFIG_PATH = /"((?:~[\w-]*|@[\w-]+))\/\*"\s*:\s*\[\s*"([^"*]*)\*"/g
 const DEFAULT_IMPORT = /import\s+([A-Za-z_$][\w$]*)\s*(?:,\s*\{[^}]*\})?\s*from\s*['"]([^'"]+)['"]/g
 const VITE_ALIAS = /['"](@[\w-]+)['"]\s*:\s*fileURLToPath\(\s*new URL\(\s*['"]\.\/([^'"]*)['"]/g
 const IMPORT_FROM = /(?:\bfrom|\bimport|\brequire\()\s*['"]([^'"]+)['"]/g

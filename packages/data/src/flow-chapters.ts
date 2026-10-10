@@ -1,4 +1,5 @@
 import type { FlowChapter, ServiceFlow } from '@dependency-explorer/schema'
+import { allStates } from './state-machines'
 
 function unique(ids: string[]): string[] {
   return [...new Set(ids)]
@@ -10,6 +11,7 @@ export function flowRefIds(flow: ServiceFlow): Set<string> {
     ...(flow.infraNodes ?? []).map(n => n.id),
     ...flow.steps.flatMap(s => [s.from, s.to]),
     ...(flow.codeEdges ?? []).flatMap(e => [e.from, e.to]),
+    ...(flow.stateMachines ?? []).flatMap(m => [m.id, ...allStates(m).map(s => s.id)]),
   ])
 }
 
