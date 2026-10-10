@@ -32,6 +32,8 @@ export interface TfDmsTask {
   /** expression text of source/target endpoint refs — carries the engine hint */
   source?: string
   target?: string
+  count?: string
+  tableMappings?: string
 }
 
 export interface TfDmsEndpoint {
@@ -89,6 +91,26 @@ function attr(block: string, key: string): string | undefined {
   return (m[1] ?? m[2])?.trim()
 }
 
+function expressionAttr(block: string, key: string): string | undefined {
+  const start = block.search(new RegExp(`\\b${key}\\s*=`))
+  if (start === -1) {
+    return undefined
+  }
+  const value = block.slice(block.indexOf('=', start) + 1)
+  let depth = 0
+  for (let i = 0; i < value.length; i++) {
+    const ch = value[i]
+    if (ch === '(' || ch === '{' || ch === '[') {
+      depth += 1
+    } else if (ch === ')' || ch === '}' || ch === ']') {
+      depth -= 1
+    } else if (ch === '\n' && depth <= 0) {
+      return value.slice(0, i).trim()
+    }
+  }
+  return value.trim()
+}
+
 function topLevelAttr(block: string, key: string): string | undefined {
   const m = block.match(new RegExp(`^ {2}${key}\\s*=\\s*(?:"([^"]+)"|([^\\n]+))`, 'm'))
   return (m?.[1] ?? m?.[2])?.trim()
@@ -131,6 +153,8 @@ export function parseTerraform(content: string): TerraformFacts {
         migrationType: attr(block, 'migration_type'),
         source: attr(block, 'source_endpoint_arn'),
         target: attr(block, 'target_endpoint_arn'),
+        count: attr(block, 'count'),
+        tableMappings: expressionAttr(block, 'table_mappings'),
       })
     } else if (tfType === 'mongodbatlas_database_user') {
       for (const role of blockAt(content, m.index).matchAll(/roles\s*\{([^}]*)\}/g)) {

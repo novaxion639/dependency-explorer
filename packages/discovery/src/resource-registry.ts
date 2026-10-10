@@ -7,7 +7,11 @@ import { OWNING_ROLES, READING_ROLES, type TerraformFacts } from './extractors/t
 export const STORE_PREFIX: Record<string, string> = {
   postgresql: 'pg', mongodb: 'mongo', dynamodb: 'ddb', s3: 's3', sqs: 'sqs', sns: 'sns', kinesis: 'kinesis', redis: 'redis', elasticsearch: 'es',
 }
-const MONOLITH_DB = 'skello_production'
+export const MONOLITH_DB = 'skello_production'
+
+export function tableId(table: string): string {
+  return `pg:${MONOLITH_DB}.${table}`
+}
 const KIND_BY_STORE: Partial<Record<Resource['store'], Resource['kind']>> = { sqs: 'queue', sns: 'topic', kinesis: 'stream', s3: 'bucket', dynamodb: 'table' }
 const CF_STORE: Record<string, Resource['store']> = { 'AWS::DynamoDB::Table': 'dynamodb', 'AWS::S3::Bucket': 's3', 'AWS::Kinesis::Stream': 'kinesis', 'AWS::SNS::Topic': 'sns' }
 const TF_STORE: Record<string, Resource['store']> = { aws_dynamodb_table: 'dynamodb', aws_s3_bucket: 's3', aws_kinesis_stream: 'kinesis', aws_sqs_queue: 'sqs', aws_sns_topic: 'sns', aws_kinesis_firehose_delivery_stream: 'kinesis', aws_rds_cluster: 'postgresql', aws_db_instance: 'postgresql', aws_elasticache_replication_group: 'redis' }

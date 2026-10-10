@@ -17,6 +17,7 @@ const map = ConnectivityMapSchema.parse({
       { from: 'm', to: 'pg', crud: ['update'] },
       { from: 'm', to: 'q' },
       { from: 'q', to: 'svc-a' },
+      { from: 'pg', to: 'svc-a' },
     ],
   }],
 })
@@ -24,6 +25,7 @@ const map = ConnectivityMapSchema.parse({
 describe('flowRelations', () => {
   it('turns flow edges into flow-graded relations by direction and crud', () => {
     expect(flowRelations(map).map(r => `${r.relation} ${r.resource} ${r.service} ${r.file ?? '-'}`).sort()).toEqual([
+      'consumes pg:skello_production.shifts svc-a -',
       'consumes sqs:jobs svc-a -',
       'produces sqs:jobs svc-a src/m.ts',
       'writes pg:skello_production.shifts svc-a src/m.ts',
@@ -46,7 +48,7 @@ describe('resourceImpact', () => {
   it('rolls relations up per service, dedupes, and lists flows with their crud', () => {
     const shifts = resourceImpact('pg:skello_production.shifts', map, resources, relations)
     expect(shifts?.counts).toEqual({ services: 1, files: 1, flows: 1 })
-    expect(shifts?.byService[0]?.relations).toHaveLength(1)
+    expect(shifts?.byService[0]?.relations).toHaveLength(2)
     expect(shifts?.flows).toEqual([{ flowId: 'f', name: 'F', crud: ['update'] }])
   })
   it('exposes the dead-letter queue and returns null for unknown ids', () => {

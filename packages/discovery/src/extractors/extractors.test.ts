@@ -244,6 +244,42 @@ describe('parseServerlessStatic', () => {
     ])
   })
 
+  it('reads table prefixes after destinations, skips templated prefixes and flags disabled sources', () => {
+    const src = `
+    Filtered: {
+      events: [
+        {
+          stream: {
+            arn: 'arn:aws:kinesis:eu-west-1:123:stream/skelloapp-bus',
+            destinations: {
+              onFailure: { arn: 'arn:aws:sqs:eu-west-1:123:dlq' },
+            },
+            filterPatterns: [
+              { data: { event: { prefix: 'public.shifts.' } } },
+              { data: { event: { prefix: 'public.postes' } } },
+              { data: { event: { prefix: \`public.\${table}.\` } } },
+            ],
+          },
+        },
+      ],
+    },
+    Paused: {
+      events: [
+        {
+          stream: {
+            arn: 'arn:aws:kinesis:eu-west-1:123:stream/skelloapp-bus',
+            enabled: false,
+          },
+        },
+      ],
+    },`
+    const [filtered, paused] = parseServerlessStatic(src).streamConsumers
+    expect(filtered).toEqual(expect.objectContaining({ functionName: 'Filtered', tablePrefixes: ['public.shifts.', 'public.postes'] }))
+    expect(filtered?.enabled).toBeUndefined()
+    expect(paused).toEqual(expect.objectContaining({ functionName: 'Paused', enabled: false }))
+    expect(paused?.tablePrefixes).toBeUndefined()
+  })
+
   it('mines s3 triggers with the bucket template stripped', () => {
     const src = `
     HandleEvpReady: {

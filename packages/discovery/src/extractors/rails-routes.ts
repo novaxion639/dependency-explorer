@@ -45,7 +45,7 @@ export function singularize(word: string): string {
   if (word.endsWith('ies')) {
     return `${word.slice(0, -3)}y`
   }
-  if (/(ch|sh|x|z)es$/.test(word)) {
+  if (/(ch|sh|x|z|ss|[^aeiou]us)es$/.test(word)) {
     return word.slice(0, -2)
   }
   return word.endsWith('s') ? word.slice(0, -1) : word

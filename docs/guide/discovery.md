@@ -17,6 +17,13 @@
   - owned resources and `terraform-aws-modules` stores;
   - DMS replication tasks, which prove the aurora → kinesis CDC backbone, and the streams they feed;
   - MongoDB Atlas user roles and IAM actions.
+- **Table listeners** (👂 report section):
+  - callbacks, concern bodies included, with `if:` / `unless:` kept as source text;
+  - `dependent:` cascades, `touch: true` and gem hooks: `acts_as_list`, `has_ancestry`, `multisearchable`, `has_secure_token`, `devise` and geocoder's `geocode` / `reverse_geocode`, provided by `geocoded_by` / `reverse_geocoded_by`;
+  - `has_and_belongs_to_many` destroys its join table, and `has_ancestry` descendants are destroyed by default, or re-parented under `orphan_strategy:` `:adopt` / `:rootify`;
+  - the jobs callbacks enqueue and the callee one call level below them, so `Shift` → `ShiftCallbackJob` → `WeeklyOption.upsert_employee_change!` reaches `weekly_options`;
+  - write sites classified by the listeners they run, each statement read whole (multi-line chains and the call's own arguments); raw SQL `INSERT`, `UPDATE` and `DELETE` run none, and `run_callbacks(:phase)` fires that phase's listeners;
+  - the CDC feed: the CDC task replicating each table to its stream, and the per-table stream consumers whose `filterPatterns` name the table's prefix.
 - **Product-area code locations:**
   - glob liveness;
   - monolith, front and mobile coverage;
@@ -35,16 +42,31 @@
 ```bash
 pnpm discover                 # scan sibling Skello repos → classified drift report
 pnpm discover -- --pinned     # same, against each repo's production branch (master; main for *-tf) as detached worktrees in .pinned/
-pnpm discover:apply           # pinned run + regenerate the discovered overlay (provenance stamps, call-edge grades) and the monolith routes; refuses to run unpinned
+pnpm discover:apply           # pinned run + regenerate the discovered overlay (provenance stamps, call-edge grades), the monolith routes and listeners.json; refuses to run unpinned
 pnpm discover:baseline        # pinned run + rewrite packages/discovery/baseline.json (accepted findings and scanned repo set)
 pnpm discover -- --pinned --fail-on-new   # exit 1 when a finding is not in the baseline, or a baseline repo was not scanned
 pnpm --filter @dependency-explorer/discovery discover:unit-paths   # exit 1 when a flow unit's file is missing at its pinned commit; counts units it skips (repo not cloned or not pinned)
 pnpm --filter @dependency-explorer/discovery discover:grades       # replay call-edge grades against the existing pinned worktrees, no re-pin
 pnpm --filter @dependency-explorer/discovery discover:machines     # check flow state machines against the pinned definitions (⚙), no re-pin
+pnpm --filter @dependency-explorer/discovery discover:listeners   # listeners at the pinned skello-app: extraction findings (unresolved-callback, unresolved-job, unknown-gem-macro) and listener counts for the busiest tables
 pnpm discover -- --aws [dir]  # + 🛰 live AWS snapshot diff (defaults to the latest snapshot)
 pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (~215 calls, MFA'd session required)
 pnpm docs:gen                 # rewrite the generated sections of the inventory docs (CI fails on drift)
 ```
+
+## Listener drift (👂)
+
+The 👂 section checks the table listener surface at the pinned commit. A skello-app that is not pinned is skipped. Findings carry a kind, a subject and a detail; accepted findings enter `packages/discovery/baseline.json` through `pnpm discover:baseline`. `surface-drift` and `cdc-unknown-table` come from the full `pnpm discover` run; `discover:listeners` prints the extraction kinds only.
+
+| Kind | Meaning |
+|---|---|
+| `surface-drift` | listeners, write sites or CDC relations at the pin differ from the committed `listeners.json` / `resources.json`: `discover:apply` is due. Line numbers never count: a listener is compared by id, events, phase, condition and effects (kind, target, target file, via, mode, runs, events), and write sites as a multiset of table, file, call, runs, events and fires |
+| `unresolved-callback` | a callback symbol with no `def` in the model or its included modules |
+| `unresolved-job` | an enqueued constant with no file under `app/jobs/` |
+| `unknown-gem-macro` | a class macro outside Rails associations and `KNOWN_GEM_LISTENERS` |
+| `cdc-unknown-table` | a CDC selection rule naming a table absent from `db/schema.rb`; `ar_internal_metadata`, `schema_migrations` and `pg_stat_statements` are exempt |
+
+At `3f6728f`, `cdc-unknown-table` reports `audits`, `organisation_monthly_stats`, `shop_holiday_settings` and `user_holiday_settings`.
 
 ## Nightly discovery
 

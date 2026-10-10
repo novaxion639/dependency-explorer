@@ -17,6 +17,9 @@ export interface StreamConsumerFact {
   /** the arn/reference exactly as written in config */
   raw: string
   functionName?: string
+  tablePrefixes?: string[]
+  enabled?: boolean
+  file?: string
 }
 
 export interface S3TriggerFact {
@@ -458,6 +461,20 @@ export function parseSqsConsumers(content: string): string[] | null {
   return [...new Set(names)].sort()
 }
 
+function braceBlock(lines: string[], start: number): string {
+  let depth = 0
+  const out: string[] = []
+  for (let j = start; j < lines.length; j++) {
+    const line = lines[j] ?? ''
+    out.push(line)
+    depth += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length
+    if (depth <= 0 && j > start) {
+      break
+    }
+  }
+  return out.join('\n')
+}
+
 /** Mine method/path literals from serverless TypeScript source. Exported for tests. */
 export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 'source'> {
   const endpoints: DiscoveredEndpoint[] = []
@@ -493,9 +510,13 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
         const t = inner.match(/\btype:\s*['"`](\w+)['"`]/)
         if (t) explicitType = t[1]!
       }
+      const block = braceBlock(lines, i)
+      const tablePrefixes = [...block.matchAll(/\bprefix:\s*['"`](public\.[^'"`$]*)['"`]/g)].map(p => p[1] ?? '')
       streamConsumers.push({
         ...classifyStreamRef(arn ?? '(non-literal arn)', explicitType),
         functionName: findFunctionIdentity(lines, i).functionName,
+        ...(tablePrefixes.length ? { tablePrefixes } : {}),
+        ...(/\benabled:\s*false\b/.test(block) ? { enabled: false } : {}),
       })
       continue
     }
@@ -695,7 +716,7 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
       const parsed = parseServerlessStatic(content)
       merged.endpoints.push(...parsed.endpoints)
       parsed.queueNames.forEach(q => queueNames.add(q))
-      merged.streamConsumers.push(...parsed.streamConsumers)
+      merged.streamConsumers.push(...parsed.streamConsumers.map(c => ({ ...c, file: path.relative(repoPath, file) })))
       merged.s3Triggers.push(...parsed.s3Triggers)
       merged.schedules.push(...parsed.schedules)
       merged.ownedResources.push(...parsed.ownedResources)

@@ -12,7 +12,7 @@ export function parseSchemaTables(schemaRb: string): string[] {
   return [...schemaRb.matchAll(/create_table\s+"([^"]+)"/g)].flatMap(m => (m[1] ? [m[1]] : [])).sort()
 }
 
-function underscore(className: string): string {
+export function underscore(className: string): string {
   return className.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase()
 }
 

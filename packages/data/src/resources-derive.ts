@@ -31,7 +31,7 @@ export function flowRelations(map: ConnectivityMap): ResourceRelation[] {
         }
       }
       if (outOf?.resources && to) {
-        const relation = MESSAGING.has(outOf.type) ? 'consumes' : 'reads'
+        const relation = MESSAGING.has(outOf.type) || outOf.type === 'postgresql' ? 'consumes' : 'reads'
         for (const resource of outOf.resources) {
           out.push({ resource, relation, ...to, grade: 'flow' })
         }

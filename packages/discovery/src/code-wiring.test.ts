@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import { associationMap, parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, loadWiring, wiredGrade, parseTsconfigPaths, importedFiles, maskStrings, stripComments, type WiredEdge } from './code-wiring'
+import { associationMap, parseInjections, injectionReach, parseViteAliases, resolveSpecifier, importsCallee, vuexNamespaceOf, usesVuexNamespace, emitsToCallee, parseAssociations, namesReceiverModel, receiverClass, loadWiring, wiredGrade, parseTsconfigPaths, importedFiles, maskStrings, stripComments, type WiredEdge } from './code-wiring'
 
 const container = `
 const llmProviders: LlmProviders = {
@@ -134,6 +134,18 @@ describe('rails receivers', () => {
   })
   it('ignores receivers that name another model', () => {
     expect(namesReceiverModel('params.require(:shift)', ['Shift'], associations)).toBe(false)
+  })
+})
+
+describe('receiverClass', () => {
+  const declared = new Set(['Shift', 'Badging'])
+
+  it('ties a prefixed receiver to its model only when suffixes are allowed', () => {
+    expect(receiverClass('old_shift', declared, new Map(), true)).toBe('Shift')
+    expect(receiverClass('old_shift', declared, new Map(), false)).toBeNull()
+  })
+  it('never ties a receiver whose tails name no model', () => {
+    expect(receiverClass('shifts_params', declared, new Map(), true)).toBeNull()
   })
 })
 

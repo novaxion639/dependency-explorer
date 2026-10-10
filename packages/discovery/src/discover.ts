@@ -23,7 +23,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
-import type { DiscoveredOverlay, Resource, ResourceRelation } from '@dependency-explorer/schema'
+import { ListenerSurfaceSchema, type DiscoveredOverlay, type Listener, type Resource, type ResourceRelation, type WriteSite } from '@dependency-explorer/schema'
 import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService, tfRepoToService } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
@@ -52,6 +52,11 @@ import { machineSection } from './state-machines-report'
 import { extractRailsSchema } from './extractors/rails-schema'
 import { buildRegistry } from './resource-registry'
 import { checkResources, type ResourceFinding } from './resource-check'
+import { extractListeners } from './extractors/rails-listeners'
+import { cdcRelations } from './cdc'
+import { surfaceDrift, type ListenerCheck } from './listener-check'
+import { listenerSection } from './listeners-report'
+import { readerFor } from './code-wiring'
 import { findingKeys, diffBaseline, readBaseline, readBaselineRepos, unscannedRepos, writeBaseline } from './baseline'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -80,6 +85,7 @@ const REPO_BASE = PIN ? PINNED_BASE : SOURCE_BASE
 const OVERLAY_PATH = path.resolve(__dirname, '../../data/src/generated/discovered.json')
 const MONOLITH_ROUTES_PATH = path.resolve(__dirname, '../../data/src/generated/monolith-routes.json')
 const RESOURCES_PATH = path.resolve(__dirname, '../../data/src/generated/resources.json')
+const LISTENERS_PATH = path.resolve(__dirname, '../../data/src/generated/listeners.json')
 
 const JSON_MODE = process.argv.includes('--json')
 const BASELINE_PATH = path.resolve(__dirname, '../baseline.json')
@@ -183,6 +189,8 @@ interface Report {
   resourceCheck: { findings: ResourceFinding[]; modelLess: string[]; total: number; byKind: Record<string, number> } | null
   liveResources: Resource[]
   liveRelations: ResourceRelation[]
+  listenerCheck: ListenerCheck | null
+  liveListeners: { listeners: Listener[]; writeSites: WriteSite[] } | null
   codeGrades: { findings: GradeFinding[]; grades: Record<string, Grade>; distribution: Record<Grade, number>; backlog: string[] } | null
   ruleCheck: RuleCheckResult
   areaCheck: AreaCheckResult
@@ -230,6 +238,10 @@ function pickTeamId(wildcardOwners: string[]): string | undefined {
 
 // ── Scan ──────────────────────────────────────────────────────────────────────
 
+function readCommittedListeners() {
+  return fs.existsSync(LISTENERS_PATH) ? ListenerSurfaceSchema.parse(JSON.parse(fs.readFileSync(LISTENERS_PATH, 'utf-8'))) : null
+}
+
 function run(): Report {
   const repos = findRepos()
   const railsRoutes = extractRailsRoutes(REPO_BASE)
@@ -238,6 +250,8 @@ function run(): Report {
     resourceCheck: null,
     liveResources: [],
     liveRelations: [],
+    listenerCheck: null,
+    liveListeners: null,
     scannedRepos: repos,
     connectionEvidence: {},
     candidates: [],
@@ -706,6 +720,27 @@ function run(): Report {
     ...atlasRelations(report.terraform.filter(t => t.inMap), live),
     ...dmsRelations(report.terraform.filter(t => t.inMap), live),
   ])
+  const cdc = railsSchema
+    ? cdcRelations({ terraform: report.terraform.filter(t => t.inMap), resources: live, serverless: serverlessByRepo, schemaTables: railsSchema.tables, repoBase: REPO_BASE })
+    : { relations: [], findings: [] }
+  report.liveRelations = dedupeRelations([...report.liveRelations, ...cdc.relations])
+  const extraction = railsSchema && monolithPin
+    ? extractListeners({ models: railsSchema.models, tables: railsSchema.tables, files: monolithFiles, read: readerFor(path.join(REPO_BASE, 'skello-app')), graph: monolithGraph })
+    : null
+  report.liveListeners = extraction ? { listeners: extraction.listeners, writeSites: extraction.writeSites } : null
+  report.listenerCheck = extraction
+    ? {
+        findings: [
+          ...extraction.findings,
+          ...cdc.findings,
+          ...surfaceDrift({ listeners: extraction.listeners, writeSites: extraction.writeSites, cdc: cdc.relations }, { surface: readCommittedListeners(), relations: resourceSurface.relations }),
+        ],
+        listeners: extraction.listeners.length,
+        writeSites: extraction.writeSites.length,
+        feeds: cdc.relations.filter(r => r.relation === 'feeds').length,
+        skipped: false,
+      }
+    : { findings: [], listeners: 0, writeSites: 0, feeds: 0, skipped: true }
   const resourceFacts = checkResources(resourceSurface.resources, live, railsSchema?.models ?? [], railsSchema?.tables ?? [], monolithGraph !== null)
   const byKind: Record<string, number> = {}
   for (const x of live) {
@@ -758,6 +793,11 @@ function writeOverlay(report: Report) {
   }
   fs.writeFileSync(RESOURCES_PATH, JSON.stringify({ resources: report.liveResources, relations: report.liveRelations, pins: Object.fromEntries((PIN?.pinned ?? []).map(p => [p.repo, p.sha]).sort()) }, null, 2) + '\n')
   console.log(`  ${report.liveResources.length} resources written: ${path.relative(process.cwd(), RESOURCES_PATH)}`)
+  if (report.liveListeners) {
+    const pin = PIN?.pinned.find(p => p.repo === 'skello-app')
+    fs.writeFileSync(LISTENERS_PATH, JSON.stringify({ ...report.liveListeners, pins: pin ? { 'skello-app': pin.sha } : {} }, null, 2) + '\n')
+    console.log(`  ${report.liveListeners.listeners.length} listeners written: ${path.relative(process.cwd(), LISTENERS_PATH)}`)
+  }
 }
 
 // ── Report ────────────────────────────────────────────────────────────────────
@@ -998,6 +1038,9 @@ function printMarkdown(r: Report, unscanned: string[]) {
     console.log(bc.findings.map(f => `- [${f.kind}] **${f.subject}**: ${f.detail}`).join('\n'))
   }
   console.log(machineSection(r.machineCheck))
+  if (r.listenerCheck) {
+    console.log(listenerSection(r.listenerCheck))
+  }
 
   const rs = r.resourceCheck
   if (rs) {
