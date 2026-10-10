@@ -3914,13 +3914,6 @@
   },
   {
     "verb": "POST",
-    "path": "/v3/api/self_serve/confirm_subscription",
-    "controller": "v3/api/self_serve",
-    "action": "confirm_subscription",
-    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
-  },
-  {
-    "verb": "POST",
     "path": "/v3/api/self_serve/create",
     "controller": "v3/api/self_serve",
     "action": "create",
@@ -3939,27 +3932,6 @@
     "controller": "v3/api/self_serve",
     "action": "notify_salesforce",
     "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
-  },
-  {
-    "verb": "GET",
-    "path": "/v3/api/self_serve/prices",
-    "controller": "v3/api/self_serve",
-    "action": "prices",
-    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
-  },
-  {
-    "verb": "GET",
-    "path": "/v3/api/self_serve/tax_rates",
-    "controller": "v3/api/self_serve",
-    "action": "tax_rates",
-    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
-  },
-  {
-    "verb": "POST",
-    "path": "/v3/api/sepa/update_stripe_iban",
-    "controller": "v3/api/sepa",
-    "action": "update_stripe_iban",
-    "controllerFile": "app/controllers/v3/api/sepa_controller.rb"
   },
   {
     "verb": "GET",
