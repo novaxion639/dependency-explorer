@@ -2,6 +2,7 @@ import { codeEdgeGrades, connectivityMap, resourceSurface, type FlowCodeUnit, ty
 import { STORE_META } from '../storeTypes'
 import { edgeFacts } from './edgeFacts'
 import styles from './flows.module.css'
+import { ListenerFacts } from './ListenerFacts'
 import { machineFacts } from './machineFacts'
 
 const KIND_LABEL: Record<FlowCodeUnit['kind'], string> = {
@@ -75,6 +76,7 @@ export function UnitDetail({ flow, id, onOpenFlow, onOpenResource, onClose }: Pr
         <button type="button" aria-label="Close" onClick={onClose}>×</button>
       </header>
       {unit && <UnitFacts unit={unit} flow={flow} onOpenFlow={onOpenFlow} />}
+      {unit && <ListenerFacts flow={flow} unit={unit} onOpenResource={onOpenResource} />}
       {store && <StoreFacts store={store} onOpenResource={onOpenResource} />}
       {facts && (
         <section>
