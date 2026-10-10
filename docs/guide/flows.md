@@ -86,7 +86,7 @@ Clicking a unit in the swimlanes opens its story in the detail panel:
   - mode, transaction, CRUD and condition;
   - evidence grade: ✓ verified in the call graph · ~ name match only · ✗ no evidence;
   - 🔑🛡🧬📜 annotations.
-- a **Fires** block, for monolith code units other than model callbacks whose file writes a flow store table: per table, the listeners the unit's writes run, in Rails order, each with its cascade across other tables. A write that skips callbacks shows `runs none (<call>)`. A table-event fallback, matched from a CRUD edge when no write site exists, is labelled unverified.
+- a **Fires** block, for monolith code units other than model callbacks whose writes reach a flow store table, through a write site in the unit's file or a table-event fallback from its CRUD edge: per table, the listeners the unit's writes run, in Rails order, each with its cascade across other tables. A write that skips callbacks shows `runs none (<call>)`. A table-event fallback, matched from a CRUD edge when no write site exists, is labelled unverified.
 - on a model-callback unit, a **Derived listeners** block: the listeners the flow's write sites fire, followed by ⚠ missing findings (a job or table a fired listener reaches that the flow does not draw from a model-callback unit) and ⚠ unsupported findings (a job or store drawn from a model-callback unit that no fired listener reaches).
 
 A store shows its type and its resources, each opening its resource page.
