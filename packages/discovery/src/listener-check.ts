@@ -1,7 +1,7 @@
 import type { Listener, ListenerEffect, ListenerSurface, ResourceRelation, WriteSite } from '@dependency-explorer/schema'
 import type { ListenerFinding } from './extractors/rails-listeners'
 
-export interface ListenerCheck { findings: ListenerFinding[]; listeners: number; writeSites: number; feeds: number; skipped: boolean }
+export interface ListenerCheck { findings: ListenerFinding[]; listeners: number; writeSites: number; feeds: number | null; skipped: boolean }
 
 const effectSignature = (e: ListenerEffect) => [e.kind, e.target, e.targetFile ?? '', e.via ?? '', e.mode, e.runs ?? '', (e.events ?? []).join(',')].join('|')
 const listenerSignature = (l: Listener) => [l.id, l.events.join(','), l.phase, l.condition ?? '', ...l.effects.map(effectSignature).sort()].join('\n')

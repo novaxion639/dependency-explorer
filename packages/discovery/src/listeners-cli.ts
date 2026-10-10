@@ -21,7 +21,7 @@ if (!schema) {
   const graphFile = path.join(root, 'graphify-out', 'graph.json')
   const parsed = fs.existsSync(graphFile) ? loadRepoGraph(JSON.parse(fs.readFileSync(graphFile, 'utf-8'))) : null
   const result = extractListeners({ models: schema.models, tables: schema.tables, files, read: readerFor(root), graph: parsed && parsed.builtAt === head ? parsed : null })
-  console.log(listenerSection({ findings: result.findings, listeners: result.listeners.length, writeSites: result.writeSites.length, feeds: 0, skipped: false }))
+  console.log(listenerSection({ findings: result.findings, listeners: result.listeners.length, writeSites: result.writeSites.length, feeds: null, skipped: false }))
   const byTable = new Map<string, number>()
   for (const l of result.listeners) {
     byTable.set(l.table, (byTable.get(l.table) ?? 0) + 1)

@@ -9,6 +9,9 @@ describe('listenerSection', () => {
       '- [unresolved-job] **GhostJob**: enqueued at app/x.rb:3',
     ].join('\n'))
   })
+  it('omits the CDC feeds clause when the count is unknown', () => {
+    expect(listenerSection({ findings: [], listeners: 90, writeSites: 400, feeds: null, skipped: false })).toContain('90 listener(s), 400 write site(s) at the pinned commit.')
+  })
   it('says when skello-app was not pinned', () => {
     expect(listenerSection({ findings: [], listeners: 0, writeSites: 0, feeds: 0, skipped: true })).toContain('Skipped: skello-app is not pinned.')
   })
