@@ -52,4 +52,9 @@ describe('ResourcesIndex', () => {
     }
     expect(html).toContain('aria-label="Owner"')
   })
+  it('shows the CDC feed and its target stream', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
+    expect(html).toContain('aria-label="Feeds"')
+    expect(html).toContain('kinesis:skelloapp-bus')
+  })
 })

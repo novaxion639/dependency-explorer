@@ -76,11 +76,23 @@ The Connections view (`&s=skello-app`) shows skello-app's service views. Clickin
 
 `?page=resources&resource=<id>` answers the change-impact question for one table, queue, topic, stream, bucket or store. It opens with "N services · M files · K flows", then lists:
 - writers, readers, producers and consumers, grouped by service, each marked ✓ (code or config evidence) or ~ (authored flow edge only);
+- feeds: the CDC relations that copy the table out to a stream, each with its target stream as a link;
 - the DLQ;
 - the ActiveRecord model and related tables;
 - the flows touching the resource, with their CRUD.
 
-`?page=resources` lists every resource by store, with kind and owner filters and a "not in any flow" toggle (the adoption backlog). Entry points: ⌘K resource entities, stores in the flow swimlanes and service views, and file views ("resources this file touches"). The registry behind these pages is described in [data.md](data.md#resource-registry).
+### Table listeners
+
+A table page that has ActiveRecord callbacks adds four sections:
+
+- **Listeners** lists every callback registered on the model in the order Rails runs them, each marked ✓ (resolved from source) or ~ (receiver named after the model, to review). The Event, Kind and Grade selects filter the list. A row shows its condition and links to where it is declared and where it is defined. Expanding a row lists its effects: the tables it writes (linked), the jobs it enqueues and the services it calls, each with its own grade.
+- **Also changes** shows the tables a write reaches through listener effects, for one event at a time (create, update, destroy). Each hop names the listener, the write mode and the next hops. ↻ marks a cycle back to a table already on the path. A hop whose write runs no listener reads "runs none, skips N listeners". An event with no downstream write reads "No table changes on <event>".
+- **Write paths** lists the code sites that write the table, grouped by what the write runs: every listener, a hand-fired subset, validation listeners only, touch and commit listeners, no listener. Each site shows the call, its source link, the listeners it fires and the flows whose code units include its file.
+- **Feeds** is described above.
+
+The sections are permalink-backed: `&event` selects the Also changes event, `&listener` expands a listener, and `&lev`, `&lkind` and `&lgrade` set the Listeners filters.
+
+`?page=resources` lists every resource by store, with kind and owner filters, a "not in any flow" toggle (the adoption backlog) and a "Cycles only" toggle that keeps the tables on a listener cycle. The Sort select orders cards by name, listeners, also changes or bypassing writes. A table card with listeners shows three counts: listeners, also changes and bypassing writes. Entry points: ⌘K resource entities, stores in the flow swimlanes and service views, and file views ("resources this file touches"). The registry behind these pages is described in [data.md](data.md#resource-registry).
 
 ## Impact
 

@@ -1,16 +1,21 @@
 import { useState } from 'react'
 import type { Resource } from '@dependency-explorer/data'
-import { resourceSurface } from '@dependency-explorer/data'
-import { filterResources } from './resourceFilter'
+import { listenerMetrics, listenerSurface, resourceSurface } from '@dependency-explorer/data'
+import { filterResources, type ResourceSort } from './resourceFilter'
 import styles from './ResourcesIndex.module.css'
 
+const metrics = listenerMetrics(listenerSurface)
+const SORTS: readonly ResourceSort[] = ['name', 'listeners', 'alsoChanges', 'bypassing']
+const SORT_LABEL: Record<ResourceSort, string> = { name: 'name', listeners: 'listeners', alsoChanges: 'also changes', bypassing: 'bypassing writes' }
 const owners = [...new Set(resourceSurface.resources.flatMap(r => (r.owner ? [r.owner] : [])))].sort()
 
 export function ResourcesIndex({ onOpenResource }: { onOpenResource: (id: string) => void }) {
   const [kind, setKind] = useState<Resource['kind'] | 'all'>('all')
   const [owner, setOwner] = useState('all')
   const [orphansOnly, setOrphansOnly] = useState(false)
-  const visible = filterResources(resourceSurface.resources, { kind, owner, orphansOnly })
+  const [sort, setSort] = useState<ResourceSort>('name')
+  const [cyclesOnly, setCyclesOnly] = useState(false)
+  const visible = filterResources(resourceSurface.resources, { kind, owner, orphansOnly, cyclesOnly, sort }, metrics)
   const stores = [...new Set(visible.map(r => r.store))].sort()
   const kinds: Array<Resource['kind'] | 'all'> = ['all', 'table', 'queue', 'topic', 'stream', 'bucket', 'database']
   return (
@@ -20,6 +25,8 @@ export function ResourcesIndex({ onOpenResource }: { onOpenResource: (id: string
         <label>Kind <select aria-label="Kind" value={kind} onChange={e => setKind(kinds.find(k => k === e.target.value) ?? 'all')}>{kinds.map(k => <option key={k} value={k}>{k}</option>)}</select></label>
         <label>Owner <select aria-label="Owner" value={owner} onChange={e => setOwner(e.target.value)}>{['all', ...owners].map(o => <option key={o} value={o}>{o}</option>)}</select></label>
         <label><input type="checkbox" checked={orphansOnly} onChange={e => setOrphansOnly(e.target.checked)} /> Not in any flow</label>
+        <label>Sort <select aria-label="Sort" value={sort} onChange={e => setSort(SORTS.find(x => x === e.target.value) ?? 'name')}>{SORTS.map(x => <option key={x} value={x}>{SORT_LABEL[x]}</option>)}</select></label>
+        <label><input type="checkbox" checked={cyclesOnly} onChange={e => setCyclesOnly(e.target.checked)} /> Cycles only</label>
         <span>{visible.length} of {resourceSurface.resources.length}</span>
       </div>
       {stores.map(store => (
@@ -30,6 +37,7 @@ export function ResourcesIndex({ onOpenResource }: { onOpenResource: (id: string
               <li key={r.id}>
                 <button type="button" className={styles.card} onClick={() => onOpenResource(r.id)}>
                   {r.name}<small>{r.kind}{r.owner ? ` · ${r.owner}` : ''}</small>
+                  {metrics.get(r.id) && <small>{`${metrics.get(r.id)?.listeners ?? 0} listeners · ${metrics.get(r.id)?.alsoChanges ?? 0} also · ${metrics.get(r.id)?.bypassing ?? 0} bypassing`}</small>}
                 </button>
               </li>
             ))}

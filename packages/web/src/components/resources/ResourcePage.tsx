@@ -18,6 +18,7 @@ const SECTIONS: Array<{ relation: ResourceRelation['relation']; label: string }>
   { relation: 'reads', label: 'Readers' },
   { relation: 'produces', label: 'Producers' },
   { relation: 'consumes', label: 'Consumers' },
+  { relation: 'feeds', label: 'Feeds' },
 ]
 
 interface Props {
@@ -77,9 +78,10 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
                   {g.rels.map(r => {
                     const badge = GRADE_BADGE[r.grade]
                     return (
-                      <li key={`${r.grade}-${r.file ?? r.service}`}>
+                      <li key={`${r.grade}-${r.file ?? r.service}-${r.target ?? ''}`}>
                         <span title={badge.title} className={styles.grade} data-grade={r.grade}>{badge.symbol}</span>
                         {r.file ? <button type="button" className={styles.file} onClick={() => onOpenFile(`${r.service}/${r.file ?? ''}`)}>{r.file}</button> : <span className={styles.meta}>{r.grade === 'config' ? 'declared in config' : 'flow edge'}</span>}
+                        {r.target && <> → <button type="button" className={styles.link} onClick={() => onOpenResource(r.target ?? '')}>{r.target}</button></>}
                       </li>
                     )
                   })}
