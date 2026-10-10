@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { WriteEvent } from '@dependency-explorer/data'
 import type { Renderer } from '../diagram/model'
 
 /**
@@ -17,6 +18,7 @@ import type { Renderer } from '../diagram/model'
  *   ?page=flows&file=svc-punch/src/…     flows traversing a file
  *   ?page=flows&flag=FEATUREDEV_X        flows gated by a feature flag
  *   ?page=resources&resource=pg:…        resource page (change impact)
+ *   &event=create|update|destroy · &listener=<id> · &lev · &lkind · &lgrade   resource page listener sections
  *   ?page=impact&blast=svc-users         impact of a failing service or resource
  *   ?page=ownership&team=team-salsa      ownership, team focused
  *   &edge=from~to~protocol[,…] · &drawer=svc · &ep=id   detail panel content
@@ -30,6 +32,7 @@ export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | '
 
 export const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
 const RENDERERS: readonly Renderer[] = ['react-flow', 'svg', 'mermaid']
+const WRITE_EVENT_PARAMS: readonly WriteEvent[] = ['create', 'update', 'destroy']
 const MONOLITH = 'skello-app'
 const LEGACY_VIEW_PAGE: Record<string, Page> = { areas: 'areas', domains: 'areas', context: 'microservices', services: 'microservices', resources: 'resources', teams: 'ownership' }
 
@@ -52,6 +55,11 @@ export interface UrlState {
   flag: string | null
   file: string | null
   resource: string | null
+  event: WriteEvent | null
+  listener: string | null
+  lev: string | null
+  lkind: string | null
+  lgrade: string | null
   /** A permalink param that did not resolve — rendered as a banner, never serialized */
   notFound: { param: 'area' | 'term' | 'flow' | 's' | 'resource' | 'blast'; value: string } | null
 }
@@ -118,13 +126,18 @@ export function parseUrl(search: string): UrlState {
     flag: p.get('flag'),
     file: p.get('file'),
     resource: p.get('resource'),
+    event: WRITE_EVENT_PARAMS.find(e => e === p.get('event')) ?? null,
+    listener: p.get('listener'),
+    lev: p.get('lev'),
+    lkind: p.get('lkind'),
+    lgrade: p.get('lgrade'),
     notFound: null,
   }
 }
 
-type PageKey = 's' | 'area' | 'term' | 'team' | 'blast' | 'flows' | 'flow' | 'unit' | 'chapter' | 'edge' | 'drawer' | 'ep' | 'flag' | 'file' | 'resource'
+type PageKey = 's' | 'area' | 'term' | 'team' | 'blast' | 'flows' | 'flow' | 'unit' | 'chapter' | 'edge' | 'drawer' | 'ep' | 'flag' | 'file' | 'resource' | 'event' | 'listener' | 'lev' | 'lkind' | 'lgrade'
 
-const KEY_ORDER: readonly PageKey[] = ['s', 'area', 'term', 'team', 'blast', 'flows', 'flow', 'unit', 'chapter', 'edge', 'drawer', 'ep', 'flag', 'file', 'resource']
+const KEY_ORDER: readonly PageKey[] = ['s', 'area', 'term', 'team', 'blast', 'flows', 'flow', 'unit', 'chapter', 'edge', 'drawer', 'ep', 'flag', 'file', 'resource', 'event', 'listener', 'lev', 'lkind', 'lgrade']
 const ARCHITECTURE_KEYS: readonly PageKey[] = ['s', 'area', 'edge', 'drawer', 'ep']
 const PAGE_KEYS: Record<Page, readonly PageKey[]> = {
   home: [],
@@ -132,11 +145,11 @@ const PAGE_KEYS: Record<Page, readonly PageKey[]> = {
   microservices: ARCHITECTURE_KEYS,
   monolith: ARCHITECTURE_KEYS,
   flows: ['flows', 'flow', 'unit', 'chapter', 'flag', 'file', 'drawer', 'ep'],
-  resources: ['resource'],
+  resources: ['resource', 'event', 'listener', 'lev', 'lkind', 'lgrade'],
   impact: ['blast'],
   ownership: ['team'],
 }
-const PARENT_KEY: Partial<Record<PageKey, PageKey>> = { term: 'area', unit: 'flow', chapter: 'flow', ep: 'drawer' }
+const PARENT_KEY: Partial<Record<PageKey, PageKey>> = { term: 'area', unit: 'flow', chapter: 'flow', ep: 'drawer', event: 'resource', listener: 'resource', lev: 'resource', lkind: 'resource', lgrade: 'resource' }
 
 export function toQueryString(state: UrlState): string {
   const p = new URLSearchParams()
@@ -161,7 +174,7 @@ export function toQueryString(state: UrlState): string {
 }
 
 export function pagePatch(page: Page): Partial<UrlState> {
-  return { page, s: null, area: null, term: null, team: null, blast: null, flows: null, flow: null, unit: null, chapter: null, edge: null, drawer: null, ep: null, flag: null, file: null, resource: null }
+  return { page, s: null, area: null, term: null, team: null, blast: null, flows: null, flow: null, unit: null, chapter: null, edge: null, drawer: null, ep: null, flag: null, file: null, resource: null, event: null, listener: null, lev: null, lkind: null, lgrade: null }
 }
 
 export function selectServicePatch(name: string): Partial<UrlState> {
