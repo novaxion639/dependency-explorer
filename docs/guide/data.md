@@ -55,7 +55,7 @@ Each resource carries graded relations computed at the pinned commit. Grades are
 
 **Dead-letter wiring** links each queue to its DLQ.
 
-**CDC feeds** come from the `aws_dms_replication_task` resources in the `skello-app-tf` checkout. Each table a CDC task replicates has a `feeds` relation to that task's stream (`kinesis:skelloapp-bus`, grade `config`). A stream consumer whose event source filters on a table's `public.<table>.` prefix has a per-table `consumes` relation to that table (grade `config`). A prefix credits every table `t` for which `public.<t>.` starts with it, so `public.postes` credits `postes` and `postes_weekly_options`. A consumer without a table filter receives every table and is not credited per table.
+**CDC feeds** come from the `aws_dms_replication_task` resources in the `skello-app-tf` checkout, limited to tasks whose `migration_type` is `cdc` or `full-load-and-cdc`, whose `count` is not `0`, and whose source is the monolith database. A consumer's event source must not be `enabled: false`. Each table a CDC task replicates has a `feeds` relation to that task's stream (`kinesis:skelloapp-bus`, grade `config`). A stream consumer whose event source filters on a table's `public.<table>.` prefix has a per-table `consumes` relation to that table (grade `config`). A prefix credits every table `t` for which `public.<t>.` starts with it, so `public.postes` credits `postes` and `postes_weekly_options`. A consumer without a table filter receives every table and is not credited per table.
 
 The 🗄 discovery section reports registry drift at the pinned commit. The resource pages are described in [explorer.md](explorer.md#resource-pages).
 
@@ -68,10 +68,15 @@ The 🗄 discovery section reports registry drift at the pinned commit. The reso
 
 `ListenerSurfaceSchema` in `packages/schema` validates the file. `pnpm discover:apply` writes it, at the pinned commit only.
 
-A listener's `id` is `<table>.<hook>.<name>`, for example `shifts.after_commit.update_paid_leaves`. Its `kind` is `callback`, `cascade`, `touch` or `gem`, and its `grade` is `code`, or `config` for a gem entry. Its effects write a table, enqueue a job or call a service, each with a `mode` (`sync` or `async-job`) and a grade:
-- `graph`: the pinned graphify graph reaches the callee file from the listener's body within two hops;
-- `constant`: the class is named literally;
-- `text`: the receiver is tied to a model by name or association only (`user.update!`).
+A listener's `id` takes one of these forms:
+- callbacks: `<table>.<hook>.<method>`, for example `shifts.after_commit.update_paid_leaves`;
+- cascades: `<table>.dependent.<association>` or `<table>.habtm.<association>`;
+- touch: `<table>.touch.<association>`;
+- gems: `<table>.<macro>`.
+
+Its `kind` is `callback`, `cascade`, `touch` or `gem`, and its `grade` is `code`, or `config` for a gem entry. Its effects write a table, enqueue a job or call a service, each with a `mode` (`sync` or `async-job`) and a grade:
+- `enqueues` and `calls` effects are `graph` when the pinned graphify graph reaches the callee file from the listener's body within two hops;
+- `writes` effects are `constant` when the class is named literally, on `self`, or in raw SQL, and `text` when the receiver is named after a model (`user.update!`).
 
 Write sites carry the same `constant` and `text` grades. At `3f6728f`, `shifts.after_commit.set_weekly_option_not_up_to_date` enqueues `ShiftCallbackJob`, whose `perform` calls `WeeklyOption.upsert_employee_change!`. That method writes `weekly_options` with raw SQL, so the write runs `none` and skips the listeners of `weekly_options`.
 
@@ -84,8 +89,6 @@ Write sites carry the same `constant` and `text` grades. At `3f6728f`, `shifts.a
 | `validation` | `import` / `import!` without `validate: false` | `before_validation` and `after_validation` only |
 | `none` | `update_all`, `delete_all`, `delete`, `insert_all(!)`, `upsert_all`, `update_column(s)`, `import` with `validate: false`, raw SQL (`INSERT INTO`, `UPDATE … SET`, `DELETE FROM`) | none |
 | `subset` | a hand-fire helper or `run_callbacks(:phase)` | the listeners named in `fires`; `run_callbacks(:commit)` fires the commit listeners, and `:save`, `:create`, `:update` and `:destroy` fire that chain's before and after listeners |
-
-A table's listeners are listed in Rails execution order: validation, save and event callbacks, then commit and rollback. Within a phase they keep declaration order, except `after_commit` and `after_rollback`, which run in reverse declaration order.
 
 ## Contributing data
 

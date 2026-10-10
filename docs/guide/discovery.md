@@ -48,7 +48,7 @@ pnpm discover -- --pinned --fail-on-new   # exit 1 when a finding is not in the 
 pnpm --filter @dependency-explorer/discovery discover:unit-paths   # exit 1 when a flow unit's file is missing at its pinned commit; counts units it skips (repo not cloned or not pinned)
 pnpm --filter @dependency-explorer/discovery discover:grades       # replay call-edge grades against the existing pinned worktrees, no re-pin
 pnpm --filter @dependency-explorer/discovery discover:machines     # check flow state machines against the pinned definitions (⚙), no re-pin
-pnpm --filter @dependency-explorer/discovery discover:listeners   # listeners at the pinned skello-app, counts for the busiest tables, 👂 findings
+pnpm --filter @dependency-explorer/discovery discover:listeners   # listeners at the pinned skello-app: extraction findings (unresolved-callback, unresolved-job, unknown-gem-macro) and listener counts for the busiest tables
 pnpm discover -- --aws [dir]  # + 🛰 live AWS snapshot diff (defaults to the latest snapshot)
 pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (~215 calls, MFA'd session required)
 pnpm docs:gen                 # rewrite the generated sections of the inventory docs (CI fails on drift)
@@ -56,7 +56,7 @@ pnpm docs:gen                 # rewrite the generated sections of the inventory 
 
 ## Listener drift (👂)
 
-The 👂 section checks the table listener surface at the pinned commit. A skello-app that is not pinned is skipped. Findings carry a kind, a subject and a detail; accepted findings enter `packages/discovery/baseline.json` through `pnpm discover:baseline`.
+The 👂 section checks the table listener surface at the pinned commit. A skello-app that is not pinned is skipped. Findings carry a kind, a subject and a detail; accepted findings enter `packages/discovery/baseline.json` through `pnpm discover:baseline`. `surface-drift` and `cdc-unknown-table` come from the full `pnpm discover` run; `discover:listeners` prints the extraction kinds only.
 
 | Kind | Meaning |
 |---|---|
@@ -65,8 +65,6 @@ The 👂 section checks the table listener surface at the pinned commit. A skell
 | `unresolved-job` | an enqueued constant with no file under `app/jobs/` |
 | `unknown-gem-macro` | a class macro outside Rails associations and `KNOWN_GEM_LISTENERS` |
 | `cdc-unknown-table` | a CDC selection rule naming a table absent from `db/schema.rb`; `ar_internal_metadata`, `schema_migrations` and `pg_stat_statements` are exempt |
-| `flow-listener-missing` | a listener a flow fires that its `model-callback` units do not draw |
-| `flow-listener-unsupported` | a drawn `model-callback` edge that no fired listener backs |
 
 At `3f6728f`, `cdc-unknown-table` reports `audits`, `organisation_monthly_stats`, `shop_holiday_settings` and `user_holiday_settings`.
 
