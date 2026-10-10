@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { ListenerSurfaceSchema } from '@dependency-explorer/schema'
-import { alsoChanges, cascadeFrom, inRailsOrder, listenersRun } from './listeners-derive'
+import { ListenerSurfaceSchema, ServiceFlowSchema } from '@dependency-explorer/schema'
+import { alsoChanges, cascadeFrom, flowListenerDrift, flowListeners, inRailsOrder, listenerMetrics, listenersRun } from './listeners-derive'
 
 const t = (name: string) => `pg:skello_production.${name}`
 const at = { file: 'app/models/x.rb', line: 1 }
@@ -110,5 +110,53 @@ describe('alsoChanges', () => {
       [t('predicted_shifts'), 2, 'sync'],
       [t('weekly_options'), 2, 'async'],
     ])
+  })
+})
+
+const flow = ServiceFlowSchema.parse({
+  id: 'shift-update', name: 'Shift update', description: 'd', steps: [],
+  codeUnits: [
+    { id: 'cu-svc', service: 'skello-app', kind: 'service', label: 'UpdateService', path: 'app/services/update_service.rb' },
+    { id: 'cu-cb', service: 'skello-app', kind: 'model-callback', label: 'Shift callbacks', path: 'app/models/concerns/shifts/callbacks_concern.rb' },
+    { id: 'cu-job', service: 'skello-app', kind: 'job', label: 'ShiftCallbackJob', path: 'app/jobs/shift_callback_job.rb' },
+    { id: 'cu-ghost', service: 'skello-app', kind: 'job', label: 'GhostJob', path: 'app/jobs/ghost_job.rb' },
+    { id: 'cu-other', service: 'skello-app', kind: 'service', label: 'Other', path: 'app/services/other.rb' },
+  ],
+  infraNodes: [{ id: 'pg', type: 'postgresql', label: 'shifts', resources: [t('shifts'), t('predicted_shifts')] }],
+  codeEdges: [
+    { from: 'cu-svc', to: 'pg', crud: ['update'] },
+    { from: 'cu-cb', to: 'cu-job' },
+    { from: 'cu-cb', to: 'cu-ghost' },
+    { from: 'cu-cb', to: 'pg', crud: ['create'] },
+    { from: 'cu-other', to: 'pg', crud: ['create'] },
+  ],
+})
+
+describe('flowListeners', () => {
+  it('links a unit to the listeners its write site runs, and falls back to the table event, labelled', () => {
+    expect(flowListeners(flow, SURFACE).map(l => [l.unit, l.table, l.basis, l.grade, l.listeners.length])).toEqual([
+      ['cu-svc', t('shifts'), 'write-site', 'text', 4],
+      ['cu-other', t('shifts'), 'table-event', 'text', 4],
+    ])
+  })
+})
+
+describe('flowListenerDrift', () => {
+  it('reports fired effects the callback units do not draw, and drawn edges nothing fired backs', () => {
+    expect(flowListenerDrift(flow, SURFACE).map(f => [f.kind, f.detail])).toEqual([
+      ['flow-listener-missing', 'shifts.before_save.set_poste writes memberships — not drawn from a model-callback unit'],
+      ['flow-listener-unsupported', 'cu-ghost (app/jobs/ghost_job.rb) is drawn from a model-callback unit; no listener the flow fires enqueues it'],
+    ])
+  })
+  it('compares nothing for a flow without a model-callback unit', () => {
+    expect(flowListenerDrift({ ...flow, codeUnits: (flow.codeUnits ?? []).filter(u => u.kind !== 'model-callback') }, SURFACE)).toEqual([])
+  })
+})
+
+describe('listenerMetrics', () => {
+  it('counts listeners, reachable tables, async listeners, bypassing writes and cycles per table', () => {
+    const m = listenerMetrics(SURFACE)
+    expect(m.get(t('shifts'))).toEqual({ listeners: 4, alsoChanges: 3, async: 1, bypassing: 1, onCycle: false })
+    expect(m.get(t('a'))?.onCycle).toBe(true)
   })
 })

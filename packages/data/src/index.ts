@@ -263,4 +263,4 @@ export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServi
 export type { CrossAreaEdge, ContextLanes } from './areas-derive'
 export { deriveChapters, flowChapters, flowRefIds } from './flow-chapters'
 export { allStates, machineProblems } from './state-machines'
-export { WRITE_EVENTS, inRailsOrder, listenersRun, listenersByTable, cascadeOf, cascadeFrom, flattenCascade, alsoChanges, type CascadeHop, type CascadeNode, type AlsoChange, type ChainGrade, type ListenerTables } from './listeners-derive'
+export { WRITE_EVENTS, inRailsOrder, listenersRun, listenersByTable, cascadeOf, cascadeFrom, flattenCascade, alsoChanges, flowListeners, firedListeners, flowListenerDrift, listenerMetrics, type CascadeHop, type CascadeNode, type AlsoChange, type ChainGrade, type ListenerTables, type FlowListenerLink, type ListenerDriftFinding, type TableListenerMetrics } from './listeners-derive'
