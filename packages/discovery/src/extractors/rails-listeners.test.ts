@@ -91,6 +91,29 @@ describe('callbackListeners', () => {
   })
 })
 
+describe('gem-provided callback methods', () => {
+  const run = (source: string) => {
+    const { entries, c } = miniContext({ 'app/models/place.rb': source }, ['places'])
+    const [place] = entries
+    return { listeners: place ? callbackListeners(place, c) : [], findings: c.findings }
+  }
+  it('keeps a callback on a method the geocoder macro defines, without a finding', () => {
+    const { listeners, findings } = run('class Place < ApplicationRecord\n  geocoded_by :address\n  before_save :geocode\nend\n')
+    expect(listeners.map(l => [l.id, l.definedAt ?? null, l.effects])).toEqual([['places.before_save.geocode', null, []]])
+    expect(findings).toEqual([])
+  })
+  it('keeps reverse_geocode under reverse_geocoded_by', () => {
+    const { listeners, findings } = run('class Place < ApplicationRecord\n  reverse_geocoded_by :latitude, :longitude\n  after_validation :reverse_geocode\nend\n')
+    expect(listeners.map(l => l.id)).toEqual(['places.after_validation.reverse_geocode'])
+    expect(findings).toEqual([])
+  })
+  it('still reports the callback when no macro declares the method', () => {
+    const { listeners, findings } = run('class Place < ApplicationRecord\n  before_save :geocode\nend\n')
+    expect(listeners.map(l => l.id)).toEqual(['places.before_save.geocode'])
+    expect(findings.map(f => [f.kind, f.subject])).toEqual([['unresolved-callback', 'Place#geocode']])
+  })
+})
+
 describe('associationListeners', () => {
   const of = (cls: string) => associationListeners(index.find(e => e.className === cls) ?? index[0], ctx())
   it('reads dependent: as a destroy cascade with the child write runs', () => {

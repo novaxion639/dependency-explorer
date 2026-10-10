@@ -192,7 +192,15 @@ function blockSpan(decl: DeclarationAt, ctx: ListenerContext): SpanAt {
   }
 }
 
+export const GEM_CALLBACK_METHODS: Record<string, string[]> = { geocoded_by: ['geocode'], reverse_geocoded_by: ['reverse_geocode'] }
+const GEM_CALLBACK_MACRO = new RegExp(`^\\s*(${Object.keys(GEM_CALLBACK_METHODS).join('|')})\\b`)
+
+function gemProvidedMethods(entry: ModelEntry): Set<string> {
+  return new Set(declarationsOf(entry, GEM_CALLBACK_MACRO).flatMap(decl => GEM_CALLBACK_METHODS[GEM_CALLBACK_MACRO.exec(decl.text)?.[1] ?? ''] ?? []))
+}
+
 export function callbackListeners(entry: ModelEntry, ctx: ListenerContext): Listener[] {
+  const gemProvided = gemProvidedMethods(entry)
   return declarationsOf(entry, CALLBACK_START).flatMap(decl => {
     const m = CALLBACK.exec(decl.text)
     if (!m) {
@@ -219,7 +227,7 @@ export function callbackListeners(entry: ModelEntry, ctx: ListenerContext): List
     const bodies = args.filter(a => !SYMBOL.test(a) && !OPTION.test(a))
     const bySymbol = symbols.map((method): Listener => {
       const span = entry.methods.get(method)
-      if (!span) {
+      if (!span && !gemProvided.has(method)) {
         ctx.findings.push({ kind: 'unresolved-callback', subject: `${entry.className}#${method}`, detail: `${decl.file}:${decl.line} names a method neither ${entry.className} nor its included modules define` })
       }
       return { ...base, id: `${entry.table}.${hook}.${method}`, method, ...(span ? { definedAt: { file: span.file, line: span.line } } : {}), effects: span ? effectsOf(span, entry, ctx) : [] }
