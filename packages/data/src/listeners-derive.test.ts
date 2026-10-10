@@ -214,6 +214,17 @@ describe('listenerMetrics', () => {
     expect(m.get(t('a'))?.onCycle).toBe(true)
   })
 
+  it('covers a table that has write sites and no listener', () => {
+    const writeOnly = ListenerSurfaceSchema.parse({
+      listeners: [],
+      writeSites: [
+        { table: t('logs'), file: 'app/services/a.rb', line: 1, call: 'insert_all', events: ['create'], runs: 'none', grade: 'constant' },
+        { table: t('logs'), file: 'app/services/b.rb', line: 2, call: 'create!', events: ['create'], runs: 'all', grade: 'constant' },
+      ],
+    })
+    expect(listenerMetrics(writeOnly).get(t('logs'))).toEqual({ listeners: 0, alsoChanges: 0, async: 0, bypassing: 1, onCycle: false })
+  })
+
   it('marks only the tables a cascade from them returns to', () => {
     const chain = ListenerSurfaceSchema.parse({
       listeners: [

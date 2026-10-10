@@ -180,11 +180,16 @@ export function flowListenerDrift(flow: ServiceFlow, surface: ListenerTables): L
 }
 
 export function listenerMetrics(surface: ListenerTables): Map<string, TableListenerMetrics> {
-  return new Map([...listenersByTable(surface)].map(([table, listeners]): [string, TableListenerMetrics] => [table, {
-    listeners: listeners.length,
-    alsoChanges: alsoChanges(surface, table).length,
-    async: listeners.filter(l => l.effects.some(e => e.mode === 'async-job')).length,
-    bypassing: surface.writeSites.filter(s => s.table === table && s.runs === 'none').length,
-    onCycle: WRITE_EVENTS.some(e => returnsTo(cascadeFrom(surface, table, e), table)),
-  }]))
+  const byTable = listenersByTable(surface)
+  const tables = new Set([...byTable.keys(), ...surface.writeSites.map(s => s.table)])
+  return new Map([...tables].map((table): [string, TableListenerMetrics] => {
+    const listeners = byTable.get(table) ?? []
+    return [table, {
+      listeners: listeners.length,
+      alsoChanges: alsoChanges(surface, table).length,
+      async: listeners.filter(l => l.effects.some(e => e.mode === 'async-job')).length,
+      bypassing: surface.writeSites.filter(s => s.table === table && s.runs === 'none').length,
+      onCycle: WRITE_EVENTS.some(e => returnsTo(cascadeFrom(surface, table, e), table)),
+    }]
+  }))
 }
