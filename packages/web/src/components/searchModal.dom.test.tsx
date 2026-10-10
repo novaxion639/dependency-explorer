@@ -38,4 +38,13 @@ describe('SearchModal', () => {
     await act(async () => root.unmount())
     expect(document.activeElement).toBe(opener)
   })
+  it('names listeners and jobs among the kinds it searches', async () => {
+    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+    const host = document.createElement('div')
+    document.body.append(host)
+    const root = createRoot(host)
+    await act(async () => root.render(<SearchModal index={searchIndex} onNavigate={() => {}} onClose={() => {}} />))
+    expect(host.textContent).toMatch(/listeners and jobs/)
+    await act(async () => root.unmount())
+  })
 })

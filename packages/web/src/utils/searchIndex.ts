@@ -58,18 +58,14 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
     })
   }
 
-  const jobs = new Map<string, Listener>()
   for (const l of listeners) {
     const table = l.table.split('.').pop() ?? l.table
     if (l.method) {
       entries.push({ type: 'listener', label: l.method, sublabel: `${table} · ${l.hook}`, haystack: l.id, patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: l.table, listener: l.id } })
     }
-    for (const e of l.effects.filter(x => x.kind === 'enqueues' && !jobs.has(x.target))) {
-      jobs.set(e.target, l)
+    for (const job of new Set(l.effects.filter(e => e.kind === 'enqueues').map(e => e.target))) {
+      entries.push({ type: 'listener', label: job, sublabel: `job · enqueued by ${l.id}`, haystack: `${job} ${l.id}`, patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: l.table, listener: l.id } })
     }
-  }
-  for (const [job, l] of jobs) {
-    entries.push({ type: 'listener', label: job, sublabel: `job · enqueued by ${l.id}`, haystack: `${job} ${l.id}`, patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: l.table, listener: l.id } })
   }
 
   for (const conn of map.connections) {
