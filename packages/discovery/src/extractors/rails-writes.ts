@@ -45,10 +45,15 @@ export const WRITE_KINDS: Record<string, WriteKind> = {
 
 const NAMES = Object.keys(WRITE_KINDS).sort((a, b) => b.length - a.length).map(escapeRegExp).join('|')
 const WRITE_CALL = new RegExp(`\\.(${NAMES})(?![\\w!?])`, 'g')
-const BARE_WRITE = new RegExp(`^\\s*(${NAMES})(?![\\w!?])`)
+const BARE_WRITE = new RegExp(`^\\s*(${NAMES})(?![\\w!?:])`)
 const QUERY_HEADS = new Set(['where', 'unscoped', 'all', 'joins', 'includes', 'find', 'find_by', 'find_each', 'order', 'limit', 'not', 'lock', 'first_or_initialize', 'find_or_initialize_by'])
+const FIRST_OR_INITIALIZE_OVERRIDES = new Set(['save', 'save!', 'create', 'create!', 'update', 'update!'])
+const FIRST_OR_INITIALIZE = /\.(first_or_initialize|find_or_initialize_by)\b/
 const PARENS = /\([^()]*\)/g
-const CHAIN = /(@?[A-Za-z_][\w:]*[!?]?)(?:\(\))?((?:&?\.[A-Za-z_]\w*[!?]?(?:\(\))?)*)&?\s*$/
+const CHAIN = /(@?[A-Za-z_][\w:]*[!?]?)(?:\(\))?((?:\s*&?\.[A-Za-z_]\w*[!?]?(?:\(\))?)*)\s*&?\s*$/
+const CONTINUATION = /^&?\./
+const OPEN_BRACKETS = new Set(['(', '['])
+const CLOSE_BRACKETS = new Set([')', ']'])
 const SQL_INSERT = /\bINSERT\s+INTO\s+"?(\w+)"?/gi
 const SQL_UPDATE = /\bUPDATE\s+"?(\w+)"?\s+SET\b/gi
 const SQL_DELETE = /\bDELETE\s+FROM\s+"?(\w+)"?/gi
@@ -58,21 +63,69 @@ export function linesOf(text: string, firstLine: number): SourceLine[] {
   return text.split('\n').map((t, i) => ({ text: t, line: firstLine + i }))
 }
 
-export function writeKind(call: string, window: string): WriteKind | null {
-  if (!(call in WRITE_KINDS)) {
+function bracketDepth(text: string): number {
+  let depth = 0
+  for (const ch of text) {
+    if (OPEN_BRACKETS.has(ch)) {
+      depth++
+    } else if (CLOSE_BRACKETS.has(ch)) {
+      depth--
+    }
+  }
+  return depth
+}
+
+export function joinStatements(lines: SourceLine[]): SourceLine[] {
+  const out: SourceLine[] = []
+  let pending: SourceLine | undefined
+  for (const { text, line } of lines) {
+    const trimmed = text.trim()
+    if (pending !== undefined && (bracketDepth(pending.text) > 0 || CONTINUATION.test(trimmed))) {
+      pending = { text: `${pending.text} ${trimmed}`, line: pending.line }
+    } else {
+      if (pending !== undefined) {
+        out.push(pending)
+      }
+      pending = { text: trimmed, line }
+    }
+  }
+  if (pending !== undefined) {
+    out.push(pending)
+  }
+  return out
+}
+
+function argumentsAt(text: string, from: number): string {
+  if (text.charAt(from) !== '(') {
+    return ''
+  }
+  let depth = 0
+  for (let i = from; i < text.length; i++) {
+    const ch = text.charAt(i)
+    if (ch === '(') {
+      depth++
+    } else if (ch === ')') {
+      depth--
+      if (depth === 0) {
+        return text.slice(from + 1, i)
+      }
+    }
+  }
+  return text.slice(from + 1)
+}
+
+export function writeKind(call: string, receiver: string, args: string): WriteKind | null {
+  if (!Object.hasOwn(WRITE_KINDS, call)) {
     return null
   }
   const base = WRITE_KINDS[call]
-  if (base === undefined) {
-    return null
-  }
-  if (call.startsWith('import') && /validate:\s*false/.test(window)) {
+  if (call.startsWith('import') && /validate:\s*false/.test(args)) {
     return kind('none', ...base.events)
   }
-  if (base.runs === 'all' && /\.(first_or_initialize|find_or_initialize_by)\b/.test(window)) {
+  if (FIRST_OR_INITIALIZE_OVERRIDES.has(call) && FIRST_OR_INITIALIZE.test(receiver)) {
     return kind('all', 'create', 'update')
   }
-  return base
+  return kind(base.runs, ...base.events)
 }
 
 function flatten(prefix: string): string {
@@ -90,7 +143,7 @@ export function receiverOf(prefix: string, self: { table: string } | null, ctx: 
   if (headModel) {
     return { table: headModel.table, grade: 'constant' }
   }
-  const segments = (m[2] ?? '').split('.').map(s => s.replace(/[&()]/g, '')).filter(s => s !== '')
+  const segments = (m[2] ?? '').split('.').map(s => s.replace(/[&()\s]/g, '')).filter(s => s !== '')
   const named = [head, ...segments].filter(s => !QUERY_HEADS.has(s))
   const word = named[named.length - 1]
   if (word === undefined || word === 'self') {
@@ -102,18 +155,22 @@ export function receiverOf(prefix: string, self: { table: string } | null, ctx: 
 }
 
 export function writesIn(lines: SourceLine[], self: { table: string } | null, ctx: WriteResolver): WriteHit[] {
-  return lines.flatMap(({ text, line }, i) => {
-    const window = lines.slice(i, i + 6).map(l => l.text).join(' ')
+  return joinStatements(lines).flatMap(({ text, line }) => {
     const hits: WriteHit[] = []
     const bare = self ? BARE_WRITE.exec(text) : null
-    const bareKind = bare ? writeKind(bare[1] ?? '', window) : null
-    if (self && bare && bareKind) {
-      hits.push({ table: self.table, call: bare[1] ?? '', kind: bareKind, grade: 'constant', line })
+    if (self && bare) {
+      const call = bare[1] ?? ''
+      const found = writeKind(call, '', argumentsAt(text, bare[0].length))
+      if (found) {
+        hits.push({ table: self.table, call, kind: found, grade: 'constant', line })
+      }
     }
     for (const m of text.matchAll(WRITE_CALL)) {
       const call = m[1] ?? ''
-      const found = writeKind(call, window)
-      const target = found ? receiverOf(text.slice(0, m.index ?? 0), self, ctx) : null
+      const at = m.index ?? 0
+      const receiver = text.slice(0, at)
+      const found = writeKind(call, receiver, argumentsAt(text, at + m[0].length))
+      const target = found ? receiverOf(receiver, self, ctx) : null
       if (found && target) {
         hits.push({ table: target.table, call, kind: found, grade: target.grade, line })
       }
@@ -123,14 +180,19 @@ export function writesIn(lines: SourceLine[], self: { table: string } | null, ct
 }
 
 export function sqlWritesIn(lines: SourceLine[], tables: Set<string>): WriteHit[] {
-  const upsert = UPSERT.test(lines.map(l => l.text).join('\n'))
+  const text = lines.map(l => l.text).join('\n')
+  const upsert = UPSERT.test(text)
   const forms: Array<{ re: RegExp; call: string; found: WriteKind }> = [
     { re: SQL_INSERT, call: 'SQL INSERT INTO', found: upsert ? kind('none', 'create', 'update') : kind('none', 'create') },
     { re: SQL_UPDATE, call: 'SQL UPDATE', found: kind('none', 'update') },
     { re: SQL_DELETE, call: 'SQL DELETE FROM', found: kind('none', 'destroy') },
   ]
-  return lines.flatMap(({ text, line }) => forms.flatMap(({ re, call, found }) => [...text.matchAll(re)].flatMap(m => {
-    const hit: WriteHit = { table: m[1] ?? '', call, kind: found, grade: 'constant', line }
-    return tables.has(hit.table) ? [hit] : []
-  })))
+  return forms.flatMap(({ re, call, found }) => [...text.matchAll(re)].flatMap(m => {
+    const table = m[1] ?? ''
+    const row = lines[text.slice(0, m.index ?? 0).split('\n').length - 1]
+    if (!tables.has(table) || row === undefined) {
+      return []
+    }
+    return [{ table, call, kind: found, grade: 'constant', line: row.line }]
+  }))
 }

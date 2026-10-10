@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { linesOf, sqlWritesIn, writesIn, type WriteResolver } from './rails-writes'
+import { joinStatements, linesOf, sqlWritesIn, writeKind, writesIn, type WriteResolver } from './rails-writes'
 
 const tables = new Map([
   ['Shift', 'shifts'],
@@ -14,6 +14,18 @@ const ctx: WriteResolver = {
 }
 const lines = (...texts: string[]) => linesOf(texts.join('\n'), 1)
 
+describe('joinStatements', () => {
+  it('joins a leading-dot continuation and keeps the first line number', () => {
+    expect(joinStatements(lines('Shift.where(id: ids)', '  .update_all(color: c)', 'other = 1'))).toEqual([
+      { text: 'Shift.where(id: ids) .update_all(color: c)', line: 1 },
+      { text: 'other = 1', line: 3 },
+    ])
+  })
+  it('joins lines until the parens balance', () => {
+    expect(joinStatements(lines('Shift.import!(', 'shifts,', ')'))).toEqual([{ text: 'Shift.import!( shifts, )', line: 1 }])
+  })
+})
+
 describe('writesIn', () => {
   it('grades a class-level write constant and reads its runs and events', () => {
     expect(writesIn(lines('Shift.unscoped.where(id: ids).update_all(color: c)'), null, ctx)).toEqual([
@@ -23,6 +35,22 @@ describe('writesIn', () => {
   it('reads an import as validation-only unless validate: false sits in the call', () => {
     expect(writesIn(lines('Shift.import!(', '  shifts,', '  validate: false', ')'), null, ctx).map(h => h.kind.runs)).toEqual(['none'])
     expect(writesIn(lines('Shift.import!(shifts)'), null, ctx).map(h => h.kind.runs)).toEqual(['validation'])
+  })
+  it('reads validate: false only from the call own arguments, however many lines they span', () => {
+    expect(writesIn(lines('Shift.import!(', 'shifts,', 'a: 1,', 'b: 2,', 'c: 3,', 'd: 4,', 'validate: false', ')'), null, ctx).map(h => h.kind.runs)).toEqual(['none'])
+  })
+  it('ignores validate: false in a later unrelated statement', () => {
+    expect(writesIn(lines('Shift.import!(shifts)', 'options = { validate: false }'), null, ctx).map(h => h.kind.runs)).toEqual(['validation'])
+  })
+  it('keeps a destroy when a later statement starts a first_or_initialize chain', () => {
+    expect(writesIn(lines('shift.destroy!', 'Y.where(a: 1).first_or_initialize'), null, ctx)).toEqual([
+      { table: 'shifts', call: 'destroy!', kind: { runs: 'all', events: ['destroy'] }, grade: 'text', line: 1 },
+    ])
+  })
+  it('credits a leading-dot continuation to the receiver on the line above', () => {
+    expect(writesIn(lines('Shift.where(id: ids)', '  .update_all(color: c)'), null, ctx)).toEqual([
+      { table: 'shifts', call: 'update_all', kind: { runs: 'none', events: ['update'] }, grade: 'constant', line: 1 },
+    ])
   })
   it('follows safe navigation and grades a named receiver text', () => {
     expect(writesIn(lines('shift.badging&.update(shift_id: nil)'), null, ctx)).toEqual([
@@ -39,8 +67,21 @@ describe('writesIn', () => {
       ['shifts', 'delete_all'],
     ])
   })
+  it('does not credit hash keys named like a bare write', () => {
+    expect(writesIn(lines('  touch: true,', '  create: x'), { table: 'shifts' }, ctx)).toEqual([])
+  })
   it('never credits a receiver it cannot tie to a model', () => {
     expect(writesIn(lines('@shifts_params.delete_all', 'Rails.cache.delete(key)', 'params.update(a: 1)'), null, ctx)).toEqual([])
+  })
+})
+
+describe('writeKind', () => {
+  it('answers only for its own keys', () => {
+    expect(writeKind('toString', '', '')).toBeNull()
+  })
+  it('returns a fresh kind, never the shared table entry', () => {
+    writeKind('update_all', '', '')?.events.push('create')
+    expect(writeKind('update_all', '', '')).toEqual({ runs: 'none', events: ['update'] })
   })
 })
 
@@ -49,6 +90,16 @@ describe('sqlWritesIn', () => {
     const sql = lines('INSERT INTO weekly_options (shop_id) VALUES (?)', 'ON CONFLICT (shop_id) DO UPDATE SET up_to_date = false', 'DELETE FROM unknown_things')
     expect(sqlWritesIn(sql, new Set(['weekly_options']))).toEqual([
       { table: 'weekly_options', call: 'SQL INSERT INTO', kind: { runs: 'none', events: ['create', 'update'] }, grade: 'constant', line: 1 },
+    ])
+  })
+  it('reads UPDATE … SET split across lines at the line the statement starts', () => {
+    expect(sqlWritesIn(lines('-- note', 'UPDATE weekly_options', '  SET up_to_date = false'), new Set(['weekly_options']))).toEqual([
+      { table: 'weekly_options', call: 'SQL UPDATE', kind: { runs: 'none', events: ['update'] }, grade: 'constant', line: 2 },
+    ])
+  })
+  it('reads DELETE FROM on a known table', () => {
+    expect(sqlWritesIn(lines('DELETE FROM weekly_options', 'WHERE shop_id = ?'), new Set(['weekly_options']))).toEqual([
+      { table: 'weekly_options', call: 'SQL DELETE FROM', kind: { runs: 'none', events: ['destroy'] }, grade: 'constant', line: 1 },
     ])
   })
 })
