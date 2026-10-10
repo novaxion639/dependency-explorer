@@ -29,16 +29,74 @@ export function terraformList(contents: string[], name: string): string[] {
   return []
 }
 
+const SELECTION = /"rule-type"\s*[:=]\s*"selection"/
+const INCLUDE = /"rule-action"\s*[:=]\s*"include"/
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function withWildcard(names: string[], schemaTables: string[]): string[] {
+  const unique = [...new Set(names)]
+  return unique.includes('%') ? schemaTables : unique
+}
+
+function jsonIncludedTables(raw: string): string[] | null {
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    const rules = isRecord(parsed) && Array.isArray(parsed.rules) ? parsed.rules : []
+    return rules.flatMap(rule => {
+      const locator = isRecord(rule) ? rule['object-locator'] : undefined
+      const name = isRecord(locator) ? locator['table-name'] : undefined
+      return isRecord(rule) && rule['rule-type'] === 'selection' && rule['rule-action'] === 'include' && typeof name === 'string' ? [name] : []
+    })
+  } catch {
+    return null
+  }
+}
+
+function ruleObjects(text: string): string[] {
+  const stack: Array<{ start: number; hasRuleInside: boolean }> = []
+  const rules: string[] = []
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '{') {
+      stack.push({ start: i, hasRuleInside: false })
+    } else if (text[i] === '}') {
+      const open = stack.pop()
+      if (!open) {
+        continue
+      }
+      const segment = text.slice(open.start, i + 1)
+      const isRule = !open.hasRuleInside && segment.includes('"rule-type"')
+      if (isRule) {
+        rules.push(segment)
+      }
+      const parent = stack[stack.length - 1]
+      if (parent && (isRule || open.hasRuleInside)) {
+        parent.hasRuleInside = true
+      }
+    }
+  }
+  return rules
+}
+
 function tablesIn(mapping: string, schemaTables: string[]): string[] {
-  const names = [...new Set([...mapping.matchAll(TABLE_NAME)].map(m => m[1] ?? ''))]
-  return names.includes('%') ? schemaTables : names
+  const names = ruleObjects(mapping)
+    .filter(rule => SELECTION.test(rule) && INCLUDE.test(rule))
+    .flatMap(rule => [...rule.matchAll(TABLE_NAME)].map(m => m[1] ?? ''))
+  return withWildcard(names, schemaTables)
+}
+
+function fileTables(raw: string, schemaTables: string[]): string[] {
+  const names = jsonIncludedTables(raw)
+  return names ? withWildcard(names, schemaTables) : tablesIn(raw, schemaTables)
 }
 
 export function cdcTables(task: TfDmsTask, read: Read, contents: string[], schemaTables: string[]): string[] {
   const expr = (task.tableMappings ?? '').replace(/\s+/g, ' ').trim()
   const file = FILE_CALL.exec(expr)
   if (file) {
-    return tablesIn(read(tfPath(file[1] ?? '')) ?? '', schemaTables)
+    return fileTables(read(tfPath(file[1] ?? '')) ?? '', schemaTables)
   }
   const template = TEMPLATE_CALL.exec(expr)
   if (!template) {
@@ -72,7 +130,7 @@ export function cdcRelations(input: { terraform: Array<{ service: string; tfRepo
   const schema = new Set(input.schemaTables)
   const consumers = new Map([...input.serverless].map(([repo, facts]) => [repo, facts.streamConsumers]))
   const relations: ResourceRelation[] = []
-  const findings: ListenerFinding[] = []
+  const findings = new Map<string, ListenerFinding>()
   for (const t of input.terraform) {
     const dir = path.join(input.repoBase, t.tfRepo)
     const contents = tfContents(dir)
@@ -86,7 +144,8 @@ export function cdcRelations(input: { terraform: Array<{ service: string; tfRepo
       }
       const tables = cdcTables(task, readerFor(dir), contents, input.schemaTables)
       for (const table of tables.filter(x => !schema.has(x) && !EXEMPT_TABLES.has(x))) {
-        findings.push({ kind: 'cdc-unknown-table', subject: table, detail: `${t.tfRepo}:${task.label} selects ${table}, absent from db/schema.rb` })
+        const finding: ListenerFinding = { kind: 'cdc-unknown-table', subject: table, detail: `${t.tfRepo}:${task.label} selects ${table}, absent from db/schema.rb` }
+        findings.set(`${finding.subject}|${finding.detail}`, finding)
       }
       const known = tables.filter(x => schema.has(x))
       relations.push(...known.map(table => {
@@ -95,5 +154,5 @@ export function cdcRelations(input: { terraform: Array<{ service: string; tfRepo
       }), ...consumerRelations(stream, known, consumers))
     }
   }
-  return { relations, findings }
+  return { relations, findings: [...findings.values()] }
 }

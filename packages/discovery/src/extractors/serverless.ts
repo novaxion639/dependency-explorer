@@ -511,7 +511,7 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
         if (t) explicitType = t[1]!
       }
       const block = braceBlock(lines, i)
-      const tablePrefixes = [...block.matchAll(/\bprefix:\s*['"`](public\.[^'"`]*)['"`]/g)].map(p => p[1] ?? '')
+      const tablePrefixes = [...block.matchAll(/\bprefix:\s*['"`](public\.[^'"`$]*)['"`]/g)].map(p => p[1] ?? '')
       streamConsumers.push({
         ...classifyStreamRef(arn ?? '(non-literal arn)', explicitType),
         functionName: findFunctionIdentity(lines, i).functionName,
