@@ -1,8 +1,10 @@
 import { WRITE_EVENTS, cascadeOf, firedListeners, flowListenerDrift, flowListeners, listenerSurface, type FlowCodeUnit, type ServiceFlow } from '@dependency-explorer/data'
 import { CascadeHops } from '../resources/CascadeSection'
-import { GradeGlyph } from '../resources/ListenersSection'
-import { tableName } from '../resources/listenerView'
+import { GradeGlyph, Source } from '../resources/ListenersSection'
+import { listenerHeading, listenerLabel, tableName } from '../resources/listenerView'
 import styles from './flows.module.css'
+
+const TABLE_EVENT_REASON = 'unverified, matched by table event'
 
 interface Props { flow: ServiceFlow; unit: FlowCodeUnit; onOpenResource: (id: string) => void }
 
@@ -22,11 +24,12 @@ export function ListenerFacts({ flow, unit, onOpenResource }: Props) {
               const origin = (link.site?.events ?? WRITE_EVENTS).map(e => `${link.table}|${e}`)
               return (
                 <li key={`${link.table}:${link.site?.line ?? 'event'}`}>
-                  <GradeGlyph unverified={link.grade === 'text'} />
+                  <GradeGlyph unverified={link.grade === 'text'} reason={link.site ? undefined : TABLE_EVENT_REASON} />
                   <button type="button" onClick={() => onOpenResource(link.table)}>{tableName(link.table)}</button>
                   <span className={styles.muted}>{link.site ? (runsNone ? '' : ` ${link.site.call} · runs ${link.site.runs}`) : ' by table event — unverified'}</span>
-                  {runsNone && link.site ? ` runs none (${link.site.call})` : ` → ${link.listeners.length ? link.listeners.map(l => l.method ?? l.hook).join(', ') : 'no listener'}`}
-                  <CascadeHops nodes={cascadeOf(listenerSurface, link.listeners, origin)} onOpenResource={onOpenResource} />
+                  {link.site && <span className={styles.muted}> <Source at={link.site} /></span>}
+                  {runsNone && link.site ? ` runs none (${link.site.call})` : ` → ${link.listeners.length ? link.listeners.map(listenerLabel).join(', ') : 'no listener'}`}
+                  <CascadeHops nodes={cascadeOf(listenerSurface, link.listeners, origin, link.grade)} onOpenResource={onOpenResource} />
                 </li>
               )
             })}
@@ -37,7 +40,7 @@ export function ListenerFacts({ flow, unit, onOpenResource }: Props) {
         <section>
           <h3>Derived listeners</h3>
           <ul className={styles.plain}>
-            {derived.map(l => <li key={l.id}>{`${l.hook} ${l.method ?? 'block'}`}</li>)}
+            {derived.map(l => <li key={l.id}>{`${tableName(l.table)} · ${listenerHeading(l)}`}</li>)}
             {drift.map(d => <li key={d.detail}>{`⚠ ${d.kind === 'flow-listener-missing' ? 'missing' : 'unsupported'}: ${d.detail}`}</li>)}
           </ul>
         </section>
