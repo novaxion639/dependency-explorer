@@ -33,7 +33,7 @@ export function listenersRun(write: { events?: WriteEvent[]; runs?: Runs; fires?
     return candidates.filter(l => l.phase === 'validation' && onEvent(l))
   }
   if (write.runs === 'touch') {
-    return candidates.filter(l => l.phase === 'touch' || l.kind === 'touch' || ((l.phase === 'commit' || l.phase === 'rollback') && l.events.includes('update')))
+    return candidates.filter(l => l.phase === 'touch' || (l.kind === 'touch' && onEvent(l)) || ((l.phase === 'commit' || l.phase === 'rollback') && l.events.includes('update')))
   }
   if (write.runs === 'subset') {
     const fires = new Set(write.fires ?? [])
@@ -63,15 +63,14 @@ export function cascadeOf(surface: ListenerTables, start: Listener[], origin: st
     const nextAsync = async || effect.mode === 'async-job'
     const mode: CascadeHop['mode'] = nextAsync ? 'async' : 'sync'
     const nextGrade = weakest(grade, effect.grade)
-    const events = effect.events ?? []
-    const keys = events.map(e => `${effect.target}|${e}`)
+    const events = effect.events ?? WRITE_EVENTS
     if (effect.runs === undefined || effect.runs === 'none') {
       return { effect, table: effect.target, mode, grade: nextGrade, skipped: candidates.filter(l => l.events.some(e => events.includes(e))).length, cycle: false, next: [] }
     }
-    if (keys.some(k => path.has(k))) {
-      return { effect, table: effect.target, mode, grade: nextGrade, skipped: 0, cycle: true, next: [] }
-    }
-    return { effect, table: effect.target, mode, grade: nextGrade, skipped: 0, cycle: false, next: expand(inRailsOrder(listenersRun(effect, candidates)), new Set([...path, ...keys]), nextAsync, nextGrade) }
+    const fresh = events.filter(e => !path.has(`${effect.target}|${e}`))
+    const freshKeys = fresh.map(e => `${effect.target}|${e}`)
+    const next = fresh.length === 0 ? [] : expand(inRailsOrder(listenersRun({ runs: effect.runs, events: fresh }, candidates)), new Set([...path, ...freshKeys]), nextAsync, nextGrade)
+    return { effect, table: effect.target, mode, grade: nextGrade, skipped: 0, cycle: fresh.length < events.length, next }
   }
   return expand(inRailsOrder(start), new Set(origin), false, 'graph')
 }

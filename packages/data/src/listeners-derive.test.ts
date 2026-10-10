@@ -25,6 +25,7 @@ const SURFACE = ListenerSurfaceSchema.parse({
     cb('b.after_save.y', 'b', 'after_save', 'save', ['create', 'update'], [writes('a', 'all', ['update'], 'sync', 'graph')]),
     cb('cluster_nodes.has_ancestry', 'cluster_nodes', 'has_ancestry', 'event', ['update', 'destroy'], [writes('cluster_nodes', 'all', ['update'])], 'gem'),
     cb('contracts.touch.user', 'contracts', 'touch: true', 'event', ['create', 'update', 'destroy'], [], 'touch'),
+    cb('contracts.touch.create_only', 'contracts', 'touch: true', 'event', ['create'], [], 'touch'),
   ],
   writeSites: [
     { table: t('shifts'), file: 'app/services/update_service.rb', line: 10, call: 'update!', events: ['update'], runs: 'all', grade: 'text' },
@@ -70,6 +71,35 @@ describe('cascadeFrom', () => {
   })
   it('terminates on a table re-writing itself', () => {
     expect(cascadeFrom(SURFACE, t('cluster_nodes'), 'update')[0]?.hops[0]?.cycle).toBe(true)
+  })
+})
+
+describe('cycles per table and event', () => {
+  const LOOP = ListenerSurfaceSchema.parse({
+    listeners: [
+      cb('a.after_save.loop', 'a', 'after_save', 'save', ['create', 'update'], [writes('a', 'all', ['create', 'update'])]),
+      cb('a.after_create.feed', 'a', 'after_create', 'event', ['create'], [writes('c', 'all', ['create'])]),
+    ],
+    writeSites: [],
+  })
+  const SELF_TOUCH = ListenerSurfaceSchema.parse({
+    listeners: [
+      cb('x.touch.self', 'x', 'touch: true', 'event', ['update'], [{ kind: 'writes', target: t('x'), mode: 'sync', runs: 'touch', at, grade: 'constant' }], 'touch'),
+    ],
+    writeSites: [],
+  })
+
+  it('marks a partly-seen write a cycle and still follows its fresh events', () => {
+    const hop = cascadeFrom(LOOP, t('a'), 'update')[0]?.hops[0]
+    expect([hop?.table, hop?.cycle]).toEqual([t('a'), true])
+    expect(hop?.next.map(n => [n.listener.id, n.hops.map(h => h.table)])).toEqual([
+      ['a.after_create.feed', [t('c')]],
+      ['a.after_save.loop', [t('a')]],
+    ])
+    expect(hop?.next[1]?.hops[0]?.cycle).toBe(true)
+  })
+  it('defaults a write without events to every write event and terminates on a self-touch', () => {
+    expect(cascadeFrom(SELF_TOUCH, t('x'), 'update')[0]?.hops[0]?.cycle).toBe(true)
   })
 })
 
