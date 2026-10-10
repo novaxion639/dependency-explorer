@@ -1,9 +1,9 @@
-import type { Listener, ListenerEffect, ListenerPhase, WriteEvent } from '@dependency-explorer/schema'
+import type { Listener, ListenerEffect, ListenerPhase, Runs, WriteEvent } from '@dependency-explorer/schema'
 import { associationMap, parseAssociations, stripComments, type Read } from '../code-wiring'
 import { reachable, type RepoGraph } from '../code-grades'
 import { tableId } from '../resource-registry'
 import { declarationsOf, type DeclarationAt, type ModelEntry, type SpanAt } from './rails-model-index'
-import { blockEnd, methodSpans, resolveConstant, rubyCode } from './ruby-source'
+import { blockEnd, classify, methodSpans, resolveConstant, rubyCode } from './ruby-source'
 import { linesOf, sqlWritesIn, writesIn, type WriteResolver } from './rails-writes'
 
 export type ListenerFindingKind = 'surface-drift' | 'unresolved-callback' | 'unresolved-job' | 'unknown-gem-macro' | 'cdc-unknown-table' | 'flow-listener-missing' | 'flow-listener-unsupported'
@@ -228,5 +228,144 @@ export function callbackListeners(entry: ModelEntry, ctx: ListenerContext): List
       return { ...base, id: `${entry.table}.${hook}.block@${decl.line}`, effects: effectsOf(span, entry, ctx) }
     })
     return [...bySymbol, ...byBody]
+  })
+}
+
+const ASSOCIATION_START = /^\s*(?:has_many|has_one|has_and_belongs_to_many|belongs_to)\s+:/
+const ASSOCIATION = /^\s*(has_many|has_one|has_and_belongs_to_many|belongs_to)\s+:(\w+)([\s\S]*)$/
+const DEPENDENT = /dependent:\s*:(destroy|delete_all|delete|nullify)\b/
+const CLASS_NAME = /class_name:\s*['"](?:\w+::)*(\w+)['"]/
+const JOIN_TABLE = /join_table:\s*['":]+(\w+)/
+const TOUCH = /\btouch:\s*true\b/
+const GEM_START = /^\s*(?:acts_as_\w+|has_\w+|multisearchable)\b(?!\s*(?:[-+*/|&]?=|\.|\)))/
+const GEM = /^\s*(acts_as_\w+|has_\w+|multisearchable)\b([\s\S]*)$/
+const RAILS_ASSOCIATIONS = new Set(['has_many', 'has_one', 'has_and_belongs_to_many'])
+
+interface GemEffect { table: string | null; events: WriteEvent[]; runs: Runs }
+interface GemListener { events: WriteEvent[]; phase: ListenerPhase; effects: GemEffect[] }
+
+export const KNOWN_GEM_LISTENERS: Record<string, GemListener | null> = {
+  acts_as_list: { events: ['create', 'update', 'destroy'], phase: 'event', effects: [{ table: null, events: ['update'], runs: 'none' }] },
+  has_ancestry: { events: ['update', 'destroy'], phase: 'event', effects: [{ table: null, events: ['update'], runs: 'all' }] },
+  multisearchable: {
+    events: ['create', 'update', 'destroy'],
+    phase: 'event',
+    effects: [
+      { table: 'pg_search_documents', events: ['create', 'update'], runs: 'all' },
+      { table: 'pg_search_documents', events: ['destroy'], runs: 'none' },
+    ],
+  },
+  has_secure_token: { events: ['create'], phase: 'event', effects: [] },
+  has_encrypted: null,
+  has_secure_password: null,
+  has_one_attached: null,
+  has_many_attached: null,
+  has_rich_text: null,
+}
+
+function tableOfClass(cls: string, ctx: ListenerContext): string | null {
+  return ctx.byClass.get(cls)?.table ?? null
+}
+
+export function associationListeners(entry: ModelEntry, ctx: ListenerContext): Listener[] {
+  return declarationsOf(entry, ASSOCIATION_START).flatMap((decl): Listener[] => {
+    const m = ASSOCIATION.exec(decl.text)
+    if (!m) {
+      return []
+    }
+    const macro = m[1] ?? ''
+    const name = m[2] ?? ''
+    const rest = m[3] ?? ''
+    const other = tableOfClass(CLASS_NAME.exec(rest)?.[1] ?? classify(name), ctx)
+    const at = { file: decl.file, line: decl.line }
+    const own = tableId(entry.table)
+    if (macro === 'belongs_to') {
+      if (!TOUCH.test(rest) || other === null) {
+        return []
+      }
+      return [{
+        id: `${entry.table}.touch.${name}`,
+        table: own,
+        kind: 'touch',
+        hook: 'touch: true',
+        events: ['create', 'update', 'destroy'],
+        phase: 'commit',
+        declaredAt: at,
+        grade: 'code',
+        effects: [{ kind: 'writes', target: tableId(other), mode: 'sync', events: ['update'], runs: 'touch', at, grade: 'constant' }],
+      }]
+    }
+    if (macro === 'has_and_belongs_to_many') {
+      const join = JOIN_TABLE.exec(rest)?.[1] ?? (other === null ? null : [entry.table, other].sort().join('_'))
+      if (join === null || !ctx.tables.has(join)) {
+        return []
+      }
+      return [{
+        id: `${entry.table}.habtm.${name}`,
+        table: own,
+        kind: 'cascade',
+        hook: 'has_and_belongs_to_many',
+        events: ['destroy'],
+        phase: 'event',
+        declaredAt: at,
+        grade: 'code',
+        effects: [{ kind: 'writes', target: tableId(join), mode: 'sync', events: ['destroy'], runs: 'none', at, grade: 'constant' }],
+      }]
+    }
+    const dependent = DEPENDENT.exec(rest)?.[1]
+    if (dependent === undefined || other === null) {
+      return []
+    }
+    return [{
+      id: `${entry.table}.dependent.${name}`,
+      table: own,
+      kind: 'cascade',
+      hook: `dependent: :${dependent}`,
+      events: ['destroy'],
+      phase: 'event',
+      declaredAt: at,
+      grade: 'code',
+      effects: [{
+        kind: 'writes',
+        target: tableId(other),
+        mode: 'sync',
+        events: dependent === 'nullify' ? ['update'] : ['destroy'],
+        runs: dependent === 'destroy' ? 'all' : 'none',
+        at,
+        grade: 'constant',
+      }],
+    }]
+  })
+}
+
+function insideMethod(entry: ModelEntry, decl: DeclarationAt): boolean {
+  return [...entry.methods.values()].some(s => s.file === decl.file && decl.line > s.line && decl.line < s.line + s.body.split('\n').length - 1)
+}
+
+export function gemListeners(entry: ModelEntry, ctx: ListenerContext): Listener[] {
+  return declarationsOf(entry, GEM_START).filter(decl => !insideMethod(entry, decl)).flatMap((decl): Listener[] => {
+    const m = GEM.exec(decl.text)
+    const macro = m?.[1] ?? ''
+    if (!m || RAILS_ASSOCIATIONS.has(macro)) {
+      return []
+    }
+    if (!(macro in KNOWN_GEM_LISTENERS)) {
+      ctx.findings.push({ kind: 'unknown-gem-macro', subject: `${entry.className}.${macro}`, detail: `${decl.file}:${decl.line} — not a Rails association and not in KNOWN_GEM_LISTENERS` })
+      return []
+    }
+    const known = KNOWN_GEM_LISTENERS[macro]
+    if (known === null) {
+      return []
+    }
+    const at = { file: decl.file, line: decl.line }
+    const extra: GemEffect[] = macro === 'has_ancestry' && /orphan_strategy:\s*:destroy/.test(m[2] ?? '') ? [{ table: null, events: ['destroy'], runs: 'all' }] : []
+    const effects = [...known.effects, ...extra].flatMap((g): ListenerEffect[] => {
+      const table = g.table ?? entry.table
+      if (!ctx.tables.has(table)) {
+        return []
+      }
+      return [{ kind: 'writes', target: tableId(table), mode: 'sync', events: g.events, runs: g.runs, at, grade: 'constant' }]
+    })
+    return [{ id: `${entry.table}.${macro}`, table: tableId(entry.table), kind: 'gem', hook: macro, events: known.events, phase: known.phase, declaredAt: at, effects, grade: 'config' }]
   })
 }

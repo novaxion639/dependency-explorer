@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { ListenerEffect } from '@dependency-explorer/schema'
 import { buildModelIndex } from './rails-model-index'
-import { callbackListeners, effectsOf, listenerContext } from './rails-listeners'
+import { associationListeners, callbackListeners, effectsOf, gemListeners, listenerContext } from './rails-listeners'
 import { FIXTURE_TABLES, fixtureModels, fixtureRead } from './__fixtures__/listeners'
 
 const index = buildModelIndex(fixtureModels, fixtureRead)
@@ -86,5 +86,35 @@ describe('callbackListeners', () => {
     ])
     expect(listeners[3]?.effects.map(e => [e.kind, e.target, e.runs])).toEqual([['writes', 'pg:skello_production.organisations', 'none']])
     expect(c.findings).toEqual([{ kind: 'unresolved-callback', subject: 'Shop#missing_method', detail: 'app/models/shop.rb:5 names a method neither Shop nor its included modules define' }])
+  })
+})
+
+describe('associationListeners', () => {
+  const of = (cls: string) => associationListeners(index.find(e => e.className === cls) ?? index[0], ctx())
+  it('reads dependent: as a destroy cascade with the child write runs', () => {
+    expect(of('Shift').map(l => [l.id, l.hook, l.effects[0]?.target, l.effects[0]?.runs, l.effects[0]?.events?.join(',')])).toEqual([
+      ['shifts.dependent.shift_swaps', 'dependent: :delete_all', 'pg:skello_production.shift_swaps', 'none', 'destroy'],
+      ['shifts.dependent.badging', 'dependent: :nullify', 'pg:skello_production.badgings', 'none', 'update'],
+    ])
+    expect(of('Poste').map(l => [l.id, l.effects[0]?.runs])).toEqual([['postes.dependent.shifts', 'all']])
+  })
+  it('reads belongs_to touch: true as a touch listener on the child writing the parent', () => {
+    expect(of('Contract').map(l => [l.id, l.kind, l.phase, l.effects[0]?.target, l.effects[0]?.runs])).toEqual([
+      ['contracts.touch.user', 'touch', 'commit', 'pg:skello_production.users', 'touch'],
+    ])
+  })
+})
+
+describe('gemListeners', () => {
+  it('maps known macros, ignores attribute macros and anything inside a method body, and reports unknown ones', () => {
+    const c = ctx()
+    const all = index.flatMap(e => gemListeners(e, c))
+    expect(all.map(l => [l.id, l.grade, l.effects.map(e => `${e.target}:${e.runs}`).join(' ')])).toEqual([
+      ['shops.multisearchable', 'config', 'pg:skello_production.pg_search_documents:all pg:skello_production.pg_search_documents:none'],
+      ['users.has_secure_token', 'config', ''],
+      ['cluster_nodes.has_ancestry', 'config', 'pg:skello_production.cluster_nodes:all'],
+      ['night_hours_maj_slices.acts_as_list', 'config', 'pg:skello_production.night_hours_maj_slices:none'],
+    ])
+    expect(c.findings).toEqual([{ kind: 'unknown-gem-macro', subject: 'Organisation.acts_as_paranoid', detail: 'app/models/organisation.rb:2 — not a Rails association and not in KNOWN_GEM_LISTENERS' }])
   })
 })
