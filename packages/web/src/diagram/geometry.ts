@@ -24,9 +24,39 @@ export function fitLabel(text: string, width: number, fontSize: number): string 
 export const EDGE_LABEL_FONT = 11
 export const EDGE_LABEL_LINE = 17
 
+const GRAPHEMES = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+const SEPARATOR = /^[_.#/]$/
+const UPPER = /^\p{Lu}$/u
+const LOWER_OR_DIGIT = /^[\p{Ll}\d]$/u
+
+function isBoundary(g: string[], k: number): boolean {
+  const prev = g[k - 1] ?? ''
+  const next = g[k] ?? ''
+  return SEPARATOR.test(prev) || (prev === ':' && g[k - 2] === ':') || (UPPER.test(next) && LOWER_OR_DIGIT.test(prev))
+}
+
+function splitWord(word: string, max: number): string[] {
+  const pieces: string[] = []
+  let g = [...GRAPHEMES.segment(word)].map(s => s.segment)
+  while (g.join('').length > max) {
+    let fits = 1
+    let boundary = 0
+    for (let k = 1, length = g[0]?.length ?? 0; k < g.length && length <= max; length += g[k]?.length ?? 0, k++) {
+      fits = k
+      if (isBoundary(g, k)) {
+        boundary = k
+      }
+    }
+    const cut = boundary || fits
+    pieces.push(g.slice(0, cut).join(''))
+    g = g.slice(cut)
+  }
+  return g.length > 0 ? [...pieces, g.join('')] : pieces
+}
+
 export function wrapText(text: string, width: number, fontSize: number): string[] {
   const max = Math.max(1, Math.floor(width / (fontSize * CHAR_WIDTH)))
-  const words = text.split(/\s+/).filter(Boolean).flatMap(w => (w.length > max ? w.match(new RegExp(`.{1,${max}}`, 'gu')) ?? [w] : [w]))
+  const words = text.split(/\s+/).filter(Boolean).flatMap(w => (w.length > max ? splitWord(w, max) : [w]))
   return words.reduce<string[]>((lines, w) => {
     const last = lines[lines.length - 1]
     if (last !== undefined && last.length + 1 + w.length <= max) {

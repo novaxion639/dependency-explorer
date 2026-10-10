@@ -48,6 +48,7 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
   const active: Renderer = model.renderers.includes(renderer) ? renderer : 'react-flow'
   const emphases = useMemo(() => emphasise(model, focus), [model, focus])
   const zoomTo = useMemo(() => focusBounds(model, focus.chapter), [model, focus.chapter])
+  const frame = useMemo(() => zoomTo ?? { x: 0, y: 0, w: model.width, h: model.height }, [zoomTo, model])
   const [placement, setPlacement] = useState<Placement>(NO_PLACEMENT)
   const display = useMemo(() => placed(model, placement), [model, placement])
   const mermaidRender = useRef<MermaidRender | null>(null)
@@ -102,7 +103,7 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
         {children}
       </div>
       <div className={styles.canvas}>
-        {active === 'react-flow' && <ReactFlowDiagram key={model.id} model={display} emphases={emphases} zoomTo={zoomTo} onSelect={onSelect} onMove={onMove} />}
+        {active === 'react-flow' && <ReactFlowDiagram key={model.id} model={display} emphases={emphases} frame={frame} focused={zoomTo !== null} onSelect={onSelect} onMove={onMove} />}
         {active === 'svg' && <SvgDiagram model={display} emphases={emphases} zoomTo={zoomTo} onSelect={onSelect} />}
         {active === 'mermaid' && <MermaidDiagram source={source} onRendered={onRendered} />}
       </div>

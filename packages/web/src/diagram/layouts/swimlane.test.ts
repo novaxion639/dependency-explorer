@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { connectivityMap as map, ServiceFlowSchema } from '@dependency-explorer/data'
 import { layoutProblems } from '../layoutProblems'
-import { overlaps, textWidth } from '../geometry'
+import { EDGE_LABEL_FONT, overlaps, textWidth } from '../geometry'
 import type { Box, DiagramModel } from '../model'
-import { chapterFocus, infraNodeId, serviceNodeId, swimlanes, unitNodeId } from './swimlane'
+import { arrowBox, chapterFocus, infraNodeId, LANE_GAP, PAD, serviceNodeId, swimlanes, unitNodeId, WRAP_W } from './swimlane'
 
 function flow(id: string) {
   const f = map.flows.find(x => x.id === id)
@@ -88,20 +88,6 @@ describe('swimlanes', () => {
   })
 })
 
-const ARROW = 14
-
-function arrowBox(route: Array<{ x: number; y: number }>): Box | null {
-  const q = route[route.length - 1]
-  const p = route[route.length - 2]
-  if (!p || !q) {
-    return null
-  }
-  const dx = Math.sign(q.x - p.x)
-  const dy = Math.sign(q.y - p.y)
-  const tail = { x: q.x - dx * ARROW, y: q.y - dy * ARROW }
-  return { x: Math.min(q.x, tail.x) - 5, y: Math.min(q.y, tail.y) - 5, w: Math.abs(q.x - tail.x) + 10, h: Math.abs(q.y - tail.y) + 10 }
-}
-
 function crosses(a: { x: number; y: number }, b: { x: number; y: number }, box: Box): boolean {
   return Math.min(a.x, b.x) < box.x + box.w && Math.max(a.x, b.x) > box.x && Math.min(a.y, b.y) < box.y + box.h && Math.max(a.y, b.y) > box.y
 }
@@ -176,7 +162,7 @@ describe('swimlane routes', () => {
         expect(squash((e.labelLines ?? []).join('')), `${f.id} ${e.id}`).toBe(squash(e.label))
         expect(squash((e.conditionLines ?? []).join('')), `${f.id} ${e.id}`).toBe(e.condition ? squash(`if ${e.condition}`) : '')
         for (const line of [...(e.labelLines ?? []), ...(e.conditionLines ?? [])]) {
-          expect(textWidth(line, 11), `${f.id} ${e.id} ${line}`).toBeLessThanOrEqual(284)
+          expect(textWidth(line, EDGE_LABEL_FONT), `${f.id} ${e.id} ${line}`).toBeLessThanOrEqual(WRAP_W)
         }
       }
     }
@@ -196,6 +182,73 @@ describe('swimlane routes', () => {
         }
       })
     }
+  })
+  it('ends the drawing at the last lane, or at its gutter when a route uses it', () => {
+    for (const f of map.flows) {
+      const model = swimlanes(f)
+      const last = model.groups[model.groups.length - 1]
+      const lastRight = last ? last.x + last.w : 0
+      const reach = Math.max(lastRight, ...model.edges.flatMap(e => [...(e.route ?? []).map(p => p.x), ...(e.labelBox ? [e.labelBox.x + e.labelBox.w] : [])]))
+      expect(model.width, f.id).toBeLessThanOrEqual(reach > lastRight ? Math.max(lastRight + LANE_GAP, reach + PAD) : lastRight)
+    }
+  })
+  it('widens a gutter past its track capacity instead of sharing tracks', () => {
+    const n = 40
+    const wide = ServiceFlowSchema.parse({
+      id: 'wide', name: 'Wide', description: 'd', steps: [],
+      codeUnits: [...Array.from({ length: n }, (_, i) => ({ id: `a${i}`, service: 'x', kind: 'service', label: `A${i}` })), ...Array.from({ length: n }, (_, i) => ({ id: `b${i}`, service: 'y', kind: 'service', label: `B${i}` }))],
+      codeEdges: Array.from({ length: n }, (_, i) => ({ from: `a${i}`, to: `b${i}` })),
+    })
+    const model = swimlanes(wide)
+    expect(new Set(model.edges.map(e => e.route?.[1]?.x)).size).toBe(n)
+    expect(layoutProblems(model)).toEqual([])
+  })
+  it('opens the gap above a row past its channel capacity instead of crossing the row above', () => {
+    const n = 8
+    const deep = ServiceFlowSchema.parse({
+      id: 'deep', name: 'Deep', description: 'd', steps: [],
+      codeUnits: [...Array.from({ length: n }, (_, i) => ({ id: `a${i}`, service: 'x', kind: 'service', label: `A${i}` })), { id: 'mid', service: 'y', kind: 'service', label: 'Mid' }, { id: 'b', service: 'z', kind: 'service', label: 'B' }],
+      codeEdges: [{ from: 'a0', to: 'mid' }, ...Array.from({ length: n }, (_, i) => ({ from: `a${i}`, to: 'b' }))],
+    })
+    const model = swimlanes(deep)
+    const target = model.nodes.find(x => x.id === unitNodeId('b'))
+    const above = Math.max(...model.nodes.filter(x => target && x.y < target.y).map(x => x.y + x.h))
+    expect(model.groups.map(g => g.id)).toEqual(['lane:x', 'lane:y', 'lane:z'])
+    expect(model.edges.filter(e => e.to === unitNodeId('b')).every(e => (e.route?.[2]?.y ?? Infinity) > above)).toBe(true)
+    expect(layoutProblems(model)).toEqual([])
+  })
+  it('stacks the labels of two straight-down edges between the same pair', () => {
+    const twice = ServiceFlowSchema.parse({
+      id: 'twice', name: 'Twice', description: 'd', steps: [],
+      codeUnits: [{ id: 'a', service: 'x', kind: 'service', label: 'A' }, { id: 'b', service: 'x', kind: 'service', label: 'B' }],
+      codeEdges: [{ from: 'a', to: 'b', label: 'creates' }, { from: 'a', to: 'b', label: 'updates', condition: 'when dirty' }],
+    })
+    const model = swimlanes(twice)
+    const [first, second] = model.edges.map(e => e.labelBox)
+    expect(first && second && overlaps(first, second)).toBe(false)
+    for (const box of [first, second]) {
+      expect(model.nodes.some(n => box && overlaps(box, n))).toBe(false)
+    }
+    expect(layoutProblems(model)).toEqual([])
+  })
+  it('keeps crowded trailing-gutter labels inside the drawing', () => {
+    const n = 25
+    const label = 'a long label that needs a wide box in the gutter'
+    const crowded = ServiceFlowSchema.parse({
+      id: 'crowded', name: 'Crowded', description: 'd', steps: [],
+      codeUnits: Array.from({ length: n }, (_, i) => ({ id: `a${i}`, service: 'x', kind: 'service', label: `A${i}` })),
+      codeEdges: [
+        ...Array.from({ length: n - 1 }, (_, i) => ({ from: `a${i}`, to: `a${i + 1}` })),
+        ...Array.from({ length: n - 3 }, (_, i) => ({ from: `a${i}`, to: i % 2 === 0 ? `a${n - 1}` : `a${n - 2}`, label })),
+        ...Array.from({ length: n - 2 }, (_, i) => ({ from: `a${i + 2}`, to: `a${i}`, label })),
+      ],
+    })
+    const model = swimlanes(crowded)
+    for (const e of model.edges.filter(x => x.labelBox)) {
+      const box = e.labelBox ?? { x: 0, y: 0, w: 0, h: 0 }
+      expect(box.x + box.w, e.id).toBeLessThanOrEqual(model.width)
+    }
+    expect(layoutProblems(model)).toEqual([])
   })
   it('sets each label against its own route, inside the drawing', () => {
     for (const f of map.flows) {

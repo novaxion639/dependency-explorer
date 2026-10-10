@@ -20,7 +20,9 @@
 *Order and lines:*
 - Units stack top to bottom in call order, sync calls before async ones.
 - Lines are solid for sync, dashed for async, dotted for a data feed out of a store, and run at right angles.
-- Between neighbouring units of one lane a line runs straight down. Otherwise it runs through the gutters between lanes, where its full label (wrapped to the gutter's width) sits clear of nodes, other labels and arrowheads.
+- Between neighbouring units of one lane a line runs straight down; repeated lines between the same pair stack their labels. Otherwise it runs through the gutters between lanes, where its full label sits clear of nodes, other labels and arrowheads.
+- Labels wrap to the gutter's width at word breaks, then inside a long identifier after `_ . # / ::` or at a camelCase boundary, never inside a character.
+- A gutter widens, and the gap above a row opens, when more lines need them than they hold.
 - Units sit inside their lane and stay in place while the canvas pans and zooms.
 - Edge conditions and feature flags show as "if" pills, and branches as `⎇` lines on their unit.
 
