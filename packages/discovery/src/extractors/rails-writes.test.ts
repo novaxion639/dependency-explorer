@@ -6,6 +6,7 @@ const tables = new Map([
   ['Membership', 'memberships'],
   ['Badging', 'badgings'],
   ['PredictedShift', 'predicted_shifts'],
+  ['PaidLeavesCounter', 'paid_leaves_counters'],
 ])
 const ctx: WriteResolver = {
   byClass: new Map([...tables].map(([cls, table]): [string, { table: string }] => [cls, { table }])),
@@ -69,6 +70,13 @@ describe('writesIn', () => {
   })
   it('does not credit hash keys named like a bare write', () => {
     expect(writesIn(lines('  touch: true,', '  create: x'), { table: 'shifts' }, ctx)).toEqual([])
+  })
+  it('credits a write whose receiver holds a nested call in its arguments', () => {
+    expect(writesIn(lines('Shift.where(x: foo(y)).update_all(a: 1)'), null, ctx).map(h => [h.table, h.call])).toEqual([['shifts', 'update_all']])
+    expect(writesIn(lines('PaidLeavesCounter.find_or_initialize_by(user_id: u, month: previous_year_month(plc, shop)).update!(a: 1)'), null, ctx).map(h => [h.table, h.call, h.kind.events])).toEqual([['paid_leaves_counters', 'update!', ['create', 'update']]])
+  })
+  it('reads a bare find_or_initialize_by chain inside a model as create and update', () => {
+    expect(writesIn(lines('  find_or_initialize_by(user_id: u).update!(a: 1)'), { table: 'shifts' }, ctx).map(h => [h.table, h.kind.events])).toEqual([['shifts', ['create', 'update']]])
   })
   it('never credits a receiver it cannot tie to a model', () => {
     expect(writesIn(lines('@shifts_params.delete_all', 'Rails.cache.delete(key)', 'params.update(a: 1)'), null, ctx)).toEqual([])

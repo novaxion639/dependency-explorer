@@ -48,8 +48,9 @@ const WRITE_CALL = new RegExp(`\\.(${NAMES})(?![\\w!?])`, 'g')
 const BARE_WRITE = new RegExp(`^\\s*(${NAMES})(?![\\w!?:])`)
 const QUERY_HEADS = new Set(['where', 'unscoped', 'all', 'joins', 'includes', 'find', 'find_by', 'find_each', 'order', 'limit', 'not', 'lock', 'first_or_initialize', 'find_or_initialize_by'])
 const FIRST_OR_INITIALIZE_OVERRIDES = new Set(['save', 'save!', 'create', 'create!', 'update', 'update!'])
-const FIRST_OR_INITIALIZE = /\.(first_or_initialize|find_or_initialize_by)\b/
+const FIRST_OR_INITIALIZE = /(?:^|\.)(first_or_initialize|find_or_initialize_by)\b/
 const PARENS = /\([^()]*\)/g
+const COLLAPSED = '\u0001'
 const CHAIN = /(@?[A-Za-z_][\w:]*[!?]?)(?:\(\))?((?:\s*&?\.[A-Za-z_]\w*[!?]?(?:\(\))?)*)\s*&?\s*$/
 const CONTINUATION = /^&?\./
 const OPEN_BRACKETS = new Set(['(', '['])
@@ -129,8 +130,8 @@ export function writeKind(call: string, receiver: string, args: string): WriteKi
 }
 
 function flatten(prefix: string): string {
-  const once = prefix.replace(PARENS, '()')
-  return once === prefix ? prefix : flatten(once)
+  const once = prefix.replace(PARENS, COLLAPSED)
+  return once === prefix ? prefix.replaceAll(COLLAPSED, '()') : flatten(once)
 }
 
 export function receiverOf(prefix: string, self: { table: string } | null, ctx: WriteResolver): { table: string; grade: 'constant' | 'text' } | null {
