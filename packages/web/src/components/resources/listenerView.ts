@@ -22,7 +22,7 @@ export function tableName(id: string): string {
 export function effectText(e: ListenerEffect): string {
   const tail = `${e.mode === 'async-job' ? ' · async' : ''}${e.via ? ` · via ${e.via}` : ''}`
   if (e.kind === 'writes') {
-    return `writes ${tableName(e.target)} · runs ${e.runs ?? 'all'} · ${(e.events ?? []).join(' ')}${tail}`
+    return `writes ${tableName(e.target)} · runs ${e.runs ?? 'none'} · ${(e.events ?? []).join(' ')}${tail}`
   }
   return `${e.kind} ${e.target}${tail}`
 }

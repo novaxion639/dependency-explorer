@@ -21,7 +21,7 @@ export function WritePathsSection({ table, onOpenFlow }: { table: string; onOpen
         }
         return (
           <div key={runs} className={styles.group}>
-            <span className={styles.service}>{LABEL[runs]}</span><span className={styles.count}>{` ${group.length}`}</span>
+            <h3 className={styles.groupTitle}>{LABEL[runs]}<span className={styles.count}>{` ${group.length}`}</span></h3>
             <ul className={styles.rels}>
               {group.map(s => {
                 const flows = connectivityMap.flows.filter(f => (f.codeUnits ?? []).some(u => u.service === 'skello-app' && u.path === s.file))

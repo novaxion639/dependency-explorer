@@ -36,13 +36,16 @@ export function CascadeSection({ table, event, onEvent, onOpenResource }: Props)
     return null
   }
   const selected = event ?? 'update'
+  const nodes = cascadeFrom(listenerSurface, table, selected)
   return (
     <section aria-label="Also changes" className={styles.section}>
       <h2>{`Also changes · ${plural(reached.length, 'table')}`}</h2>
-      <div className={styles.filters}>
+      <div role="group" aria-label="Event" className={styles.filters}>
         {LISTENER_EVENTS.map(e => <button key={e} type="button" className={styles.chip} aria-pressed={e === selected} onClick={() => onEvent(e)}>{e}</button>)}
       </div>
-      <Hops nodes={cascadeFrom(listenerSurface, table, selected)} onOpenResource={onOpenResource} />
+      {nodes.some(n => n.hops.length > 0)
+        ? <Hops nodes={nodes} onOpenResource={onOpenResource} />
+        : <p className={styles.meta}>{`No table changes on ${selected}.`}</p>}
     </section>
   )
 }

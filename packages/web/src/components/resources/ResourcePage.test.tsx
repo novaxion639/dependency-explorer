@@ -36,6 +36,12 @@ describe('ResourcePage', () => {
     expect(quiet, 'the registry holds at least one untouched resource (dataset-only stores)').toBeDefined()
     expect(renderToStaticMarkup(<ResourcePage id={quiet?.id ?? ''} {...props} />)).toContain('No code, config or flow touches this resource')
   })
+  it('shows what else a shift write changes and how each path writes it', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
+    expect(html).toContain('aria-label="Also changes"')
+    expect(html).toContain('aria-label="Write paths"')
+    expect(html).toContain('Runs no listener')
+  })
 })
 
 describe('ResourcesIndex', () => {
@@ -45,11 +51,5 @@ describe('ResourcesIndex', () => {
       expect(html).toContain(`aria-label="${store}"`)
     }
     expect(html).toContain('aria-label="Owner"')
-  })
-  it('shows what else a shift write changes and how each path writes it', () => {
-    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
-    expect(html).toContain('aria-label="Also changes"')
-    expect(html).toContain('aria-label="Write paths"')
-    expect(html).toContain('Runs no listener')
   })
 })

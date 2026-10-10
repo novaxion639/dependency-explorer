@@ -26,6 +26,17 @@ describe('effectText', () => {
   })
 })
 
+describe('effectText without runs', () => {
+  it('reads a missing runs as none, as the cascade does', () => {
+    const listener = ListenerSchema.parse({
+      id: 'c', table: 'pg:skello_production.shifts', kind: 'callback', hook: 'after_commit', events: ['update'], phase: 'commit', declaredAt: at, grade: 'code',
+      effects: [{ kind: 'writes', target: 'pg:skello_production.weekly_options', mode: 'sync', events: ['update'], at, grade: 'constant' }],
+    })
+    const effect = listener.effects[0]
+    expect(effect && effectText(effect)).toBe('writes weekly_options · runs none · update')
+  })
+})
+
 describe('sourceHref', () => {
   it('links a line at the pinned commit', () => {
     expect(sourceHref(at, { 'skello-app': 'abc' })).toBe('https://github.com/skelloapp/skello-app/blob/abc/app/models/shift.rb#L196')

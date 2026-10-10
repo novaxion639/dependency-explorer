@@ -26,6 +26,15 @@ describe('CascadeSection', () => {
     act(() => [...host.querySelectorAll('button')].find(b => b.textContent === 'destroy')?.click())
     expect(calls).toEqual(['event:destroy'])
   })
+  it('labels the event group', () => {
+    const host = mount('pg:skello_production.shifts', null, [])
+    expect(host.querySelector('[role="group"][aria-label="Event"] button[aria-pressed="true"]')?.textContent).toBe('update')
+  })
+  it('says so when the selected event reaches no table', () => {
+    const host = mount('pg:skello_production.billing_infos', 'create', [])
+    expect(host.textContent).toContain('No table changes on create.')
+    expect(host.querySelector('ul')).toBeNull()
+  })
   it('gives every hop an accessible grade glyph', () => {
     const host = mount('pg:skello_production.shifts', null, [])
     const glyphs = [...host.querySelectorAll('section[aria-label="Also changes"] [role="img"]')]
@@ -52,6 +61,8 @@ describe('WritePathsSection', () => {
     expect(host.querySelector('section[aria-label="Write paths"]')).not.toBeNull()
     expect(host.textContent).toContain('Runs no listener')
     expect(host.textContent).toContain('written at ')
+    const headings = [...host.querySelectorAll('section[aria-label="Write paths"] h3')].map(h => h.textContent)
+    expect(headings.some(h => h?.startsWith('Runs no listener '))).toBe(true)
     expect(host.querySelector('section[aria-label="Write paths"] [role="img"]')?.getAttribute('aria-label')).not.toBeNull()
   })
   it('renders nothing for a table with no write site', () => {
