@@ -107,6 +107,43 @@ Write sites carry the same `constant` and `text` grades. At `3f6728f`, `shifts.a
 
 `geocoded_by` and `reverse_geocoded_by` emit no listener: they define `geocode` and `reverse_geocode`, so a callback naming either method is a listener with no `definedAt` and no `unresolved-callback` finding.
 
+### Execution order
+
+A write runs its listeners in Rails order: validation, save before, event before, event after, save after, touch, then commit and rollback. Within a rank, listeners run in declaration order; `after_commit` and `after_rollback` listeners run in reverse declaration order.
+
+### Cascades
+
+`cascadeFrom(surface, table, event)` in `packages/data/src/listeners-derive.ts` walks what a write on `table` triggers:
+- it starts from the table's listeners whose `events` include the event, in Rails order;
+- each `writes` effect reaches its target table, where the listeners that run follow the effect's `runs` (table above) and `events`, and their effects continue the walk;
+- a `none` effect is a leaf that carries the number of target listeners it skips;
+- the mode is `sync` until the first `async-job` effect and `async` after it;
+- the grade of a chain is its weakest hop: `text` < `constant` < `graph`, with `config` gem entries ranking with `constant`;
+- a `(table, event)` pair already on the current path ends the walk for that pair; the hop is marked ↻ and continues for its fresh events.
+
+### Also changes
+
+`alsoChanges(surface, table)` flattens the cascades of the create, update and destroy events: every reachable table with its shortest path, its mode and its grade.
+
+### Flow links
+
+`flowListeners(flow, surface)` links each skello-app code unit to the listeners its writes fire:
+- a write site in the unit's file on a table the flow touches gives the exact listeners its `runs` and `fires` select (`basis: 'write-site'`), graded by the write site;
+- an edge from the unit into a `postgresql` node with no matching write site falls back to the node's tables and the edge's crud events (`basis: 'table-event'`), labelled unverified;
+- `model-callback` units are excluded: they stand for the listeners themselves and are compared by the drift check.
+
+### Index metrics
+
+`listenerMetrics(surface)` returns one entry per table that has a listener:
+
+| Metric | Meaning |
+|---|---|
+| `listeners` | listeners declared on the table |
+| `alsoChanges` | distinct tables in the table's `alsoChanges` |
+| `async` | listeners with an `async-job` effect |
+| `bypassing` | write sites on the table with `runs: none` |
+| `onCycle` | the table sits on a cascade cycle: a cascade from the table reaches the same (table, event) again |
+
 ## Contributing data
 
 - **Flows:** follow the [flow authoring guide](../flow-authoring-guide.md). Every claim is verified against deployed code, never against documentation, and the integrity tests enforce the node naming conventions.
