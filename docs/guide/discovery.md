@@ -19,7 +19,7 @@
   - MongoDB Atlas user roles and IAM actions.
 - **Table listeners** (👂 report section):
   - callbacks, concern bodies included, with `if:` / `unless:` kept as source text;
-  - `dependent:` cascades, `touch: true` and gem hooks: `acts_as_list`, `has_ancestry` and geocoder's `geocode` / `reverse_geocode`, provided by `geocoded_by` / `reverse_geocoded_by`;
+  - `dependent:` cascades, `touch: true` and gem hooks: `acts_as_list`, `has_ancestry`, `multisearchable`, `has_secure_token`, `devise` and geocoder's `geocode` / `reverse_geocode`, provided by `geocoded_by` / `reverse_geocoded_by`;
   - `has_and_belongs_to_many` destroys its join table, and `has_ancestry` descendants are destroyed by default, or re-parented under `orphan_strategy:` `:adopt` / `:rootify`;
   - the jobs callbacks enqueue and the callee one call level below them, so `Shift` → `ShiftCallbackJob` → `WeeklyOption.upsert_employee_change!` reaches `weekly_options`;
   - write sites classified by the listeners they run, each statement read whole (multi-line chains and the call's own arguments); raw SQL `INSERT`, `UPDATE` and `DELETE` run none, and `run_callbacks(:phase)` fires that phase's listeners;
@@ -60,7 +60,7 @@ The 👂 section checks the table listener surface at the pinned commit. A skell
 
 | Kind | Meaning |
 |---|---|
-| `surface-drift` | listeners, write sites or CDC relations at the pin differ from the committed `listeners.json` / `resources.json`: `discover:apply` is due |
+| `surface-drift` | listeners, write sites or CDC relations at the pin differ from the committed `listeners.json` / `resources.json`: `discover:apply` is due. Line numbers never count: a listener is compared by id, events, phase, condition and effects (kind, target, target file, via, mode, runs, events), and write sites as a multiset of table, file, call, runs, events and fires |
 | `unresolved-callback` | a callback symbol with no `def` in the model or its included modules |
 | `unresolved-job` | an enqueued constant with no file under `app/jobs/` |
 | `unknown-gem-macro` | a class macro outside Rails associations and `KNOWN_GEM_LISTENERS` |
