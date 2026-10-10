@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
+import { connectivityMap, listenerSurface, resourceSurface } from '@dependency-explorer/data'
 import { buildSearchIndex } from './searchIndex'
 
 describe('buildSearchIndex', () => {
@@ -27,5 +27,14 @@ describe('pages', () => {
     for (const entry of index) {
       expect(entry.patch.page, `${entry.type} ${entry.label}`).toBeDefined()
     }
+  })
+})
+
+describe('listener entries', () => {
+  it('finds a listener method and an enqueued job, landing on the table with the row open', () => {
+    const index = buildSearchIndex(connectivityMap, [], resourceSurface.resources, listenerSurface.listeners)
+    const method = index.find(e => e.type === 'listener' && e.label === 'update_paid_leaves')
+    expect(method?.patch).toMatchObject({ page: 'resources', resource: 'pg:skello_production.shifts', listener: 'shifts.after_commit.update_paid_leaves' })
+    expect(index.some(e => e.type === 'listener' && e.label === 'ShiftCallbackJob')).toBe(true)
   })
 })
