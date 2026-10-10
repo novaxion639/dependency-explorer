@@ -125,7 +125,7 @@ describe('associationListeners', () => {
   })
   it('reads belongs_to touch: true as a touch listener on the child writing the parent', () => {
     expect(of('Contract').map(l => [l.id, l.kind, l.phase, l.effects[0]?.target, l.effects[0]?.runs])).toEqual([
-      ['contracts.touch.user', 'touch', 'commit', 'pg:skello_production.users', 'touch'],
+      ['contracts.touch.user', 'touch', 'event', 'pg:skello_production.users', 'touch'],
     ])
   })
 })
@@ -383,5 +383,38 @@ describe('listener id uniqueness', () => {
       'app/models/shift.rb': ['class Shift < ApplicationRecord', '  after_commit :foo, :foo, :foo', '  def foo; end', 'end'].join('\n'),
     })
     expect(listeners.map(l => l.id)).toEqual(['shifts.after_commit.foo', 'shifts.after_commit.foo@shift.rb:2', 'shifts.after_commit.foo@shift.rb:2#2'])
+  })
+})
+
+describe('devise macro', () => {
+  it('reads devise as a gem listener on create and update with no effects', () => {
+    const { listeners, findings } = extractFilesFor({ 'app/models/user.rb': 'class User < ApplicationRecord\n  devise :database_authenticatable, :recoverable\nend\n' })
+    expect(listeners.map(l => [l.id, l.kind, l.phase, l.events.join(','), l.effects.length])).toEqual([['users.devise', 'gem', 'event', 'create,update', 0]])
+    expect(findings).toEqual([])
+  })
+})
+
+describe('deterministic output order', () => {
+  const result = extractFilesFor({
+    'app/models/shift.rb': ['class Shift < ApplicationRecord', '  multisearchable against: :name', '  after_commit :b', '  def b', '    Badging.create(a: 1)', '  end', 'end'].join('\n'),
+    'app/models/badging.rb': ['class Badging < ApplicationRecord', '  after_save :x', '  def x', '  end', 'end'].join('\n'),
+    'app/services/z.rb': 'Badging.create(a: 1)\nBadging.update_all(a: 1)',
+    'app/services/a.rb': 'Badging.destroy_all\nBadging.create(a: 1)',
+  })
+  it('sorts listeners by table, then file, then line', () => {
+    expect(result.listeners.map(l => [l.id, l.declaredAt.line])).toEqual([
+      ['badgings.after_save.x', 2],
+      ['shifts.multisearchable', 2],
+      ['shifts.after_commit.b', 3],
+    ])
+  })
+  it('sorts write sites by file, then line, then call', () => {
+    expect(result.writeSites.map(w => [w.file, w.line, w.call])).toEqual([
+      ['app/models/shift.rb', 5, 'create'],
+      ['app/services/a.rb', 1, 'destroy_all'],
+      ['app/services/a.rb', 2, 'create'],
+      ['app/services/z.rb', 1, 'create'],
+      ['app/services/z.rb', 2, 'update_all'],
+    ])
   })
 })

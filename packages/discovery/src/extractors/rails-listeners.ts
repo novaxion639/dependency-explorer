@@ -246,8 +246,8 @@ const DEPENDENT = /dependent:\s*:(destroy|delete_all|delete|nullify)\b/
 const CLASS_NAME = /class_name:\s*['"](?:\w+::)*(\w+)['"]/
 const JOIN_TABLE = /join_table:\s*['":]+(\w+)/
 const TOUCH = /\btouch:\s*true\b/
-const GEM_START = /^\s*(?:acts_as_\w+|has_\w+|multisearchable)\b(?!\s*(?:[-+*/|&]?=|\.|\)))/
-const GEM = /^\s*(acts_as_\w+|has_\w+|multisearchable)\b([\s\S]*)$/
+const GEM_START = /^\s*(?:acts_as_\w+|has_\w+|multisearchable|devise)\b(?!\s*(?:[-+*/|&]?=|\.|\)))/
+const GEM = /^\s*(acts_as_\w+|has_\w+|multisearchable|devise)\b([\s\S]*)$/
 const ORPHAN_STRATEGY = /orphan_strategy:\s*:(\w+)/
 const RAILS_ASSOCIATIONS = new Set(['has_many', 'has_one', 'has_and_belongs_to_many'])
 
@@ -266,6 +266,7 @@ export const KNOWN_GEM_LISTENERS: Record<string, GemListener | null> = {
     ],
   },
   has_secure_token: { events: ['create'], phase: 'event', effects: [] },
+  devise: { events: ['create', 'update'], phase: 'event', effects: [] },
   has_encrypted: null,
   has_secure_password: null,
   has_one_attached: null,
@@ -303,7 +304,7 @@ export function associationListeners(entry: ModelEntry, ctx: ListenerContext): L
         kind: 'touch',
         hook: 'touch: true',
         events: ['create', 'update', 'destroy'],
-        phase: 'commit',
+        phase: 'event',
         declaredAt: at,
         grade: 'code',
         effects: [{ kind: 'writes', target: tableId(other), mode: 'sync', events: ['update'], runs: 'touch', at, grade: 'constant' }],
@@ -531,11 +532,21 @@ function uniqueFindings(findings: ListenerFinding[]): ListenerFinding[] {
   })
 }
 
+const compareText = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
+
+function sortedListeners(listeners: Listener[]): Listener[] {
+  return [...listeners].sort((a, b) => compareText(a.table, b.table) || compareText(a.declaredAt.file, b.declaredAt.file) || a.declaredAt.line - b.declaredAt.line)
+}
+
+function sortedWriteSites(sites: WriteSite[]): WriteSite[] {
+  return [...sites].sort((a, b) => compareText(a.file, b.file) || a.line - b.line || compareText(a.call, b.call))
+}
+
 export function extractListeners(input: { models: RailsModel[]; tables: string[]; files: SourceFile[]; read: Read; graph: RepoGraph | null }): { listeners: Listener[]; writeSites: WriteSite[]; findings: ListenerFinding[] } {
   const read = memo(input.read)
   const entries = buildModelIndex(input.models, read)
   const ctx = listenerContext(entries, read, input.graph, input.tables)
   const listeners = uniqueIds(entries.flatMap(entry => [...callbackListeners(entry, ctx), ...associationListeners(entry, ctx), ...gemListeners(entry, ctx)]))
   const scanned = input.files.filter(f => /^(app|lib)\//.test(f.file) && !/(^|\/)(spec|test)\//.test(f.file))
-  return { listeners, writeSites: writeSites(scanned, listeners, entries, ctx), findings: uniqueFindings(ctx.findings) }
+  return { listeners: sortedListeners(listeners), writeSites: sortedWriteSites(writeSites(scanned, listeners, entries, ctx)), findings: uniqueFindings(ctx.findings) }
 }
