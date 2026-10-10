@@ -72,7 +72,7 @@ export function bestGrade(a: Grade, b: Grade | null): Grade {
   return b !== null && GRADE_ORDER.indexOf(b) < GRADE_ORDER.indexOf(a) ? b : a
 }
 
-function reachable(edges: Map<string, Set<string>>, from: string, to: string): boolean {
+export function reachable(edges: Map<string, Set<string>>, from: string, to: string): boolean {
   const first = edges.get(from) ?? new Set<string>()
   return first.has(to) || [...first].some(mid => edges.get(mid)?.has(to) ?? false)
 }

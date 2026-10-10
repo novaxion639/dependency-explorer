@@ -100,7 +100,7 @@ export const ResourceSchema = z.object({
 })
 export type Resource = z.infer<typeof ResourceSchema>
 
-export const ResourceRelationKindSchema = z.enum(['writes', 'reads', 'produces', 'consumes', 'dead-letters-to'])
+export const ResourceRelationKindSchema = z.enum(['writes', 'reads', 'produces', 'consumes', 'feeds', 'dead-letters-to'])
 export const RelationGradeSchema = z.enum(['code', 'config', 'flow'])
 
 export const ResourceRelationSchema = z.object({
@@ -116,6 +116,57 @@ export type ResourceRelation = z.infer<typeof ResourceRelationSchema>
 export const ResourceSurfaceSchema = z.object({
   resources: z.array(ResourceSchema),
   relations: z.array(ResourceRelationSchema),
+  pins: z.record(z.string(), z.string()).default({}),
+})
+
+export const WriteEventSchema = z.enum(['create', 'update', 'destroy'])
+export const RunsSchema = z.enum(['all', 'validation', 'touch', 'none', 'subset'])
+export const ListenerKindSchema = z.enum(['callback', 'cascade', 'touch', 'gem'])
+export const ListenerPhaseSchema = z.enum(['validation', 'save', 'event', 'commit', 'rollback', 'touch'])
+
+const SourceAtSchema = z.object({ file: z.string(), line: z.number().int().positive() })
+
+export const ListenerEffectSchema = z.object({
+  kind: z.enum(['writes', 'enqueues', 'calls']),
+  target: z.string(),
+  targetFile: z.string().optional(),
+  via: z.string().optional(),
+  mode: z.enum(['sync', 'async-job']),
+  events: z.array(WriteEventSchema).optional(),
+  runs: RunsSchema.optional(),
+  at: SourceAtSchema,
+  grade: z.enum(['graph', 'constant', 'text']),
+})
+
+export const ListenerSchema = z.object({
+  id: z.string(),
+  table: z.string(),
+  kind: ListenerKindSchema,
+  hook: z.string(),
+  events: z.array(WriteEventSchema).min(1),
+  phase: ListenerPhaseSchema,
+  method: z.string().optional(),
+  condition: z.string().optional(),
+  declaredAt: SourceAtSchema,
+  definedAt: SourceAtSchema.optional(),
+  effects: z.array(ListenerEffectSchema),
+  grade: z.enum(['code', 'config']),
+})
+
+export const WriteSiteSchema = z.object({
+  table: z.string(),
+  file: z.string(),
+  line: z.number().int().positive(),
+  call: z.string(),
+  events: z.array(WriteEventSchema).min(1),
+  runs: RunsSchema,
+  fires: z.array(z.string()).optional(),
+  grade: z.enum(['constant', 'text']),
+})
+
+export const ListenerSurfaceSchema = z.object({
+  listeners: z.array(ListenerSchema),
+  writeSites: z.array(WriteSiteSchema),
   pins: z.record(z.string(), z.string()).default({}),
 })
 
@@ -633,3 +684,11 @@ export type ReadingPathEntry = z.infer<typeof ReadingPathEntrySchema>
 export type ProductArea = z.infer<typeof ProductAreaSchema>
 export type ExternalSystem = z.infer<typeof ExternalSystemSchema>
 export type ConnectivityMap = z.infer<typeof ConnectivityMapSchema>
+export type WriteEvent = z.infer<typeof WriteEventSchema>
+export type Runs = z.infer<typeof RunsSchema>
+export type ListenerKind = z.infer<typeof ListenerKindSchema>
+export type ListenerPhase = z.infer<typeof ListenerPhaseSchema>
+export type ListenerEffect = z.infer<typeof ListenerEffectSchema>
+export type Listener = z.infer<typeof ListenerSchema>
+export type WriteSite = z.infer<typeof WriteSiteSchema>
+export type ListenerSurface = z.infer<typeof ListenerSurfaceSchema>

@@ -305,12 +305,25 @@ export function parseAssociations(source: string): Array<[string, string]> {
   return [...source.matchAll(ASSOCIATION)].map(m => [m[1] ?? '', m[2] ?? ''])
 }
 
+export function receiverClass(word: string, declared: Set<string>, associations: Map<string, Set<string>>, suffixes: boolean): string | null {
+  const parts = word.split('_')
+  const tails = suffixes ? parts.map((_, i) => parts.slice(i).join('_')) : [word]
+  for (const tail of tails) {
+    const direct = camelize(singular(tail))
+    if (declared.has(direct)) {
+      return direct
+    }
+    const viaAssociation = [...(associations.get(tail) ?? [])].find(c => declared.has(c))
+    if (viaAssociation !== undefined) {
+      return viaAssociation
+    }
+  }
+  return null
+}
+
 export function namesReceiverModel(callerCode: string, calleeClasses: string[], associations: Map<string, Set<string>>): boolean {
   const declared = new Set(calleeClasses.flatMap(c => [c, c.split('::').pop() ?? c]))
-  return [...callerCode.matchAll(RECEIVER)].some(m => {
-    const word = m[1] ?? ''
-    return declared.has(camelize(singular(word))) || [...(associations.get(word) ?? [])].some(c => declared.has(c))
-  })
+  return [...callerCode.matchAll(RECEIVER)].some(m => receiverClass(m[1] ?? '', declared, associations, false) !== null)
 }
 
 const VITE_CONFIGS = ['vite.config.mjs', 'vite.config.ts', 'vite.config.js']
