@@ -113,7 +113,7 @@ A write runs its listeners in Rails order: validation, save before, event before
 
 ### Cascades
 
-`cascadeFrom(table, event)` in `packages/data/src/listeners-derive.ts` walks what a write on `table` triggers:
+`cascadeFrom(surface, table, event)` in `packages/data/src/listeners-derive.ts` walks what a write on `table` triggers:
 - it starts from the table's listeners whose `events` include the event, in Rails order;
 - each `writes` effect reaches its target table, where the listeners that run follow the effect's `runs` (table above) and `events`, and their effects continue the walk;
 - a `none` effect is a leaf that carries the number of target listeners it skips;
@@ -142,7 +142,7 @@ A write runs its listeners in Rails order: validation, save before, event before
 | `alsoChanges` | distinct tables in the table's `alsoChanges` |
 | `async` | listeners with an `async-job` effect |
 | `bypassing` | write sites on the table with `runs: none` |
-| `onCycle` | the table sits on a cascade cycle: a cascade from it returns to it |
+| `onCycle` | the table sits on a cascade cycle: a cascade from the table reaches the same (table, event) again |
 
 ## Contributing data
 

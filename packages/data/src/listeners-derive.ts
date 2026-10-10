@@ -158,7 +158,9 @@ export function flowListenerDrift(flow: ServiceFlow, surface: ListenerTables): L
   })
   const drawnJobPaths = new Set(drawnJobs.map(j => j.path))
   const drawnTables = new Set(drawnStores.flatMap(n => n.resources ?? []))
-  const direct = firedListeners(flow, surface).flatMap(listener => listener.effects.filter(e => e.via === undefined).map(effect => ({ listener, effect })))
+  const fired = firedListeners(flow, surface)
+  const nothingFired = (id: string, otherwise: string) => `${id} is drawn from a model-callback unit; ${fired.length === 0 ? 'no write site in this flow fires a listener' : otherwise}`
+  const direct = fired.flatMap(listener => listener.effects.filter(e => e.via === undefined).map(effect => ({ listener, effect })))
   const firedJobPaths = new Set(direct.flatMap(({ effect }) => (effect.kind === 'enqueues' && effect.targetFile !== undefined ? [effect.targetFile] : [])))
   const firedTables = new Set(direct.flatMap(({ effect }) => (effect.kind === 'writes' ? [effect.target] : [])))
   const finding = (kind: ListenerDriftFinding['kind'], detail: string): ListenerDriftFinding => ({ kind, subject: flow.id, detail })
@@ -171,8 +173,8 @@ export function flowListenerDrift(flow: ServiceFlow, surface: ListenerTables): L
     }
     return []
   })
-  const unsupportedJobs = drawnJobs.filter(j => !firedJobPaths.has(j.path)).map(j => finding('flow-listener-unsupported', `${j.id} (${j.path}) is drawn from a model-callback unit; no listener the flow fires enqueues it`))
-  const unsupportedStores = drawnStores.filter(n => !(n.resources ?? []).some(r => firedTables.has(r))).map(n => finding('flow-listener-unsupported', `${n.id} is drawn from a model-callback unit; no listener the flow fires writes ${(n.resources ?? []).map(tableName).join(', ')}`))
+  const unsupportedJobs = drawnJobs.filter(j => !firedJobPaths.has(j.path)).map(j => finding('flow-listener-unsupported', nothingFired(`${j.id} (${j.path})`, 'no listener the flow fires enqueues it')))
+  const unsupportedStores = drawnStores.filter(n => !(n.resources ?? []).some(r => firedTables.has(r))).map(n => finding('flow-listener-unsupported', nothingFired(n.id, `no listener the flow fires writes ${(n.resources ?? []).map(tableName).join(', ')}`)))
   const findings = [...missing, ...unsupportedJobs, ...unsupportedStores]
   return [...new Map(findings.map((f): [string, ListenerDriftFinding] => [`${f.kind}|${f.detail}`, f])).values()]
 }

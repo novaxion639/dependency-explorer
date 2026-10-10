@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { ListenerSurfaceSchema, ServiceFlowSchema } from '@dependency-explorer/schema'
-import { alsoChanges, cascadeFrom, flowListenerDrift, flowListeners, inRailsOrder, listenerMetrics, listenersRun } from './listeners-derive'
+import { alsoChanges, cascadeFrom, firedListeners, flowListenerDrift, flowListeners, inRailsOrder, listenerMetrics, listenersRun } from './listeners-derive'
 
 const t = (name: string) => `pg:skello_production.${name}`
 const at = { file: 'app/models/x.rb', line: 1 }
@@ -150,6 +150,60 @@ describe('flowListenerDrift', () => {
   })
   it('compares nothing for a flow without a model-callback unit', () => {
     expect(flowListenerDrift({ ...flow, codeUnits: (flow.codeUnits ?? []).filter(u => u.kind !== 'model-callback') }, SURFACE)).toEqual([])
+  })
+})
+
+describe('flowListenerDrift branches', () => {
+  const svc = { id: 'cu-svc', service: 'skello-app', kind: 'service', label: 'UpdateService', path: 'app/services/update_service.rb' }
+  const callbacks = { id: 'cu-cb', service: 'skello-app', kind: 'model-callback', label: 'Shift callbacks', path: 'app/models/concerns/shifts/callbacks_concern.rb' }
+  const job = { id: 'cu-job', service: 'skello-app', kind: 'job', label: 'ShiftCallbackJob', path: 'app/jobs/shift_callback_job.rb' }
+  const other = { id: 'cu-other', service: 'skello-app', kind: 'service', label: 'Other', path: 'app/services/other.rb' }
+  const build = (extra: Record<string, unknown>) => ServiceFlowSchema.parse({ id: 'f', name: 'F', description: 'd', steps: [], ...extra })
+  const details = (f: ReturnType<typeof build>, kind: string) => flowListenerDrift(f, SURFACE).filter(d => d.kind === kind).map(d => d.detail)
+
+  it('reports an enqueued job no model-callback unit draws', () => {
+    const f = build({
+      codeUnits: [svc, callbacks],
+      infraNodes: [{ id: 'pg', type: 'postgresql', label: 'shifts', resources: [t('shifts')] }],
+      codeEdges: [{ from: 'cu-svc', to: 'pg', crud: ['update'] }, { from: 'cu-cb', to: 'pg', crud: ['create'] }],
+    })
+    expect(details(f, 'flow-listener-missing')).toContain('shifts.after_commit.set_weekly enqueues ShiftCallbackJob — not drawn from a model-callback unit')
+  })
+
+  it('reports a drawn store no fired listener writes, naming its tables', () => {
+    const f = build({
+      codeUnits: [svc, callbacks, job],
+      infraNodes: [
+        { id: 'pg', type: 'postgresql', label: 'shifts', resources: [t('shifts'), t('predicted_shifts'), t('memberships')] },
+        { id: 'pg-contracts', type: 'postgresql', label: 'contracts', resources: [t('contracts'), t('postes')] },
+      ],
+      codeEdges: [{ from: 'cu-svc', to: 'pg', crud: ['update'] }, { from: 'cu-cb', to: 'cu-job' }, { from: 'cu-cb', to: 'pg' }, { from: 'cu-cb', to: 'pg-contracts' }],
+    })
+    expect(details(f, 'flow-listener-unsupported')).toEqual(['pg-contracts is drawn from a model-callback unit; no listener the flow fires writes contracts, postes'])
+  })
+
+  const tableEventOnly = build({
+    codeUnits: [other, callbacks],
+    infraNodes: [{ id: 'pg', type: 'postgresql', label: 'shifts', resources: [t('shifts')] }],
+    codeEdges: [{ from: 'cu-other', to: 'pg', crud: ['create'] }],
+  })
+
+  it('fires nothing from a table-event link, so it produces no drift and no fired listeners', () => {
+    expect(flowListeners(tableEventOnly, SURFACE).map(l => l.basis)).toEqual(['table-event'])
+    expect(firedListeners(tableEventOnly, SURFACE)).toEqual([])
+    expect(flowListenerDrift(tableEventOnly, SURFACE)).toEqual([])
+  })
+
+  it('says no write site fires a listener when nothing fires and a callback unit draws edges', () => {
+    const f = build({
+      codeUnits: [other, callbacks, job],
+      infraNodes: [{ id: 'pg', type: 'postgresql', label: 'shifts', resources: [t('shifts')] }],
+      codeEdges: [{ from: 'cu-other', to: 'pg', crud: ['create'] }, { from: 'cu-cb', to: 'cu-job' }, { from: 'cu-cb', to: 'pg' }],
+    })
+    expect(flowListenerDrift(f, SURFACE).map(d => [d.kind, d.detail])).toEqual([
+      ['flow-listener-unsupported', 'cu-job (app/jobs/shift_callback_job.rb) is drawn from a model-callback unit; no write site in this flow fires a listener'],
+      ['flow-listener-unsupported', 'pg is drawn from a model-callback unit; no write site in this flow fires a listener'],
+    ])
   })
 })
 
