@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ListenerSchema } from '@dependency-explorer/data'
@@ -21,6 +21,7 @@ const NO_FILTERS = { lev: null, lkind: null, lgrade: null }
 
 function mount(open: string | null, calls: string[], filters: { lev: string | null; lkind: string | null; lgrade: string | null } = NO_FILTERS, listeners = [listener]) {
   const host = document.createElement('div')
+  document.body.append(host)
   act(() => {
     createRoot(host).render(<ListenersSection listeners={listeners} filters={filters} open={open} onFilters={p => calls.push(JSON.stringify(p))} onToggle={id => calls.push(`toggle:${id ?? ''}`)} onOpenResource={() => {}} />)
   })
@@ -29,6 +30,14 @@ function mount(open: string | null, calls: string[], filters: { lev: string | nu
 const button = (host: HTMLElement, text: string) => [...host.querySelectorAll('button')].find(b => b.textContent?.includes(text))
 
 describe('ListenersSection', () => {
+  beforeAll(() => {
+    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+    Element.prototype.scrollIntoView = () => {}
+  })
+  afterEach(() => {
+    document.body.replaceChildren()
+  })
+
   it('lists each listener with its hook, method, events and condition', () => {
     const host = mount(null, [])
     expect(host.querySelector('section[aria-label="Listeners"] h2')?.textContent).toBe('Listeners · 1 of 1')
@@ -84,5 +93,19 @@ describe('ListenersSection', () => {
     const host = mount(null, [], NO_FILTERS, [ListenerSchema.parse({ ...listener, definedAt: { file: 'app/models/concerns/x.rb', line: 3 } })])
     expect(host.textContent).toContain('declared app/models/shift.rb:196')
     expect(host.textContent).toContain('defined app/models/concerns/x.rb:3')
+  })
+  it('scrolls the open listener row into view', () => {
+    const scrollIntoView = vi.fn()
+    Element.prototype.scrollIntoView = scrollIntoView
+    const host = mount('shifts.after_commit.update_paid_leaves', [])
+    expect(scrollIntoView).toHaveBeenCalledTimes(1)
+    expect(scrollIntoView.mock.contexts[0]).toBe(host.querySelector('li[id="listener-shifts.after_commit.update_paid_leaves"]'))
+  })
+  it('names a cascade row after its target', () => {
+    const cascade = ListenerSchema.parse({
+      id: 'shifts.dependent.shift_swaps', table: 'pg:skello_production.shifts', kind: 'cascade', hook: 'dependent: :delete_all',
+      events: ['destroy'], phase: 'event', declaredAt: at, grade: 'code', effects: [],
+    })
+    expect(mount(null, [], NO_FILTERS, [cascade]).textContent).toContain('dependent: :delete_all shift_swaps')
   })
 })

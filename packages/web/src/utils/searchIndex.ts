@@ -1,10 +1,10 @@
-import type { ConnectivityMap, MonolithRoute, Resource } from '@dependency-explorer/data'
+import type { ConnectivityMap, Listener, MonolithRoute, Resource } from '@dependency-explorer/data'
 import type { UrlState } from '../hooks/useUrlState'
 import { edgeKey, servicePage } from '../hooks/useUrlState'
 import { buildFlagRegistry } from './flagRegistry'
 import { buildFileIndex } from './fileIndex'
 
-export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' | 'term' | 'external' | 'team' | 'resource' | 'flag' | 'file'
+export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' | 'term' | 'external' | 'team' | 'resource' | 'listener' | 'flag' | 'file'
 
 export interface SearchEntry {
   type: SearchResultType
@@ -19,14 +19,14 @@ export interface SearchEntry {
 }
 
 const TYPE_ORDER: Record<SearchResultType, number> = {
-  service: 0, endpoint: 1, connection: 2, flow: 3, area: 4, term: 5, external: 6, team: 7, resource: 8, flag: 9, file: 10,
+  service: 0, endpoint: 1, connection: 2, flow: 3, area: 4, term: 5, external: 6, team: 7, resource: 8, listener: 9, flag: 10, file: 11,
 }
 
 // Choosing a result fully describes the target view: modal/popup params are
 // reset explicitly so the landing state never mixes with whatever was open.
 const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null, resource: null, area: null, term: null, blast: null, unit: null, chapter: null, event: null, listener: null, lev: null, lkind: null, lgrade: null }
 
-export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] = [], resources: Resource[] = []): SearchEntry[] {
+export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] = [], resources: Resource[] = [], listeners: Listener[] = []): SearchEntry[] {
   const entries: SearchEntry[] = []
 
   for (const svc of map.services) {
@@ -56,6 +56,16 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       haystack: r.id,
       patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: r.id },
     })
+  }
+
+  for (const l of listeners) {
+    const table = l.table.split('.').pop() ?? l.table
+    if (l.method) {
+      entries.push({ type: 'listener', label: l.method, sublabel: `${table} · ${l.hook}`, haystack: l.id, patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: l.table, listener: l.id } })
+    }
+    for (const job of new Set(l.effects.filter(e => e.kind === 'enqueues').map(e => e.target))) {
+      entries.push({ type: 'listener', label: job, sublabel: `job · enqueued by ${l.id}`, haystack: `${job} ${l.id}`, patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: l.table, listener: l.id } })
+    }
   }
 
   for (const conn of map.connections) {

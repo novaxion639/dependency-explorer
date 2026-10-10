@@ -133,7 +133,9 @@ A view a renderer cannot draw hides that option; the monolith treemap, for examp
 
 ## Global search (⌘K)
 
-One palette over every service, endpoint, connection, flow, product area, glossary term, external system, database and queue. Picking a result navigates to a permalink-backed view. An endpoint hit opens the endpoint list in the detail panel, scrolled to that endpoint.
+One palette over every service, endpoint, connection, flow, product area, glossary term, external system, database, queue and table listener. Picking a result navigates to a permalink-backed view. An endpoint hit opens the endpoint list in the detail panel, scrolled to that endpoint.
+
+A listener method or an enqueued job lands on its table's Listeners section with that listener's row open. A job's sublabel names the listener that enqueues it.
 
 ⌘K also accepts a source-file path: see [the reverse code → flows index](flows.md#reverse-code--flows-index).
 
