@@ -16,7 +16,7 @@ interface Props {
 
 const known = (value: string | null, options: readonly string[]) => (value !== null && options.includes(value) ? value : null)
 
-function GradeGlyph({ unverified, title }: { unverified: boolean; title?: string }) {
+export function GradeGlyph({ unverified, title }: { unverified: boolean; title?: string }) {
   return <span role="img" aria-label={gradeLabel(unverified)} title={title} className={styles.grade} data-grade={unverified ? 'flow' : 'code'}>{gradeGlyph(unverified)}</span>
 }
 

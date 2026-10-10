@@ -46,4 +46,10 @@ describe('ResourcesIndex', () => {
     }
     expect(html).toContain('aria-label="Owner"')
   })
+  it('shows what else a shift write changes and how each path writes it', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
+    expect(html).toContain('aria-label="Also changes"')
+    expect(html).toContain('aria-label="Write paths"')
+    expect(html).toContain('Runs no listener')
+  })
 })

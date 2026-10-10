@@ -2,9 +2,11 @@ import type { ResourceRelation } from '@dependency-explorer/data'
 import { allResourceRelations, connectivityMap, inRailsOrder, listenerSurface, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
 import { evidenceHref } from '../../utils/evidenceLink'
 import { plural } from '../../utils/plural'
+import { CascadeSection } from './CascadeSection'
 import { ListenersSection } from './ListenersSection'
 import type { ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
+import { WritePathsSection } from './WritePathsSection'
 
 const GRADE_BADGE: Record<ResourceRelation['grade'], { symbol: string; title: string }> = {
   code: { symbol: '✓', title: 'call site at the pinned commit' },
@@ -88,6 +90,8 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
         )
       })}
       <ListenersSection listeners={tableListeners} filters={listeners} open={listeners.listener} onFilters={onListeners} onToggle={listener => onListeners({ listener })} onOpenResource={onOpenResource} />
+      {resource.kind === 'table' && <CascadeSection table={id} event={listeners.event} onEvent={event => onListeners({ event })} onOpenResource={onOpenResource} />}
+      {resource.kind === 'table' && <WritePathsSection table={id} onOpenFlow={onOpenFlow} />}
       {dlq && <p className={styles.meta}>Dead letters go to <button type="button" className={styles.link} onClick={() => onOpenResource(dlq)}>{dlq}</button></p>}
       {(resource.related ?? []).length > 0 && (
         <section aria-label="Related tables" className={styles.section}>
