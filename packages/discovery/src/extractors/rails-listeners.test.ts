@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import type { ListenerEffect } from '@dependency-explorer/schema'
 import { buildModelIndex } from './rails-model-index'
-import { associationListeners, callbackListeners, effectsOf, gemListeners, listenerContext } from './rails-listeners'
+import type { Read } from '../code-wiring'
+import { associationListeners, callbackListeners, effectsOf, gemListeners, joinTableName, listenerContext } from './rails-listeners'
+import { parseModelFile } from './rails-schema'
 import { FIXTURE_TABLES, fixtureModels, fixtureRead } from './__fixtures__/listeners'
 
 const index = buildModelIndex(fixtureModels, fixtureRead)
@@ -116,5 +118,93 @@ describe('gemListeners', () => {
       ['night_hours_maj_slices.acts_as_list', 'config', 'pg:skello_production.night_hours_maj_slices:none'],
     ])
     expect(c.findings).toEqual([{ kind: 'unknown-gem-macro', subject: 'Organisation.acts_as_paranoid', detail: 'app/models/organisation.rb:2 — not a Rails association and not in KNOWN_GEM_LISTENERS' }])
+  })
+})
+
+const miniContext = (files: Record<string, string>, tables: string[]) => {
+  const read: Read = p => files[p] ?? null
+  const models = Object.keys(files).flatMap(f => parseModelFile(f, files[f] ?? '') ?? [])
+  const entries = buildModelIndex(models, read)
+  return { entries, c: listenerContext(entries, read, null, tables) }
+}
+
+describe('joinTableName', () => {
+  it('sorts the table names and joins them with an underscore', () => {
+    expect(joinTableName('weekly_options', 'postes')).toBe('postes_weekly_options')
+  })
+  it('collapses a shared prefix the way ActiveRecord does', () => {
+    expect(joinTableName('user_roles', 'user_groups')).toBe('user_groups_roles')
+  })
+})
+
+describe('habtm cascade', () => {
+  const habtm = (declaration: string, tables: string[]) => {
+    const { entries, c } = miniContext({
+      'app/models/weekly_option.rb': ['class WeeklyOption < ApplicationRecord', `  ${declaration}`, 'end'].join('\n'),
+      'app/models/poste.rb': 'class Poste < ApplicationRecord\nend',
+    }, tables)
+    const entry = entries.find(e => e.className === 'WeeklyOption')
+    return entry ? associationListeners(entry, c).map(l => [l.id, l.kind, l.effects[0]?.target, l.effects[0]?.runs, l.effects[0]?.events?.join(',')]) : []
+  }
+  it('targets the ActiveRecord default join table when it is in tables', () => {
+    expect(habtm("has_and_belongs_to_many :visible_absences, class_name: 'Poste'", ['postes', 'postes_weekly_options', 'weekly_options'])).toEqual([
+      ['weekly_options.habtm.visible_absences', 'cascade', 'pg:skello_production.postes_weekly_options', 'none', 'destroy'],
+    ])
+  })
+  it('targets an explicit join_table', () => {
+    expect(habtm("has_and_belongs_to_many :visible_absences, class_name: 'Poste', join_table: 'custom_join'", ['custom_join', 'postes', 'weekly_options'])).toEqual([
+      ['weekly_options.habtm.visible_absences', 'cascade', 'pg:skello_production.custom_join', 'none', 'destroy'],
+    ])
+  })
+  it('collapses a shared table prefix in the default join table', () => {
+    const { entries, c } = miniContext({
+      'app/models/user_role.rb': 'class UserRole < ApplicationRecord\n  has_and_belongs_to_many :user_groups, class_name: \'UserGroup\'\nend',
+      'app/models/user_group.rb': 'class UserGroup < ApplicationRecord\nend',
+    }, ['user_groups', 'user_groups_roles', 'user_roles'])
+    const entry = entries.find(e => e.className === 'UserRole')
+    expect(entry ? associationListeners(entry, c).map(l => [l.id, l.effects[0]?.target]) : []).toEqual([
+      ['user_roles.habtm.user_groups', 'pg:skello_production.user_groups_roles'],
+    ])
+  })
+  it('emits no listener when the join table is not in tables', () => {
+    expect(habtm("has_and_belongs_to_many :visible_absences, class_name: 'Poste'", ['postes', 'weekly_options'])).toEqual([])
+  })
+})
+
+describe('has_ancestry descendants', () => {
+  const ancestryEffects = (declaration: string) => {
+    const { entries, c } = miniContext({
+      'app/models/cluster_node.rb': ['class ClusterNode < ApplicationRecord', `  ${declaration}`, 'end'].join('\n'),
+    }, ['cluster_nodes'])
+    const entry = entries.find(e => e.className === 'ClusterNode')
+    return entry ? gemListeners(entry, c).flatMap(l => l.effects.map(e => [e.target, e.events?.join(','), e.runs])) : []
+  }
+  it('destroys descendants with the default strategy', () => {
+    expect(ancestryEffects('has_ancestry')).toEqual([
+      ['pg:skello_production.cluster_nodes', 'update', 'all'],
+      ['pg:skello_production.cluster_nodes', 'destroy', 'all'],
+    ])
+  })
+  it('only updates when orphan_strategy is adopt', () => {
+    expect(ancestryEffects('has_ancestry orphan_strategy: :adopt')).toEqual([
+      ['pg:skello_production.cluster_nodes', 'update', 'all'],
+    ])
+  })
+})
+
+describe('dependent cascade table gate', () => {
+  const dependent = (tables: string[]) => {
+    const { entries, c } = miniContext({
+      'app/models/shift.rb': 'class Shift < ApplicationRecord\n  has_many :shift_swaps, dependent: :destroy\nend',
+      'app/models/shift_swap.rb': 'class ShiftSwap < ApplicationRecord\nend',
+    }, tables)
+    const entry = entries.find(e => e.className === 'Shift')
+    return entry ? associationListeners(entry, c).map(l => l.id) : []
+  }
+  it('emits no listener when the child table is not in tables', () => {
+    expect(dependent(['shifts'])).toEqual([])
+  })
+  it('emits the listener when the child table is in tables', () => {
+    expect(dependent(['shifts', 'shift_swaps'])).toEqual(['shifts.dependent.shift_swaps'])
   })
 })

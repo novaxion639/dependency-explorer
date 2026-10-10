@@ -239,6 +239,7 @@ const JOIN_TABLE = /join_table:\s*['":]+(\w+)/
 const TOUCH = /\btouch:\s*true\b/
 const GEM_START = /^\s*(?:acts_as_\w+|has_\w+|multisearchable)\b(?!\s*(?:[-+*/|&]?=|\.|\)))/
 const GEM = /^\s*(acts_as_\w+|has_\w+|multisearchable)\b([\s\S]*)$/
+const ORPHAN_STRATEGY = /orphan_strategy:\s*:(\w+)/
 const RAILS_ASSOCIATIONS = new Set(['has_many', 'has_one', 'has_and_belongs_to_many'])
 
 interface GemEffect { table: string | null; events: WriteEvent[]; runs: Runs }
@@ -265,6 +266,10 @@ export const KNOWN_GEM_LISTENERS: Record<string, GemListener | null> = {
 
 function tableOfClass(cls: string, ctx: ListenerContext): string | null {
   return ctx.byClass.get(cls)?.table ?? null
+}
+
+export function joinTableName(a: string, b: string): string {
+  return [a, b].sort().join('\0').replace(/^(.*_)(.+)\0\1(.+)/, '$1$2_$3').replace(/\0/g, '_')
 }
 
 export function associationListeners(entry: ModelEntry, ctx: ListenerContext): Listener[] {
@@ -296,7 +301,7 @@ export function associationListeners(entry: ModelEntry, ctx: ListenerContext): L
       }]
     }
     if (macro === 'has_and_belongs_to_many') {
-      const join = JOIN_TABLE.exec(rest)?.[1] ?? (other === null ? null : [entry.table, other].sort().join('_'))
+      const join = JOIN_TABLE.exec(rest)?.[1] ?? (other === null ? null : joinTableName(entry.table, other))
       if (join === null || !ctx.tables.has(join)) {
         return []
       }
@@ -313,7 +318,7 @@ export function associationListeners(entry: ModelEntry, ctx: ListenerContext): L
       }]
     }
     const dependent = DEPENDENT.exec(rest)?.[1]
-    if (dependent === undefined || other === null) {
+    if (dependent === undefined || other === null || !ctx.tables.has(other)) {
       return []
     }
     return [{
@@ -358,7 +363,8 @@ export function gemListeners(entry: ModelEntry, ctx: ListenerContext): Listener[
       return []
     }
     const at = { file: decl.file, line: decl.line }
-    const extra: GemEffect[] = macro === 'has_ancestry' && /orphan_strategy:\s*:destroy/.test(m[2] ?? '') ? [{ table: null, events: ['destroy'], runs: 'all' }] : []
+    const orphanStrategy = ORPHAN_STRATEGY.exec(m[2] ?? '')?.[1] ?? 'destroy'
+    const extra: GemEffect[] = macro === 'has_ancestry' && orphanStrategy === 'destroy' ? [{ table: null, events: ['destroy'], runs: 'all' }] : []
     const effects = [...known.effects, ...extra].flatMap((g): ListenerEffect[] => {
       const table = g.table ?? entry.table
       if (!ctx.tables.has(table)) {
