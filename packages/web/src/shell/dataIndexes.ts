@@ -1,11 +1,11 @@
-import { allResourceRelations, connectivityMap, monolithRoutes, resourceSurface, type ServiceConnection } from '@dependency-explorer/data'
+import { allResourceRelations, connectivityMap, listenerSurface, monolithRoutes, resourceSurface, type ServiceConnection } from '@dependency-explorer/data'
 import { EDGE_LIST_SEP, edgeKey } from '../hooks/useUrlState'
 import { buildSearchIndex } from '../utils/searchIndex'
 import { buildFlagRegistry } from '../utils/flagRegistry'
 import { buildFileIndex } from '../utils/fileIndex'
 
 export const map = connectivityMap
-export const searchIndex = buildSearchIndex(map, monolithRoutes, resourceSurface.resources)
+export const searchIndex = buildSearchIndex(map, monolithRoutes, resourceSurface.resources, listenerSurface.listeners)
 export const flagRegistry = buildFlagRegistry(map)
 export const fileIndex = buildFileIndex(map, monolithRoutes, allResourceRelations)
 export const resourceIds = new Set(resourceSurface.resources.map(r => r.id))

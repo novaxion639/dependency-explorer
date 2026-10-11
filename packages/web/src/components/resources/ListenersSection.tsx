@@ -1,6 +1,7 @@
+import { useEffect } from 'react'
 import type { Listener } from '@dependency-explorer/data'
 import { listenerSurface } from '@dependency-explorer/data'
-import { LISTENER_EVENTS, LISTENER_GRADES, LISTENER_KINDS, effectText, filterListeners, gradeGlyph, gradeLabel, hasText, sourceHref, type ListenerUrl } from './listenerView'
+import { LISTENER_EVENTS, LISTENER_GRADES, LISTENER_KINDS, effectText, filterListeners, gradeGlyph, gradeLabel, hasText, listenerHeading, sourceHref, type ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
 
 type Filters = Pick<ListenerUrl, 'lev' | 'lkind' | 'lgrade'>
@@ -16,8 +17,8 @@ interface Props {
 
 const known = (value: string | null, options: readonly string[]) => (value !== null && options.includes(value) ? value : null)
 
-export function GradeGlyph({ unverified, title }: { unverified: boolean; title?: string }) {
-  return <span role="img" aria-label={gradeLabel(unverified)} title={title} className={styles.grade} data-grade={unverified ? 'flow' : 'code'}>{gradeGlyph(unverified)}</span>
+export function GradeGlyph({ unverified, title, reason }: { unverified: boolean; title?: string; reason?: string }) {
+  return <span role="img" aria-label={gradeLabel(unverified, reason)} title={title} className={styles.grade} data-grade={unverified ? 'flow' : 'code'}>{gradeGlyph(unverified)}</span>
 }
 
 export function Source({ at }: { at: { file: string; line: number } }) {
@@ -38,6 +39,11 @@ function FilterSelect({ label, value, options, onChange }: { label: string; valu
 }
 
 export function ListenersSection({ listeners, filters, open, onFilters, onToggle, onOpenResource }: Props) {
+  useEffect(() => {
+    if (open) {
+      document.getElementById(`listener-${open}`)?.scrollIntoView({ block: 'center' })
+    }
+  }, [open])
   if (!listeners.length) {
     return null
   }
@@ -56,10 +62,10 @@ export function ListenersSection({ listeners, filters, open, onFilters, onToggle
         {visible.map(l => {
           const expanded = open === l.id
           return (
-            <li key={l.id}>
+            <li key={l.id} id={`listener-${l.id}`}>
               <GradeGlyph unverified={hasText(l)} />
               <button type="button" aria-expanded={expanded} className={styles.link} onClick={() => onToggle(expanded ? null : l.id)}>
-                <code>{l.hook}</code>{` ${l.method ?? 'block'} · ${l.events.join(' ')}`}
+                <code>{listenerHeading(l)}</code>{` · ${l.events.join(' ')}`}
               </button>
               {l.condition && <code className={styles.condition}>{l.condition}</code>}
               <span className={styles.meta}> declared <Source at={l.declaredAt} />{l.definedAt && <> · defined <Source at={l.definedAt} /></>}</span>
