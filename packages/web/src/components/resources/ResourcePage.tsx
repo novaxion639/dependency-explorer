@@ -1,8 +1,12 @@
 import type { ResourceRelation } from '@dependency-explorer/data'
-import { allResourceRelations, connectivityMap, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
+import { allResourceRelations, connectivityMap, inRailsOrder, listenerSurface, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
 import { evidenceHref } from '../../utils/evidenceLink'
 import { plural } from '../../utils/plural'
+import { CascadeSection } from './CascadeSection'
+import { ListenersSection } from './ListenersSection'
+import type { ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
+import { WritePathsSection } from './WritePathsSection'
 
 const GRADE_BADGE: Record<ResourceRelation['grade'], { symbol: string; title: string }> = {
   code: { symbol: '✓', title: 'call site at the pinned commit' },
@@ -14,6 +18,7 @@ const SECTIONS: Array<{ relation: ResourceRelation['relation']; label: string }>
   { relation: 'reads', label: 'Readers' },
   { relation: 'produces', label: 'Producers' },
   { relation: 'consumes', label: 'Consumers' },
+  { relation: 'feeds', label: 'Feeds' },
 ]
 
 interface Props {
@@ -23,15 +28,18 @@ interface Props {
   onOpenFlow: (id: string) => void
   onSelectService: (name: string) => void
   onBlast: (id: string) => void
+  listeners: ListenerUrl
+  onListeners: (p: Partial<ListenerUrl>) => void
 }
 
-export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSelectService, onBlast }: Props) {
+export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSelectService, onBlast, listeners, onListeners }: Props) {
   const impact = resourceImpact(id, connectivityMap, resourceSurface.resources, allResourceRelations)
   if (!impact) {
     return null
   }
   const { resource, byService, flows, dlq, counts } = impact
   const note = resourceNotes[id]
+  const tableListeners = resource.kind === 'table' ? inRailsOrder(listenerSurface.listeners.filter(l => l.table === id)) : []
   const tables = resource.kind === 'database' ? resourceSurface.resources.filter(r => r.id.startsWith(`${id}.`)) : []
   return (
     <section aria-label={resource.name} className={styles.page}>
@@ -70,9 +78,10 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
                   {g.rels.map(r => {
                     const badge = GRADE_BADGE[r.grade]
                     return (
-                      <li key={`${r.grade}-${r.file ?? r.service}`}>
+                      <li key={`${r.grade}-${r.file ?? r.service}-${r.target ?? ''}`}>
                         <span title={badge.title} className={styles.grade} data-grade={r.grade}>{badge.symbol}</span>
                         {r.file ? <button type="button" className={styles.file} onClick={() => onOpenFile(`${r.service}/${r.file ?? ''}`)}>{r.file}</button> : <span className={styles.meta}>{r.grade === 'config' ? 'declared in config' : 'flow edge'}</span>}
+                        {r.target && <> → <button type="button" className={styles.link} onClick={() => onOpenResource(r.target ?? '')}>{r.target}</button></>}
                       </li>
                     )
                   })}
@@ -82,6 +91,9 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
           </section>
         )
       })}
+      <ListenersSection listeners={tableListeners} filters={listeners} open={listeners.listener} onFilters={onListeners} onToggle={listener => onListeners({ listener })} onOpenResource={onOpenResource} />
+      {resource.kind === 'table' && <CascadeSection table={id} event={listeners.event} onEvent={event => onListeners({ event })} onOpenResource={onOpenResource} />}
+      {resource.kind === 'table' && <WritePathsSection table={id} onOpenFlow={onOpenFlow} />}
       {dlq && <p className={styles.meta}>Dead letters go to <button type="button" className={styles.link} onClick={() => onOpenResource(dlq)}>{dlq}</button></p>}
       {(resource.related ?? []).length > 0 && (
         <section aria-label="Related tables" className={styles.section}>

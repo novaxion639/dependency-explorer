@@ -44,7 +44,7 @@ import { checkContractRefs } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
-import { pinRepos, buildGraphs, applyModeError, type PinnedRepo, type PinSkip } from './pinned'
+import { pinRepos, buildGraphs, applyModeError, emptyPinError, type PinnedRepo, type PinSkip } from './pinned'
 import { checkCodeGrades, loadRepoGraph, type Grade, type GradeFinding } from './code-grades'
 import { checkBranches } from './branch-check'
 import { checkStateMachines } from './state-machine-check'
@@ -77,6 +77,11 @@ if (MODE_ERROR) {
   process.exit(2)
 }
 const PIN = PINNED_MODE ? pinRepos(scanTargets(SOURCE_BASE), SOURCE_BASE, PINNED_BASE) : null
+const PIN_ERROR = PIN ? emptyPinError(PIN.pinned.length, SOURCE_BASE) : null
+if (PIN_ERROR) {
+  console.error(PIN_ERROR)
+  process.exit(2)
+}
 const CODE_REPOS = new Set(connectivityMap.flows.flatMap(f => (f.codeUnits ?? []).map(u => u.service)))
 if (PIN) {
   PIN.skipped.push(...buildGraphs(PIN.pinned.filter(p => CODE_REPOS.has(p.repo))))

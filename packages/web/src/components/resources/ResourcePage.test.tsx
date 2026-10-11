@@ -5,7 +5,7 @@ import { ResourcePage } from './ResourcePage'
 import { ResourcesIndex } from './ResourcesIndex'
 
 const noop = () => {}
-const props = { onOpenResource: noop, onOpenFile: noop, onOpenFlow: noop, onSelectService: noop, onBlast: noop }
+const props = { onOpenResource: noop, onOpenFile: noop, onOpenFlow: noop, onSelectService: noop, onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
 
 describe('ResourcePage', () => {
   it('shows the change impact of the shifts table with graded files and flows', () => {
@@ -26,10 +26,28 @@ describe('ResourcePage', () => {
     expect(html).toContain('aria-label="Tables"')
     expect(html).toContain('>shifts</button>')
   })
+  it('lists the shifts table listeners from the committed surface', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
+    expect(html).toContain('aria-label="Listeners"')
+    expect(html).toContain('update_paid_leaves')
+  })
   it('renders a resource with no relations without throwing', () => {
     const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))
     expect(quiet, 'the registry holds at least one untouched resource (dataset-only stores)').toBeDefined()
     expect(renderToStaticMarkup(<ResourcePage id={quiet?.id ?? ''} {...props} />)).toContain('No code, config or flow touches this resource')
+  })
+  it('shows what else a shift write changes and how each path writes it', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
+    expect(html).toContain('aria-label="Also changes"')
+    expect(html).toContain('aria-label="Write paths"')
+    expect(html).toContain('Runs no listener')
+  })
+  it('shows the CDC feed and its target stream inside the Feeds section', () => {
+    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
+    const [, afterFeeds = ''] = html.split('aria-label="Feeds"')
+    const feeds = afterFeeds.split('</section>')[0] ?? ''
+    expect(afterFeeds).not.toBe('')
+    expect(feeds).toContain('kinesis:skelloapp-bus')
   })
 })
 

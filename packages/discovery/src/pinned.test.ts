@@ -3,7 +3,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { productionBranch, pinRepos, buildGraphs, defaultGit, applyModeError } from './pinned'
+import { productionBranch, pinRepos, buildGraphs, defaultGit, applyModeError, emptyPinError } from './pinned'
 
 let root = ''
 const git = (cwd: string, ...args: string[]) => execFileSync('git', args, { cwd, encoding: 'utf-8' }).trim()
@@ -111,5 +111,15 @@ describe('applyModeError', () => {
     expect(applyModeError(['tsx', 'discover.ts', '--apply'])).toBe('--apply requires --pinned: the overlay, grades and monolith routes are written from production branches only')
     expect(applyModeError(['tsx', 'discover.ts', '--pinned', '--apply'])).toBeNull()
     expect(applyModeError(['tsx', 'discover.ts'])).toBeNull()
+  })
+})
+
+describe('emptyPinError', () => {
+  it('is null when at least one repo is pinned', () => {
+    expect(emptyPinError(3, '/x')).toBeNull()
+  })
+
+  it('names the source base and the main-clone rule when no repo is pinned', () => {
+    expect(emptyPinError(0, '/Users/me/Skello_Dev/dependency-explorer/.claude/worktrees')).toBe('--pinned pinned 0 repos: no Skello repos found under /Users/me/Skello_Dev/dependency-explorer/.claude/worktrees — run discovery from the main dependency-explorer clone, not from a worktree')
   })
 })

@@ -239,3 +239,13 @@ describe('flow page keys', () => {
     expect(pagePatch('flows')).toMatchObject({ unit: null, chapter: null })
   })
 })
+
+describe('listener params', () => {
+  it('round-trips the listener params under a resource and drops them without one', () => {
+    const st = parseUrl('?page=resources&resource=pg:skello_production.shifts&event=destroy&listener=shifts.after_commit.x&lev=update&lkind=callback&lgrade=text')
+    expect([st.event, st.listener, st.lev, st.lkind, st.lgrade]).toEqual(['destroy', 'shifts.after_commit.x', 'update', 'callback', 'text'])
+    expect(toQueryString(st)).toBe('page=resources&resource=pg%3Askello_production.shifts&event=destroy&listener=shifts.after_commit.x&lev=update&lkind=callback&lgrade=text')
+    expect(toQueryString({ ...st, resource: null })).toBe('page=resources')
+    expect(parseUrl('?page=resources&event=bogus').event).toBeNull()
+  })
+})

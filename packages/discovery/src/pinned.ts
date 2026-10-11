@@ -86,3 +86,10 @@ export function applyModeError(argv: string[]): string | null {
   }
   return null
 }
+
+export function emptyPinError(pinnedCount: number, sourceBase: string): string | null {
+  if (pinnedCount > 0) {
+    return null
+  }
+  return `--pinned pinned 0 repos: no Skello repos found under ${sourceBase} — run discovery from the main dependency-explorer clone, not from a worktree`
+}

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
-import { connectivityMap, monolithRoutes, codeEdgeGrades, resourceSurface } from './index'
+import { connectivityMap, monolithRoutes, codeEdgeGrades, resourceSurface, listenerSurface, allResourceRelations } from './index'
 import { resourceNotes } from './resource-notes'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { getFlowAreas } from './areas-derive'
@@ -536,5 +536,32 @@ describe('flow chapters', () => {
   })
   it('are authored for every flow', () => {
     expect(flows.filter(f => !f.chapters).map(f => f.id)).toEqual([])
+  })
+})
+
+describe('table listeners', () => {
+  const tables = new Set(resourceSurface.resources.filter(r => r.kind === 'table' && r.store === 'postgresql').map(r => r.id))
+  const streams = new Set(resourceSurface.resources.filter(r => r.kind === 'stream').map(r => r.id))
+  it('names registered monolith tables everywhere', () => {
+    const named = [
+      ...listenerSurface.listeners.map(l => l.table),
+      ...listenerSurface.listeners.flatMap(l => l.effects.filter(e => e.kind === 'writes').map(e => e.target)),
+      ...listenerSurface.writeSites.map(s => s.table),
+    ]
+    expect(named.filter(t => !tables.has(t))).toEqual([])
+  })
+  it('fires only listeners of the written table', () => {
+    const tableOf = new Map(listenerSurface.listeners.map(l => [l.id, l.table]))
+    expect(listenerSurface.writeSites.flatMap(s => (s.fires ?? []).filter(id => tableOf.get(id) !== s.table).map(id => `${s.file}:${s.line} ${id}`))).toEqual([])
+  })
+  it('keeps listener ids unique', () => {
+    const ids = listenerSurface.listeners.map(l => l.id)
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([])
+  })
+  it('targets registered streams from every CDC relation', () => {
+    expect(allResourceRelations.filter(r => (r.relation === 'feeds' || (r.relation === 'consumes' && r.resource.startsWith('pg:'))) && r.target && !streams.has(r.target))).toEqual([])
+  })
+  it('pins skello-app at the registry’s commit', () => {
+    expect(listenerSurface.pins['skello-app']).toBe(resourceSurface.pins['skello-app'])
   })
 })

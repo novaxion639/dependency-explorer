@@ -54,3 +54,10 @@ describe('impact origin', () => {
     expect([st.blast, st.notFound?.param, st.notFound?.value]).toEqual([null, 'blast', 'svc-retired'])
   })
 })
+
+describe('listener params', () => {
+  it('drops a listener that is not on the open table and unknown filter values', () => {
+    const st = validateUrlState({ ...parseUrl('?page=resources&resource=pg:skello_production.shifts&listener=nope&lkind=bogus&lgrade=text'), notFound: null })
+    expect([st.listener, st.lkind, st.lgrade]).toEqual([null, null, 'text'])
+  })
+})

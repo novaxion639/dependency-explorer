@@ -54,6 +54,8 @@ pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (
 pnpm docs:gen                 # rewrite the generated sections of the inventory docs (CI fails on drift)
 ```
 
+`--pinned` runs fail when they pin no repo — run discovery from the main clone; a `.claude/worktrees` checkout finds no sibling repos.
+
 ## Listener drift (👂)
 
 The 👂 section checks the table listener surface at the pinned commit. A skello-app that is not pinned is skipped. Findings carry a kind, a subject and a detail; accepted findings enter `packages/discovery/baseline.json` through `pnpm discover:baseline`. `surface-drift`, `cdc-unknown-table` and the two `flow-listener-*` kinds come from the full `pnpm discover` run; `discover:listeners` prints the extraction kinds only.
