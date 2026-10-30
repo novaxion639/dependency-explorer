@@ -274,7 +274,7 @@
       "method": "end_previous_amendment",
       "definedAt": {
         "file": "app/models/contract_amendment.rb",
-        "line": 94
+        "line": 115
       },
       "effects": []
     },
@@ -297,7 +297,7 @@
       "method": "update_planning_hours_data",
       "definedAt": {
         "file": "app/models/contract_amendment.rb",
-        "line": 99
+        "line": 120
       },
       "effects": [
         {
@@ -307,7 +307,7 @@
           "mode": "async-job",
           "at": {
             "file": "app/models/contract_amendment.rb",
-            "line": 100
+            "line": 121
           },
           "grade": "graph"
         },
@@ -344,7 +344,7 @@
       "method": "invalidate_contract_hours_cache",
       "definedAt": {
         "file": "app/models/contract_amendment.rb",
-        "line": 128
+        "line": 149
       },
       "effects": [
         {
@@ -357,7 +357,7 @@
           "runs": "touch",
           "at": {
             "file": "app/models/contract_amendment.rb",
-            "line": 129
+            "line": 150
           },
           "grade": "text"
         }
@@ -382,7 +382,7 @@
       "method": "preprocess_for_ms",
       "definedAt": {
         "file": "app/models/contract_amendment.rb",
-        "line": 132
+        "line": 153
       },
       "effects": [
         {
@@ -392,7 +392,7 @@
           "mode": "async-job",
           "at": {
             "file": "app/models/contract_amendment.rb",
-            "line": 133
+            "line": 154
           },
           "grade": "graph"
         },
@@ -408,7 +408,7 @@
           "runs": "all",
           "at": {
             "file": "app/jobs/users/cache_contracts_timeline_job.rb",
-            "line": 30
+            "line": 35
           },
           "grade": "constant"
         }
@@ -614,90 +614,16 @@
       "condition": "if: :contract_type_id_changed?",
       "declaredAt": {
         "file": "app/models/contract.rb",
-        "line": 149
+        "line": 152
       },
       "grade": "code",
       "id": "contracts.before_save.update_contract_reason",
       "method": "update_contract_reason",
       "definedAt": {
         "file": "app/models/contract.rb",
-        "line": 242
+        "line": 245
       },
       "effects": []
-    },
-    {
-      "table": "pg:skello_production.contracts",
-      "kind": "callback",
-      "hook": "before_save",
-      "events": [
-        "create",
-        "update"
-      ],
-      "phase": "save",
-      "declaredAt": {
-        "file": "app/models/contract.rb",
-        "line": 150
-      },
-      "grade": "code",
-      "id": "contracts.before_save.set_counter_type_hours_and_work_days_values",
-      "method": "set_counter_type_hours_and_work_days_values",
-      "definedAt": {
-        "file": "app/models/contract.rb",
-        "line": 312
-      },
-      "effects": []
-    },
-    {
-      "table": "pg:skello_production.contracts",
-      "kind": "callback",
-      "hook": "before_save",
-      "events": [
-        "create",
-        "update"
-      ],
-      "phase": "save",
-      "condition": "if: -> { contract_type_id_changed? || counter_type_changed? }",
-      "declaredAt": {
-        "file": "app/models/contract.rb",
-        "line": 151
-      },
-      "grade": "code",
-      "id": "contracts.before_save.deactivate_rcr_tracker",
-      "method": "deactivate_rcr_tracker",
-      "definedAt": {
-        "file": "app/models/contract.rb",
-        "line": 251
-      },
-      "effects": [
-        {
-          "kind": "writes",
-          "target": "pg:skello_production.user_extended_infos",
-          "mode": "sync",
-          "events": [
-            "update"
-          ],
-          "runs": "all",
-          "at": {
-            "file": "app/models/contract.rb",
-            "line": 254
-          },
-          "grade": "text"
-        },
-        {
-          "kind": "writes",
-          "target": "pg:skello_production.rcr_counters",
-          "mode": "sync",
-          "events": [
-            "destroy"
-          ],
-          "runs": "none",
-          "at": {
-            "file": "app/models/contract.rb",
-            "line": 255
-          },
-          "grade": "constant"
-        }
-      ]
     },
     {
       "table": "pg:skello_production.contracts",
@@ -713,11 +639,85 @@
         "line": 153
       },
       "grade": "code",
+      "id": "contracts.before_save.set_counter_type_hours_and_work_days_values",
+      "method": "set_counter_type_hours_and_work_days_values",
+      "definedAt": {
+        "file": "app/models/contract.rb",
+        "line": 315
+      },
+      "effects": []
+    },
+    {
+      "table": "pg:skello_production.contracts",
+      "kind": "callback",
+      "hook": "before_save",
+      "events": [
+        "create",
+        "update"
+      ],
+      "phase": "save",
+      "condition": "if: -> { contract_type_id_changed? || counter_type_changed? }",
+      "declaredAt": {
+        "file": "app/models/contract.rb",
+        "line": 154
+      },
+      "grade": "code",
+      "id": "contracts.before_save.deactivate_rcr_tracker",
+      "method": "deactivate_rcr_tracker",
+      "definedAt": {
+        "file": "app/models/contract.rb",
+        "line": 254
+      },
+      "effects": [
+        {
+          "kind": "writes",
+          "target": "pg:skello_production.user_extended_infos",
+          "mode": "sync",
+          "events": [
+            "update"
+          ],
+          "runs": "all",
+          "at": {
+            "file": "app/models/contract.rb",
+            "line": 257
+          },
+          "grade": "text"
+        },
+        {
+          "kind": "writes",
+          "target": "pg:skello_production.rcr_counters",
+          "mode": "sync",
+          "events": [
+            "destroy"
+          ],
+          "runs": "none",
+          "at": {
+            "file": "app/models/contract.rb",
+            "line": 258
+          },
+          "grade": "constant"
+        }
+      ]
+    },
+    {
+      "table": "pg:skello_production.contracts",
+      "kind": "callback",
+      "hook": "before_save",
+      "events": [
+        "create",
+        "update"
+      ],
+      "phase": "save",
+      "declaredAt": {
+        "file": "app/models/contract.rb",
+        "line": 156
+      },
+      "grade": "code",
       "id": "contracts.before_save.update_dummy",
       "method": "update_dummy",
       "definedAt": {
         "file": "app/models/contract.rb",
-        "line": 236
+        "line": 239
       },
       "effects": [
         {
@@ -730,7 +730,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/contract.rb",
-            "line": 237
+            "line": 240
           },
           "grade": "text"
         }
@@ -746,14 +746,14 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/contract.rb",
-        "line": 154
+        "line": 157
       },
       "grade": "code",
       "id": "contracts.before_destroy.prevent_last_contract_deletion",
       "method": "prevent_last_contract_deletion",
       "definedAt": {
         "file": "app/models/contract.rb",
-        "line": 326
+        "line": 329
       },
       "effects": []
     },
@@ -769,14 +769,14 @@
       "phase": "commit",
       "declaredAt": {
         "file": "app/models/contract.rb",
-        "line": 156
+        "line": 159
       },
       "grade": "code",
       "id": "contracts.after_commit.cleanup_cache",
       "method": "cleanup_cache",
       "definedAt": {
         "file": "app/models/contract.rb",
-        "line": 226
+        "line": 229
       },
       "effects": []
     },
@@ -792,14 +792,14 @@
       "phase": "commit",
       "declaredAt": {
         "file": "app/models/contract.rb",
-        "line": 156
+        "line": 159
       },
       "grade": "code",
       "id": "contracts.after_commit.preprocess_for_ms",
       "method": "preprocess_for_ms",
       "definedAt": {
         "file": "app/models/contract.rb",
-        "line": 232
+        "line": 235
       },
       "effects": [
         {
@@ -809,7 +809,7 @@
           "mode": "async-job",
           "at": {
             "file": "app/models/contract.rb",
-            "line": 233
+            "line": 236
           },
           "grade": "graph"
         },
@@ -825,7 +825,7 @@
           "runs": "all",
           "at": {
             "file": "app/jobs/users/cache_contracts_timeline_job.rb",
-            "line": 30
+            "line": 35
           },
           "grade": "constant"
         }
@@ -843,14 +843,14 @@
       "phase": "commit",
       "declaredAt": {
         "file": "app/models/contract.rb",
-        "line": 157
+        "line": 160
       },
       "grade": "code",
       "id": "contracts.after_commit.update_planning_hours_datas",
       "method": "update_planning_hours_datas",
       "definedAt": {
         "file": "app/models/contract.rb",
-        "line": 350
+        "line": 353
       },
       "effects": []
     },
@@ -2046,7 +2046,7 @@
       "method": "set_do_not_pay",
       "definedAt": {
         "file": "app/models/organisation.rb",
-        "line": 317
+        "line": 311
       },
       "effects": []
     },
@@ -2068,7 +2068,7 @@
       "method": "strip_denomination_sociale",
       "definedAt": {
         "file": "app/models/organisation.rb",
-        "line": 370
+        "line": 364
       },
       "effects": []
     },
@@ -2091,7 +2091,7 @@
       "method": "check_clusters_status",
       "definedAt": {
         "file": "app/models/organisation.rb",
-        "line": 312
+        "line": 306
       },
       "effects": []
     },
@@ -2113,7 +2113,7 @@
       "method": "sync_billing_to_third_parties",
       "definedAt": {
         "file": "app/models/organisation.rb",
-        "line": 325
+        "line": 319
       },
       "effects": [
         {
@@ -2123,7 +2123,7 @@
           "mode": "async-job",
           "at": {
             "file": "app/models/organisation.rb",
-            "line": 328
+            "line": 322
           },
           "grade": "graph"
         },
@@ -2158,7 +2158,7 @@
       "method": "destroy_root_node",
       "definedAt": {
         "file": "app/models/organisation.rb",
-        "line": 321
+        "line": 315
       },
       "effects": [
         {
@@ -2171,7 +2171,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/organisation.rb",
-            "line": 322
+            "line": 316
           },
           "grade": "text"
         }
@@ -2283,7 +2283,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 117
+        "line": 119
       },
       "grade": "code",
       "effects": [
@@ -2297,7 +2297,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/poste.rb",
-            "line": 117
+            "line": 119
           },
           "grade": "constant"
         }
@@ -2314,7 +2314,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 118
+        "line": 120
       },
       "grade": "code",
       "effects": [
@@ -2328,7 +2328,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/poste.rb",
-            "line": 118
+            "line": 120
           },
           "grade": "constant"
         }
@@ -2345,7 +2345,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 119
+        "line": 121
       },
       "grade": "code",
       "effects": [
@@ -2359,7 +2359,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/poste.rb",
-            "line": 119
+            "line": 121
           },
           "grade": "constant"
         }
@@ -2376,7 +2376,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 120
+        "line": 122
       },
       "grade": "code",
       "effects": [
@@ -2390,7 +2390,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/poste.rb",
-            "line": 120
+            "line": 122
           },
           "grade": "constant"
         }
@@ -2407,7 +2407,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 121
+        "line": 123
       },
       "grade": "code",
       "effects": [
@@ -2421,7 +2421,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/poste.rb",
-            "line": 121
+            "line": 123
           },
           "grade": "constant"
         }
@@ -2438,7 +2438,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 122
+        "line": 124
       },
       "grade": "code",
       "effects": [
@@ -2452,7 +2452,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/poste.rb",
-            "line": 122
+            "line": 124
           },
           "grade": "constant"
         }
@@ -2469,7 +2469,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 126
+        "line": 128
       },
       "grade": "code",
       "effects": [
@@ -2483,7 +2483,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/poste.rb",
-            "line": 126
+            "line": 128
           },
           "grade": "constant"
         }
@@ -2500,7 +2500,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 127
+        "line": 129
       },
       "grade": "code",
       "effects": [
@@ -2514,7 +2514,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/poste.rb",
-            "line": 127
+            "line": 129
           },
           "grade": "constant"
         }
@@ -2532,14 +2532,14 @@
       "condition": "if: :color_changed?",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 136
+        "line": 138
       },
       "grade": "code",
       "id": "postes.before_save.update_shifts_color",
       "method": "update_shifts_color",
       "definedAt": {
         "file": "app/models/poste.rb",
-        "line": 286
+        "line": 288
       },
       "effects": [
         {
@@ -2549,7 +2549,7 @@
           "mode": "async-job",
           "at": {
             "file": "app/models/poste.rb",
-            "line": 287
+            "line": 289
           },
           "grade": "graph"
         },
@@ -2583,14 +2583,14 @@
       "condition": "if: :absence_type_changed?",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 137
+        "line": 139
       },
       "grade": "code",
       "id": "postes.after_commit.invalidate_cache_data",
       "method": "invalidate_cache_data",
       "definedAt": {
         "file": "app/models/poste.rb",
-        "line": 316
+        "line": 318
       },
       "effects": []
     },
@@ -2606,14 +2606,14 @@
       "phase": "commit",
       "declaredAt": {
         "file": "app/models/poste.rb",
-        "line": 138
+        "line": 140
       },
       "grade": "code",
       "id": "postes.after_commit.invalidate_catalog_cache",
       "method": "invalidate_catalog_cache",
       "definedAt": {
         "file": "app/models/poste.rb",
-        "line": 327
+        "line": 329
       },
       "effects": []
     },
@@ -2636,7 +2636,7 @@
       "method": "format_email",
       "definedAt": {
         "file": "app/models/prospect.rb",
-        "line": 137
+        "line": 162
       },
       "effects": []
     },
@@ -2875,7 +2875,7 @@
       "method": "check_first_shift_cache",
       "definedAt": {
         "file": "app/models/concerns/shifts/callbacks_concern.rb",
-        "line": 64
+        "line": 70
       },
       "effects": [
         {
@@ -2885,7 +2885,7 @@
           "mode": "sync",
           "at": {
             "file": "app/models/concerns/shifts/callbacks_concern.rb",
-            "line": 65
+            "line": 71
           },
           "grade": "constant"
         }
@@ -2908,7 +2908,7 @@
       "method": "delete_shift_documents!",
       "definedAt": {
         "file": "app/models/shift.rb",
-        "line": 825
+        "line": 842
       },
       "effects": [
         {
@@ -2918,7 +2918,7 @@
           "mode": "async-job",
           "at": {
             "file": "app/models/shift.rb",
-            "line": 826
+            "line": 843
           },
           "grade": "graph"
         },
@@ -2931,6 +2931,18 @@
           "at": {
             "file": "app/jobs/shifts/delete_shift_documents_job.rb",
             "line": 12
+          },
+          "grade": "graph"
+        },
+        {
+          "kind": "calls",
+          "target": "Skello::ErrorReporter.report",
+          "targetFile": "lib/skello/error_reporter.rb",
+          "mode": "async-job",
+          "via": "Shifts::DeleteShiftDocumentsJob",
+          "at": {
+            "file": "app/jobs/shifts/delete_shift_documents_job.rb",
+            "line": 14
           },
           "grade": "graph"
         }
@@ -2954,7 +2966,7 @@
       "method": "check_first_shift_cache",
       "definedAt": {
         "file": "app/models/concerns/shifts/callbacks_concern.rb",
-        "line": 64
+        "line": 70
       },
       "effects": [
         {
@@ -2964,7 +2976,7 @@
           "mode": "sync",
           "at": {
             "file": "app/models/concerns/shifts/callbacks_concern.rb",
-            "line": 65
+            "line": 71
           },
           "grade": "constant"
         }
@@ -3056,58 +3068,15 @@
       },
       "effects": [
         {
-          "kind": "enqueues",
-          "target": "UpdatePaidLeavesCounterJob",
-          "targetFile": "app/jobs/update_paid_leaves_counter_job.rb",
-          "mode": "async-job",
+          "kind": "calls",
+          "target": "V3::Trackers::DeferredJobs.enqueue",
+          "targetFile": "app/services/v3/trackers/deferred_jobs.rb",
+          "mode": "sync",
           "at": {
             "file": "app/models/concerns/shifts/callbacks_concern.rb",
-            "line": 61
+            "line": 63
           },
           "grade": "graph"
-        },
-        {
-          "kind": "calls",
-          "target": "PaidLeavesCounter.update_days!",
-          "targetFile": "app/models/paid_leaves_counter.rb",
-          "mode": "async-job",
-          "via": "UpdatePaidLeavesCounterJob",
-          "at": {
-            "file": "app/jobs/update_paid_leaves_counter_job.rb",
-            "line": 10
-          },
-          "grade": "graph"
-        },
-        {
-          "kind": "writes",
-          "target": "pg:skello_production.users",
-          "mode": "async-job",
-          "via": "UpdatePaidLeavesCounterJob → PaidLeavesCounter.update_days!",
-          "events": [
-            "update"
-          ],
-          "runs": "all",
-          "at": {
-            "file": "app/models/paid_leaves_counter.rb",
-            "line": 51
-          },
-          "grade": "text"
-        },
-        {
-          "kind": "writes",
-          "target": "pg:skello_production.paid_leaves_counters",
-          "mode": "async-job",
-          "via": "UpdatePaidLeavesCounterJob → PaidLeavesCounter.update_days!",
-          "events": [
-            "create",
-            "update"
-          ],
-          "runs": "all",
-          "at": {
-            "file": "app/models/paid_leaves_counter.rb",
-            "line": 58
-          },
-          "grade": "constant"
         }
       ]
     },
@@ -3130,7 +3099,7 @@
       "method": "manage_predicted_shift",
       "definedAt": {
         "file": "app/models/concerns/shifts/callbacks_concern.rb",
-        "line": 74
+        "line": 80
       },
       "effects": [
         {
@@ -3143,7 +3112,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/concerns/shifts/callbacks_concern.rb",
-            "line": 81
+            "line": 87
           },
           "grade": "constant"
         },
@@ -3158,7 +3127,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/concerns/shifts/callbacks_concern.rb",
-            "line": 103
+            "line": 109
           },
           "grade": "constant"
         }
@@ -3812,7 +3781,7 @@
       ]
     },
     {
-      "id": "shops.dependent.leave_requests",
+      "id": "shops.dependent.legacy_badging_histories",
       "table": "pg:skello_production.shops",
       "kind": "cascade",
       "hook": "dependent: :delete_all",
@@ -3828,7 +3797,7 @@
       "effects": [
         {
           "kind": "writes",
-          "target": "pg:skello_production.leave_requests",
+          "target": "pg:skello_production.badging_histories",
           "mode": "sync",
           "events": [
             "destroy"
@@ -3837,6 +3806,37 @@
           "at": {
             "file": "app/models/shop.rb",
             "line": 62
+          },
+          "grade": "constant"
+        }
+      ]
+    },
+    {
+      "id": "shops.dependent.leave_requests",
+      "table": "pg:skello_production.shops",
+      "kind": "cascade",
+      "hook": "dependent: :delete_all",
+      "events": [
+        "destroy"
+      ],
+      "phase": "event",
+      "declaredAt": {
+        "file": "app/models/shop.rb",
+        "line": 63
+      },
+      "grade": "code",
+      "effects": [
+        {
+          "kind": "writes",
+          "target": "pg:skello_production.leave_requests",
+          "mode": "sync",
+          "events": [
+            "destroy"
+          ],
+          "runs": "none",
+          "at": {
+            "file": "app/models/shop.rb",
+            "line": 63
           },
           "grade": "constant"
         }
@@ -3853,7 +3853,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 64
+        "line": 65
       },
       "grade": "code",
       "effects": [
@@ -3867,7 +3867,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 64
+            "line": 65
           },
           "grade": "constant"
         }
@@ -3884,7 +3884,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 65
+        "line": 66
       },
       "grade": "code",
       "effects": [
@@ -3898,7 +3898,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 65
+            "line": 66
           },
           "grade": "constant"
         }
@@ -3915,7 +3915,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 66
+        "line": 67
       },
       "grade": "code",
       "effects": [
@@ -3929,7 +3929,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 66
+            "line": 67
           },
           "grade": "constant"
         }
@@ -3946,7 +3946,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 67
+        "line": 68
       },
       "grade": "code",
       "effects": [
@@ -3960,7 +3960,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 67
+            "line": 68
           },
           "grade": "constant"
         }
@@ -3977,7 +3977,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 68
+        "line": 69
       },
       "grade": "code",
       "effects": [
@@ -3991,7 +3991,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 68
+            "line": 69
           },
           "grade": "constant"
         }
@@ -4008,7 +4008,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 69
+        "line": 70
       },
       "grade": "code",
       "effects": [
@@ -4022,7 +4022,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 69
+            "line": 70
           },
           "grade": "constant"
         }
@@ -4039,7 +4039,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 70
+        "line": 71
       },
       "grade": "code",
       "effects": [
@@ -4053,7 +4053,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 70
+            "line": 71
           },
           "grade": "constant"
         }
@@ -4070,7 +4070,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 71
+        "line": 72
       },
       "grade": "code",
       "effects": [
@@ -4084,7 +4084,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 71
+            "line": 72
           },
           "grade": "constant"
         }
@@ -4101,7 +4101,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 72
+        "line": 73
       },
       "grade": "code",
       "effects": [
@@ -4115,7 +4115,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 72
+            "line": 73
           },
           "grade": "constant"
         }
@@ -4132,7 +4132,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 73
+        "line": 74
       },
       "grade": "code",
       "effects": [
@@ -4146,7 +4146,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 73
+            "line": 74
           },
           "grade": "constant"
         }
@@ -4163,7 +4163,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 74
+        "line": 75
       },
       "grade": "code",
       "effects": [
@@ -4177,7 +4177,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 74
+            "line": 75
           },
           "grade": "constant"
         }
@@ -4194,7 +4194,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 75
+        "line": 76
       },
       "grade": "code",
       "effects": [
@@ -4208,7 +4208,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 75
+            "line": 76
           },
           "grade": "constant"
         }
@@ -4225,7 +4225,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 76
+        "line": 77
       },
       "grade": "code",
       "effects": [
@@ -4239,7 +4239,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 76
+            "line": 77
           },
           "grade": "constant"
         }
@@ -4256,7 +4256,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 82
+        "line": 83
       },
       "grade": "code",
       "effects": [
@@ -4270,7 +4270,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 82
+            "line": 83
           },
           "grade": "constant"
         }
@@ -4287,7 +4287,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 83
+        "line": 84
       },
       "grade": "code",
       "effects": [
@@ -4301,7 +4301,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 83
+            "line": 84
           },
           "grade": "constant"
         }
@@ -4318,7 +4318,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 84
+        "line": 85
       },
       "grade": "code",
       "effects": [
@@ -4332,7 +4332,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 84
+            "line": 85
           },
           "grade": "constant"
         }
@@ -4349,7 +4349,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 85
+        "line": 86
       },
       "grade": "code",
       "effects": [
@@ -4363,7 +4363,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 85
+            "line": 86
           },
           "grade": "constant"
         }
@@ -4380,7 +4380,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 86
+        "line": 87
       },
       "grade": "code",
       "effects": [
@@ -4394,7 +4394,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 86
+            "line": 87
           },
           "grade": "constant"
         }
@@ -4411,7 +4411,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 87
+        "line": 88
       },
       "grade": "code",
       "effects": [
@@ -4425,7 +4425,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 87
+            "line": 88
           },
           "grade": "constant"
         }
@@ -4442,7 +4442,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 88
+        "line": 89
       },
       "grade": "code",
       "effects": [
@@ -4456,7 +4456,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 88
+            "line": 89
           },
           "grade": "constant"
         }
@@ -4473,14 +4473,14 @@
       "phase": "validation",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 194
+        "line": 195
       },
       "grade": "code",
       "id": "shops.before_validation.set_default_shop_hours",
       "method": "set_default_shop_hours",
       "definedAt": {
         "file": "app/models/shop.rb",
-        "line": 715
+        "line": 721
       },
       "effects": []
     },
@@ -4495,14 +4495,14 @@
       "phase": "validation",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 195
+        "line": 196
       },
       "grade": "code",
       "id": "shops.before_validation.strip_denomination_sociale",
       "method": "strip_denomination_sociale",
       "definedAt": {
         "file": "app/models/shop.rb",
-        "line": 720
+        "line": 726
       },
       "effects": []
     },
@@ -4518,7 +4518,7 @@
       "condition": "if: :closing_time_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 196
+        "line": 197
       },
       "grade": "code",
       "id": "shops.before_save.update_reference_time",
@@ -4553,7 +4553,7 @@
       "condition": "if: :any_address_field_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 197
+        "line": 198
       },
       "grade": "code",
       "id": "shops.before_save.update_full_address",
@@ -4576,7 +4576,7 @@
       "condition": "if: :any_address_field_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 198
+        "line": 199
       },
       "grade": "code",
       "id": "shops.before_save.geocode",
@@ -4595,7 +4595,7 @@
       "condition": "if: :badging_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 199
+        "line": 200
       },
       "grade": "code",
       "id": "shops.before_save.clear_last_badging_sync",
@@ -4618,7 +4618,7 @@
       "condition": "if: :automatic_planning_uses_added_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 200
+        "line": 201
       },
       "grade": "code",
       "id": "shops.before_save.received_automatic_planning_credits?",
@@ -4641,14 +4641,14 @@
       "condition": "if: :country_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 201
+        "line": 202
       },
       "grade": "code",
       "id": "shops.before_save.manage_currency",
       "method": "manage_currency",
       "definedAt": {
         "file": "app/models/shop.rb",
-        "line": 724
+        "line": 730
       },
       "effects": []
     },
@@ -4664,14 +4664,14 @@
       "condition": "if: :french?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 202
+        "line": 203
       },
       "grade": "code",
       "id": "shops.before_save.reset_legal_weekly_hours",
       "method": "reset_legal_weekly_hours",
       "definedAt": {
         "file": "app/models/shop.rb",
-        "line": 730
+        "line": 736
       },
       "effects": []
     },
@@ -4686,7 +4686,7 @@
       "condition": "if: :badging?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 203
+        "line": 204
       },
       "grade": "code",
       "id": "shops.after_create.create_punch_clock_settings",
@@ -4705,7 +4705,7 @@
             "file": "app/models/concerns/shops/shops_callback_concern.rb",
             "line": 42
           },
-          "grade": "constant"
+          "grade": "graph"
         }
       ]
     },
@@ -4720,7 +4720,7 @@
       "condition": "if: :badging_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 204
+        "line": 205
       },
       "grade": "code",
       "id": "shops.before_update.create_or_destroy_punch_clock_settings",
@@ -4754,14 +4754,14 @@
       "condition": "if: :badging_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 205
+        "line": 206
       },
       "grade": "code",
       "id": "shops.before_update.deactivate_clocked_break_hours_in_planning_config",
       "method": "deactivate_clocked_break_hours_in_planning_config",
       "definedAt": {
         "file": "app/models/shop.rb",
-        "line": 734
+        "line": 740
       },
       "effects": [
         {
@@ -4774,7 +4774,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/shop.rb",
-            "line": 740
+            "line": 746
           },
           "grade": "constant"
         }
@@ -4791,14 +4791,14 @@
       "condition": "if: :features_states_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 206
+        "line": 207
       },
       "grade": "code",
       "id": "shops.before_update.handle_features_states_changed",
       "method": "handle_features_states_changed",
       "definedAt": {
         "file": "app/models/concerns/shops/shops_callback_concern.rb",
-        "line": 141
+        "line": 144
       },
       "effects": [
         {
@@ -4808,7 +4808,7 @@
           "mode": "sync",
           "at": {
             "file": "app/models/concerns/shops/shops_callback_concern.rb",
-            "line": 146
+            "line": 149
           },
           "grade": "graph"
         }
@@ -4825,14 +4825,14 @@
       "condition": "if: -> { country_changed? || country_region_changed? }",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 207
+        "line": 208
       },
       "grade": "code",
       "id": "shops.before_update.manage_holidays_settings",
       "method": "manage_holidays_settings",
       "definedAt": {
         "file": "app/models/concerns/shops/shops_callback_concern.rb",
-        "line": 177
+        "line": 180
       },
       "effects": [
         {
@@ -4842,9 +4842,9 @@
           "mode": "sync",
           "at": {
             "file": "app/models/concerns/shops/shops_callback_concern.rb",
-            "line": 197
+            "line": 200
           },
-          "grade": "constant"
+          "grade": "graph"
         },
         {
           "kind": "writes",
@@ -4871,7 +4871,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/concerns/shops/shops_callback_concern.rb",
-            "line": 189
+            "line": 192
           },
           "grade": "constant"
         },
@@ -4885,7 +4885,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/concerns/shops/shops_callback_concern.rb",
-            "line": 192
+            "line": 195
           },
           "grade": "constant"
         }
@@ -4902,7 +4902,7 @@
       "condition": "if: :saved_change_to_cancelled_at?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 208
+        "line": 209
       },
       "grade": "code",
       "id": "shops.after_update.check_cancellation_modification_sent!",
@@ -4911,7 +4911,19 @@
         "file": "app/models/concerns/shops/shops_callback_concern.rb",
         "line": 118
       },
-      "effects": []
+      "effects": [
+        {
+          "kind": "calls",
+          "target": "Skello::ErrorReporter.notify",
+          "targetFile": "lib/skello/error_reporter.rb",
+          "mode": "sync",
+          "at": {
+            "file": "app/models/concerns/shops/shops_callback_concern.rb",
+            "line": 123
+          },
+          "grade": "graph"
+        }
+      ]
     },
     {
       "table": "pg:skello_production.shops",
@@ -4924,7 +4936,7 @@
       "condition": "if: :shop_turned_to_cancelled?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 209
+        "line": 210
       },
       "grade": "code",
       "id": "shops.after_update.send_mail_to_billing_and_change_punch_clock_token",
@@ -4961,7 +4973,7 @@
       "condition": "if: :paid_leave_accrual_settings_changed?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 210
+        "line": 211
       },
       "grade": "code",
       "id": "shops.after_update.flag_paid_leave_accrual_recompute",
@@ -4983,14 +4995,14 @@
       "condition": "if: :saved_change_to_country?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 211
+        "line": 212
       },
       "grade": "code",
       "id": "shops.after_update.deactivate_trackers_if_country_changed",
       "method": "deactivate_trackers_if_country_changed",
       "definedAt": {
         "file": "app/models/concerns/shops/shops_callback_concern.rb",
-        "line": 206
+        "line": 209
       },
       "effects": [
         {
@@ -5000,7 +5012,18 @@
           "mode": "sync",
           "at": {
             "file": "app/models/concerns/shops/shops_callback_concern.rb",
-            "line": 222
+            "line": 225
+          },
+          "grade": "graph"
+        },
+        {
+          "kind": "calls",
+          "target": "Skello::ErrorReporter.report",
+          "targetFile": "lib/skello/error_reporter.rb",
+          "mode": "sync",
+          "at": {
+            "file": "app/models/concerns/shops/shops_callback_concern.rb",
+            "line": 229
           },
           "grade": "graph"
         }
@@ -5017,7 +5040,7 @@
       "condition": "if: :paid_leave_accrual_recompute_pending?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 212
+        "line": 213
       },
       "grade": "code",
       "id": "shops.after_commit.update_all_paid_leaves",
@@ -5036,7 +5059,7 @@
             "file": "app/models/concerns/shops/shops_callback_concern.rb",
             "line": 101
           },
-          "grade": "constant"
+          "grade": "graph"
         }
       ]
     },
@@ -5053,14 +5076,14 @@
       "condition": "if: :saved_change_to_pause_compensation_starts_at?",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 213
+        "line": 214
       },
       "grade": "code",
       "id": "shops.after_commit.update_planning_hours_datas",
       "method": "update_planning_hours_datas",
       "definedAt": {
         "file": "app/models/concerns/shops/shops_callback_concern.rb",
-        "line": 127
+        "line": 130
       },
       "effects": [
         {
@@ -5070,7 +5093,7 @@
           "mode": "async-job",
           "at": {
             "file": "app/models/concerns/shops/shops_callback_concern.rb",
-            "line": 135
+            "line": 138
           },
           "grade": "graph"
         },
@@ -5143,7 +5166,7 @@
       "phase": "rollback",
       "declaredAt": {
         "file": "app/models/shop.rb",
-        "line": 214
+        "line": 215
       },
       "grade": "code",
       "id": "shops.after_rollback.reset_paid_leave_accrual_recompute_flag",
@@ -5491,7 +5514,7 @@
       "method": "turn_empty_email_to_nil",
       "definedAt": {
         "file": "app/models/user.rb",
-        "line": 1152
+        "line": 1100
       },
       "effects": []
     },
@@ -5513,7 +5536,7 @@
       "method": "sanitize_fields",
       "definedAt": {
         "file": "app/models/user.rb",
-        "line": 1156
+        "line": 1104
       },
       "effects": []
     },
@@ -5536,7 +5559,7 @@
       "method": "format_phone",
       "definedAt": {
         "file": "app/models/user.rb",
-        "line": 441
+        "line": 446
       },
       "effects": []
     },
@@ -5559,7 +5582,7 @@
       "method": "clear_resident_documents",
       "definedAt": {
         "file": "app/models/user.rb",
-        "line": 1173
+        "line": 1121
       },
       "effects": []
     },
@@ -5580,7 +5603,7 @@
       "method": "set_punch_clock_token",
       "definedAt": {
         "file": "app/models/user.rb",
-        "line": 849
+        "line": 797
       },
       "effects": [
         {
@@ -5590,7 +5613,7 @@
           "mode": "sync",
           "at": {
             "file": "app/models/user.rb",
-            "line": 854
+            "line": 802
           },
           "grade": "graph"
         },
@@ -5601,7 +5624,7 @@
           "mode": "sync",
           "at": {
             "file": "app/models/user.rb",
-            "line": 856
+            "line": 804
           },
           "grade": "graph"
         }
@@ -5624,7 +5647,7 @@
       "method": "set_ics_feed",
       "definedAt": {
         "file": "app/models/user.rb",
-        "line": 824
+        "line": 772
       },
       "effects": [
         {
@@ -5637,7 +5660,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 825
+            "line": 773
           },
           "grade": "constant"
         }
@@ -5661,7 +5684,7 @@
       "method": "generate_bizdev_invitation_token",
       "definedAt": {
         "file": "app/models/user.rb",
-        "line": 874
+        "line": 822
       },
       "effects": [
         {
@@ -5675,7 +5698,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 880
+            "line": 828
           },
           "grade": "constant"
         }
@@ -5699,7 +5722,7 @@
       "method": "destroy_mobile_reset_token",
       "definedAt": {
         "file": "app/models/user.rb",
-        "line": 820
+        "line": 768
       },
       "effects": [
         {
@@ -5712,7 +5735,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 821
+            "line": 769
           },
           "grade": "text"
         }
@@ -5735,7 +5758,7 @@
       "method": "handle_archived_by_deleted_user!",
       "definedAt": {
         "file": "app/models/user.rb",
-        "line": 1076
+        "line": 1024
       },
       "effects": [
         {
@@ -5749,7 +5772,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 1096
+            "line": 1044
           },
           "grade": "text"
         }
@@ -6181,6 +6204,68 @@
       ]
     },
     {
+      "id": "users.dependent.legacy_badging_histories",
+      "table": "pg:skello_production.users",
+      "kind": "cascade",
+      "hook": "dependent: :delete_all",
+      "events": [
+        "destroy"
+      ],
+      "phase": "event",
+      "declaredAt": {
+        "file": "app/models/user.rb",
+        "line": 274
+      },
+      "grade": "code",
+      "effects": [
+        {
+          "kind": "writes",
+          "target": "pg:skello_production.badging_histories",
+          "mode": "sync",
+          "events": [
+            "destroy"
+          ],
+          "runs": "none",
+          "at": {
+            "file": "app/models/user.rb",
+            "line": 274
+          },
+          "grade": "constant"
+        }
+      ]
+    },
+    {
+      "id": "users.dependent.validated_legacy_badging_histories",
+      "table": "pg:skello_production.users",
+      "kind": "cascade",
+      "hook": "dependent: :nullify",
+      "events": [
+        "destroy"
+      ],
+      "phase": "event",
+      "declaredAt": {
+        "file": "app/models/user.rb",
+        "line": 275
+      },
+      "grade": "code",
+      "effects": [
+        {
+          "kind": "writes",
+          "target": "pg:skello_production.badging_histories",
+          "mode": "sync",
+          "events": [
+            "update"
+          ],
+          "runs": "none",
+          "at": {
+            "file": "app/models/user.rb",
+            "line": 275
+          },
+          "grade": "constant"
+        }
+      ]
+    },
+    {
       "id": "users.dependent.action_history_items",
       "table": "pg:skello_production.users",
       "kind": "cascade",
@@ -6191,7 +6276,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 279
+        "line": 282
       },
       "grade": "code",
       "effects": [
@@ -6205,7 +6290,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 279
+            "line": 282
           },
           "grade": "constant"
         }
@@ -6222,7 +6307,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 280
+        "line": 283
       },
       "grade": "code",
       "effects": [
@@ -6236,7 +6321,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 280
+            "line": 283
           },
           "grade": "constant"
         }
@@ -6253,7 +6338,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 281
+        "line": 284
       },
       "grade": "code",
       "effects": [
@@ -6267,7 +6352,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 281
+            "line": 284
           },
           "grade": "constant"
         }
@@ -6284,7 +6369,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 282
+        "line": 285
       },
       "grade": "code",
       "effects": [
@@ -6298,7 +6383,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 282
+            "line": 285
           },
           "grade": "constant"
         }
@@ -6315,7 +6400,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 283
+        "line": 286
       },
       "grade": "code",
       "effects": [
@@ -6329,7 +6414,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 283
+            "line": 286
           },
           "grade": "constant"
         }
@@ -6346,7 +6431,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 284
+        "line": 287
       },
       "grade": "code",
       "effects": [
@@ -6360,7 +6445,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 284
+            "line": 287
           },
           "grade": "constant"
         }
@@ -6377,7 +6462,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 285
+        "line": 288
       },
       "grade": "code",
       "effects": [
@@ -6391,7 +6476,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 285
+            "line": 288
           },
           "grade": "constant"
         }
@@ -6408,7 +6493,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 288
+        "line": 291
       },
       "grade": "code",
       "effects": [
@@ -6422,7 +6507,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 288
+            "line": 291
           },
           "grade": "constant"
         }
@@ -6439,7 +6524,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 289
+        "line": 292
       },
       "grade": "code",
       "effects": [
@@ -6453,7 +6538,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 289
+            "line": 292
           },
           "grade": "constant"
         }
@@ -6470,7 +6555,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 290
+        "line": 293
       },
       "grade": "code",
       "effects": [
@@ -6484,7 +6569,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 290
+            "line": 293
           },
           "grade": "constant"
         }
@@ -6501,7 +6586,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 293
+        "line": 296
       },
       "grade": "code",
       "effects": [
@@ -6515,7 +6600,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 293
+            "line": 296
           },
           "grade": "constant"
         }
@@ -6532,7 +6617,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 297
+        "line": 300
       },
       "grade": "code",
       "effects": [
@@ -6546,7 +6631,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 297
+            "line": 300
           },
           "grade": "constant"
         }
@@ -6563,7 +6648,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 304
+        "line": 307
       },
       "grade": "code",
       "effects": [
@@ -6577,7 +6662,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 304
+            "line": 307
           },
           "grade": "constant"
         }
@@ -6594,7 +6679,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 305
+        "line": 308
       },
       "grade": "code",
       "effects": [
@@ -6608,7 +6693,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 305
+            "line": 308
           },
           "grade": "constant"
         }
@@ -6625,7 +6710,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 308
+        "line": 311
       },
       "grade": "code",
       "effects": [
@@ -6639,7 +6724,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 308
+            "line": 311
           },
           "grade": "constant"
         }
@@ -6656,7 +6741,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 309
+        "line": 312
       },
       "grade": "code",
       "effects": [
@@ -6670,7 +6755,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 309
+            "line": 312
           },
           "grade": "constant"
         }
@@ -6687,7 +6772,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 310
+        "line": 313
       },
       "grade": "code",
       "effects": [
@@ -6701,7 +6786,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 310
+            "line": 313
           },
           "grade": "constant"
         }
@@ -6718,7 +6803,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 317
+        "line": 320
       },
       "grade": "code",
       "effects": [
@@ -6732,7 +6817,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 317
+            "line": 320
           },
           "grade": "constant"
         }
@@ -6749,7 +6834,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 318
+        "line": 321
       },
       "grade": "code",
       "effects": [
@@ -6763,7 +6848,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 318
+            "line": 321
           },
           "grade": "constant"
         }
@@ -6780,7 +6865,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 321
+        "line": 324
       },
       "grade": "code",
       "effects": [
@@ -6794,7 +6879,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 321
+            "line": 324
           },
           "grade": "constant"
         }
@@ -6811,7 +6896,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 322
+        "line": 325
       },
       "grade": "code",
       "effects": [
@@ -6825,7 +6910,7 @@
           "runs": "none",
           "at": {
             "file": "app/models/user.rb",
-            "line": 322
+            "line": 325
           },
           "grade": "constant"
         }
@@ -6842,7 +6927,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 324
+        "line": 327
       },
       "grade": "code",
       "effects": [
@@ -6856,7 +6941,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 324
+            "line": 327
           },
           "grade": "constant"
         }
@@ -6873,7 +6958,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 327
+        "line": 332
       },
       "grade": "code",
       "effects": [
@@ -6887,7 +6972,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 327
+            "line": 332
           },
           "grade": "constant"
         }
@@ -6904,7 +6989,7 @@
       "phase": "event",
       "declaredAt": {
         "file": "app/models/user.rb",
-        "line": 328
+        "line": 333
       },
       "grade": "code",
       "effects": [
@@ -6918,7 +7003,7 @@
           "runs": "all",
           "at": {
             "file": "app/models/user.rb",
-            "line": 328
+            "line": 333
           },
           "grade": "constant"
         }
@@ -7177,7 +7262,7 @@
     {
       "table": "pg:skello_production.contracts",
       "file": "app/controllers/labor_costs_controller.rb",
-      "line": 31,
+      "line": 34,
       "call": "update!",
       "events": [
         "update"
@@ -7300,7 +7385,7 @@
     {
       "table": "pg:skello_production.contracts",
       "file": "app/controllers/private/svc_employees/employees_controller.rb",
-      "line": 387,
+      "line": 396,
       "call": "import!",
       "events": [
         "create"
@@ -7444,7 +7529,7 @@
     {
       "table": "pg:skello_production.organisations",
       "file": "app/controllers/super_admin/api/organisations_controller.rb",
-      "line": 63,
+      "line": 54,
       "call": "update!",
       "events": [
         "update"
@@ -7455,24 +7540,13 @@
     {
       "table": "pg:skello_production.organisations",
       "file": "app/controllers/super_admin/api/organisations_controller.rb",
-      "line": 104,
+      "line": 90,
       "call": "update!",
       "events": [
         "update"
       ],
       "runs": "all",
       "grade": "text"
-    },
-    {
-      "table": "pg:skello_production.billing_infos",
-      "file": "app/controllers/super_admin/api/organisations_controller.rb",
-      "line": 143,
-      "call": "update_all",
-      "events": [
-        "update"
-      ],
-      "runs": "none",
-      "grade": "constant"
     },
     {
       "table": "pg:skello_production.users",
@@ -7489,7 +7563,7 @@
     {
       "table": "pg:skello_production.prospects",
       "file": "app/controllers/super_admin/api/prospects_controller.rb",
-      "line": 34,
+      "line": 33,
       "call": "update",
       "events": [
         "update"
@@ -7512,7 +7586,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/controllers/super_admin/api/shops_controller.rb",
-      "line": 44,
+      "line": 29,
       "call": "update",
       "events": [
         "update"
@@ -7523,7 +7597,7 @@
     {
       "table": "pg:skello_production.stripe_charges",
       "file": "app/controllers/super_admin/api/stripe_charges_controller.rb",
-      "line": 83,
+      "line": 81,
       "call": "update!",
       "events": [
         "update"
@@ -7534,7 +7608,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/controllers/super_admin/api/users_controller.rb",
-      "line": 80,
+      "line": 84,
       "call": "update!",
       "events": [
         "update"
@@ -7545,7 +7619,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/controllers/super_admin/api/users_controller.rb",
-      "line": 93,
+      "line": 97,
       "call": "update",
       "events": [
         "update"
@@ -7644,7 +7718,7 @@
     {
       "table": "pg:skello_production.organisations",
       "file": "app/controllers/v3/api/billing_automation/organisations_controller.rb",
-      "line": 81,
+      "line": 80,
       "call": "update!",
       "events": [
         "update"
@@ -7942,7 +8016,7 @@
     {
       "table": "pg:skello_production.organisations",
       "file": "app/controllers/v3/api/onboarding/organisations_controller.rb",
-      "line": 30,
+      "line": 31,
       "call": "update!",
       "events": [
         "update"
@@ -7953,7 +8027,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/controllers/v3/api/onboarding/organisations_controller.rb",
-      "line": 50,
+      "line": 51,
       "call": "run_callbacks(:update)",
       "events": [
         "create",
@@ -7976,7 +8050,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/controllers/v3/api/onboarding/organisations_controller.rb",
-      "line": 55,
+      "line": 56,
       "call": "import!",
       "events": [
         "create"
@@ -8020,7 +8094,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/controllers/v3/api/paid_leaves_counters_controller.rb",
-      "line": 139,
+      "line": 153,
       "call": "update!",
       "events": [
         "update"
@@ -8064,7 +8138,7 @@
     {
       "table": "pg:skello_production.weekly_options",
       "file": "app/controllers/v3/api/plannings/kpis_controller.rb",
-      "line": 45,
+      "line": 46,
       "call": "update!",
       "events": [
         "update"
@@ -8185,7 +8259,7 @@
     {
       "table": "pg:skello_production.prospects",
       "file": "app/controllers/v3/api/prospects_controller.rb",
-      "line": 26,
+      "line": 34,
       "call": "update!",
       "events": [
         "update"
@@ -8196,7 +8270,7 @@
     {
       "table": "pg:skello_production.rcr_counters",
       "file": "app/controllers/v3/api/rcr_counters_controller.rb",
-      "line": 83,
+      "line": 84,
       "call": "update!",
       "events": [
         "update"
@@ -8207,7 +8281,7 @@
     {
       "table": "pg:skello_production.prospects",
       "file": "app/controllers/v3/api/registrations_controller.rb",
-      "line": 87,
+      "line": 100,
       "call": "update!",
       "events": [
         "update"
@@ -8218,7 +8292,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/controllers/v3/api/self_serve_controller.rb",
-      "line": 259,
+      "line": 247,
       "call": "update!",
       "events": [
         "update"
@@ -8229,7 +8303,7 @@
     {
       "table": "pg:skello_production.prospects",
       "file": "app/controllers/v3/api/self_serve_controller.rb",
-      "line": 553,
+      "line": 542,
       "call": "update!",
       "events": [
         "update"
@@ -8240,7 +8314,7 @@
     {
       "table": "pg:skello_production.organisations",
       "file": "app/controllers/v3/api/self_serve_controller.rb",
-      "line": 586,
+      "line": 575,
       "call": "update!",
       "events": [
         "update"
@@ -8251,7 +8325,7 @@
     {
       "table": "pg:skello_production.conventions",
       "file": "app/controllers/v3/api/self_serve_controller.rb",
-      "line": 593,
+      "line": 582,
       "call": "update!",
       "events": [
         "update"
@@ -8262,7 +8336,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/controllers/v3/api/self_serve_controller.rb",
-      "line": 608,
+      "line": 597,
       "call": "save!",
       "events": [
         "create",
@@ -9042,18 +9116,6 @@
       "grade": "text"
     },
     {
-      "table": "pg:skello_production.weekly_options",
-      "file": "app/controllers/v3/api/weekly_options_controller.rb",
-      "line": 197,
-      "call": "find_or_create_by!",
-      "events": [
-        "create",
-        "update"
-      ],
-      "runs": "all",
-      "grade": "constant"
-    },
-    {
       "table": "pg:skello_production.users",
       "file": "app/controllers/v3/login_controller.rb",
       "line": 83,
@@ -9089,7 +9151,7 @@
     {
       "table": "pg:skello_production.lists",
       "file": "app/exporters/hours_counter/hr_exporter/second_worksheet.rb",
-      "line": 627,
+      "line": 624,
       "call": "insert",
       "events": [
         "create"
@@ -9213,7 +9275,7 @@
     {
       "table": "pg:skello_production.organisations",
       "file": "app/jobs/cancel_organisations_job.rb",
-      "line": 23,
+      "line": 19,
       "call": "update_all",
       "events": [
         "update"
@@ -10263,7 +10325,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/jobs/migration_jobs/exceptional_migrations/fix_users_plc_initialization_job.rb",
-      "line": 31,
+      "line": 35,
       "call": "import",
       "events": [
         "create"
@@ -11095,7 +11157,7 @@
     {
       "table": "pg:skello_production.contracts",
       "file": "app/jobs/update_contract_job.rb",
-      "line": 88,
+      "line": 101,
       "call": "upsert_all",
       "events": [
         "create",
@@ -11174,8 +11236,8 @@
     {
       "table": "pg:skello_production.cached_contracts_timelines",
       "file": "app/jobs/users/cache_contracts_timeline_job.rb",
-      "line": 30,
-      "call": "find_or_create_by",
+      "line": 35,
+      "call": "create_or_find_by!",
       "events": [
         "create",
         "update"
@@ -11263,7 +11325,7 @@
     {
       "table": "pg:skello_production.predicted_shifts",
       "file": "app/models/concerns/shifts/callbacks_concern.rb",
-      "line": 81,
+      "line": 87,
       "call": "destroy",
       "events": [
         "destroy"
@@ -11274,7 +11336,7 @@
     {
       "table": "pg:skello_production.predicted_shifts",
       "file": "app/models/concerns/shifts/callbacks_concern.rb",
-      "line": 103,
+      "line": 109,
       "call": "update!",
       "events": [
         "create",
@@ -11297,7 +11359,7 @@
     {
       "table": "pg:skello_production.holiday_settings",
       "file": "app/models/concerns/shops/shops_callback_concern.rb",
-      "line": 189,
+      "line": 192,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -11308,7 +11370,7 @@
     {
       "table": "pg:skello_production.holiday_settings",
       "file": "app/models/concerns/shops/shops_callback_concern.rb",
-      "line": 192,
+      "line": 195,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -11319,7 +11381,7 @@
     {
       "table": "pg:skello_production.contract_amendments",
       "file": "app/models/contract.rb",
-      "line": 237,
+      "line": 240,
       "call": "update_all",
       "events": [
         "update"
@@ -11330,7 +11392,7 @@
     {
       "table": "pg:skello_production.user_extended_infos",
       "file": "app/models/contract.rb",
-      "line": 254,
+      "line": 257,
       "call": "update!",
       "events": [
         "update"
@@ -11341,7 +11403,7 @@
     {
       "table": "pg:skello_production.rcr_counters",
       "file": "app/models/contract.rb",
-      "line": 255,
+      "line": 258,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -11352,7 +11414,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/models/contract_amendment.rb",
-      "line": 129,
+      "line": 150,
       "call": "touch",
       "events": [
         "update"
@@ -11484,7 +11546,7 @@
     {
       "table": "pg:skello_production.cluster_nodes",
       "file": "app/models/organisation.rb",
-      "line": 322,
+      "line": 316,
       "call": "destroy!",
       "events": [
         "destroy"
@@ -11618,7 +11680,7 @@
     {
       "table": "pg:skello_production.postes",
       "file": "app/models/poste.rb",
-      "line": 275,
+      "line": 277,
       "call": "update!",
       "events": [
         "update"
@@ -11629,13 +11691,24 @@
     {
       "table": "pg:skello_production.automatic_planning_competencies",
       "file": "app/models/poste.rb",
-      "line": 276,
+      "line": 278,
       "call": "delete_all",
       "events": [
         "destroy"
       ],
       "runs": "none",
       "grade": "text"
+    },
+    {
+      "table": "pg:skello_production.prospects",
+      "file": "app/models/prospect.rb",
+      "line": 123,
+      "call": "update_all",
+      "events": [
+        "update"
+      ],
+      "runs": "none",
+      "grade": "constant"
     },
     {
       "table": "pg:skello_production.rcr_counters",
@@ -11651,7 +11724,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/models/shop.rb",
-      "line": 513,
+      "line": 512,
       "call": "update!",
       "events": [
         "update"
@@ -11662,7 +11735,7 @@
     {
       "table": "pg:skello_production.shop_planning_configs",
       "file": "app/models/shop.rb",
-      "line": 689,
+      "line": 695,
       "call": "update!",
       "events": [
         "update"
@@ -11673,7 +11746,7 @@
     {
       "table": "pg:skello_production.shop_planning_configs",
       "file": "app/models/shop.rb",
-      "line": 740,
+      "line": 746,
       "call": "update!",
       "events": [
         "update"
@@ -11729,7 +11802,7 @@
     {
       "table": "pg:skello_production.mobile_reset_password_tokens",
       "file": "app/models/user.rb",
-      "line": 821,
+      "line": 769,
       "call": "destroy",
       "events": [
         "destroy"
@@ -11740,7 +11813,7 @@
     {
       "table": "pg:skello_production.ics_feeds",
       "file": "app/models/user.rb",
-      "line": 825,
+      "line": 773,
       "call": "create",
       "events": [
         "create"
@@ -11751,7 +11824,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/models/user.rb",
-      "line": 880,
+      "line": 828,
       "call": "save!",
       "events": [
         "create",
@@ -11763,7 +11836,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/models/user.rb",
-      "line": 1096,
+      "line": 1044,
       "call": "save!",
       "events": [
         "create",
@@ -12235,10 +12308,21 @@
     {
       "table": "pg:skello_production.shop_labour_laws",
       "file": "app/services/labour_law/labour_law_service.rb",
-      "line": 145,
+      "line": 137,
       "call": "save!",
       "events": [
         "create",
+        "update"
+      ],
+      "runs": "all",
+      "grade": "text"
+    },
+    {
+      "table": "pg:skello_production.organisations",
+      "file": "app/services/organisations/document_variables/update_service.rb",
+      "line": 37,
+      "call": "update!",
+      "events": [
         "update"
       ],
       "runs": "all",
@@ -12555,7 +12639,7 @@
     {
       "table": "pg:skello_production.planning_backups",
       "file": "app/services/planning_duplicator.rb",
-      "line": 228,
+      "line": 239,
       "call": "create!",
       "events": [
         "create"
@@ -13107,9 +13191,20 @@
       "grade": "constant"
     },
     {
+      "table": "pg:skello_production.organisations",
+      "file": "app/services/shop_migrator.rb",
+      "line": 125,
+      "call": "update_columns",
+      "events": [
+        "update"
+      ],
+      "runs": "none",
+      "grade": "text"
+    },
+    {
       "table": "pg:skello_production.memberships",
       "file": "app/services/shop_migrator.rb",
-      "line": 135,
+      "line": 142,
       "call": "destroy_all",
       "events": [
         "destroy"
@@ -13120,7 +13215,7 @@
     {
       "table": "pg:skello_production.memberships",
       "file": "app/services/shop_migrator.rb",
-      "line": 138,
+      "line": 145,
       "call": "first_or_create!",
       "events": [
         "create",
@@ -13132,7 +13227,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/services/shop_migrator.rb",
-      "line": 144,
+      "line": 151,
       "call": "update!",
       "events": [
         "update"
@@ -13143,7 +13238,7 @@
     {
       "table": "pg:skello_production.cluster_nodes",
       "file": "app/services/shop_migrator.rb",
-      "line": 147,
+      "line": 154,
       "call": "save!",
       "events": [
         "create",
@@ -13155,7 +13250,7 @@
     {
       "table": "pg:skello_production.organisations",
       "file": "app/services/shop_migrator.rb",
-      "line": 233,
+      "line": 240,
       "call": "update!",
       "events": [
         "update"
@@ -13166,7 +13261,7 @@
     {
       "table": "pg:skello_production.licenses",
       "file": "app/services/shop_migrator.rb",
-      "line": 247,
+      "line": 254,
       "call": "update!",
       "events": [
         "update"
@@ -13177,7 +13272,7 @@
     {
       "table": "pg:skello_production.licenses",
       "file": "app/services/shop_migrator.rb",
-      "line": 250,
+      "line": 257,
       "call": "update_all",
       "events": [
         "update"
@@ -13188,7 +13283,7 @@
     {
       "table": "pg:skello_production.user_licenses",
       "file": "app/services/shop_migrator.rb",
-      "line": 258,
+      "line": 265,
       "call": "update_all",
       "events": [
         "update"
@@ -13199,7 +13294,7 @@
     {
       "table": "pg:skello_production.organisations",
       "file": "app/services/shop_migrator.rb",
-      "line": 331,
+      "line": 338,
       "call": "update",
       "events": [
         "update"
@@ -13210,7 +13305,7 @@
     {
       "table": "pg:skello_production.organisations",
       "file": "app/services/shop_migrator.rb",
-      "line": 336,
+      "line": 343,
       "call": "update",
       "events": [
         "update"
@@ -13221,7 +13316,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/services/shop_migrator.rb",
-      "line": 339,
+      "line": 346,
       "call": "update!",
       "events": [
         "update"
@@ -13249,6 +13344,17 @@
         "update"
       ],
       "runs": "none",
+      "grade": "text"
+    },
+    {
+      "table": "pg:skello_production.shops",
+      "file": "app/services/shops/document_variables/billing_data_update_service.rb",
+      "line": 86,
+      "call": "update!",
+      "events": [
+        "update"
+      ],
+      "runs": "all",
       "grade": "text"
     },
     {
@@ -13365,7 +13471,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 724,
+      "line": 733,
       "call": "run_callbacks(:create)",
       "events": [
         "create",
@@ -13384,7 +13490,7 @@
     {
       "table": "pg:skello_production.contracts",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 729,
+      "line": 738,
       "call": "import!",
       "events": [
         "create"
@@ -13395,7 +13501,7 @@
     {
       "table": "pg:skello_production.memberships",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 730,
+      "line": 739,
       "call": "import!",
       "events": [
         "create"
@@ -13406,7 +13512,7 @@
     {
       "table": "pg:skello_production.user_licenses",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 731,
+      "line": 740,
       "call": "import!",
       "events": [
         "create"
@@ -13417,7 +13523,7 @@
     {
       "table": "pg:skello_production.user_planning_configs",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 732,
+      "line": 741,
       "call": "import",
       "events": [
         "create"
@@ -13428,7 +13534,7 @@
     {
       "table": "pg:skello_production.user_extended_infos",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 733,
+      "line": 742,
       "call": "import",
       "events": [
         "create"
@@ -13439,7 +13545,7 @@
     {
       "table": "pg:skello_production.user_emergency_contacts",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 743,
+      "line": 752,
       "call": "import!",
       "events": [
         "create"
@@ -13450,7 +13556,7 @@
     {
       "table": "pg:skello_production.user_driving_licences",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 779,
+      "line": 792,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13461,7 +13567,7 @@
     {
       "table": "pg:skello_production.user_driving_licences",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 781,
+      "line": 794,
       "call": "import!",
       "events": [
         "create"
@@ -13472,7 +13578,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
-      "line": 796,
+      "line": 809,
       "call": "import",
       "events": [
         "create"
@@ -13561,7 +13667,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 129,
+      "line": 131,
       "call": "save!",
       "events": [
         "create",
@@ -13573,7 +13679,7 @@
     {
       "table": "pg:skello_production.teams",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 233,
+      "line": 235,
       "call": "first_or_create!",
       "events": [
         "create",
@@ -13585,7 +13691,7 @@
     {
       "table": "pg:skello_production.postes",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 253,
+      "line": 255,
       "call": "create!",
       "events": [
         "create"
@@ -13596,7 +13702,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 273,
+      "line": 275,
       "call": "update!",
       "events": [
         "update"
@@ -13607,7 +13713,7 @@
     {
       "table": "pg:skello_production.opti_structures",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 274,
+      "line": 276,
       "call": "update!",
       "events": [
         "update"
@@ -13618,7 +13724,7 @@
     {
       "table": "pg:skello_production.shop_annualization_configs",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 298,
+      "line": 300,
       "call": "destroy_all",
       "events": [
         "destroy"
@@ -13629,7 +13735,7 @@
     {
       "table": "pg:skello_production.shop_annualization_configs",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 307,
+      "line": 309,
       "call": "create!",
       "events": [
         "create"
@@ -13640,7 +13746,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 323,
+      "line": 325,
       "call": "update!",
       "events": [
         "update"
@@ -13651,7 +13757,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 334,
+      "line": 336,
       "call": "update!",
       "events": [
         "update"
@@ -13662,7 +13768,7 @@
     {
       "table": "pg:skello_production.shops",
       "file": "app/services/super_admin/shop_rules_replicator.rb",
-      "line": 345,
+      "line": 347,
       "call": "update!",
       "events": [
         "update"
@@ -13728,18 +13834,18 @@
     {
       "table": "pg:skello_production.weekly_options",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 19,
-      "call": "update",
+      "line": 21,
+      "call": "update_all",
       "events": [
         "update"
       ],
-      "runs": "all",
+      "runs": "none",
       "grade": "constant"
     },
     {
       "table": "pg:skello_production.user_licenses",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 23,
+      "line": 25,
       "call": "destroy_all",
       "events": [
         "destroy"
@@ -13750,7 +13856,7 @@
     {
       "table": "pg:skello_production.contract_amendments",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 26,
+      "line": 28,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13759,9 +13865,20 @@
       "grade": "constant"
     },
     {
+      "table": "pg:skello_production.contract_amendments",
+      "file": "app/services/users/user_destroyer.rb",
+      "line": 30,
+      "call": "update_all",
+      "events": [
+        "update"
+      ],
+      "runs": "none",
+      "grade": "constant"
+    },
+    {
       "table": "pg:skello_production.report_comments",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 27,
+      "line": 31,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13772,7 +13889,7 @@
     {
       "table": "pg:skello_production.primes",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 28,
+      "line": 32,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13783,7 +13900,7 @@
     {
       "table": "pg:skello_production.dpae_deposits",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 29,
+      "line": 33,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13794,7 +13911,7 @@
     {
       "table": "pg:skello_production.contracts",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 30,
+      "line": 34,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13805,7 +13922,7 @@
     {
       "table": "pg:skello_production.ics_feeds",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 32,
+      "line": 36,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13816,7 +13933,7 @@
     {
       "table": "pg:skello_production.day_rates_counters",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 34,
+      "line": 38,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13827,7 +13944,7 @@
     {
       "table": "pg:skello_production.text_documents",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 35,
+      "line": 39,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13838,7 +13955,7 @@
     {
       "table": "pg:skello_production.shifts",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 39,
+      "line": 43,
       "call": "update_all",
       "events": [
         "update"
@@ -13849,7 +13966,7 @@
     {
       "table": "pg:skello_production.predicted_shifts",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 46,
+      "line": 50,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13860,7 +13977,7 @@
     {
       "table": "pg:skello_production.shift_replacements",
       "file": "app/services/users/user_destroyer.rb",
-      "line": 48,
+      "line": 52,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -13926,7 +14043,7 @@
     {
       "table": "pg:skello_production.shifts",
       "file": "app/services/v3/automatic_planning/unassigned_shifts_creation_service.rb",
-      "line": 58,
+      "line": 67,
       "call": "save!",
       "events": [
         "create",
@@ -13938,7 +14055,7 @@
     {
       "table": "pg:skello_production.shifts",
       "file": "app/services/v3/automatic_planning/unassigned_shifts_creation_service.rb",
-      "line": 100,
+      "line": 109,
       "call": "save!",
       "events": [
         "create",
@@ -14563,7 +14680,7 @@
     {
       "table": "pg:skello_production.shifts",
       "file": "app/services/v3/shifts/automatic_assignment_save_service.rb",
-      "line": 40,
+      "line": 37,
       "call": "update_all",
       "events": [
         "update"
@@ -14574,7 +14691,7 @@
     {
       "table": "pg:skello_production.memberships",
       "file": "app/services/v3/shifts/automatic_assignment_save_service.rb",
-      "line": 110,
+      "line": 92,
       "call": "update!",
       "events": [
         "update"
@@ -14585,7 +14702,7 @@
     {
       "table": "pg:skello_production.predicted_shifts",
       "file": "app/services/v3/shifts/automatic_assignment_save_service.rb",
-      "line": 138,
+      "line": 120,
       "call": "upsert_all",
       "events": [
         "create",
@@ -14597,7 +14714,7 @@
     {
       "table": "pg:skello_production.shift_replacements",
       "file": "app/services/v3/shifts/automatic_assignment_service.rb",
-      "line": 266,
+      "line": 309,
       "call": "update_all",
       "events": [
         "update"
@@ -14608,7 +14725,7 @@
     {
       "table": "pg:skello_production.shifts",
       "file": "app/services/v3/shifts/automatic_assignment_undo_service.rb",
-      "line": 69,
+      "line": 83,
       "call": "update_all",
       "events": [
         "update"
@@ -14619,7 +14736,7 @@
     {
       "table": "pg:skello_production.predicted_shifts",
       "file": "app/services/v3/shifts/automatic_assignment_undo_service.rb",
-      "line": 76,
+      "line": 90,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -14641,7 +14758,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/services/v3/shifts/base_service.rb",
-      "line": 182,
+      "line": 186,
       "call": "update!",
       "events": [
         "update"
@@ -14726,7 +14843,7 @@
     {
       "table": "pg:skello_production.predicted_shifts",
       "file": "app/services/v3/shifts/bulk_destroy_service.rb",
-      "line": 84,
+      "line": 85,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -14737,7 +14854,7 @@
     {
       "table": "pg:skello_production.shift_swaps",
       "file": "app/services/v3/shifts/bulk_destroy_service.rb",
-      "line": 85,
+      "line": 86,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -14748,7 +14865,7 @@
     {
       "table": "pg:skello_production.shift_replacements",
       "file": "app/services/v3/shifts/bulk_destroy_service.rb",
-      "line": 86,
+      "line": 87,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -14900,7 +15017,7 @@
     {
       "table": "pg:skello_production.shifts",
       "file": "app/services/v3/shifts/update_service.rb",
-      "line": 148,
+      "line": 149,
       "call": "update!",
       "events": [
         "update"
@@ -14911,7 +15028,7 @@
     {
       "table": "pg:skello_production.shift_replacements",
       "file": "app/services/v3/shifts/update_service.rb",
-      "line": 239,
+      "line": 241,
       "call": "update_all",
       "events": [
         "update"
@@ -14922,7 +15039,7 @@
     {
       "table": "pg:skello_production.badgings",
       "file": "app/services/v3/shifts/update_service.rb",
-      "line": 249,
+      "line": 251,
       "call": "update",
       "events": [
         "update"
@@ -14933,7 +15050,7 @@
     {
       "table": "pg:skello_production.shift_swaps",
       "file": "app/services/v3/shifts/update_service.rb",
-      "line": 250,
+      "line": 252,
       "call": "destroy_all",
       "events": [
         "destroy"
@@ -14944,7 +15061,7 @@
     {
       "table": "pg:skello_production.shift_replacements",
       "file": "app/services/v3/shifts/update_service.rb",
-      "line": 263,
+      "line": 265,
       "call": "update_all",
       "events": [
         "update"
@@ -14955,7 +15072,7 @@
     {
       "table": "pg:skello_production.shift_replacements",
       "file": "app/services/v3/shifts/update_service.rb",
-      "line": 267,
+      "line": 269,
       "call": "update_all",
       "events": [
         "update"
@@ -15350,7 +15467,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/services/v3/team_schedules/amendment_base_service.rb",
-      "line": 44,
+      "line": 49,
       "call": "touch",
       "events": [
         "update"
@@ -15383,7 +15500,7 @@
     {
       "table": "pg:skello_production.contract_amendments",
       "file": "app/services/v3/team_schedules/amendment_bulk_update_service.rb",
-      "line": 26,
+      "line": 30,
       "call": "upsert_all",
       "events": [
         "create",
@@ -15461,7 +15578,7 @@
     {
       "table": "pg:skello_production.user_licenses",
       "file": "app/services/v3/user_licenses/create_service.rb",
-      "line": 77,
+      "line": 89,
       "call": "first_or_create!",
       "events": [
         "create",
@@ -15473,7 +15590,7 @@
     {
       "table": "pg:skello_production.team_memberships",
       "file": "app/services/v3/user_licenses/create_service.rb",
-      "line": 90,
+      "line": 106,
       "call": "create!",
       "events": [
         "create"
@@ -15484,7 +15601,7 @@
     {
       "table": "pg:skello_production.user_licenses",
       "file": "app/services/v3/user_licenses/create_service.rb",
-      "line": 108,
+      "line": 128,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -15550,7 +15667,7 @@
     {
       "table": "pg:skello_production.users",
       "file": "app/services/v3/users/archive_service.rb",
-      "line": 50,
+      "line": 49,
       "call": "update!",
       "events": [
         "update"
@@ -15561,7 +15678,7 @@
     {
       "table": "pg:skello_production.user_extended_infos",
       "file": "app/services/v3/users/archive_service.rb",
-      "line": 51,
+      "line": 50,
       "call": "update!",
       "events": [
         "update"
@@ -15572,7 +15689,7 @@
     {
       "table": "pg:skello_production.leave_requests",
       "file": "app/services/v3/users/archive_service.rb",
-      "line": 63,
+      "line": 62,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -15583,7 +15700,7 @@
     {
       "table": "pg:skello_production.shift_swaps",
       "file": "app/services/v3/users/archive_service.rb",
-      "line": 73,
+      "line": 72,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -15594,7 +15711,7 @@
     {
       "table": "pg:skello_production.holiday_settings",
       "file": "app/services/v3/users/archive_service.rb",
-      "line": 128,
+      "line": 123,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -15760,7 +15877,7 @@
     {
       "table": "pg:skello_production.user_extended_infos",
       "file": "app/services/v3/users/personal_info_update_service.rb",
-      "line": 31,
+      "line": 38,
       "call": "update!",
       "events": [
         "update"
@@ -15771,7 +15888,7 @@
     {
       "table": "pg:skello_production.user_licenses",
       "file": "app/services/v3/users/personal_info_update_service.rb",
-      "line": 33,
+      "line": 40,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -15782,7 +15899,7 @@
     {
       "table": "pg:skello_production.user_licenses",
       "file": "app/services/v3/users/personal_info_update_service.rb",
-      "line": 36,
+      "line": 43,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -15793,7 +15910,7 @@
     {
       "table": "pg:skello_production.team_memberships",
       "file": "app/services/v3/users/personal_info_update_service.rb",
-      "line": 59,
+      "line": 69,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -15804,7 +15921,7 @@
     {
       "table": "pg:skello_production.holiday_settings",
       "file": "app/services/v3/users/personal_info_update_service.rb",
-      "line": 71,
+      "line": 81,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -15815,7 +15932,7 @@
     {
       "table": "pg:skello_production.user_extended_infos",
       "file": "app/services/v3/users/personal_info_update_service.rb",
-      "line": 76,
+      "line": 86,
       "call": "update!",
       "events": [
         "update"
@@ -15826,7 +15943,7 @@
     {
       "table": "pg:skello_production.rcr_counters",
       "file": "app/services/v3/users/personal_info_update_service.rb",
-      "line": 77,
+      "line": 87,
       "call": "delete_all",
       "events": [
         "destroy"
@@ -15837,7 +15954,7 @@
     {
       "table": "pg:skello_production.memberships",
       "file": "app/services/v3/users/personal_info_update_service.rb",
-      "line": 138,
+      "line": 195,
       "call": "destroy_all",
       "events": [
         "destroy"
@@ -15914,7 +16031,7 @@
     {
       "table": "pg:skello_production.prospects",
       "file": "app/services/v3/users/reset_activation_code_service.rb",
-      "line": 19,
+      "line": 20,
       "call": "update!",
       "events": [
         "update"
@@ -16004,6 +16121,6 @@
     }
   ],
   "pins": {
-    "skello-app": "6cb167e63e7d259e7e158ab203c8451fbde76631"
+    "skello-app": "d03882653ab851485111316d4a3d181d793cfba2"
   }
 }
