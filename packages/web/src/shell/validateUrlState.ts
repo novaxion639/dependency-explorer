@@ -1,5 +1,5 @@
-import { flowChapters, listenerSurface } from '@dependency-explorer/data'
-import { EDGE_LIST_SEP, edgeKey, type UrlState } from '../hooks/useUrlState'
+import { ListenerKindSchema, WRITE_EVENTS, flowChapters, listenerSurface } from '@dependency-explorer/data'
+import { EDGE_LIST_SEP, edgeKey, servicePage, type UrlState } from '../hooks/useUrlState'
 import { areaById, fileIndex, flagRegistry, map, resourceIds } from './dataIndexes'
 import { panelIds } from '../components/flows/machineFacts'
 
@@ -43,10 +43,10 @@ export function validateUrlState(st: UrlState): UrlState {
   if (next.listener && !listenerSurface.listeners.some(l => l.id === next.listener && l.table === next.resource)) {
     next.listener = null
   }
-  if (next.lev && !['create', 'update', 'destroy'].includes(next.lev)) {
+  if (next.lev && !WRITE_EVENTS.some(e => e === next.lev)) {
     next.lev = null
   }
-  if (next.lkind && !['callback', 'cascade', 'touch', 'gem'].includes(next.lkind)) {
+  if (next.lkind && !ListenerKindSchema.options.some(k => k === next.lkind)) {
     next.lkind = null
   }
   if (next.lgrade && !['verified', 'text'].includes(next.lgrade)) {
@@ -83,11 +83,8 @@ export function validateUrlState(st: UrlState): UrlState {
     notFound = notFound ?? { param: 'blast', value: next.blast }
     next.blast = null
   }
-  if (next.page === 'microservices' && next.s === 'skello-app') {
-    next.page = 'monolith'
-  }
-  if (next.page === 'monolith' && next.s && next.s !== 'skello-app') {
-    next.page = 'microservices'
+  if ((next.page === 'microservices' || next.page === 'monolith') && next.s) {
+    next.page = servicePage(next.s)
   }
   next.notFound = notFound
   return next

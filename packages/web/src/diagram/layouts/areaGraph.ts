@@ -1,9 +1,9 @@
 import { Graph, layout } from '@dagrejs/dagre'
-import { buildContextLanes, getServiceLane, type ConnectivityMap } from '@dependency-explorer/data'
+import { buildContextLanes, type ConnectivityMap } from '@dependency-explorer/data'
 import { aggregateEdges } from '../aggregate'
 import { linesHeight } from '../geometry'
 import { type DiagramEdge, type DiagramModel, type DiagramNode } from '../model'
-import { areaId, CLIENTS_ID, MONOLITH_ID, PLATFORM_ID } from './ids'
+import { areaId, CLIENTS_ID, homeOf, MONOLITH_ID, PLATFORM_ID } from './ids'
 
 const FONT = 16
 const NODE_W = 260
@@ -13,20 +13,10 @@ const GAP = 48
 const EDGE_BUDGET = 24
 
 export function areaEndpoint(map: ConnectivityMap): (service: string) => string | null {
-  const areas = map.areas ?? []
-  const ctx = buildContextLanes(map)
+  const home = homeOf(map)
   return service => {
-    if (ctx.clients.includes(service)) {
-      return CLIENTS_ID
-    }
-    if (ctx.monolith.includes(service)) {
-      return MONOLITH_ID
-    }
-    const lane = getServiceLane(service, areas)
-    if (!lane) {
-      return null
-    }
-    return lane.kind === 'platform' ? PLATFORM_ID : areaId(lane.id)
+    const h = home(service)
+    return h?.lane?.kind === 'platform' ? PLATFORM_ID : h?.id ?? null
   }
 }
 

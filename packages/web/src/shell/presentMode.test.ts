@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { presentKeyAction, onPresentKey, presentStepKey, stepThrough } from './presentMode'
 
-const key = (k: string, over: Partial<Parameters<typeof presentKeyAction>[0]> = {}) => ({ key: k, metaKey: false, ctrlKey: false, altKey: false, targetTag: 'BODY', targetEditable: false, repeat: false, defaultPrevented: false, ...over })
+const key = (k: string, over: Partial<Parameters<typeof presentKeyAction>[0]> = {}) => ({ key: k, metaKey: false, ctrlKey: false, altKey: false, target: { tagName: 'BODY' }, repeat: false, defaultPrevented: false, ...over })
 
 describe('presentKeyAction', () => {
   it('toggles on P and exits on Escape', () => {
@@ -11,10 +11,10 @@ describe('presentKeyAction', () => {
     expect(presentKeyAction(key('Escape'), false)).toBeNull()
   })
   it('ignores keys typed into fields', () => {
-    expect(presentKeyAction(key('p', { targetTag: 'INPUT' }), false)).toBeNull()
-    expect(presentKeyAction(key('p', { targetTag: 'TEXTAREA' }), false)).toBeNull()
-    expect(presentKeyAction(key('p', { targetEditable: true }), false)).toBeNull()
-    expect(presentKeyAction(key('Escape', { targetTag: 'INPUT' }), true)).toBeNull()
+    expect(presentKeyAction(key('p', { target: { tagName: 'INPUT' } }), false)).toBeNull()
+    expect(presentKeyAction(key('p', { target: { tagName: 'TEXTAREA' } }), false)).toBeNull()
+    expect(presentKeyAction(key('p', { target: { isContentEditable: true } }), false)).toBeNull()
+    expect(presentKeyAction(key('Escape', { target: { tagName: 'INPUT' } }), true)).toBeNull()
   })
   it('ignores P with a modifier', () => {
     expect(presentKeyAction(key('p', { metaKey: true }), false)).toBeNull()
@@ -44,7 +44,7 @@ describe('presentStepKey', () => {
     expect(presentStepKey(key('a'))).toBeNull()
   })
   it('ignores arrows typed into fields or with a modifier', () => {
-    expect(presentStepKey(key('ArrowRight', { targetTag: 'INPUT' }))).toBeNull()
+    expect(presentStepKey(key('ArrowRight', { target: { tagName: 'INPUT' } }))).toBeNull()
     expect(presentStepKey(key('ArrowRight', { altKey: true }))).toBeNull()
   })
 })

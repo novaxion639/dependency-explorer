@@ -1,4 +1,4 @@
-import type { Listener, ListenerEffect, ListenerPhase, Runs, WriteEvent, WriteSite } from '@dependency-explorer/schema'
+import { WriteEventSchema, type Listener, type ListenerEffect, type ListenerPhase, type Runs, type WriteEvent, type WriteSite } from '@dependency-explorer/schema'
 import { associationMap, escapeRegExp, parseAssociations, stripComments, type Read } from '../code-wiring'
 import { reachable, type RepoGraph } from '../code-grades'
 import { tableId } from '../resource-registry'
@@ -140,7 +140,7 @@ const CALLBACK_START = /^\s*(?:before|after|around)_(?:validation|save|create|up
 const CALLBACK = /^\s*((?:before|after|around)_(validation|save|create|update|destroy|commit|rollback|touch))\b([\s\S]*)$/
 const SYMBOL = /^:(\w+[!?]?)$/
 const OPTION = /^(on|if|unless|prepend):\s*([\s\S]+)$/
-const EVENTS: readonly WriteEvent[] = ['create', 'update', 'destroy']
+const EVENTS: readonly WriteEvent[] = WriteEventSchema.options
 const PHASE: Record<string, ListenerPhase> = { validation: 'validation', save: 'save', create: 'event', update: 'event', destroy: 'event', commit: 'commit', rollback: 'rollback', touch: 'touch' }
 
 function splitArgs(rest: string): string[] {
@@ -398,7 +398,6 @@ const PHASE_OF_CHAIN: Record<string, (l: Listener) => boolean> = {
   update: l => l.phase === 'event' && l.hook.endsWith('_update'),
   destroy: l => l.phase === 'event' && l.hook.endsWith('_destroy'),
 }
-const FIRED_EVENTS: WriteEvent[] = ['create', 'update', 'destroy']
 
 interface SourceFile { file: string; source: string }
 interface Helper { name: string; entry: ModelEntry; fires: string[]; file: string; from: number; to: number }
@@ -457,7 +456,7 @@ function firedSites(file: string, lines: ReturnType<typeof linesOf>, self: Model
       const receiver = receiverOf(text.slice(0, call.index), self, ctx)
       const owner = candidates.find(h => receiver !== null && tableId(h.entry.table) === tableId(receiver.table)) ?? (receiver === null && candidates.length === 1 ? candidates[0] : undefined)
       if (owner) {
-        out.push({ table: tableId(owner.entry.table), file, line, call: name, events: FIRED_EVENTS, runs: 'subset', fires: owner.fires, grade: receiver !== null && receiver.grade === 'constant' ? 'constant' : 'text' })
+        out.push({ table: tableId(owner.entry.table), file, line, call: name, events: [...EVENTS], runs: 'subset', fires: owner.fires, grade: receiver !== null && receiver.grade === 'constant' ? 'constant' : 'text' })
       }
     }
     const chain = RUN_CALLBACKS.exec(text)
@@ -466,7 +465,7 @@ function firedSites(file: string, lines: ReturnType<typeof linesOf>, self: Model
       const model = receiver ? entries.find(e => e.table === receiver.table) : undefined
       if (receiver && model) {
         const phase = chain[1] ?? ''
-        out.push({ table: tableId(model.table), file, line, call: `run_callbacks(:${phase})`, events: FIRED_EVENTS, runs: 'subset', fires: chainListeners(phase, callbackListenersOf(model, listeners)).map(l => l.id), grade: receiver.grade })
+        out.push({ table: tableId(model.table), file, line, call: `run_callbacks(:${phase})`, events: [...EVENTS], runs: 'subset', fires: chainListeners(phase, callbackListenersOf(model, listeners)).map(l => l.id), grade: receiver.grade })
       }
     }
     return out

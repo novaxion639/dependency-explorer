@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WriteEvent } from '@dependency-explorer/data'
+import { MONOLITH, WRITE_EVENTS, type WriteEvent } from '@dependency-explorer/data'
 
 /**
  * Permalink state — every shareable bit of UI state lives in the query string
@@ -26,11 +26,8 @@ import type { WriteEvent } from '@dependency-explorer/data'
  *
  * Legacy keys (`view=…`, a bare `s`, `flow`, `blast=1&s=…`) parse into the page form.
  */
-export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | 'resources' | 'impact' | 'ownership'
-
-export const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
-const WRITE_EVENT_PARAMS: readonly WriteEvent[] = ['create', 'update', 'destroy']
-const MONOLITH = 'skello-app'
+const PAGES = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership'] as const
+export type Page = typeof PAGES[number]
 const LEGACY_VIEW_PAGE: Record<string, Page> = { areas: 'areas', domains: 'areas', context: 'microservices', services: 'microservices', resources: 'resources', teams: 'ownership' }
 
 export interface UrlState {
@@ -121,7 +118,7 @@ export function parseUrl(search: string): UrlState {
     flag: p.get('flag'),
     file: p.get('file'),
     resource: p.get('resource'),
-    event: WRITE_EVENT_PARAMS.find(e => e === p.get('event')) ?? null,
+    event: WRITE_EVENTS.find(e => e === p.get('event')) ?? null,
     listener: p.get('listener'),
     lev: p.get('lev'),
     lkind: p.get('lkind'),
@@ -130,9 +127,9 @@ export function parseUrl(search: string): UrlState {
   }
 }
 
-type PageKey = 's' | 'area' | 'term' | 'team' | 'blast' | 'flows' | 'flow' | 'unit' | 'chapter' | 'edge' | 'drawer' | 'ep' | 'flag' | 'file' | 'resource' | 'event' | 'listener' | 'lev' | 'lkind' | 'lgrade'
-
-const KEY_ORDER: readonly PageKey[] = ['s', 'area', 'term', 'team', 'blast', 'flows', 'flow', 'unit', 'chapter', 'edge', 'drawer', 'ep', 'flag', 'file', 'resource', 'event', 'listener', 'lev', 'lkind', 'lgrade']
+const KEY_ORDER = ['s', 'area', 'term', 'team', 'blast', 'flows', 'flow', 'unit', 'chapter', 'edge', 'drawer', 'ep', 'flag', 'file', 'resource', 'event', 'listener', 'lev', 'lkind', 'lgrade'] as const
+type PageKey = typeof KEY_ORDER[number]
+const NO_PAGE_KEYS: Partial<UrlState> = Object.fromEntries(KEY_ORDER.map(key => [key, null]))
 const ARCHITECTURE_KEYS: readonly PageKey[] = ['s', 'area', 'edge', 'drawer', 'ep']
 const PAGE_KEYS: Record<Page, readonly PageKey[]> = {
   home: [],
@@ -166,7 +163,7 @@ export function toQueryString(state: UrlState): string {
 }
 
 export function pagePatch(page: Page): Partial<UrlState> {
-  return { page, s: null, area: null, term: null, team: null, blast: null, flows: null, flow: null, unit: null, chapter: null, edge: null, drawer: null, ep: null, flag: null, file: null, resource: null, event: null, listener: null, lev: null, lkind: null, lgrade: null }
+  return { ...NO_PAGE_KEYS, page }
 }
 
 export function selectServicePatch(name: string): Partial<UrlState> {

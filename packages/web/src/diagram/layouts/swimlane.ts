@@ -153,10 +153,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     add(e.to)
   }
 
-  const out = new Map<string, FlowCodeEdge[]>()
-  for (const e of [...codeEdges, ...machineEdges]) {
-    out.set(e.from, [...(out.get(e.from) ?? []), e])
-  }
+  const out = Map.groupBy([...codeEdges, ...machineEdges], e => e.from)
   for (const list of out.values()) {
     list.sort((a, b) => MODE_RANK[a.mode ?? 'sync'] - MODE_RANK[b.mode ?? 'sync'])
   }

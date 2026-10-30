@@ -1,7 +1,7 @@
-import { WRITE_EVENTS, alsoChanges, cascadeFrom, listenerSurface, type CascadeNode, type WriteEvent } from '@dependency-explorer/data'
+import { WRITE_EVENTS, alsoChanges, cascadeFrom, listenerSurface, tableName, type CascadeNode, type WriteEvent } from '@dependency-explorer/data'
 import { plural } from '../../utils/plural'
 import { GradeGlyph } from './ListenersSection'
-import { LISTENER_EVENTS, tableName } from './listenerView'
+
 import styles from './ResourcePage.module.css'
 
 interface Props {
@@ -41,7 +41,7 @@ export function CascadeSection({ table, event, onEvent, onOpenResource }: Props)
     <section aria-label="Also changes" className={styles.section}>
       <h2>{`Also changes · ${plural(reached.length, 'table')} across all events`}</h2>
       <div role="group" aria-label="Cascade event" className={styles.filters}>
-        {LISTENER_EVENTS.map(e => <button key={e} type="button" className={styles.chip} aria-pressed={e === selected} onClick={() => onEvent(e)}>{e}</button>)}
+        {WRITE_EVENTS.map(e => <button key={e} type="button" className={styles.chip} aria-pressed={e === selected} onClick={() => onEvent(e)}>{e}</button>)}
       </div>
       {nodes.some(n => n.hops.length > 0)
         ? <CascadeHops nodes={nodes} onOpenResource={onOpenResource} />

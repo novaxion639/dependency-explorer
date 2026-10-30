@@ -40,11 +40,7 @@ export function aggregateEdges(
     bucket.conns.push(c)
     buckets.set(key, bucket)
   }
-  const pairs = new Map<string, Bucket[]>()
-  for (const b of buckets.values()) {
-    const key = [b.from, b.to].sort().join('|')
-    pairs.set(key, [...(pairs.get(key) ?? []), b])
-  }
+  const pairs = Map.groupBy(buckets.values(), b => [b.from, b.to].sort().join('|'))
   const edges: DiagramEdge[] = []
   for (const group of pairs.values()) {
     const ordered = [...group].sort((a, b) => Number(a.from > a.to) - Number(b.from > b.to) || MODE_ORDER.indexOf(a.mode) - MODE_ORDER.indexOf(b.mode))

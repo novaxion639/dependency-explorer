@@ -23,7 +23,7 @@ describe('detail panel content', () => {
     if (!svc) {
       throw new Error('svc-punch missing')
     }
-    const html = renderToStaticMarkup(<EndpointList serviceName={svc.name} endpoints={svc.endpoints} highlightId={null} onClose={noop} />)
+    const html = renderToStaticMarkup(<EndpointList serviceName={svc.name} endpoints={svc.endpoints} highlightId={null} onClose={noop} onOpenService={noop} />)
     expect(html).toContain('svc-punch')
     expect(html).toContain(svc.endpoints[0]?.path ?? '')
   })

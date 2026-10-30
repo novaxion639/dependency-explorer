@@ -1,8 +1,8 @@
-import { buildContextLanes, getServiceLane, type ConnectivityMap, type Resource, type ServiceConnection } from '@dependency-explorer/data'
+import { type ConnectivityMap, type Resource, type ServiceConnection } from '@dependency-explorer/data'
 import { connectionsRef, edgeLabel } from '../aggregate'
 import { fitLabel, linesHeight } from '../geometry'
 import { edgeMode, type DiagramEdge, type DiagramModel, type DiagramNode, type EdgeMode } from '../model'
-import { areaId, CLIENTS_ID, MONOLITH_ID, SUBJECT_ID } from './ids'
+import { homeOf, SUBJECT_ID } from './ids'
 import { subjectCard } from './subject'
 
 const FONT = 16
@@ -53,17 +53,13 @@ export function serviceByArea(map: ConnectivityMap, resources: Resource[], name:
   if (!service) {
     throw new Error(`Unknown service ${name}`)
   }
-  const areas = map.areas ?? []
-  const ctx = buildContextLanes(map)
+  const home = homeOf(map)
   const boxOf = (s: string): { id: string; label: string; area?: string } => {
-    if (ctx.clients.includes(s)) {
-      return { id: CLIENTS_ID, label: 'Clients' }
+    const h = home(s)
+    if (!h) {
+      return { id: 'area:none', label: 'No area' }
     }
-    if (ctx.monolith.includes(s)) {
-      return { id: MONOLITH_ID, label: 'Monolith' }
-    }
-    const lane = getServiceLane(s, areas)
-    return lane ? { id: areaId(lane.id), label: lane.name, area: lane.id } : { id: 'area:none', label: 'No area' }
+    return h.lane ? { id: h.id, label: h.label, area: h.lane.id } : { id: h.id, label: h.label }
   }
   const touching = map.connections.filter(c => (c.from === name) !== (c.to === name))
   const boxes = new Map<string, AreaBox>()

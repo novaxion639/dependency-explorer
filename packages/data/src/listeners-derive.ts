@@ -1,12 +1,12 @@
-import type { CrudOperation, Listener, ListenerEffect, ListenerPhase, ListenerSurface, Runs, ServiceFlow, WriteEvent, WriteSite } from '@dependency-explorer/schema'
+import { WriteEventSchema, type CrudOperation, type Listener, type ListenerEffect, type ListenerPhase, type ListenerSurface, type Runs, type ServiceFlow, type WriteEvent, type WriteSite } from '@dependency-explorer/schema'
 
-export type ChainGrade = 'graph' | 'constant' | 'text'
+export type ChainGrade = ListenerEffect['grade']
 export interface CascadeHop { effect: ListenerEffect; table: string; mode: 'sync' | 'async'; grade: ChainGrade; skipped: number; cycle: boolean; next: CascadeNode[] }
 export interface CascadeNode { listener: Listener; hops: CascadeHop[] }
 export interface AlsoChange { table: string; via: string[]; mode: 'sync' | 'async'; grade: ChainGrade }
 export type ListenerTables = Pick<ListenerSurface, 'listeners' | 'writeSites'>
 
-export const WRITE_EVENTS: readonly WriteEvent[] = ['create', 'update', 'destroy']
+export const WRITE_EVENTS: readonly WriteEvent[] = WriteEventSchema.options
 const RANK: Record<ListenerPhase, readonly [number, number]> = { validation: [0, 1], save: [2, 5], event: [3, 4], touch: [6, 6], commit: [7, 7], rollback: [8, 8] }
 const REVERSED = new Set<ListenerPhase>(['commit', 'rollback'])
 const GRADE_ORDER: readonly ChainGrade[] = ['text', 'constant', 'graph']
@@ -47,11 +47,7 @@ function weakest(a: ChainGrade, b: ChainGrade): ChainGrade {
 }
 
 export function listenersByTable(surface: ListenerTables): Map<string, Listener[]> {
-  const out = new Map<string, Listener[]>()
-  for (const l of surface.listeners) {
-    out.set(l.table, [...(out.get(l.table) ?? []), l])
-  }
-  return out
+  return Map.groupBy(surface.listeners, l => l.table)
 }
 
 export function cascadeOf(surface: ListenerTables, start: Listener[], origin: string[], grade: ChainGrade = 'graph'): CascadeNode[] {
@@ -106,10 +102,10 @@ export interface FlowListenerLink { unit: string; table: string; site: WriteSite
 export interface ListenerDriftFinding { kind: 'flow-listener-missing' | 'flow-listener-unsupported'; subject: string; detail: string }
 export interface TableListenerMetrics { listeners: number; alsoChanges: number; async: number; bypassing: number; onCycle: boolean }
 
-const MONOLITH = 'skello-app'
+export const MONOLITH = 'skello-app'
 const CRUD_EVENT: Record<CrudOperation, WriteEvent | null> = { create: 'create', read: null, update: 'update', delete: 'destroy' }
 
-function tableName(id: string): string {
+export function tableName(id: string): string {
   return id.split('.').pop() ?? id
 }
 

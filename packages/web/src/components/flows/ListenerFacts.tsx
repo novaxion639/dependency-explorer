@@ -1,7 +1,7 @@
-import { WRITE_EVENTS, cascadeOf, firedListeners, flowListenerDrift, flowListeners, listenerSurface, type FlowCodeUnit, type ServiceFlow } from '@dependency-explorer/data'
+import { WRITE_EVENTS, cascadeOf, firedListeners, flowListenerDrift, flowListeners, listenerSurface, tableName, type FlowCodeUnit, type ServiceFlow } from '@dependency-explorer/data'
 import { CascadeHops } from '../resources/CascadeSection'
 import { GradeGlyph, Source } from '../resources/ListenersSection'
-import { listenerHeading, listenerLabel, tableName } from '../resources/listenerView'
+import { listenerHeading, listenerLabel } from '../resources/listenerView'
 import styles from './flows.module.css'
 
 const TABLE_EVENT_REASON = 'unverified, matched by table event'

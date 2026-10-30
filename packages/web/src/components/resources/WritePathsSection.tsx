@@ -1,4 +1,4 @@
-import { connectivityMap, listenerSurface, type Runs } from '@dependency-explorer/data'
+import { MONOLITH, connectivityMap, listenerSurface, type Runs } from '@dependency-explorer/data'
 import { GradeGlyph, Source } from './ListenersSection'
 import styles from './ResourcePage.module.css'
 
@@ -24,7 +24,7 @@ export function WritePathsSection({ table, onOpenFlow }: { table: string; onOpen
             <h3 className={styles.groupTitle}>{LABEL[runs]}<span className={styles.count}>{` ${group.length}`}</span></h3>
             <ul className={styles.rels}>
               {group.map(s => {
-                const flows = connectivityMap.flows.filter(f => (f.codeUnits ?? []).some(u => u.service === 'skello-app' && u.path === s.file))
+                const flows = connectivityMap.flows.filter(f => (f.codeUnits ?? []).some(u => u.service === MONOLITH && u.path === s.file))
                 return (
                   <li key={`${s.file}:${s.line}:${s.call}`}>
                     <GradeGlyph unverified={s.grade === 'text'} />

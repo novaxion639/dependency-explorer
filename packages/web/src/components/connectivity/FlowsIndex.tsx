@@ -3,6 +3,7 @@ import { getFlowAreas } from '@dependency-explorer/data'
 import { AreaChip } from '../areas/AreaChip'
 import styles from './listPage.module.css'
 import own from './FlowsIndex.module.css'
+import { plural } from '../../utils/plural'
 
 interface Props {
   service: string | null
@@ -42,7 +43,7 @@ export function FlowsIndex({ service, flows, map, onSelectFlow }: Props) {
     return (
       <section aria-label="Flows" className={styles.page}>
         <h1 className={styles.title}>Flows through {service}</h1>
-        <p className={styles.meta}>{service} takes part in {relevant.length} flow{relevant.length !== 1 ? 's' : ''}</p>
+        <p className={styles.meta}>{service} takes part in {plural(relevant.length, 'flow')}</p>
         {relevant.length === 0 ? <p className={styles.meta}>No flows found for this service.</p> : (
           <ul className={styles.cards}>{relevant.map(f => <li key={f.id}><FlowCard flow={f} service={service} map={map} onSelect={() => onSelectFlow(f)} /></li>)}</ul>
         )}

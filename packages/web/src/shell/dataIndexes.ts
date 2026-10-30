@@ -5,9 +5,9 @@ import { buildFlagRegistry } from '../utils/flagRegistry'
 import { buildFileIndex } from '../utils/fileIndex'
 
 export const map = connectivityMap
-export const searchIndex = buildSearchIndex(map, monolithRoutes, resourceSurface.resources, listenerSurface.listeners)
 export const flagRegistry = buildFlagRegistry(map)
 export const fileIndex = buildFileIndex(map, monolithRoutes, allResourceRelations)
+export const searchIndex = buildSearchIndex(map, fileIndex, flagRegistry, resourceSurface.resources, listenerSurface.listeners)
 export const resourceIds = new Set(resourceSurface.resources.map(r => r.id))
 export const areaById = new Map((map.areas ?? []).map(a => [a.id, a]))
 
