@@ -11,6 +11,7 @@
 
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { walkFiles } from '../code-wiring'
 
 export type AwsUsageKind = 'kinesis' | 'firehose' | 's3' | 'dynamodb' | 'postgresql'
 
@@ -76,22 +77,6 @@ export function classifyAwsUsage(content: string): Array<{ kind: AwsUsageKind; o
   return out
 }
 
-function walkSourceFiles(dir: string, out: string[] = []): string[] {
-  let entries: fs.Dirent[]
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const e of entries) {
-    if (e.name === 'node_modules' || e.name.startsWith('.')) continue
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) walkSourceFiles(full, out)
-    else if (/\.tsx?$/.test(e.name) && !/\.(test|spec)\.tsx?$/.test(e.name)) out.push(full)
-  }
-  return out
-}
-
 const FILE_SAMPLE_CAP = 4
 
 /**
@@ -109,7 +94,7 @@ export function extractAwsClients(repoBase: string, repo: string): AwsUsageFact[
   if (!fs.existsSync(srcPath)) return null
 
   const byKind = new Map<AwsUsageKind, { operations: Set<string>; files: string[] }>()
-  for (const file of walkSourceFiles(srcPath)) {
+  for (const file of walkFiles(srcPath, f => /\.tsx?$/.test(f) && !/\.(test|spec)\.tsx?$/.test(f))) {
     let content: string
     try {
       content = fs.readFileSync(file, 'utf-8')

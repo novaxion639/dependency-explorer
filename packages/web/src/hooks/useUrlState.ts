@@ -57,7 +57,7 @@ export interface UrlState {
   notFound: { param: 'area' | 'term' | 'flow' | 's' | 'resource' | 'blast'; value: string } | null
 }
 
-export const EDGE_SEP = '~'
+const EDGE_SEP = '~'
 export const EDGE_LIST_SEP = ','
 
 const NAVIGATION_KEYS = ['page', 'area', 's', 'team', 'flows', 'flow', 'edge', 'drawer', 'flag', 'file', 'resource', 'blast'] as const

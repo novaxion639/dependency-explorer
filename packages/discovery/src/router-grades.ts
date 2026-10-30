@@ -1,6 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
-import { escapeRegExp, maskStrings, readerFor, RESOLVE_SUFFIXES, resolveSpecifier, stripComments, type Alias, type Read } from './code-wiring'
+import { escapeRegExp, maskStrings, readerFor, resolveFile, stripComments, type Alias, type Read } from './code-wiring'
 
 export interface VueRoute { name: string; componentFile: string }
 
@@ -64,11 +64,6 @@ function ownName(source: string, masked: string, [open, close]: [number, number]
     }
   }
   return null
-}
-
-function resolveFile(spec: string, fromPath: string, aliases: Alias[], read: Read): string | null {
-  const base = resolveSpecifier(spec, fromPath, aliases)
-  return base === null ? null : RESOLVE_SUFFIXES.map(s => `${base}${s}`).find(p => read(p) !== null) ?? null
 }
 
 export function parseVueRoutes(raw: string, fromPath: string, aliases: Alias[], read: Read): VueRoute[] {

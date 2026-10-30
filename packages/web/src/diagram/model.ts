@@ -12,7 +12,7 @@ export type DiagramRef =
 
 export interface Box { x: number; y: number; w: number; h: number }
 export interface RoutePoint { x: number; y: number }
-export interface DiagramStore { label: string; resource?: string }
+interface DiagramStore { label: string; resource?: string }
 export interface DiagramNode extends Box {
   id: string
   kind: NodeKind

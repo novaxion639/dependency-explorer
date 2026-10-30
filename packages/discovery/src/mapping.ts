@@ -30,7 +30,7 @@ export const IGNORED_SDKS: Record<string, string> = {
 export const MONGO_CONTRACT_SDKS = new Set(['@skelloapp/svc-search-sdk'])
 
 // SDKs whose target does not follow the `@skelloapp/svc-<name>-sdk` convention.
-export const SDK_SERVICE_OVERRIDES: Record<string, string> = {
+const SDK_SERVICE_OVERRIDES: Record<string, string> = {
   '@skelloapp/skello-app-sdk': 'skello-app',
   // Verified 2026-06-15: AnalyticsDashboard.vue instantiates SkelloAnalyticsClient(skelloApiUrl) — the monolith, not a separate analytics service.
   '@skelloapp/skello-analytics-client': 'skello-app',

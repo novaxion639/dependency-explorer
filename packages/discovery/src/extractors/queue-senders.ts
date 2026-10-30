@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { walkFiles } from '../code-wiring'
 
 export interface QueueSenderEvidence {
   from: string
@@ -17,20 +18,8 @@ const MAX_FILE_SIZE = 400 * 1024
 const MIN_QUEUE_NAME_LENGTH = 8
 const SAMPLE_CAP = 3
 
-export function walkFiles(dir: string, out: string[] = []): string[] {
-  let entries: fs.Dirent[]
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const e of entries) {
-    if (SKIP_DIRS.has(e.name) || e.name.startsWith('.')) continue
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) walkFiles(full, out)
-    else if (SOURCE_EXTS.has(path.extname(e.name)) && !/\.(test|spec)\./.test(e.name) && fs.statSync(full).size <= MAX_FILE_SIZE) out.push(full)
-  }
-  return out
+export function sourceFiles(dir: string): string[] {
+  return walkFiles(dir, f => SOURCE_EXTS.has(path.extname(f)) && !/\.(test|spec)\./.test(path.basename(f)) && fs.statSync(f).size <= MAX_FILE_SIZE, name => SKIP_DIRS.has(name) || name.startsWith('.'))
 }
 
 /**
@@ -60,7 +49,7 @@ export function findQueueSenders(
     const files = SOURCE_DIRS
       .map(d => path.join(repoPath, d))
       .filter(d => fs.existsSync(d))
-      .flatMap(d => walkFiles(d))
+      .flatMap(d => sourceFiles(d))
 
     for (const file of files) {
       let content: string

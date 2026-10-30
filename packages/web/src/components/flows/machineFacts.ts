@@ -1,7 +1,7 @@
 import { allStates, type MachineState, type ServiceFlow, type StateMachine } from '@dependency-explorer/data'
 import { catchTargets, machineOrder, machineStores, stateKey } from '../../diagram/layouts/machines'
 
-export interface Fact { label: string; value: string }
+interface Fact { label: string; value: string }
 
 function stateLabel(machine: StateMachine, id: string | undefined): string {
   return allStates(machine).find(s => s.id === id)?.label ?? id ?? ''

@@ -2,8 +2,8 @@ import type { ConnectivityMap, ResourceRelation } from '@dependency-explorer/dat
 import { serviceId } from '../diagram/layouts/ids'
 
 export type Effect = 'fails' | 'degrades' | 'starves'
-export interface ImpactEntry { node: string; hop: number; effect: Effect; via: string; mode: 'sync' | 'async' }
-export interface ImpactResult { origin: string; entries: ImpactEntry[]; flows: Array<{ flowId: string; name: string; step: number; from: string; to: string }> }
+interface ImpactEntry { node: string; hop: number; effect: Effect; via: string; mode: 'sync' | 'async' }
+interface ImpactResult { origin: string; entries: ImpactEntry[]; flows: Array<{ flowId: string; name: string; step: number; from: string; to: string }> }
 
 const EFFECT_RANK: Record<Effect, number> = { fails: 3, starves: 2, degrades: 1 }
 

@@ -1,7 +1,7 @@
 import type { Page } from '../hooks/useUrlState'
 
 export interface RailItem { label: string; hint: string; page?: Page; children?: RailItem[] }
-export interface RailGroup { title: string; items: RailItem[] }
+interface RailGroup { title: string; items: RailItem[] }
 
 export const RAIL: RailGroup[] = [
   {

@@ -3,7 +3,20 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap } from '@dependency-explorer/data'
-import { renderFlowInventorySection, renderPlanningCoverageSection, extractGenerated, applyGenerated, extractCitedFlowIds, MARKERS } from './docs-gen'
+import { renderFlowInventorySection, renderPlanningCoverageSection, applyGenerated, MARKERS } from './docs-gen'
+
+function extractCitedFlowIds(content: string): string[] {
+  return [...new Set([...content.matchAll(/✅ `([a-z0-9-]+)`/g)].flatMap(m => (m[1] ? [m[1]] : [])))]
+}
+
+function extractGenerated(content: string, name: string): string | null {
+  const b = content.indexOf(MARKERS.begin(name))
+  const e = content.indexOf(MARKERS.end(name))
+  if (b === -1 || e === -1 || e < b) {
+    return null
+  }
+  return content.slice(b + MARKERS.begin(name).length, e).trim()
+}
 
 // The staleness gate: committed generated sections must match the dataset.
 // Self-contained — reads only this repo's docs/, no sibling checkouts.

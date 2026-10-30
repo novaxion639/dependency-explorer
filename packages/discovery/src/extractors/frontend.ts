@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { walkFiles } from '../code-wiring'
 
 export interface FrontendServiceEvidence {
   /** env var names whose value points at this service host (values are never recorded) */
@@ -34,28 +35,12 @@ export function parseEnvServiceUrls(content: string): Array<{ varName: string; s
   return out
 }
 
-function walkSourceFiles(dir: string, out: string[] = []): string[] {
-  let entries: fs.Dirent[]
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const e of entries) {
-    if (e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) continue
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) walkSourceFiles(full, out)
-    else if (SOURCE_EXTS.has(path.extname(e.name))) out.push(full)
-  }
-  return out
-}
-
 /**
  * Find which svc-* services the frontend references: env vars holding service
  * URLs + usage of those vars (or direct svc hosts) in source code.
  */
-export function extractFrontend(repoBase: string, repo = 'skello-app-front'): FrontendFacts | null {
-  const repoPath = path.join(repoBase, repo)
+export function extractFrontend(repoBase: string): FrontendFacts | null {
+  const repoPath = path.join(repoBase, 'skello-app-front')
   if (!fs.existsSync(repoPath)) return null
 
   const varsByService = new Map<string, Set<string>>()
@@ -80,7 +65,7 @@ export function extractFrontend(repoBase: string, repo = 'skello-app-front'): Fr
   const sourceFiles = SOURCE_DIRS
     .map(d => path.join(repoPath, d))
     .filter(d => fs.existsSync(d))
-    .flatMap(d => walkSourceFiles(d))
+    .flatMap(d => walkFiles(d, f => SOURCE_EXTS.has(path.extname(f)), name => name === 'dist' || name === 'node_modules' || name.startsWith('.')))
 
   // Env vars are typically wrapped once (`export const svcXApiUrl =
   // getUrl('VUE_APP_SVC_X_API_URL')`) and features import the derived export —

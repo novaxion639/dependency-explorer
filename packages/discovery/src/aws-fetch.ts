@@ -15,21 +15,17 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
 
-const argv = process.argv
-const arg = (flag: string): string | null => {
-  const i = argv.indexOf(flag)
-  return i >= 0 && argv[i + 1] ? argv[i + 1]! : null
-}
-
-const profile = arg('--profile')
+const { values } = parseArgs({ args: process.argv.slice(2).filter(a => a !== '--'), options: { profile: { type: 'string' }, out: { type: 'string' } } })
+const profile = values.profile
 if (!profile) {
   console.error('usage: pnpm discover:aws:fetch --profile <aws-profile> [--out <dir>]')
   process.exit(1)
 }
 
 const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const outDir = arg('--out') ?? path.join(pkgRoot, '.aws-snapshots', new Date().toISOString().slice(0, 10))
+const outDir = values.out ?? path.join(pkgRoot, '.aws-snapshots', new Date().toISOString().slice(0, 10))
 fs.mkdirSync(outDir, { recursive: true })
 
 const aws = (args: string[]): any =>

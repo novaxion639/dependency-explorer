@@ -5,7 +5,7 @@ import type { FlagRegistryEntry } from './flagRegistry'
 import type { FileIndexEntry } from './fileIndex'
 import { plural } from './plural'
 
-export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' | 'term' | 'external' | 'team' | 'resource' | 'listener' | 'flag' | 'file'
+type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' | 'term' | 'external' | 'team' | 'resource' | 'listener' | 'flag' | 'file'
 
 export interface SearchEntry {
   type: SearchResultType

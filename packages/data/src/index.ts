@@ -259,7 +259,7 @@ export const allResourceRelations = [...resourceSurface.relations, ...flowRelati
 
 export * from '@dependency-explorer/schema'
 export { globToRegExp } from './glob'
-export { normalizeResourceName } from './resource-names'
+export { kebab, normalizeResourceName } from './resource-names'
 export { resourceImpact, resourceIdForDatabase } from './resources-derive'
 export { areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getSharedExternals, getServiceLane, getCrossAreaEdges, buildContextLanes } from './areas-derive'
 export { flowChapters } from './flow-chapters'

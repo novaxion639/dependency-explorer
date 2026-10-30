@@ -9,7 +9,7 @@ const HEIGHT = 760
 const FONT = 14
 const SMALL_AREA_FILES = 12
 
-export interface AreaFacts {
+interface AreaFacts {
   files: Record<string, Record<string, number>>
   coverage: Record<string, { mapped: number; total: number }>
 }

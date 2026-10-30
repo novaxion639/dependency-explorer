@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { normalizeEndpoint, normalizeEndpointVersionless } from './endpoints'
-import { findPackageDirs } from './extractors/typescript'
+import { findPackageDirs, tsSourceFiles } from './extractors/typescript'
 import type { SdkRegistry } from './extractors/sdk-registry'
 
 /**
@@ -51,25 +51,8 @@ interface TargetEndpoints {
 // attributed — kept as ambiguous evidence, never auto-suggested.
 const GENERIC_METHOD_NAMES = new Set(['create', 'update', 'delete', 'get', 'post', 'put', 'patch', 'list', 'findOne', 'findAll', 'find', 'remove', 'upsert'])
 
-const SOURCE_EXTS = /\.(ts|tsx|js|vue)$/
 const MAX_FILE_SIZE = 512 * 1024
 const FILE_SAMPLE_CAP = 2
-
-function walkSources(dir: string, out: string[] = []): string[] {
-  let entries: fs.Dirent[]
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const e of entries) {
-    if (e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) continue
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) walkSources(full, out)
-    else if (SOURCE_EXTS.test(e.name) && !/\.(test|spec)\./.test(e.name)) out.push(full)
-  }
-  return out
-}
 
 export function verifySdkUsage(
   repoBase: string,
@@ -83,7 +66,7 @@ export function verifySdkUsage(
   const repoContents = (repo: string) => {
     if (!contentCache.has(repo)) {
       const root = path.join(repoBase, repo)
-      const files = findPackageDirs(root).flatMap(d => walkSources(path.join(d, 'src')))
+      const files = findPackageDirs(root).flatMap(d => tsSourceFiles(path.join(d, 'src')))
       const loaded: Array<{ rel: string; content: string }> = []
       for (const f of files) {
         try {

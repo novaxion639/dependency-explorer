@@ -19,8 +19,8 @@ export interface ListenerContext extends WriteResolver {
 type EffectMode = ListenerEffect['mode']
 interface Callee { constant: string; method?: string; file: string | null; span: SpanAt | null; model: ModelEntry | null; async: boolean }
 
-export const JOB_ROOTS = ['app/jobs', 'app/workers', 'lib']
-export const SERVICE_ROOTS = ['app/services', 'app/models/concerns', 'app/models', 'lib']
+const JOB_ROOTS = ['app/jobs', 'app/workers', 'lib']
+const SERVICE_ROOTS = ['app/services', 'app/models/concerns', 'app/models', 'lib']
 const CONSTANT = '((?:[A-Z]\\w*::)*[A-Z]\\w*)'
 const ENQUEUE = new RegExp(`\\b${CONSTANT}(?:\\.set\\([^)]*\\))?\\.(perform_later|perform_async|perform_in|perform_at)\\b`, 'g')
 const DELAYED = new RegExp(`\\b${CONSTANT}\\.delay(?:\\([^)]*\\))?\\.(\\w+[!?]?)`, 'g')
@@ -192,7 +192,7 @@ function blockSpan(decl: DeclarationAt, ctx: ListenerContext): SpanAt {
   }
 }
 
-export const GEM_CALLBACK_METHODS: Record<string, string[]> = { geocoded_by: ['geocode'], reverse_geocoded_by: ['reverse_geocode'] }
+const GEM_CALLBACK_METHODS: Record<string, string[]> = { geocoded_by: ['geocode'], reverse_geocoded_by: ['reverse_geocode'] }
 const GEM_CALLBACK_MACRO = new RegExp(`^\\s*(${Object.keys(GEM_CALLBACK_METHODS).join('|')})\\b`)
 
 function gemProvidedMethods(entry: ModelEntry): Set<string> {

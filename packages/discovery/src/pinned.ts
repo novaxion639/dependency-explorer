@@ -1,11 +1,22 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { execFileSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+
+export const PINNED_BASE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../.pinned')
 
 export type GitRunner = (cwd: string, args: string[]) => string
 
 export const defaultGit: GitRunner = (cwd, args) =>
   execFileSync('git', args, { cwd, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+
+export function headOf(repo: string): string | null {
+  try {
+    return defaultGit(path.join(PINNED_BASE, repo), ['rev-parse', 'HEAD'])
+  } catch {
+    return null
+  }
+}
 
 export interface PinnedRepo { repo: string; branch: string; sha: string; dir: string }
 export interface PinSkip { repo: string; reason: string }

@@ -1,6 +1,6 @@
 import { allStates, type CrudOperation, type MachineState, type StateMachine } from '@dependency-explorer/data'
 
-export interface Transition { from: string; to: string; label?: string }
+interface Transition { from: string; to: string; label?: string }
 
 export function machineLane(id: string): string {
   return `lane:machine:${id}`

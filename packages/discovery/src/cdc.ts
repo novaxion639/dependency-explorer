@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { Resource, ResourceRelation } from '@dependency-explorer/schema'
-import { escapeRegExp, readerFor, type Read } from './code-wiring'
+import { escapeRegExp, isRecord, readerFor, type Read } from './code-wiring'
 import type { TerraformFacts, TfDmsTask } from './extractors/terraform'
 import type { ServerlessFacts, StreamConsumerFact } from './extractors/serverless'
 import type { ListenerFinding } from './extractors/rails-listeners'
@@ -31,10 +31,6 @@ export function terraformList(contents: string[], name: string): string[] {
 
 const SELECTION = /"rule-type"\s*[:=]\s*"selection"/
 const INCLUDE = /"rule-action"\s*[:=]\s*"include"/
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function withWildcard(names: string[], schemaTables: string[]): string[] {
   const unique = [...new Set(names)]

@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { pluralize, singularize } from './rails-routes'
-import { stripComments } from '../code-grades'
+import { stripComments, walkFiles } from '../code-wiring'
 
 export interface RailsModel { className: string; file: string; table: string; associations: string[] }
 
@@ -36,25 +36,13 @@ export function parseModelFile(file: string, source: string): RailsModel | null 
   return { className, file, table: explicit ?? tableize(className), associations: [...associations].sort() }
 }
 
-function walk(dir: string, out: string[] = []): string[] {
-  for (const e of fs.existsSync(dir) ? fs.readdirSync(dir, { withFileTypes: true }) : []) {
-    const full = path.join(dir, e.name)
-    if (e.isDirectory() && e.name !== 'concerns') {
-      walk(full, out)
-    } else if (e.isFile() && e.name.endsWith('.rb')) {
-      out.push(full)
-    }
-  }
-  return out
-}
-
-export function extractRailsSchema(repoBase: string, repo = 'skello-app'): { tables: string[]; models: RailsModel[] } | null {
-  const root = path.join(repoBase, repo)
+export function extractRailsSchema(repoBase: string): { tables: string[]; models: RailsModel[] } | null {
+  const root = path.join(repoBase, 'skello-app')
   const schemaFile = path.join(root, 'db', 'schema.rb')
   if (!fs.existsSync(schemaFile)) {
     return null
   }
-  const models = walk(path.join(root, 'app', 'models')).flatMap(f => {
+  const models = walkFiles(path.join(root, 'app', 'models'), f => f.endsWith('.rb'), name => name === 'concerns').flatMap(f => {
     const model = parseModelFile(path.relative(root, f), fs.readFileSync(f, 'utf-8'))
     return model ? [model] : []
   })

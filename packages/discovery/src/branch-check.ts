@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
-import { stripComments } from './code-grades'
+import { stripComments } from './code-wiring'
 
 export interface BranchFinding { flow: string; kind: 'missing-branch-literal'; subject: string; detail: string }
 
