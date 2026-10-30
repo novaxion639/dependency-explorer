@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { ConnectivityMapSchema, DiscoveredOverlaySchema, ListenerSurfaceSchema, MonolithRouteSchema, ResourceSurfaceSchema } from '@dependency-explorer/schema'
-import type { ConnectivityMap } from '@dependency-explorer/schema'
+import type { ConnectivityMap, ConnectivityService } from '@dependency-explorer/schema'
 import connections from './connections'
 import teams from './teams'
 import rules from './rules'
@@ -11,7 +11,6 @@ import monolithRoutesJson from './generated/monolith-routes.json'
 import resourcesJson from './generated/resources.json'
 import listenersJson from './generated/listeners.json'
 import { monolithEndpoints } from './monolith-endpoints'
-import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { flowRelations } from './resources-derive'
 
 import svc_events from './services/svc-events'
@@ -120,15 +119,17 @@ export const areaFacts = {
   coverage: overlay.areaCoverage ?? {},
 }
 
-function enrichServices(services: unknown[]): unknown[] {
+function enrichServices(services: ConnectivityService[]): ConnectivityService[] {
   const endpointStamps = overlay.endpoints ?? {}
-  return (services as Array<Record<string, unknown>>).map(svc => {
-    const facts = overlay.services[svc.name as string]
-    const endpoints = (svc.endpoints as Array<Record<string, unknown>>).map(ep => {
+  return services.map(svc => {
+    const facts = overlay.services[svc.name]
+    const endpoints = svc.endpoints.map(ep => {
       const stamp = endpointStamps[`${svc.name}#${ep.id}`]
-      return stamp ? { ...ep, provenance: { source: 'discovered', ...stamp } } : ep
+      return stamp ? { ...ep, provenance: { source: 'discovered' as const, ...stamp } } : ep
     })
-    if (!facts) return { ...svc, endpoints }
+    if (!facts) {
+      return { ...svc, endpoints }
+    }
     return {
       ...svc,
       endpoints,
@@ -137,10 +138,10 @@ function enrichServices(services: unknown[]): unknown[] {
       githubTeams: facts.githubTeams ?? svc.githubTeams,
       recurringTasks: facts.recurringTasks?.map(t => ({
         ...t,
-        provenance: { source: 'discovered', lastVerified: verifiedOn, evidence: 'serverless schedule event' },
+        provenance: { source: 'discovered' as const, lastVerified: verifiedOn, evidence: 'serverless schedule event' },
       })) ?? svc.recurringTasks,
       provenance: {
-        source: 'discovered',
+        source: 'discovered' as const,
         lastVerified: verifiedOn,
         evidence: 'repo scan (package.json + CODEOWNERS)',
       },
@@ -191,7 +192,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   svc_websockets,
   svc_websockets_v2,
   superadmin,
-  { ...skello_app, endpoints: [...skello_app.endpoints, ...monolithEndpoints(monolithRoutes, skelloAppEndpointNotes)] },
+  { ...skello_app, endpoints: [...skello_app.endpoints, ...monolithEndpoints(monolithRoutes)] },
   skello_app_front,
   skello_mobile,
   skello_punchclock,
@@ -258,11 +259,9 @@ export const allResourceRelations = [...resourceSurface.relations, ...flowRelati
 
 export * from '@dependency-explorer/schema'
 export { globToRegExp } from './glob'
-export { resourceNotes, type ResourceNote } from './resource-notes'
 export { normalizeResourceName } from './resource-names'
-export { flowRelations, resourceImpact, resourceIdForDatabase, type ResourceImpact } from './resources-derive'
-export { locationMatches, areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getSharedExternals, getServiceLane, getCrossAreaEdges, buildContextLanes } from './areas-derive'
-export type { CrossAreaEdge, ContextLanes } from './areas-derive'
-export { deriveChapters, flowChapters, flowRefIds } from './flow-chapters'
-export { allStates, machineProblems } from './state-machines'
-export { WRITE_EVENTS, MONOLITH, tableName, inRailsOrder, listenersRun, listenersByTable, cascadeOf, cascadeFrom, flattenCascade, alsoChanges, flowListeners, firedListeners, flowListenerDrift, listenerMetrics, type CascadeHop, type CascadeNode, type AlsoChange, type ChainGrade, type ListenerTables, type FlowListenerLink, type ListenerDriftFinding, type TableListenerMetrics } from './listeners-derive'
+export { resourceImpact, resourceIdForDatabase } from './resources-derive'
+export { areasForFile, getFlowAreas, getAreaFlows, getAreaServices, getAreaExternals, getSharedExternals, getServiceLane, getCrossAreaEdges, buildContextLanes } from './areas-derive'
+export { flowChapters } from './flow-chapters'
+export { allStates } from './state-machines'
+export { WRITE_EVENTS, MONOLITH, tableName, inRailsOrder, cascadeOf, cascadeFrom, alsoChanges, flowListeners, firedListeners, flowListenerDrift, listenerMetrics, type CascadeNode, type TableListenerMetrics } from './listeners-derive'

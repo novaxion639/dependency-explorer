@@ -46,7 +46,7 @@ function weakest(a: ChainGrade, b: ChainGrade): ChainGrade {
   return GRADE_ORDER.indexOf(a) <= GRADE_ORDER.indexOf(b) ? a : b
 }
 
-export function listenersByTable(surface: ListenerTables): Map<string, Listener[]> {
+function listenersByTable(surface: ListenerTables): Map<string, Listener[]> {
   return Map.groupBy(surface.listeners, l => l.table)
 }
 
@@ -76,7 +76,7 @@ export function cascadeFrom(surface: ListenerTables, table: string, event: Write
   return cascadeOf(surface, start, [`${table}|${event}`])
 }
 
-export function flattenCascade(nodes: CascadeNode[], origin: string): AlsoChange[] {
+function flattenCascade(nodes: CascadeNode[], origin: string): AlsoChange[] {
   const best = new Map<string, AlsoChange>()
   const walk = (list: CascadeNode[], via: string[]) => {
     for (const node of list) {

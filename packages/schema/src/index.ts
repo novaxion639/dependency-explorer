@@ -2,9 +2,9 @@ import { z } from 'zod'
 
 // ── Primitives ────────────────────────────────────────────────────────────────
 
-export const HttpMethodSchema = z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
+const HttpMethodSchema = z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 
-export const DatabaseTypeSchema = z.enum([
+const DatabaseTypeSchema = z.enum([
   'postgresql',
   'redis',
   'dynamodb',
@@ -20,7 +20,7 @@ export const DatabaseTypeSchema = z.enum([
   'sqlite',
 ])
 
-export const ServiceTypeSchema = z.enum([
+const ServiceTypeSchema = z.enum([
   'typescript-microservice',
   'rails-microservice',
   'rails-monolith',
@@ -28,23 +28,23 @@ export const ServiceTypeSchema = z.enum([
   'react-native',
 ])
 
-export const CommunicationTypeSchema = z.enum(['sync', 'async'])
+const CommunicationTypeSchema = z.enum(['sync', 'async'])
 
 // 'mongodb'/'postgresql' = direct shared-database access (no API between the services);
 // the SDK, when present, is only the data contract over the shared collections/tables.
 // 's3' = bucket-notification coupling: the consumer's lambda triggers on objects
 // another service drops in a bucket (no API call either).
-export const ProtocolSchema = z.enum(['rest', 'sqs', 'sns', 'kinesis', 'cdc', 'webhook', 'grpc', 'mongodb', 'postgresql', 's3'])
+const ProtocolSchema = z.enum(['rest', 'sqs', 'sns', 'kinesis', 'cdc', 'webhook', 'grpc', 'mongodb', 'postgresql', 's3'])
 
-export const AuthTypeSchema = z.enum(['jwt', 'api-key', 'internal', 'iam-role', 'none'])
+const AuthTypeSchema = z.enum(['jwt', 'api-key', 'internal', 'iam-role', 'none'])
 
-export const CrudOperationSchema = z.enum(['create', 'read', 'update', 'delete'])
+const CrudOperationSchema = z.enum(['create', 'read', 'update', 'delete'])
 
 // ── Provenance ────────────────────────────────────────────────────────────────
 // Every discovered fact records where it came from and when it was last
 // confirmed against code (ADR-0004). Entities without provenance are manual.
 
-export const ProvenanceSchema = z.object({
+const ProvenanceSchema = z.object({
   source: z.enum(['manual', 'discovered']),
   lastVerified: z.string().optional(),
   evidence: z.string().optional(),
@@ -52,7 +52,7 @@ export const ProvenanceSchema = z.object({
 
 // ── Endpoint ──────────────────────────────────────────────────────────────────
 
-export const EndpointParamSchema = z.object({
+const EndpointParamSchema = z.object({
   name: z.string(),
   in: z.enum(['path', 'query', 'body', 'header']),
   type: z.string(),
@@ -60,12 +60,12 @@ export const EndpointParamSchema = z.object({
   description: z.string(),
 })
 
-export const AwsCallSchema = z.object({
+const AwsCallSchema = z.object({
   type: DatabaseTypeSchema,
   name: z.string(),
 })
 
-export const ServiceEndpointSchema = z.object({
+const ServiceEndpointSchema = z.object({
   id: z.string(),
   path: z.string(),
   method: HttpMethodSchema,
@@ -86,9 +86,9 @@ export const MonolithRouteSchema = z.object({
 })
 export type MonolithRoute = z.infer<typeof MonolithRouteSchema>
 
-export const ResourceKindSchema = z.enum(['table', 'queue', 'topic', 'stream', 'bucket', 'database'])
+const ResourceKindSchema = z.enum(['table', 'queue', 'topic', 'stream', 'bucket', 'database'])
 
-export const ResourceSchema = z.object({
+const ResourceSchema = z.object({
   id: z.string(),
   kind: ResourceKindSchema,
   store: DatabaseTypeSchema,
@@ -100,10 +100,10 @@ export const ResourceSchema = z.object({
 })
 export type Resource = z.infer<typeof ResourceSchema>
 
-export const ResourceRelationKindSchema = z.enum(['writes', 'reads', 'produces', 'consumes', 'feeds', 'dead-letters-to'])
-export const RelationGradeSchema = z.enum(['code', 'config', 'flow'])
+const ResourceRelationKindSchema = z.enum(['writes', 'reads', 'produces', 'consumes', 'feeds', 'dead-letters-to'])
+const RelationGradeSchema = z.enum(['code', 'config', 'flow'])
 
-export const ResourceRelationSchema = z.object({
+const ResourceRelationSchema = z.object({
   resource: z.string(),
   relation: ResourceRelationKindSchema,
   service: z.string(),
@@ -120,13 +120,13 @@ export const ResourceSurfaceSchema = z.object({
 })
 
 export const WriteEventSchema = z.enum(['create', 'update', 'destroy'])
-export const RunsSchema = z.enum(['all', 'validation', 'touch', 'none', 'subset'])
+const RunsSchema = z.enum(['all', 'validation', 'touch', 'none', 'subset'])
 export const ListenerKindSchema = z.enum(['callback', 'cascade', 'touch', 'gem'])
-export const ListenerPhaseSchema = z.enum(['validation', 'save', 'event', 'commit', 'rollback', 'touch'])
+const ListenerPhaseSchema = z.enum(['validation', 'save', 'event', 'commit', 'rollback', 'touch'])
 
 const SourceAtSchema = z.object({ file: z.string(), line: z.number().int().positive() })
 
-export const ListenerEffectSchema = z.object({
+const ListenerEffectSchema = z.object({
   kind: z.enum(['writes', 'enqueues', 'calls']),
   target: z.string(),
   targetFile: z.string().optional(),
@@ -172,7 +172,7 @@ export const ListenerSurfaceSchema = z.object({
 
 // ── Service ───────────────────────────────────────────────────────────────────
 
-export const ServiceDatabaseSchema = z.object({
+const ServiceDatabaseSchema = z.object({
   type: DatabaseTypeSchema,
   name: z.string(),
   description: z.string(),
@@ -180,7 +180,7 @@ export const ServiceDatabaseSchema = z.object({
 
 // Scheduled invocation (EventBridge schedule events in serverless config) —
 // recurring work a service performs with no caller on the map.
-export const RecurringTaskSchema = z.object({
+const RecurringTaskSchema = z.object({
   name: z.string(),
   /** rate(…)/cron(…) expression(s); conditional configs join branches with " | " */
   schedule: z.string(),
@@ -220,7 +220,7 @@ export const ServiceConnectionSchema = z.object({
 
 // ── Flow ──────────────────────────────────────────────────────────────────────
 
-export const ServiceFlowStepSchema = z.object({
+const ServiceFlowStepSchema = z.object({
   from: z.string(),
   to: z.string(),
   action: z.string(),
@@ -237,9 +237,9 @@ export const ServiceFlowStepSchema = z.object({
 // checked: rule refs resolve (integrity tests), sourcePaths exist in the
 // sibling repos (discovery scanner — the 📐 report section).
 
-export const PlatformSchema = z.enum(['backend', 'monolith', 'web', 'mobile', 'tablet', 'superadmin'])
+const PlatformSchema = z.enum(['backend', 'monolith', 'web', 'mobile', 'tablet', 'superadmin'])
 
-export const DomainRuleDivergenceSchema = z.object({
+const DomainRuleDivergenceSchema = z.object({
   platform: PlatformSchema,
   /** How this platform implements (or deliberately deviates from) the rule */
   behavior: z.string(),
@@ -275,7 +275,7 @@ export const DomainRuleSchema = z.object({
 // every `path` exists and every edge's callee is referenced from its caller's
 // file, so this layer cannot silently drift (same doctrine as connections).
 
-export const FlowCodeUnitKindSchema = z.enum([
+const FlowCodeUnitKindSchema = z.enum([
   'controller', 'service', 'manager', 'job', 'model-callback',
   // client-app units (web/mobile/tablet flows)
   'component', 'client',
@@ -290,14 +290,14 @@ export const FlowCodeUnitKindSchema = z.enum([
 // the owning unit's source (🚩); the flag → flows registry is derived at
 // build time, never authored. Rollout state is runtime data — Phase 4 overlay.
 
-export const FeatureFlagRefSchema = z.object({
+const FeatureFlagRefSchema = z.object({
   name: z.string().regex(/^[A-Z][A-Z0-9_]*$/),
   kind: z.enum(['product', 'dev']),
   /** Canary granularity when known — "shop", "organisation", "user" */
   scope: z.string().optional(),
 })
 
-export const FlowCodeUnitSchema = z.object({
+const FlowCodeUnitSchema = z.object({
   id: z.string(),
   /** Service this unit lives in (must match a flow participant, e.g. "skello-app") */
   service: z.string(),
@@ -322,14 +322,14 @@ export const FlowCodeUnitSchema = z.object({
 // never inferred. Token-LIFECYCLE facts (e.g. a deliberately-reusable stale
 // device token) have no home here and stay prose — a named schema boundary.
 
-export const FlowTriggerSchema = z.object({
+const FlowTriggerSchema = z.object({
   /** Who initiates the flow — "manager", "employee", "system (cron)", "prospect" */
   actor: z.string(),
   /** License/permission context when known */
   role: z.string().optional(),
 })
 
-export const AuthRefSchema = z.object({
+const AuthRefSchema = z.object({
   tokenType: AuthTypeSchema.optional(),
   /** Permission predicate — literal verified in the edge's unit sources (🔐) */
   gate: z.string().optional(),
@@ -347,7 +347,7 @@ export const AuthRefSchema = z.object({
 // event posts, unwired queues) — representable truth instead of permanent red.
 // `idempotent` is deliberately NOT a field: no extractor can verify it.
 
-export const FlowFailureSchema = z.object({
+const FlowFailureSchema = z.object({
   /** Queue/consumer the edge fires into, as named in the target's config (template parts stripped) */
   queue: z.string().optional(),
   /** DLQ wired to it — must match an extracted DLQ fact of the target service */
@@ -360,7 +360,7 @@ export const FlowFailureSchema = z.object({
   onError: z.string().optional(),
 })
 
-export const FlowCodeEdgeSchema = z.object({
+const FlowCodeEdgeSchema = z.object({
   /** Code-unit id, service name, or infra-node id */
   from: z.string(),
   to: z.string(),
@@ -396,7 +396,7 @@ export const FlowCodeEdgeSchema = z.object({
   pii: z.array(z.string()).optional(),
 })
 
-export const FlowInfraNodeSchema = z.object({
+const FlowInfraNodeSchema = z.object({
   id: z.string(),
   type: DatabaseTypeSchema,
   label: z.string(),
@@ -405,7 +405,7 @@ export const FlowInfraNodeSchema = z.object({
   resources: z.array(z.string()).min(1).optional(),
 })
 
-export const FlowInfraEdgeSchema = z.object({
+const FlowInfraEdgeSchema = z.object({
   from: z.string(),
   to: z.string(),
   label: z.string().optional(),
@@ -425,9 +425,9 @@ export const FlowInfraEdgeSchema = z.object({
 // human-authored (no extractor can prove causality) — integrity tests verify
 // id resolution only.
 
-export const FlowLinkKindSchema = z.enum(['continuation', 'writes-back-to', 'same-journey', 'domain-related'])
+const FlowLinkKindSchema = z.enum(['continuation', 'writes-back-to', 'same-journey', 'domain-related'])
 
-export const FlowLinkSchema = z.object({
+const FlowLinkSchema = z.object({
   /** Target flow id */
   to: z.string(),
   kind: FlowLinkKindSchema,
@@ -437,7 +437,7 @@ export const FlowLinkSchema = z.object({
 
 // Alternative outcome at a code unit — the condition, what the caller gets,
 // and a literal from the unit's source that proves the branch exists (🔀).
-export const FlowBranchSchema = z.object({
+const FlowBranchSchema = z.object({
   id: z.string(),
   at: z.string(),
   when: z.string(),
@@ -445,35 +445,17 @@ export const FlowBranchSchema = z.object({
   status: z.number().int().min(100).max(599).optional(),
   evidence: z.object({ literal: z.string().min(2) }),
 })
-export type FlowBranch = z.infer<typeof FlowBranchSchema>
 
-export const FlowChapterSchema = z.object({
+const FlowChapterSchema = z.object({
   title: z.string().min(1),
   summary: z.string().min(1),
   refs: z.array(z.string()).min(1),
 })
 export type FlowChapter = z.infer<typeof FlowChapterSchema>
 
-export const MachineStateTypeSchema = z.enum(['task', 'choice', 'map', 'parallel', 'pass', 'wait'])
+const MachineStateTypeSchema = z.enum(['task', 'choice', 'map', 'parallel', 'pass', 'wait'])
 
-export interface MachineStateShape {
-  id: string
-  name: string
-  type: z.infer<typeof MachineStateTypeSchema>
-  label: string
-  next?: string
-  unit?: string
-  catches?: boolean
-  catchTo?: string
-  stores?: Array<{ store: string; label?: string; crud?: Array<z.infer<typeof CrudOperationSchema>> }>
-  choices?: Array<{ when: string; next: string }>
-  default?: string
-  states?: MachineStateShape[]
-  branches?: string[]
-  concurrency?: number
-}
-
-export const MachineStateSchema: z.ZodType<MachineStateShape> = z.lazy(() => z.object({
+const MachineStateSchema = z.object({
   id: z.string(),
   name: z.string(),
   type: MachineStateTypeSchema,
@@ -485,12 +467,14 @@ export const MachineStateSchema: z.ZodType<MachineStateShape> = z.lazy(() => z.o
   stores: z.array(z.object({ store: z.string(), label: z.string().optional(), crud: z.array(CrudOperationSchema).optional() })).optional(),
   choices: z.array(z.object({ when: z.string(), next: z.string() })).optional(),
   default: z.string().optional(),
-  states: z.array(MachineStateSchema).optional(),
+  get states() {
+    return z.array(MachineStateSchema).optional()
+  },
   branches: z.array(z.string()).optional(),
   concurrency: z.number().int().positive().optional(),
-}))
+})
 
-export const StateMachineSchema = z.object({
+const StateMachineSchema = z.object({
   id: z.string(),
   service: z.string(),
   machine: z.string(),
@@ -535,7 +519,7 @@ export const TeamSchema = z.object({
 
 // ── Product areas ────────────────────────────────────────────────────────────
 
-export const CodeLocationSchema = z.object({
+const CodeLocationSchema = z.object({
   /** Service name (= sibling repo directory) */
   repo: z.string(),
   platform: PlatformSchema,
@@ -543,13 +527,13 @@ export const CodeLocationSchema = z.object({
   globs: z.array(z.string()).min(1),
 })
 
-export const GlossaryTermSchema = z.object({
+const GlossaryTermSchema = z.object({
   term: z.string(),
   definition: z.string(),
   anchor: z.object({ repo: z.string(), path: z.string(), symbol: z.string() }).optional(),
 })
 
-export const ReadingPathEntrySchema = z.object({
+const ReadingPathEntrySchema = z.object({
   flowId: z.string(),
   why: z.string(),
 })
@@ -568,7 +552,7 @@ export const ProductAreaSchema = z.object({
 
 // ── External systems ─────────────────────────────────────────────────────────
 
-export const ExternalSystemCategorySchema = z.enum([
+const ExternalSystemCategorySchema = z.enum([
   'e-signature', 'payment', 'crm', 'pos', 'payroll', 'hris', 'ats', 'identity', 'messaging', 'other',
 ])
 
@@ -592,8 +576,10 @@ export const ExternalSystemSchema = z.object({
 // that already exist in the manual layer — new findings go to the drift
 // report for human adoption via PR, never silently into the map.
 
-export const CodeEdgeGradeSchema = z.enum(['graph', 'constant', 'import', 'text', 'none'])
+const CodeEdgeGradeSchema = z.enum(['graph', 'constant', 'import', 'text', 'none'])
 export type CodeEdgeGrade = z.infer<typeof CodeEdgeGradeSchema>
+
+const StampSchema = z.object({ lastVerified: z.string(), evidence: z.string() })
 
 export const DiscoveredOverlaySchema = z.object({
   generatedAt: z.string(),
@@ -603,22 +589,12 @@ export const DiscoveredOverlaySchema = z.object({
     repoUrl: z.string().optional(),
     teamId: z.string().optional(),
     githubTeams: z.array(z.string()).optional(),
-    recurringTasks: z.array(z.object({
-      name: z.string(),
-      schedule: z.string(),
-      description: z.string().optional(),
-    })).optional(),
+    recurringTasks: z.array(RecurringTaskSchema.omit({ provenance: true })).optional(),
   })),
   // "from→to" → verification stamp
-  connections: z.record(z.string(), z.object({
-    lastVerified: z.string(),
-    evidence: z.string(),
-  })),
+  connections: z.record(z.string(), StampSchema),
   // "service#endpointId" → verification stamp (endpoint found in serverless config)
-  endpoints: z.record(z.string(), z.object({
-    lastVerified: z.string(),
-    evidence: z.string(),
-  })).optional(),
+  endpoints: z.record(z.string(), StampSchema).optional(),
   // areaId → "repo:glob" → files matched (🗺)
   areaFiles: z.record(z.string(), z.record(z.string(), z.number().int().nonnegative())).optional(),
   // host repo → files under its coverage roots mapped to any area (🗺)
@@ -644,49 +620,33 @@ export const ConnectivityMapSchema = z.object({
 
 // ── Inferred types (replaces types-connectivity.ts) ──────────────────────────
 
-export type HttpMethod = z.infer<typeof HttpMethodSchema>
 export type DatabaseType = z.infer<typeof DatabaseTypeSchema>
 export type ServiceType = z.infer<typeof ServiceTypeSchema>
 export type CommunicationType = z.infer<typeof CommunicationTypeSchema>
 export type Protocol = z.infer<typeof ProtocolSchema>
-export type AuthType = z.infer<typeof AuthTypeSchema>
 export type CrudOperation = z.infer<typeof CrudOperationSchema>
-export type Provenance = z.infer<typeof ProvenanceSchema>
 export type DiscoveredOverlay = z.infer<typeof DiscoveredOverlaySchema>
-export type EndpointParam = z.infer<typeof EndpointParamSchema>
-export type AwsCall = z.infer<typeof AwsCallSchema>
 export type ServiceEndpoint = z.infer<typeof ServiceEndpointSchema>
-export type ServiceDatabase = z.infer<typeof ServiceDatabaseSchema>
 export type RecurringTask = z.infer<typeof RecurringTaskSchema>
 export type ConnectivityService = z.infer<typeof ConnectivityServiceSchema>
 export type ServiceConnection = z.infer<typeof ServiceConnectionSchema>
-export type ServiceFlowStep = z.infer<typeof ServiceFlowStepSchema>
 export type FlowInfraNode = z.infer<typeof FlowInfraNodeSchema>
-export type FlowInfraEdge = z.infer<typeof FlowInfraEdgeSchema>
 export type FlowCodeUnit = z.infer<typeof FlowCodeUnitSchema>
 export type FlowCodeEdge = z.infer<typeof FlowCodeEdgeSchema>
 export type StateMachine = z.infer<typeof StateMachineSchema>
-export type MachineState = MachineStateShape
+export type MachineState = z.infer<typeof MachineStateSchema>
 export type ServiceFlow = z.infer<typeof ServiceFlowSchema>
 export type FeatureFlagRef = z.infer<typeof FeatureFlagRefSchema>
-export type FlowFailure = z.infer<typeof FlowFailureSchema>
-export type FlowTrigger = z.infer<typeof FlowTriggerSchema>
-export type AuthRef = z.infer<typeof AuthRefSchema>
 export type FlowLinkKind = z.infer<typeof FlowLinkKindSchema>
-export type FlowLink = z.infer<typeof FlowLinkSchema>
 export type Platform = z.infer<typeof PlatformSchema>
-export type DomainRuleDivergence = z.infer<typeof DomainRuleDivergenceSchema>
 export type DomainRule = z.infer<typeof DomainRuleSchema>
 export type Team = z.infer<typeof TeamSchema>
 export type CodeLocation = z.infer<typeof CodeLocationSchema>
-export type GlossaryTerm = z.infer<typeof GlossaryTermSchema>
-export type ReadingPathEntry = z.infer<typeof ReadingPathEntrySchema>
 export type ProductArea = z.infer<typeof ProductAreaSchema>
 export type ExternalSystem = z.infer<typeof ExternalSystemSchema>
 export type ConnectivityMap = z.infer<typeof ConnectivityMapSchema>
 export type WriteEvent = z.infer<typeof WriteEventSchema>
 export type Runs = z.infer<typeof RunsSchema>
-export type ListenerKind = z.infer<typeof ListenerKindSchema>
 export type ListenerPhase = z.infer<typeof ListenerPhaseSchema>
 export type ListenerEffect = z.infer<typeof ListenerEffectSchema>
 export type Listener = z.infer<typeof ListenerSchema>

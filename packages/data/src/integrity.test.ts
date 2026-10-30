@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
 import { connectivityMap, monolithRoutes, codeEdgeGrades, resourceSurface, listenerSurface, allResourceRelations } from './index'
-import { resourceNotes } from './resource-notes'
-import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { getFlowAreas } from './areas-derive'
 import { flowRefIds } from './flow-chapters'
 import { machineProblems } from './state-machines'
@@ -423,12 +421,6 @@ describe('monolith surface', () => {
     const ids = monolithRoutes.map(r => `${r.verb} ${r.path}`)
     expect(new Set(ids).size).toBe(ids.length)
   })
-  it('only annotates routes that exist', () => {
-    const ids = new Set(monolithRoutes.map(r => `${r.verb} ${r.path}`))
-    for (const id of Object.keys(skelloAppEndpointNotes)) {
-      expect(ids.has(id), `note for unknown route ${id}`).toBe(true)
-    }
-  })
 })
 
 describe('code-edge grades', () => {
@@ -474,12 +466,6 @@ describe('resource surface', () => {
       for (const t of r.related ?? []) {
         expect(known.has(t), `${r.id} relates to unknown ${t}`).toBe(true)
       }
-    }
-  })
-  it('only annotates resources that exist', () => {
-    const known = new Set(ids)
-    for (const id of Object.keys(resourceNotes)) {
-      expect(known.has(id), `note for unknown resource ${id}`).toBe(true)
     }
   })
 })
