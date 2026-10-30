@@ -7,7 +7,7 @@ function node(id: string, x: number): DiagramNode {
 }
 
 const model: DiagramModel = {
-  id: 'm', title: 'm', width: 600, height: 200, renderers: ['svg'],
+  id: 'm', title: 'm', width: 600, height: 200,
   groups: [{ id: 'G', kind: 'group', label: 'G', members: ['n1', 'n2'], fontSize: 12, x: 0, y: 0, w: 200, h: 100 }],
   nodes: [node('n1', 10), node('n2', 100), node('n3', 300), node('n4', 450)],
   edges: [

@@ -1,6 +1,7 @@
 import type { ServiceFlow } from '@dependency-explorer/data'
 import type { FlagRegistryEntry } from '../../utils/flagRegistry'
 import styles from './listPage.module.css'
+import { plural } from '../../utils/plural'
 
 interface Props {
   entry: FlagRegistryEntry
@@ -11,7 +12,7 @@ export function FlagPage({ entry, onSelectFlow }: Props) {
   return (
     <section aria-label="Feature flag" className={styles.page}>
       <h1 className={styles.title}><span aria-hidden="true">🚩</span><code>{entry.name}</code><span className={styles.kind}>{entry.kind}</span></h1>
-      <p className={styles.meta}>gates {entry.flows.length} flow{entry.flows.length === 1 ? '' : 's'}{entry.scope ? ` · canary scope: ${entry.scope}` : ''}</p>
+      <p className={styles.meta}>gates {plural(entry.flows.length, 'flow')}{entry.scope ? ` · canary scope: ${entry.scope}` : ''}</p>
       <ul className={styles.cards}>
         {entry.flows.map(flow => {
           const gatedEdges = (flow.codeEdges ?? []).filter(e => (e.flags ?? []).some(f => f.name === entry.name))

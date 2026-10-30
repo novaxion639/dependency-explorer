@@ -22,18 +22,8 @@ export function OwnershipPage({
   const teams = map.teams ?? []
 
   const { byTeam, owned, unowned } = useMemo(() => {
-    const byTeam = new Map<string, ConnectivityService[]>()
-    const owned: ConnectivityService[] = []
-    const unowned: ConnectivityService[] = []
-    for (const svc of map.services) {
-      if (svc.teamId) {
-        owned.push(svc)
-        byTeam.set(svc.teamId, [...(byTeam.get(svc.teamId) ?? []), svc])
-      } else {
-        unowned.push(svc)
-      }
-    }
-    return { byTeam, owned, unowned }
+    const owned = map.services.filter(svc => svc.teamId)
+    return { byTeam: Map.groupBy(owned, svc => svc.teamId), owned, unowned: map.services.filter(svc => !svc.teamId) }
   }, [map.services])
 
   const sortedTeams = useMemo(

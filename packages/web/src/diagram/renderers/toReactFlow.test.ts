@@ -7,7 +7,7 @@ import { autoFlow } from '../layouts/fixtures'
 import { swimlanes } from '../layouts/swimlane'
 
 const model: DiagramModel = {
-  id: 'm', title: 'm', width: 600, height: 200, renderers: ['react-flow'],
+  id: 'm', title: 'm', width: 600, height: 200,
   groups: [{ id: 'G', kind: 'group', label: 'G', members: ['a'], fontSize: 12, x: 0, y: 0, w: 220, h: 80 }],
   nodes: [
     { id: 'a', kind: 'service', label: 'a', detail: [], stores: [], fontSize: 12, x: 10, y: 30, w: 190, h: 29 },

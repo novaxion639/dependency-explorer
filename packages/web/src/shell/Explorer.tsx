@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { monolithRoutes, resourceSurface } from '@dependency-explorer/data'
+import { MONOLITH, monolithRoutes, resourceSurface } from '@dependency-explorer/data'
 import { canGoBack, edgeKey, pagePatch, selectServicePatch, useUrlState } from '../hooks/useUrlState'
 import { SearchModal } from '../components/SearchModal'
 import { NotFoundBanner } from '../components/areas/NotFoundBanner'
@@ -25,7 +25,7 @@ import { MonolithPage } from './MonolithPage'
 import { areaSlice } from '../utils/areaSlice'
 import { connectionsFor, fileIndex, flagRegistry, map, resourceIds, searchIndex } from './dataIndexes'
 import { validateUrlState } from './validateUrlState'
-import { keyInfo, onPresentKey } from './presentMode'
+import { onPresentKey } from './presentMode'
 
 
 export function Explorer() {
@@ -45,7 +45,7 @@ export function Explorer() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      onPresentKey({ ...keyInfo(e), stopPropagation: () => e.stopPropagation() }, url.present, patch)
+      onPresentKey(e, url.present, patch)
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
@@ -84,12 +84,12 @@ export function Explorer() {
     : url.page === 'flows' ? (selectedFlow
       ? <FlowPage flow={selectedFlow} url={url} patch={patch} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, unit: null, chapter: null }))} />
       : flagEntry ? <FlagPage entry={flagEntry} onSelectFlow={flow => patch({ flow: flow.id, flag: null })} />
-      : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, file: null, unit: (flow.codeUnits ?? []).find(u => u.service === fileEntry.service && u.path === fileEntry.path)?.id ?? null })} onOpenRoute={id => patch({ page: 'monolith', file: null, drawer: 'skello-app', ep: id })} onOpenResource={openResource} />
+      : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, file: null, unit: (flow.codeUnits ?? []).find(u => u.service === fileEntry.service && u.path === fileEntry.path)?.id ?? null })} onOpenRoute={id => patch({ page: 'monolith', file: null, drawer: MONOLITH, ep: id })} onOpenResource={openResource} />
       : <FlowsIndex service={url.flows} flows={map.flows} map={map} onSelectFlow={flow => patch({ flow: flow.id })} />)
     : url.page === 'resources' ? (url.resource
       ? <ResourcePage id={url.resource} onOpenResource={openResource} onOpenFile={key => patch({ page: 'flows', resource: null, file: key })} onOpenFlow={id => patch({ page: 'flows', flow: id })} onSelectService={selectService} onBlast={id => patch({ page: 'impact', blast: id })} listeners={url} onListeners={patch} />
       : <ResourcesIndex onOpenResource={openResource} />)
-    : url.page === 'impact' ? <ImpactPage origin={url.blast} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onPick={id => patch({ blast: id })} onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))} onOpenFlow={id => patch({ page: 'flows', flow: id })} />
+    : url.page === 'impact' ? <ImpactPage origin={url.blast} onPick={id => patch({ blast: id })} onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))} onOpenFlow={id => patch({ page: 'flows', flow: id })} />
     : <OwnershipPage map={map} focusedTeam={url.team} onFocusTeam={team => patch({ team })} onSelectService={selectService} onOpenArea={id => patch({ page: 'areas', area: id, term: null })} />
 
   return (

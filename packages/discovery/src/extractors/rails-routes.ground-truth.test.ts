@@ -2,11 +2,26 @@ import { describe, it, expect } from 'vitest'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { parseRoutesContent, parseRoutesDump } from './rails-routes'
+import { parseRoutesContent } from './rails-routes'
 
 const ENGINE_ROUTE = /^\/rails\/| stripe_event\//
 const dir = path.join(path.dirname(fileURLToPath(import.meta.url)), '__fixtures__')
 const read = (f: string) => fs.readFileSync(path.join(dir, f), 'utf-8')
+
+function parseRoutesDump(text: string): Array<{ verb: string; path: string; controllerAction: string }> {
+  const out: Array<{ verb: string; path: string; controllerAction: string }> = []
+  for (const block of text.split(/^--\[ Route \d+ \]-+$/m)) {
+    const field = (name: string) => block.match(new RegExp(`^${name}[ \\t]*\\|[ \\t]*(.*)$`, 'm'))?.[1]?.trim() ?? ''
+    const uri = field('URI').replace(/\(\.:format\)$/, '')
+    if (!uri) {
+      continue
+    }
+    for (const verb of field('Verb').split('|').filter(Boolean)) {
+      out.push({ verb, path: uri, controllerAction: field('Controller#Action').replace(/\s*\{.*\}$/, '') })
+    }
+  }
+  return out
+}
 
 describe('routes parser vs rails routes --expanded', () => {
   it('reproduces at least 98% of the router triples', () => {

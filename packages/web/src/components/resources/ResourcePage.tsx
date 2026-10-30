@@ -1,5 +1,5 @@
 import type { ResourceRelation } from '@dependency-explorer/data'
-import { allResourceRelations, connectivityMap, inRailsOrder, listenerSurface, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
+import { allResourceRelations, connectivityMap, inRailsOrder, listenerSurface, resourceImpact, resourceSurface } from '@dependency-explorer/data'
 import { evidenceHref } from '../../utils/evidenceLink'
 import { plural } from '../../utils/plural'
 import { CascadeSection } from './CascadeSection'
@@ -38,7 +38,6 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
     return null
   }
   const { resource, byService, flows, dlq, counts } = impact
-  const note = resourceNotes[id]
   const tableListeners = resource.kind === 'table' ? inRailsOrder(listenerSurface.listeners.filter(l => l.table === id)) : []
   const tables = resource.kind === 'database' ? resourceSurface.resources.filter(r => r.id.startsWith(`${id}.`)) : []
   return (
@@ -51,7 +50,6 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
             return <span key={e}>{i > 0 && ', '}{href ? <a href={href} target="_blank" rel="noreferrer">{e}</a> : e}</span>
           })}
         </p>
-        {note?.description && <p className={styles.note}>{note.description}</p>}
         <p className={styles.counts}>{plural(counts.services, 'service')} · {plural(counts.files, 'file')} · {plural(counts.flows, 'flow')}</p>
         <button type="button" className={styles.impact} onClick={() => onBlast(id)}>If this is down…</button>
       </header>

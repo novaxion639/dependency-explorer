@@ -1,4 +1,4 @@
-import { escapeRegExp, importedFiles, loadWiring, maskStrings, readerFor, stripComments, type Alias, type Read } from './code-wiring'
+import { closer, escapeRegExp, importedFiles, loadWiring, maskStrings, readerFor, stripComments, type Alias, type Read } from './code-wiring'
 
 export interface SourceState {
   name: string
@@ -28,7 +28,6 @@ type Entry =
 interface Context { file: string; aliases: Alias[]; read: Read; unresolved: string[] }
 
 const OPENERS = new Set(['{', '[', '('])
-const CLOSERS = new Set(['}', ']', ')'])
 const QUOTED = /^(['"`])((?:\\.|(?!\1)[^\\])*)\1$/
 const NEXT = /\bNext\s*:\s*(['"`])((?:\\.|(?!\1)[^\\])*)\1/g
 const LAMBDA_KEY = [/formattedLambdaName(?:V2026)?\(\s*['"](\w+)['"]\s*\)/, /['"]Fn::GetAtt['"]\s*:\s*\[\s*['"](\w+?)(?:LambdaFunction)?['"]/]
@@ -42,22 +41,6 @@ export function textOf(raw: string): Text {
   return { src, masked: maskStrings(src) }
 }
 
-export function closer(t: Text, open: number): number {
-  let depth = 0
-  for (let i = open; i < t.masked.length; i++) {
-    const c = t.masked[i] ?? ''
-    if (OPENERS.has(c)) {
-      depth++
-    } else if (CLOSERS.has(c)) {
-      depth--
-      if (depth === 0) {
-        return i
-      }
-    }
-  }
-  return t.masked.length
-}
-
 function skipBlank(t: Text, from: number, to: number): number {
   let i = from
   while (i < to && /[\s,]/.test(t.masked[i] ?? '')) {
@@ -69,7 +52,7 @@ function skipBlank(t: Text, from: number, to: number): number {
 function valueEnd(t: Text, from: number, to: number): number {
   let i = from
   while (i < to && t.masked[i] !== ',') {
-    i = OPENERS.has(t.masked[i] ?? '') ? closer(t, i) + 1 : i + 1
+    i = OPENERS.has(t.masked[i] ?? '') ? closer(t.masked, i) + 1 : i + 1
   }
   return Math.min(i, to)
 }
@@ -80,7 +63,7 @@ function keyAt(t: Text, at: number): { name: string; end: number } | null {
     return { name: unescape(quoted[2] ?? ''), end: at + quoted[0].length }
   }
   if (t.src[at] === '[') {
-    const close = closer(t, at)
+    const close = closer(t.masked, at)
     const expr = t.src.slice(at + 1, close).trim()
     const literal = QUOTED.exec(expr)?.[2]
     return { name: literal === undefined ? expr : unescape(literal), end: close + 1 }
@@ -96,7 +79,7 @@ function entries(t: Text, open: number, close: number): Entry[] {
     const spread = /^\.\.\.\s*([\w$]+)\s*\(/.exec(t.src.slice(at))
     if (spread) {
       const paren = at + spread[0].length - 1
-      const end = closer(t, paren)
+      const end = closer(t.masked, paren)
       const args = [...t.src.slice(paren + 1, end).matchAll(/(['"`])([^'"`]*)\1/g)].map(m => m[2] ?? '')
       found.push({ kind: 'spread', callee: spread[1] ?? '', args })
       at = skipBlank(t, end + 1, close)
@@ -120,7 +103,7 @@ function entries(t: Text, open: number, close: number): Entry[] {
     }
     const start = key.end + colon[0].length
     if (t.masked[start] === '{') {
-      const end = closer(t, start)
+      const end = closer(t.masked, start)
       found.push({ kind: 'object', name: key.name, open: start, close: end })
       at = skipBlank(t, end + 1, close)
     } else {
@@ -153,11 +136,11 @@ function arrayObjects(t: Text, list: Entry[], name: string): Array<{ open: numbe
   if (e?.kind !== 'value' || t.masked[e.start] !== '[') {
     return []
   }
-  const end = closer(t, e.start)
+  const end = closer(t.masked, e.start)
   const found: Array<{ open: number; close: number }> = []
   for (let i = e.start + 1; i < end; i++) {
     if (t.masked[i] === '{') {
-      const close = closer(t, i)
+      const close = closer(t.masked, i)
       found.push({ open: i, close })
       i = close
     }
@@ -179,7 +162,7 @@ function spreadCatches(t: Text, list: Entry[], ctx: Context): string[] {
       ctx.unresolved.push(e.callee)
       return []
     }
-    return catchesIn(helper, entries(helper, 0, closer(helper, 0)))
+    return catchesIn(helper, entries(helper, 0, closer(helper.masked, 0)))
   })
 }
 
@@ -234,7 +217,7 @@ function helperObject(callee: string, args: string[], t: Text, ctx: Context): Te
       continue
     }
     const open = at + body.index + body[0].length - 1
-    let objectText = candidate.src.slice(open, closer(candidate, open) + 1)
+    let objectText = candidate.src.slice(open, closer(candidate.masked, open) + 1)
     params.split(',').map(p => p.trim()).filter(Boolean).forEach((param, i) => {
       const name = /^[\w$]+/.exec(param)?.[0] ?? ''
       const fallback = QUOTED.exec(param.split('=')[1]?.trim() ?? '')?.[2] ?? ''
@@ -261,7 +244,7 @@ function statesIn(t: Text, open: number, close: number, ctx: Context): SourceSta
         ctx.unresolved.push(e.callee)
         return []
       }
-      return statesIn(helper, 0, closer(helper, 0), ctx)
+      return statesIn(helper, 0, closer(helper.masked, 0), ctx)
     }
     ctx.unresolved.push(e.kind === 'unread' ? e.text : e.name)
     return []
@@ -280,7 +263,7 @@ export function readMachine(repoDir: string, file: string, machine: string): Sou
     return null
   }
   const open = key.index + key[0].length - 1
-  const top = entries(t, open, closer(t, open))
+  const top = entries(t, open, closer(t.masked, open))
   const definition = object(top, 'definition')
   const def = definition ? entries(t, definition.open, definition.close) : top
   const states = object(def, 'States')

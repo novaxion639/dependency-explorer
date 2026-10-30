@@ -34,7 +34,7 @@ import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extract
 import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
-import { findQueueSenders, walkFiles } from './extractors/queue-senders'
+import { findQueueSenders, sourceFiles } from './extractors/queue-senders'
 import { tableRelations, messagingRelations, atlasRelations, dmsRelations, dedupeRelations } from './resource-relations'
 import { checkFlows, checkFlowCodeLayers, checkDomainRules, checkFeatureFlags, checkFailureLayer, checkAuthContext, checkPiiRefs, type FlowCheckResult, type CodeLayerCheckResult, type RuleCheckResult, type FlagCheckResult, type FailureCheckResult, type AuthCheckResult, type PiiCheckResult } from './flow-check'
 import { extractPiiFacts, type PiiFacts } from './extractors/pii'
@@ -44,29 +44,30 @@ import { checkContractRefs } from './flow-check'
 import { extractSdkRegistry } from './extractors/sdk-registry'
 import { verifySdkUsage, type SdkUsageFinding } from './sdk-usage'
 import { checkAreas, COVERAGE_ROOTS, type AreaCheckResult } from './area-check'
-import { pinRepos, buildGraphs, applyModeError, emptyPinError, type PinnedRepo, type PinSkip } from './pinned'
-import { checkCodeGrades, loadRepoGraph, type Grade, type GradeFinding } from './code-grades'
+import { PINNED_BASE, pinRepos, buildGraphs, applyModeError, emptyPinError, type PinnedRepo, type PinSkip } from './pinned'
+import { checkCodeGrades, readRepoGraph, type Grade, type GradeFinding } from './code-grades'
 import { checkBranches } from './branch-check'
 import { checkStateMachines } from './state-machine-check'
-import { machineSection } from './state-machines-report'
 import { extractRailsSchema } from './extractors/rails-schema'
 import { buildRegistry } from './resource-registry'
 import { checkResources, type ResourceFinding } from './resource-check'
 import { extractListeners } from './extractors/rails-listeners'
 import { cdcRelations } from './cdc'
 import { surfaceDrift, type ListenerCheck } from './listener-check'
-import { listenerSection } from './listeners-report'
+import { listenerSection, machineSection } from './finding-sections'
 import { readerFor } from './code-wiring'
 import { findingKeys, diffBaseline, readBaseline, readBaselineRepos, unscannedRepos, writeBaseline } from './baseline'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const SOURCE_BASE = path.resolve(__dirname, '../../../../')
 const PINNED_MODE = process.argv.includes('--pinned')
-const PINNED_BASE = path.resolve(__dirname, '../../../.pinned')
+
+const APP_REPOS = ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock']
+const isAppRepo = (name: string) => name.startsWith('svc-') || APP_REPOS.includes(name)
 
 function scanTargets(base: string): string[] {
   return fs.readdirSync(base, { withFileTypes: true })
-    .filter(e => e.isDirectory() && (e.name.startsWith('svc-') || e.name.endsWith('-tf') || ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock', 'skello-libs-ts'].includes(e.name)))
+    .filter(e => e.isDirectory() && (isAppRepo(e.name) || e.name.endsWith('-tf') || e.name === 'skello-libs-ts'))
     .map(e => e.name)
     .sort()
 }
@@ -124,7 +125,6 @@ const AWS_SNAPSHOT_DIR = resolveAwsSnapshotDir()
 // ── Dataset lookups ───────────────────────────────────────────────────────────
 
 const serviceNames = new Set(connectivityMap.services.map(s => s.name))
-const connectionKeys = new Set(connectivityMap.connections.map(c => `${c.from}→${c.to}`))
 const connectionsByKey = new Map(connectivityMap.connections.map(c => [`${c.from}→${c.to}`, c]))
 const slugToTeamId = new Map<string, string>()
 for (const team of connectivityMap.teams ?? []) {
@@ -221,7 +221,7 @@ function findRepos(): string[] {
     return fs.readdirSync(REPO_BASE, { withFileTypes: true })
       .filter(e => e.isDirectory()
         && !e.name.endsWith('-tf') // terraform checkouts have their own pass
-        && (e.name.startsWith('svc-') || ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock'].includes(e.name)))
+        && isAppRepo(e.name))
       .map(e => e.name)
       .sort()
   } catch {
@@ -307,7 +307,7 @@ function run(): Report {
 
   const addEvidence = (from: string, to: string, evidence: string, transport: string) => {
     const key = `${from}→${to}`
-    if (connectionKeys.has(key)) {
+    if (connectionsByKey.has(key)) {
       ;(report.connectionEvidence[key] ??= []).push(evidence)
     } else {
       const existing = candidatesByKey.get(key)
@@ -372,7 +372,7 @@ function run(): Report {
         const foreign = source && source !== 'self' ? source : null
         const cdcChannelInMap = foreign != null && connectivityMap.connections.some(c =>
           c.from === repo && c.to === foreign && (c.protocol === 'cdc' || c.protocol === 'kinesis'))
-        const pairInMap = foreign != null && connectionKeys.has(`${repo}→${foreign}`)
+        const pairInMap = foreign != null && connectionsByKey.has(`${repo}→${foreign}`)
         if (foreign && (cdcChannelInMap || !pairInMap)) {
           // stamp the existing cdc/kinesis channel, or propose a new candidate;
           // a pair mapped under a DIFFERENT protocol only is flagged in the
@@ -390,7 +390,7 @@ function run(): Report {
         const foreign = source && source !== 'self' ? source : null
         const s3ChannelInMap = foreign != null && connectivityMap.connections.some(c =>
           c.from === repo && c.to === foreign && c.protocol === 's3')
-        const pairInMap = foreign != null && connectionKeys.has(`${repo}→${foreign}`)
+        const pairInMap = foreign != null && connectionsByKey.has(`${repo}→${foreign}`)
         if (foreign && (s3ChannelInMap || !pairInMap)) {
           addEvidence(repo, foreign,
             `serverless ${sls.source}: s3 bucket-notification trigger on ${t.bucket}${t.functionName ? ` (${t.functionName})` : ''}`,
@@ -709,14 +709,13 @@ function run(): Report {
   const readSources = (repo: string, files: string[]) =>
     files.map(f => ({ file: path.relative(path.join(REPO_BASE, repo), f), source: fs.readFileSync(f, 'utf-8') }))
   const monolithFiles = railsSchema
-    ? readSources('skello-app', ['app', 'lib', 'config'].flatMap(dir => walkFiles(path.join(REPO_BASE, 'skello-app', dir))).filter(f => f.endsWith('.rb')))
+    ? readSources('skello-app', ['app', 'lib', 'config'].flatMap(dir => sourceFiles(path.join(REPO_BASE, 'skello-app', dir))).filter(f => f.endsWith('.rb')))
     : []
-  const graphFile = path.join(REPO_BASE, 'skello-app', 'graphify-out', 'graph.json')
   const monolithPin = PIN?.pinned.find(p => p.repo === 'skello-app')
-  const parsedGraph = monolithPin && fs.existsSync(graphFile) ? loadRepoGraph(JSON.parse(fs.readFileSync(graphFile, 'utf-8'))) : null
+  const parsedGraph = monolithPin ? readRepoGraph(path.join(REPO_BASE, 'skello-app')) : null
   const monolithGraph = parsedGraph && parsedGraph.builtAt === monolithPin?.sha ? parsedGraph : null
   const sourcesByRepo = new Map(repos.filter(repo => repo !== 'skello-app-front').map(repo => [repo, readSources(repo, [
-    ...['src', 'app', 'lib', 'serverless', 'config'].flatMap(d => walkFiles(path.join(REPO_BASE, repo, d))),
+    ...['src', 'app', 'lib', 'serverless', 'config'].flatMap(d => sourceFiles(path.join(REPO_BASE, repo, d))),
     ...['serverless.ts', 'serverless.yml'].map(f => path.join(REPO_BASE, repo, f)).filter(f => fs.existsSync(f)),
   ])]))
   report.liveRelations = dedupeRelations([

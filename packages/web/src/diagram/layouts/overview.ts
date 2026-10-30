@@ -1,8 +1,8 @@
-import { buildContextLanes, getServiceLane, type ConnectivityMap, type ProductArea } from '@dependency-explorer/data'
+import { buildContextLanes, type ConnectivityMap, type ProductArea } from '@dependency-explorer/data'
 import { aggregateEdges } from '../aggregate'
 import { linesHeight } from '../geometry'
-import { ALL_RENDERERS, type DiagramGroup, type DiagramModel, type DiagramNode, type NodeKind } from '../model'
-import { areaId, CLIENTS_ID, MONOLITH_ID, PLATFORM_ID, serviceId } from './ids'
+import { type DiagramGroup, type DiagramModel, type DiagramNode, type NodeKind } from '../model'
+import { areaId, CLIENTS_ID, homeOf, MONOLITH_ID, PLATFORM_ID, serviceId } from './ids'
 
 const FONT = 12
 const CHIP_W = 192
@@ -62,16 +62,8 @@ export function overviewMap(map: ConnectivityMap, spotlight: string | null): Dia
   platform.forEach((area, i) => groups.push(placeArea(area, servicesOf.get(area.id) ?? [], PAD + i * (AREA_W + GAP), platformY + HEAD, nodes)))
   groups.push({ id: PLATFORM_ID, kind: 'band', label: 'Platform', members: platform.map(a => areaId(a.id)), fontSize: FONT, x: 0, y: platformY, w: width, h: HEAD + platformInner + PAD })
 
-  const groupOf = (service: string): string | null => {
-    if (ctx.clients.includes(service)) {
-      return CLIENTS_ID
-    }
-    if (ctx.monolith.includes(service)) {
-      return MONOLITH_ID
-    }
-    const lane = getServiceLane(service, areas)
-    return lane ? areaId(lane.id) : null
-  }
+  const home = homeOf(map)
+  const groupOf = (service: string) => home(service)?.id ?? null
   const edges = spotlight
     ? aggregateEdges(map.connections, c => {
       const from = groupOf(c.from)
@@ -82,6 +74,6 @@ export function overviewMap(map: ConnectivityMap, spotlight: string | null): Dia
   groups.sort((a, b) => b.w * b.h - a.w * a.h)
   return {
     id: 'overview', title: 'Microservices by product area', width, height: platformY + HEAD + platformInner + PAD,
-    nodes, groups, edges, renderers: ALL_RENDERERS,
+    nodes, groups, edges,
   }
 }

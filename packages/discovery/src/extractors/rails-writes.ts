@@ -1,5 +1,5 @@
 import type { Runs, WriteEvent } from '@dependency-explorer/schema'
-import { escapeRegExp, receiverClass } from '../code-wiring'
+import { closer, escapeRegExp, receiverClass } from '../code-wiring'
 
 export interface WriteKind { runs: Runs; events: WriteEvent[] }
 export interface WriteResolver { byClass: Map<string, { table: string }>; classes: Set<string>; associations: Map<string, Set<string>> }
@@ -8,7 +8,7 @@ export interface WriteHit { table: string; call: string; kind: WriteKind; grade:
 
 const kind = (runs: Runs, ...events: WriteEvent[]): WriteKind => ({ runs, events })
 
-export const WRITE_KINDS: Record<string, WriteKind> = {
+const WRITE_KINDS: Record<string, WriteKind> = {
   save: kind('all', 'create', 'update'),
   'save!': kind('all', 'create', 'update'),
   create: kind('all', 'create'),
@@ -97,22 +97,7 @@ export function joinStatements(lines: SourceLine[]): SourceLine[] {
 }
 
 function argumentsAt(text: string, from: number): string {
-  if (text.charAt(from) !== '(') {
-    return ''
-  }
-  let depth = 0
-  for (let i = from; i < text.length; i++) {
-    const ch = text.charAt(i)
-    if (ch === '(') {
-      depth++
-    } else if (ch === ')') {
-      depth--
-      if (depth === 0) {
-        return text.slice(from + 1, i)
-      }
-    }
-  }
-  return text.slice(from + 1)
+  return text.charAt(from) === '(' ? text.slice(from + 1, closer(text, from)) : ''
 }
 
 export function writeKind(call: string, receiver: string, args: string): WriteKind | null {

@@ -1,6 +1,6 @@
 import { allStates, type CrudOperation, type MachineState, type StateMachine } from '@dependency-explorer/data'
 
-export interface Transition { from: string; to: string; label?: string }
+interface Transition { from: string; to: string; label?: string }
 
 export function machineLane(id: string): string {
   return `lane:machine:${id}`
@@ -124,12 +124,11 @@ export function machineTransitions(machine: StateMachine): Transition[] {
 
 export function machineFrames(machine: StateMachine): Array<{ id: string; state: string; label: string; members: string[] }> {
   const skip = catchTargets(machine)
-  const nested = (state: MachineState): MachineState[] => (state.states ?? []).flatMap(s => [s, ...nested(s)])
   return allStates(machine).filter(isContainer).map(state => ({
     id: `frame:${state.id}`,
     state: state.id,
     label: `${state.type === 'map' ? (state.concurrency ? `map ×${state.concurrency}` : 'map') : 'parallel'}${state.catches ? ' ⚠' : ''}`,
-    members: nested(state).filter(s => !isContainer(s) && !skip.has(s.id)).map(stateKey),
+    members: allStates({ states: state.states ?? [] }).filter(s => !isContainer(s) && !skip.has(s.id)).map(stateKey),
   }))
 }
 

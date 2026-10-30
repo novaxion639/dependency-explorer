@@ -2,7 +2,7 @@ import type { Effect } from '../utils/impact'
 import type { Box, DiagramModel } from './model'
 
 export type Emphasis = 'normal' | 'dim' | 'on' | 'origin' | Effect
-export type ImpactMarks = ReadonlyMap<string, Effect | 'origin'>
+type ImpactMarks = ReadonlyMap<string, Effect | 'origin'>
 export interface FocusState { spotlight: string | null; impact: ImpactMarks | null; chapter?: ReadonlySet<string> | null }
 export interface Emphases { nodes: Map<string, Emphasis>; groups: Map<string, Emphasis>; edges: Map<string, Emphasis> }
 

@@ -39,6 +39,5 @@ describe('monolithTreemap', () => {
     const size = (id: string) => (area(id)?.w ?? 0) * (area(id)?.h ?? 0)
     expect(size('planning')).toBeGreaterThan(size('billing'))
     expect(area('planning')?.ref).toEqual({ type: 'area', id: 'planning' })
-    expect(m.renderers).toEqual(['react-flow', 'svg'])
   })
 })

@@ -198,16 +198,9 @@ describe('pagePatch', () => {
   })
 })
 
-describe('renderer', () => {
-  it('parses an unknown renderer as React Flow', () => {
-    expect(parseUrl('?page=microservices&renderer=bogus').renderer).toBe('react-flow')
-    expect(parseUrl('?page=microservices&renderer=svg').renderer).toBe('svg')
-    expect(parseUrl('?renderer=mermaid').renderer).toBe('mermaid')
-  })
-  it('writes the renderer only when it is not the default, and keeps it across pages', () => {
-    expect(toQueryString(parseUrl('?page=microservices'))).toBe('page=microservices')
-    expect(toQueryString(parseUrl('?page=microservices&renderer=svg'))).toBe('page=microservices&renderer=svg')
-    expect(pagePatch('monolith')).not.toHaveProperty('renderer')
+describe('legacy renderer key', () => {
+  it('drops it from permalinks', () => {
+    expect(toQueryString(parseUrl('?page=microservices&renderer=svg'))).toBe('page=microservices')
   })
 })
 

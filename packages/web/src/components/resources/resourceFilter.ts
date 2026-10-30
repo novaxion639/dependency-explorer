@@ -2,7 +2,7 @@ import type { Resource, TableListenerMetrics } from '@dependency-explorer/data'
 import { connectivityMap } from '@dependency-explorer/data'
 
 export type ResourceSort = 'name' | 'listeners' | 'alsoChanges' | 'bypassing'
-export interface ResourceFilter { kind: Resource['kind'] | 'all'; owner: string; orphansOnly: boolean; cyclesOnly: boolean; sort: ResourceSort }
+interface ResourceFilter { kind: Resource['kind'] | 'all'; owner: string; orphansOnly: boolean; cyclesOnly: boolean; sort: ResourceSort }
 
 const inFlow = new Set(connectivityMap.flows.flatMap(f => (f.infraNodes ?? []).flatMap(n => n.resources ?? [])))
 

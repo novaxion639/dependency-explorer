@@ -6,7 +6,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import type { Emphases } from '../focus'
 import { edgeName } from '../edgeName'
-import { edgeSegment, type Point, type Segment } from '../geometry'
+import { edgeSegment, segmentPoints, type Point, type Segment } from '../geometry'
 import type { Box, DiagramModel, DiagramRef } from '../model'
 import { DASH, nodeFill, PAINT, strokeWidth } from '../paint'
 import { enteredNodeId } from './nodeKey'
@@ -52,10 +52,6 @@ function nodeLabel(n: InternalNode<DiagramFlowNode>): string {
   return 'group' in data ? data.group.label : data.node.label
 }
 
-function straight(s: Segment): Point[] {
-  return [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]
-}
-
 function labelPoint(s: Segment): Point {
   return { x: s.lx, y: s.ly }
 }
@@ -69,7 +65,7 @@ function DiagramEdgeView({ id, source, target, markerEnd, data }: EdgeProps<Diag
   }
   const { edge, emphasis } = data
   const segment = () => edgeSegment(boxOf(from), boxOf(to), edge.lane, edge.lanes)
-  const path = `M ${(edge.route ?? straight(segment())).map(p => `${p.x} ${p.y}`).join(' L ')}`
+  const path = `M ${(edge.route ?? segmentPoints(segment())).map(p => `${p.x} ${p.y}`).join(' L ')}`
   const at = edge.labelBox ? { x: edge.labelBox.x + edge.labelBox.w / 2, y: edge.labelBox.y + edge.labelBox.h / 2 } : labelPoint(segment())
   const paint = PAINT[emphasis]
   const ref = edge.ref

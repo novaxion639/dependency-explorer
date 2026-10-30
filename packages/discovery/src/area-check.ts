@@ -1,5 +1,5 @@
 import * as fs from 'node:fs'
-import { escapeRegExp } from './code-wiring'
+import { escapeRegExp, walkFiles } from './code-wiring'
 import * as path from 'node:path'
 import type { ExternalSystem, ProductArea } from '@dependency-explorer/schema'
 import { areasForFile, globToRegExp } from '@dependency-explorer/data'
@@ -36,24 +36,12 @@ export interface AreaCheckResult {
   skippedRepos: string[]
 }
 
-export function listRepoFiles(repoDir: string): string[] {
-  const out: string[] = []
-  const walk = (rel: string) => {
-    for (const entry of fs.readdirSync(path.join(repoDir, rel), { withFileTypes: true })) {
-      const p = rel ? `${rel}/${entry.name}` : entry.name
-      if (entry.isDirectory() && !SKIP_DIRS.has(entry.name)) {
-        walk(p)
-      } else if (entry.isFile()) {
-        out.push(p)
-      }
-    }
-  }
-  walk('')
-  return out
+function listRepoFiles(repoDir: string): string[] {
+  return walkFiles(repoDir, () => true, name => SKIP_DIRS.has(name)).map(f => path.relative(repoDir, f))
 }
 
 
-export function symbolPattern(symbol: string): RegExp {
+function symbolPattern(symbol: string): RegExp {
   return new RegExp(`\\b(class|module|interface|type|enum|const|function)\\s+${escapeRegExp(symbol)}\\b`)
 }
 

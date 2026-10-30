@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { walkFiles } from '../code-wiring'
 
 export interface DiscoveredEndpoint {
   method: string
@@ -321,7 +322,7 @@ function findFunctionIdentity(lines: string[], eventLineIdx: number): { function
  * DLQ/retry wiring from serverless TS source — the three static shapes.
  * Exported for tests.
  */
-export function parseDlqStatic(content: string): DlqWiringFact[] {
+function parseDlqStatic(content: string): DlqWiringFact[] {
   const facts: DlqWiringFact[] = []
   const lines = content.split('\n')
 
@@ -420,7 +421,7 @@ export function parseDlqStatic(content: string): DlqWiringFact[] {
  * DLQ wiring from Terraform module blocks (<repo>-tf) — queues managed
  * outside serverless: `name = "…"` + `dlq_name = "…"` (+ maxReceiveCount).
  */
-export function parseTerraformDlq(content: string): DlqWiringFact[] {
+function parseTerraformDlq(content: string): DlqWiringFact[] {
   const facts: DlqWiringFact[] = []
   const dlqRe = /\bdlq_name\s*=\s*"([^"]+)"/g
   for (let m = dlqRe.exec(content); m; m = dlqRe.exec(content)) {
@@ -647,22 +648,6 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
   return { endpoints, queueNames: [...queueNames].sort(), streamConsumers, s3Triggers, schedules, ownedResources, dlqWirings: parseDlqStatic(content), authorizerNames: [...authorizerNames].sort(), sqsConsumers: parseSqsConsumers(content) }
 }
 
-function walkTsFiles(dir: string, out: string[] = []): string[] {
-  let entries: fs.Dirent[]
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const e of entries) {
-    if (e.name === 'node_modules' || e.name.startsWith('.')) continue
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) walkTsFiles(full, out)
-    else if (e.name.endsWith('.ts')) out.push(full)
-  }
-  return out
-}
-
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 export function extractServerless(repoBase: string, repo: string): ServerlessFacts | null {
@@ -700,7 +685,7 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
   const sources: string[] = []
   const rootConfig = path.join(repoPath, 'serverless.ts')
   if (fs.existsSync(rootConfig)) sources.push(rootConfig)
-  sources.push(...walkTsFiles(path.join(repoPath, 'serverless')))
+  sources.push(...walkFiles(path.join(repoPath, 'serverless'), f => f.endsWith('.ts')))
   if (!sources.length) return null
 
   const merged: Omit<ServerlessFacts, 'source'> = {

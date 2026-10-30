@@ -1,14 +1,16 @@
 const FIELDS = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
 
-export interface KeyInfo { key: string; metaKey: boolean; ctrlKey: boolean; altKey: boolean; targetTag: string; targetEditable: boolean; repeat: boolean; defaultPrevented: boolean }
+type KeyPress = Pick<KeyboardEvent, 'key' | 'metaKey' | 'ctrlKey' | 'altKey' | 'repeat' | 'defaultPrevented'> & { target: unknown }
 
-export function keyInfo(e: KeyboardEvent): KeyInfo {
-  const target = e.target instanceof HTMLElement ? e.target : null
-  return { key: e.key, metaKey: e.metaKey, ctrlKey: e.ctrlKey, altKey: e.altKey, targetTag: target?.tagName ?? '', targetEditable: target?.isContentEditable ?? false, repeat: e.repeat, defaultPrevented: e.defaultPrevented }
+function typingIn(target: unknown): boolean {
+  if (typeof target !== 'object' || target === null) {
+    return false
+  }
+  return ('tagName' in target && typeof target.tagName === 'string' && FIELDS.has(target.tagName)) || ('isContentEditable' in target && target.isContentEditable === true)
 }
 
-export function presentKeyAction(e: KeyInfo, present: boolean): 'toggle' | 'exit' | null {
-  if (e.repeat || FIELDS.has(e.targetTag) || e.targetEditable || e.metaKey || e.ctrlKey || e.altKey) {
+export function presentKeyAction(e: KeyPress, present: boolean): 'toggle' | 'exit' | null {
+  if (e.repeat || typingIn(e.target) || e.metaKey || e.ctrlKey || e.altKey) {
     return null
   }
   if (e.key.toLowerCase() === 'p') {
@@ -21,7 +23,7 @@ export function presentKeyAction(e: KeyInfo, present: boolean): 'toggle' | 'exit
 }
 
 export function onPresentKey(
-  e: Parameters<typeof presentKeyAction>[0] & { stopPropagation: () => void },
+  e: KeyPress & Pick<KeyboardEvent, 'stopPropagation'>,
   present: boolean,
   patch: (p: { present: boolean }) => void,
 ): void {
@@ -37,8 +39,8 @@ export function onPresentKey(
 
 const STEP: Record<string, 'next' | 'prev'> = { ArrowRight: 'next', ArrowDown: 'next', ArrowLeft: 'prev', ArrowUp: 'prev' }
 
-export function presentStepKey(e: KeyInfo): 'next' | 'prev' | null {
-  if (e.defaultPrevented || FIELDS.has(e.targetTag) || e.targetEditable || e.metaKey || e.ctrlKey || e.altKey) {
+export function presentStepKey(e: KeyPress): 'next' | 'prev' | null {
+  if (e.defaultPrevented || typingIn(e.target) || e.metaKey || e.ctrlKey || e.altKey) {
     return null
   }
   return STEP[e.key] ?? null

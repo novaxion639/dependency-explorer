@@ -3,7 +3,8 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 import { ConnectivityMapSchema } from '@dependency-explorer/schema'
-import { loadRepoGraph, gradeEdge, stripComments, checkCodeGrades, crossRepoGrade, bestGrade } from './code-grades'
+import { loadRepoGraph, gradeEdge, checkCodeGrades, crossRepoGrade, bestGrade } from './code-grades'
+import { stripComments } from './code-wiring'
 
 const graphJson = {
   built_at_commit: 'abc123',

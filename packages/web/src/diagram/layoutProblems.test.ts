@@ -7,7 +7,7 @@ function node(id: string, x: number, y: number, label = id): DiagramNode {
 }
 
 const sound: DiagramModel = {
-  id: 'm', title: 'm', width: 400, height: 200, renderers: ['svg'],
+  id: 'm', title: 'm', width: 400, height: 200,
   groups: [{ id: 'G', kind: 'group', label: 'Group', members: ['a'], fontSize: 12, x: 0, y: 0, w: 140, h: 80 }],
   nodes: [node('a', 10, 30), node('b', 200, 30)],
   edges: [{ id: 'e', from: 'G', to: 'b', mode: 'sync', weight: 1, label: 'REST', directed: true, lane: 0, lanes: 1 }],

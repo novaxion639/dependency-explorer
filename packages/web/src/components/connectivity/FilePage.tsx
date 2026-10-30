@@ -1,6 +1,7 @@
 import type { ServiceFlow } from '@dependency-explorer/data'
 import type { FileIndexEntry } from '../../utils/fileIndex'
 import styles from './listPage.module.css'
+import { plural } from '../../utils/plural'
 
 interface Props {
   entry: FileIndexEntry
@@ -16,7 +17,7 @@ export function FilePage({ entry, onSelectFlow, onOpenRoute, onOpenResource }: P
       <p className={styles.meta}>
         {entry.service}
         {entry.labels.length > 0 && <>{' · '}{entry.labels.join(' · ')}</>}
-        {' · '}traversed by {entry.flows.length} flow{entry.flows.length === 1 ? '' : 's'}
+        {' · '}traversed by {plural(entry.flows.length, 'flow')}
       </p>
       <ul className={styles.cards}>
         {entry.flows.map(flow => (

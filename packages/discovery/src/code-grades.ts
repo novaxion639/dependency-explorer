@@ -1,9 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
-import { escapeRegExp, importedFiles, loadWiring, readerFor, stripComments, wiredGrade, type Wiring } from './code-wiring'
-
-export { stripComments }
+import { escapeRegExp, importedFiles, isRecord, loadWiring, readerFor, stripComments, wiredGrade, type Wiring } from './code-wiring'
 import { routeGrade, type RouteRef } from './route-grades'
 import { loadVueRoutes, routerGrade, type VueRoute } from './router-grades'
 
@@ -19,10 +17,6 @@ export interface RepoGraph {
 const STRUCTURAL = new Set(['calls', 'references', 'method', 'contains', 'inherits', 'mixes_in'])
 const IMPORTS = new Set(['imports', 'imports_from', 're_exports'])
 const LAST_SEGMENT_MIN = 8
-
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
 
 function str(v: unknown): string {
   return typeof v === 'string' ? v : ''
@@ -119,6 +113,11 @@ export interface GradeFinding { flow: string; kind: 'ungraded-edge' | 'stale-gra
 
 const MONOLITH = 'skello-app'
 
+export function readRepoGraph(repoDir: string): RepoGraph | null {
+  const file = path.join(repoDir, 'graphify-out', 'graph.json')
+  return fs.existsSync(file) ? loadRepoGraph(JSON.parse(fs.readFileSync(file, 'utf-8'))) : null
+}
+
 export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: (repo: string) => string | null, routes: ReadonlyArray<RouteRef> = []) {
   const findings: GradeFinding[] = []
   const grades: Record<string, Grade> = {}
@@ -127,8 +126,7 @@ export function checkCodeGrades(map: ConnectivityMap, repoBase: string, headOf: 
   const graphs = new Map<string, RepoGraph | null>()
   const graphFor = (repo: string): RepoGraph | null => {
     if (!graphs.has(repo)) {
-      const file = path.join(repoBase, repo, 'graphify-out', 'graph.json')
-      const graph = fs.existsSync(file) ? loadRepoGraph(JSON.parse(fs.readFileSync(file, 'utf-8'))) : null
+      const graph = readRepoGraph(path.join(repoBase, repo))
       const head = headOf(repo)
       if (!head) {
         graphs.set(repo, null)

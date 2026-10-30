@@ -1,7 +1,7 @@
 import { buildContextLanes, type ConnectivityMap, type Resource, type ServiceConnection } from '@dependency-explorer/data'
 import { aggregateEdges } from '../aggregate'
 import { fitLabel, linesHeight } from '../geometry'
-import { ALL_RENDERERS, type DiagramGroup, type DiagramModel, type DiagramNode } from '../model'
+import { type DiagramGroup, type DiagramModel, type DiagramNode } from '../model'
 import { SUBJECT_ID } from './ids'
 import { subjectCard } from './subject'
 
@@ -96,5 +96,5 @@ export function serviceByHow(map: ConnectivityMap, resources: Resource[], name: 
     return c.to === name ? [group, SUBJECT_ID] : [SUBJECT_ID, group]
   })
   const width = Math.max(...[...nodes, ...groups].map(b => b.x + b.w))
-  return { id: `service:${name}`, title: `${name} — grouped by how they talk`, width, height, nodes, groups, edges, renderers: ALL_RENDERERS }
+  return { id: `service:${name}`, title: `${name} — grouped by how they talk`, width, height, nodes, groups, edges }
 }

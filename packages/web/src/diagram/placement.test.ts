@@ -3,7 +3,7 @@ import type { DiagramModel } from './model'
 import { moveNode, NO_PLACEMENT, placed, placedForExport } from './placement'
 
 const model = (id: string, label = 'REST'): DiagramModel => ({
-  id, title: id, width: 300, height: 120, renderers: ['svg'], groups: [],
+  id, title: id, width: 300, height: 120, groups: [],
   nodes: [{ id: 'a', kind: 'service', label: 'svc-a', detail: [], stores: [], fontSize: 12, x: 10, y: 10, w: 120, h: 29 }],
   edges: [{ id: 'e', from: 'a', to: 'a', mode: 'sync', weight: 1, label, directed: true, lane: 0, lanes: 1 }],
 })
@@ -25,5 +25,10 @@ describe('placement', () => {
     expect(out.nodes[0]).toMatchObject({ x: 250, y: 200 })
     expect([out.width, out.height]).toEqual([370, 229])
     expect(placedForExport(model('other'), moved)).toEqual(model('other'))
+  })
+  it('shifts a node dragged past the top-left edge back onto the export canvas', () => {
+    const out = placedForExport(model('m'), moveNode(NO_PLACEMENT, 'm', 'a', { x: -20, y: 200 }))
+    expect(out.nodes[0]).toMatchObject({ x: 0, y: 200 })
+    expect([out.width, out.height]).toEqual([320, 229])
   })
 })

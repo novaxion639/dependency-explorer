@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { kebab } from '@dependency-explorer/data'
 
 export type Alias = { prefix: string; dir: string; scope: string }
 export type Read = (repoPath: string) => string | null
@@ -36,19 +37,23 @@ function statementEnd(source: string, from: number, limit: number): number {
   return limit
 }
 
-function closingParen(code: string, open: number): number {
+const CLOSING: Record<string, string> = { '(': ')', '[': ']', '{': '}' }
+
+export function closer(text: string, open: number): number {
+  const opener = text.charAt(open)
+  const closing = CLOSING[opener]
   let depth = 0
-  for (let i = open; i < code.length; i++) {
-    if (code[i] === '(') {
+  for (let i = open; i < text.length; i++) {
+    if (text[i] === opener) {
       depth++
-    } else if (code[i] === ')') {
+    } else if (text[i] === closing) {
       depth--
       if (depth === 0) {
         return i
       }
     }
   }
-  return code.length
+  return text.length
 }
 
 function outerConstructions(code: string): Construction[] {
@@ -56,7 +61,7 @@ function outerConstructions(code: string): Construction[] {
   const call = new RegExp(NEW_CALL.source, 'g')
   for (let m = call.exec(code); m !== null; m = call.exec(code)) {
     const open = m.index + m[0].length - 1
-    const close = closingParen(code, open)
+    const close = closer(code, open)
     out.push({ cls: m[1] ?? '', args: code.slice(open + 1, close), start: m.index, end: close + 1 })
     call.lastIndex = close + 1
   }
@@ -144,7 +149,7 @@ const VITE_ALIAS = /['"](@[\w-]+)['"]\s*:\s*fileURLToPath\(\s*new URL\(\s*['"]\.
 const IMPORT_FROM = /(?:\bfrom|\bimport|\brequire\()\s*['"]([^'"]+)['"]/g
 const NAMED_IMPORT = /import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
 const NAMED_REEXPORT = /export\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
-export const RESOLVE_SUFFIXES = ['', '.js', '.ts', '.tsx', '.vue', '.mjs', '/index.js', '/index.ts', '/index.vue']
+const RESOLVE_SUFFIXES = ['', '.js', '.ts', '.tsx', '.vue', '.mjs', '/index.js', '/index.ts', '/index.vue']
 
 const STRING_OR_COMMENT = /((?<=^|[\s(,=[])\?'(?=[\s),\]]|$)(?!.')|(?<=^|[\s(,=[])\?"(?=[\s),\]]|$)(?!.")|"(?:\\[\s\S]|[^"\\\n])*"|'(?:\\[\s\S]|[^'\\\n])*'|`(?:\\[\s\S]|[^`\\])*`)|\/\*[\s\S]*?\*\/|(^|[^:\\])\/\/.*$|(^|\s)#(?![{!]).*$/gm
 
@@ -183,11 +188,15 @@ export function resolvesTo(base: string, file: string): boolean {
   return RESOLVE_SUFFIXES.some(s => `${base}${s}` === file)
 }
 
+export function resolveFile(spec: string, fromPath: string, aliases: Alias[], read: Read): string | null {
+  const base = resolveSpecifier(spec, fromPath, aliases)
+  return base === null ? null : RESOLVE_SUFFIXES.map(s => `${base}${s}`).find(p => read(p) !== null) ?? null
+}
+
 export function importedFiles(code: string, fromPath: string, aliases: Alias[], read: Read): string[] {
   const found = [...code.matchAll(IMPORT_FROM)].flatMap(m => {
-    const base = resolveSpecifier(m[1] ?? '', fromPath, aliases)
-    const file = base === null ? undefined : RESOLVE_SUFFIXES.map(s => `${base}${s}`).find(p => read(p) !== null)
-    return file === undefined ? [] : [file]
+    const file = resolveFile(m[1] ?? '', fromPath, aliases, read)
+    return file === null ? [] : [file]
   })
   return [...new Set(found)]
 }
@@ -250,10 +259,6 @@ export function usesVuexNamespace(code: string, ns: string): boolean {
 
 const HTML_COMMENT = /<!--[\s\S]*?-->/g
 const OPEN_TAG = /<([A-Za-z][\w-]*)\b((?:"[^"]*"|'[^']*'|[^>"'])*)>/g
-
-function kebab(name: string): string {
-  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
-}
 
 function bindingsOf(code: string, fromPath: string, target: string, aliases: Alias[]): string[] {
   const resolves = (spec: string) => {
@@ -336,8 +341,7 @@ function containerFileOf(source: string, aliases: Alias[], read: Read): (cls: st
   ])
   return cls => {
     const spec = specOf.get(cls)
-    const base = spec === undefined ? null : resolveSpecifier(spec, CONTAINER, aliases)
-    return base === null ? null : RESOLVE_SUFFIXES.map(suffix => `${base}${suffix}`).find(p => read(p) !== null) ?? null
+    return spec === undefined ? null : resolveFile(spec, CONTAINER, aliases, read)
   }
 }
 
@@ -345,6 +349,31 @@ export interface Wiring {
   aliases: Alias[]
   injects: Map<string, Set<string>>
   associations: Map<string, Set<string>>
+}
+
+export function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
+
+const HIDDEN_OR_DEPENDENCY = (name: string) => name === 'node_modules' || name.startsWith('.')
+
+export function walkFiles(dir: string, accept: (file: string) => boolean, skip: (name: string) => boolean = HIDDEN_OR_DEPENDENCY): string[] {
+  let entries: fs.Dirent[]
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true })
+  } catch {
+    return []
+  }
+  return entries.flatMap(e => {
+    if (skip(e.name)) {
+      return []
+    }
+    const full = path.join(dir, e.name)
+    if (e.isDirectory()) {
+      return walkFiles(full, accept, skip)
+    }
+    return e.isFile() && accept(full) ? [full] : []
+  })
 }
 
 function isDirectory(dir: string): boolean {

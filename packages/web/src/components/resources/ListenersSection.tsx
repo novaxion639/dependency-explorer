@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import type { Listener } from '@dependency-explorer/data'
-import { listenerSurface } from '@dependency-explorer/data'
-import { LISTENER_EVENTS, LISTENER_GRADES, LISTENER_KINDS, effectText, filterListeners, gradeGlyph, gradeLabel, hasText, listenerHeading, sourceHref, type ListenerUrl } from './listenerView'
+import { WRITE_EVENTS, listenerSurface } from '@dependency-explorer/data'
+import { LISTENER_GRADES, LISTENER_KINDS, effectText, filterListeners, gradeGlyph, gradeLabel, hasText, listenerHeading, sourceHref, type ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
 
 type Filters = Pick<ListenerUrl, 'lev' | 'lkind' | 'lgrade'>
@@ -47,13 +47,13 @@ export function ListenersSection({ listeners, filters, open, onFilters, onToggle
   if (!listeners.length) {
     return null
   }
-  const active: Filters = { lev: known(filters.lev, LISTENER_EVENTS), lkind: known(filters.lkind, LISTENER_KINDS), lgrade: known(filters.lgrade, LISTENER_GRADES) }
+  const active: Filters = { lev: known(filters.lev, WRITE_EVENTS), lkind: known(filters.lkind, LISTENER_KINDS), lgrade: known(filters.lgrade, LISTENER_GRADES) }
   const visible = filterListeners(listeners, active)
   return (
     <section aria-label="Listeners" className={styles.section}>
       <h2>{`Listeners · ${visible.length} of ${listeners.length}`}</h2>
       <div className={styles.filters}>
-        <FilterSelect label="Listener event" value={active.lev} options={LISTENER_EVENTS} onChange={lev => onFilters({ lev })} />
+        <FilterSelect label="Listener event" value={active.lev} options={WRITE_EVENTS} onChange={lev => onFilters({ lev })} />
         <FilterSelect label="Kind" value={active.lkind} options={LISTENER_KINDS} onChange={lkind => onFilters({ lkind })} />
         <FilterSelect label="Grade" value={active.lgrade} options={LISTENER_GRADES} onChange={lgrade => onFilters({ lgrade })} />
       </div>

@@ -1,7 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { Emphases } from './focus'
-import type { Point } from './geometry'
-import type { Box, DiagramModel } from './model'
+import type { DiagramModel } from './model'
 import { SvgDiagram } from './renderers/SvgDiagram'
 import { inlineTokens } from './tokens'
 
@@ -9,35 +8,12 @@ const PNG_SCALE = 2
 const FALLBACK_SIZE = { width: 1200, height: 800 }
 
 export function standaloneSvg(model: DiagramModel, emphases: Emphases, read: (token: string) => string): string {
-  return inlineTokens(renderToStaticMarkup(<SvgDiagram model={model} emphases={emphases} standalone />), read)
+  return inlineTokens(renderToStaticMarkup(<SvgDiagram model={model} emphases={emphases} />), read)
 }
 
 export function svgSize(svg: string): { width: number; height: number } {
   const box = /viewBox="[-\d.]+ [-\d.]+ ([\d.]+) ([\d.]+)"/.exec(svg)
   return box ? { width: Math.ceil(Number(box[1])), height: Math.ceil(Number(box[2])) } : FALLBACK_SIZE
-}
-
-export function withPositions(model: DiagramModel, positions: ReadonlyMap<string, Point>): DiagramModel {
-  if (!positions.size) {
-    return model
-  }
-  const moved = model.nodes.map(n => {
-    const p = positions.get(n.id)
-    return p ? { ...n, x: p.x, y: p.y } : n
-  })
-  const all: Box[] = [...model.groups, ...moved]
-  const dx = Math.min(0, ...all.map(b => b.x))
-  const dy = Math.min(0, ...all.map(b => b.y))
-  const nodes = moved.map(n => ({ ...n, x: n.x - dx, y: n.y - dy }))
-  const groups = model.groups.map(g => ({ ...g, x: g.x - dx, y: g.y - dy }))
-  const placed: Box[] = [...nodes, ...groups]
-  return {
-    ...model,
-    nodes,
-    groups,
-    width: Math.max(model.width - dx, ...placed.map(b => b.x + b.w)),
-    height: Math.max(model.height - dy, ...placed.map(b => b.y + b.h)),
-  }
 }
 
 // Safari refuses canvases above 16,777,216 pixels (4096²).

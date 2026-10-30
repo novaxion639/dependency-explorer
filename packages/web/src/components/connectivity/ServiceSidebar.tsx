@@ -1,5 +1,6 @@
 import type { ConnectivityService, Team } from '@dependency-explorer/data'
 import styles from './ServiceSidebar.module.css'
+import { plural } from '../../utils/plural'
 
 interface Props {
   services: ConnectivityService[]
@@ -39,7 +40,7 @@ export function ServiceSidebar({ services, teams, selected, onSelect, search, on
       <div className={styles.search}>
         <input aria-label="Filter services" value={search} onChange={e => onSearch(e.target.value)} placeholder="Filter by name or team…" />
       </div>
-      <p className={styles.count}>{filtered.length} service{filtered.length !== 1 ? 's' : ''}</p>
+      <p className={styles.count}>{plural(filtered.length, 'service')}</p>
       <ul className={styles.list}>
         {filtered.map(svc => {
           const team = svc.teamId ? teamById.get(svc.teamId) : undefined

@@ -241,8 +241,8 @@ export function parseRoutesContent(content: string): { routes: RailsRoute[]; unp
   return { routes, unparsed }
 }
 
-export function extractRailsRoutes(repoBase: string, repo = 'skello-app'): { routes: RailsRoute[]; unparsed: string[] } | null {
-  const configDir = path.join(repoBase, repo, 'config')
+export function extractRailsRoutes(repoBase: string): { routes: RailsRoute[]; unparsed: string[] } | null {
+  const configDir = path.join(repoBase, 'skello-app', 'config')
   const files = [path.join(configDir, 'routes.rb')]
   const extra = path.join(configDir, 'routes')
   if (fs.existsSync(extra)) {
@@ -260,18 +260,4 @@ export function extractRailsRoutes(repoBase: string, repo = 'skello-app'): { rou
     unparsed.push(...parsed.unparsed)
   }
   return { routes, unparsed }
-}
-export function parseRoutesDump(text: string): Array<{ verb: string; path: string; controllerAction: string }> {
-  const out: Array<{ verb: string; path: string; controllerAction: string }> = []
-  for (const block of text.split(/^--\[ Route \d+ \]-+$/m)) {
-    const field = (name: string) => block.match(new RegExp(`^${name}[ \\t]*\\|[ \\t]*(.*)$`, 'm'))?.[1]?.trim() ?? ''
-    const uri = field('URI').replace(/\(\.:format\)$/, '')
-    if (!uri) {
-      continue
-    }
-    for (const verb of field('Verb').split('|').filter(Boolean)) {
-      out.push({ verb, path: uri, controllerAction: field('Controller#Action').replace(/\s*\{.*\}$/, '') })
-    }
-  }
-  return out
 }

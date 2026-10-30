@@ -2,8 +2,8 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { allStates } from '@dependency-explorer/data'
 import type { ConnectivityMap, MachineState } from '@dependency-explorer/schema'
-import { escapeRegExp, loadWiring, readerFor, resolveSpecifier, type Alias, type Read } from './code-wiring'
-import { closer, readMachine, textOf, type SourceState } from './state-machine-source'
+import { closer, escapeRegExp, loadWiring, readerFor, resolveFile, type Alias, type Read } from './code-wiring'
+import { readMachine, textOf, type SourceState } from './state-machine-source'
 
 export interface MachineFinding { flow: string; kind: 'state-machine-drift'; subject: string; detail: string }
 
@@ -11,7 +11,6 @@ const TYPES: Record<string, MachineState['type']> = { Task: 'task', Choice: 'cho
 const TERMINAL = new Set(['Succeed', 'Fail'])
 const HANDLER = /\bhandler\s*:\s*['"]([^'"]+)['"]/
 const CONTAINER = 'src/container.ts'
-const SUFFIXES = ['.ts', '.tsx', '/index.ts', '']
 
 function tsFiles(dir: string, rel: string): string[] {
   if (!fs.existsSync(dir)) {
@@ -32,11 +31,6 @@ function statementOf(source: string, name: string): string | null {
 function importSpec(source: string, cls: string): string | undefined {
   const c = escapeRegExp(cls)
   return new RegExp(`(?:import\\s*\\{[^}]*\\b${c}\\b[^}]*\\}\\s*from\\s*|\\{[^}]*\\b${c}\\b[^}]*\\}\\s*=\\s*await\\s+import\\(\\s*)['"]([^'"]+)['"]`).exec(source)?.[1]
-}
-
-function resolveFile(spec: string, from: string, aliases: Alias[], read: Read): string | null {
-  const base = resolveSpecifier(spec, from, aliases)
-  return base === null ? null : SUFFIXES.map(s => `${base}${s}`).find(f => read(f) !== null) ?? null
 }
 
 function classFile(statement: string, from: string, aliases: Alias[], read: Read): string | null {
@@ -71,7 +65,7 @@ export function handlerFileOf(repoDir: string, lambdaKey: string): string | null
       continue
     }
     const open = match.index + match[0].length - 1
-    const handler = HANDLER.exec(t.src.slice(open, closer(t, open)))?.[1]
+    const handler = HANDLER.exec(t.src.slice(open, closer(t.masked, open)))?.[1]
     if (handler === undefined) {
       continue
     }

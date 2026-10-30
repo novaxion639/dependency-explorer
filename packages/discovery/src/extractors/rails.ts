@@ -30,8 +30,8 @@ function detectTransport(content: string): 'rest' | 'sqs' | 'unknown' {
  * to find the monolith's outbound connections. Mapping is table-driven and
  * deliberately incomplete: ambiguous clients are reported, never guessed.
  */
-export function extractRailsMonolith(repoBase: string, repo = 'skello-app'): RailsFacts | null {
-  const clientsPath = path.join(repoBase, repo, ...CLIENTS_DIR)
+export function extractRailsMonolith(repoBase: string): RailsFacts | null {
+  const clientsPath = path.join(repoBase, 'skello-app', ...CLIENTS_DIR)
   if (!fs.existsSync(clientsPath)) return null
 
   const edgesByTarget = new Map<string, RailsClientEdge>()

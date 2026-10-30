@@ -1,6 +1,6 @@
 import type { MachineState, ServiceFlow, StateMachine } from '@dependency-explorer/schema'
 
-export function allStates(machine: StateMachine): MachineState[] {
+export function allStates(machine: Pick<StateMachine, 'states'>): MachineState[] {
   const walk = (states: MachineState[]): MachineState[] => states.flatMap(s => [s, ...walk(s.states ?? [])])
   return walk(machine.states)
 }

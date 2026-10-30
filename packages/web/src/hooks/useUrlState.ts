@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WriteEvent } from '@dependency-explorer/data'
-import type { Renderer } from '../diagram/model'
+import { MONOLITH, WRITE_EVENTS, type WriteEvent } from '@dependency-explorer/data'
 
 /**
  * Permalink state — every shareable bit of UI state lives in the query string
@@ -24,23 +23,17 @@ import type { Renderer } from '../diagram/model'
  *   &edge=from~to~protocol[,…] · &drawer=svc · &ep=id   detail panel content
  *   &unit=<unit or store id> · &chapter=<n>   flow page panel · story step
  *   &present=1                           present mode
- *   &renderer=svg | mermaid              diagram renderer (React Flow by default)
  *
  * Legacy keys (`view=…`, a bare `s`, `flow`, `blast=1&s=…`) parse into the page form.
  */
-export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | 'resources' | 'impact' | 'ownership'
-
-export const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
-const RENDERERS: readonly Renderer[] = ['react-flow', 'svg', 'mermaid']
-const WRITE_EVENT_PARAMS: readonly WriteEvent[] = ['create', 'update', 'destroy']
-const MONOLITH = 'skello-app'
+const PAGES = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership'] as const
+export type Page = typeof PAGES[number]
 const LEGACY_VIEW_PAGE: Record<string, Page> = { areas: 'areas', domains: 'areas', context: 'microservices', services: 'microservices', resources: 'resources', teams: 'ownership' }
 
 export interface UrlState {
   s: string | null
   page: Page
   present: boolean
-  renderer: Renderer
   area: string | null
   term: string | null
   team: string | null
@@ -64,7 +57,7 @@ export interface UrlState {
   notFound: { param: 'area' | 'term' | 'flow' | 's' | 'resource' | 'blast'; value: string } | null
 }
 
-export const EDGE_SEP = '~'
+const EDGE_SEP = '~'
 export const EDGE_LIST_SEP = ','
 
 const NAVIGATION_KEYS = ['page', 'area', 's', 'team', 'flows', 'flow', 'edge', 'drawer', 'flag', 'file', 'resource', 'blast'] as const
@@ -111,7 +104,6 @@ export function parseUrl(search: string): UrlState {
     s: p.get('s'),
     page: parsePage(p),
     present: p.get('present') === '1',
-    renderer: RENDERERS.find(r => r === p.get('renderer')) ?? 'react-flow',
     area: p.get('area'),
     term: p.get('term'),
     team: p.get('team'),
@@ -126,7 +118,7 @@ export function parseUrl(search: string): UrlState {
     flag: p.get('flag'),
     file: p.get('file'),
     resource: p.get('resource'),
-    event: WRITE_EVENT_PARAMS.find(e => e === p.get('event')) ?? null,
+    event: WRITE_EVENTS.find(e => e === p.get('event')) ?? null,
     listener: p.get('listener'),
     lev: p.get('lev'),
     lkind: p.get('lkind'),
@@ -135,9 +127,9 @@ export function parseUrl(search: string): UrlState {
   }
 }
 
-type PageKey = 's' | 'area' | 'term' | 'team' | 'blast' | 'flows' | 'flow' | 'unit' | 'chapter' | 'edge' | 'drawer' | 'ep' | 'flag' | 'file' | 'resource' | 'event' | 'listener' | 'lev' | 'lkind' | 'lgrade'
-
-const KEY_ORDER: readonly PageKey[] = ['s', 'area', 'term', 'team', 'blast', 'flows', 'flow', 'unit', 'chapter', 'edge', 'drawer', 'ep', 'flag', 'file', 'resource', 'event', 'listener', 'lev', 'lkind', 'lgrade']
+const KEY_ORDER = ['s', 'area', 'term', 'team', 'blast', 'flows', 'flow', 'unit', 'chapter', 'edge', 'drawer', 'ep', 'flag', 'file', 'resource', 'event', 'listener', 'lev', 'lkind', 'lgrade'] as const
+type PageKey = typeof KEY_ORDER[number]
+const NO_PAGE_KEYS: Partial<UrlState> = Object.fromEntries(KEY_ORDER.map(key => [key, null]))
 const ARCHITECTURE_KEYS: readonly PageKey[] = ['s', 'area', 'edge', 'drawer', 'ep']
 const PAGE_KEYS: Record<Page, readonly PageKey[]> = {
   home: [],
@@ -164,9 +156,6 @@ export function toQueryString(state: UrlState): string {
       p.set(key, String(value))
     }
   }
-  if (state.renderer !== 'react-flow') {
-    p.set('renderer', state.renderer)
-  }
   if (state.present) {
     p.set('present', '1')
   }
@@ -174,7 +163,7 @@ export function toQueryString(state: UrlState): string {
 }
 
 export function pagePatch(page: Page): Partial<UrlState> {
-  return { page, s: null, area: null, term: null, team: null, blast: null, flows: null, flow: null, unit: null, chapter: null, edge: null, drawer: null, ep: null, flag: null, file: null, resource: null, event: null, listener: null, lev: null, lkind: null, lgrade: null }
+  return { ...NO_PAGE_KEYS, page }
 }
 
 export function selectServicePatch(name: string): Partial<UrlState> {

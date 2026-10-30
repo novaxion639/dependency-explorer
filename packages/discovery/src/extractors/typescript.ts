@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { walkFiles } from '../code-wiring'
 
 /**
  * How an SDK dependency is actually imported in the repo's source:
@@ -79,12 +80,14 @@ export function classifyImports(content: string, pkg: string): 'value' | 'type-o
   return sawTypeOnly ? 'type-only' : 'none'
 }
 
+const MAX_PACKAGE_DEPTH = 3
+
 /**
  * Directories holding a package.json, repo root included. Some repos are
  * multi-package without a root manifest (e.g. svc-skello-assistant keeps its
  * deployable under serverless/) — scanning only the root misses their SDK deps.
  */
-export function findPackageDirs(repoPath: string, maxDepth = 3): string[] {
+export function findPackageDirs(repoPath: string): string[] {
   const out: string[] = []
   const walk = (dir: string, depth: number) => {
     let entries: fs.Dirent[]
@@ -94,7 +97,9 @@ export function findPackageDirs(repoPath: string, maxDepth = 3): string[] {
       return
     }
     if (entries.some(e => e.isFile() && e.name === 'package.json')) out.push(dir)
-    if (depth >= maxDepth) return
+    if (depth >= MAX_PACKAGE_DEPTH) {
+      return
+    }
     for (const e of entries) {
       if (!e.isDirectory() || e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) continue
       walk(path.join(dir, e.name), depth + 1)
@@ -104,26 +109,14 @@ export function findPackageDirs(repoPath: string, maxDepth = 3): string[] {
   return out
 }
 
-function walkSourceFiles(dir: string, out: string[] = []): string[] {
-  let entries: fs.Dirent[]
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const e of entries) {
-    if (e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) continue
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) walkSourceFiles(full, out)
-    else if (/\.(ts|tsx|js|vue)$/.test(e.name) && !/\.(test|spec)\./.test(e.name)) out.push(full)
-  }
-  return out
+export function tsSourceFiles(dir: string): string[] {
+  return walkFiles(dir, f => /\.(ts|tsx|js|vue)$/.test(f) && !/\.(test|spec)\./.test(path.basename(f)), name => name === 'dist' || name === 'node_modules' || name.startsWith('.'))
 }
 
 function classifySdkUsage(pkgDirs: string[], sdkPackages: string[]): Record<string, SdkUsage> {
   const usage: Record<string, SdkUsage> = Object.fromEntries(sdkPackages.map(p => [p, 'declared-only' as SdkUsage]))
   if (!sdkPackages.length) return usage
-  const files = pkgDirs.flatMap(dir => walkSourceFiles(path.join(dir, 'src')))
+  const files = pkgDirs.flatMap(dir => tsSourceFiles(path.join(dir, 'src')))
   const pending = new Set(sdkPackages)
   for (const file of files) {
     if (!pending.size) break

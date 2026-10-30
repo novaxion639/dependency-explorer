@@ -5,7 +5,7 @@ import { Diagram } from '../../diagram/Diagram'
 import type { FocusState } from '../../diagram/focus'
 import { chapterFocus, swimlanes } from '../../diagram/layouts/swimlane'
 import { selectPatch } from '../../diagram/refPatch'
-import { keyInfo, presentStepKey, stepThrough } from '../../shell/presentMode'
+import { presentStepKey, stepThrough } from '../../shell/presentMode'
 import { FlowHeader } from './FlowHeader'
 import { FlowStory } from './FlowStory'
 import styles from './flows.module.css'
@@ -33,7 +33,7 @@ export function FlowPage({ flow, url, patch, onBack }: Props) {
     }
     const steps = chapters.map((_, i) => String(i + 1))
     const onKey = (e: KeyboardEvent) => {
-      const dir = presentStepKey(keyInfo(e))
+      const dir = presentStepKey(e)
       if (dir) {
         e.preventDefault()
         const next = stepThrough(steps, url.chapter ? String(url.chapter) : null, dir)
@@ -47,8 +47,6 @@ export function FlowPage({ flow, url, patch, onBack }: Props) {
     <Diagram
       model={model}
       focus={focus}
-      renderer={url.renderer}
-      onRenderer={renderer => patch({ renderer })}
       onSelect={ref => {
         const next = selectPatch(ref, url.present)
         if (next) {

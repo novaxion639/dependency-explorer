@@ -1,5 +1,4 @@
-import { areasForFile, getAreaFlows, getServiceLane, type ConnectivityMap, type MonolithRoute, type ProductArea, type Resource } from '@dependency-explorer/data'
-import { MONOLITH } from '../diagram/layouts/monolith'
+import { MONOLITH, areasForFile, getAreaFlows, getServiceLane, type ConnectivityMap, type MonolithRoute, type ProductArea, type Resource } from '@dependency-explorer/data'
 
 export interface AreaSliceData {
   area: ProductArea

@@ -13,7 +13,7 @@ import { serviceByArea } from '../diagram/layouts/serviceByArea'
 import { serviceByHow } from '../diagram/layouts/serviceByHow'
 import { ServiceHeader } from './ServiceHeader'
 import { map } from './dataIndexes'
-import { keyInfo, presentStepKey, stepThrough } from './presentMode'
+import { presentStepKey, stepThrough } from './presentMode'
 import styles from './MicroservicesPage.module.css'
 
 interface Props {
@@ -36,7 +36,7 @@ function Overview({ url, patch }: Props) {
       return
     }
     const onKey = (e: KeyboardEvent) => {
-      const dir = presentStepKey(keyInfo(e))
+      const dir = presentStepKey(e)
       if (dir) {
         e.preventDefault()
         patch({ area: stepThrough(AREA_STEPS, url.area, dir) })
@@ -49,8 +49,6 @@ function Overview({ url, patch }: Props) {
     <Diagram
       model={model}
       focus={focus}
-      renderer={url.renderer}
-      onRenderer={renderer => patch({ renderer })}
       onSelect={ref => {
         const next = selectPatch(ref, url.present)
         if (next) {
@@ -78,8 +76,6 @@ function ServiceView({ service, url, patch, onSelectService }: Props & { service
       <Diagram
         model={model}
         focus={NO_FOCUS}
-        renderer={url.renderer}
-        onRenderer={renderer => patch({ renderer })}
         onSelect={ref => {
           const next = selectPatch(ref, url.present)
           if (next) {

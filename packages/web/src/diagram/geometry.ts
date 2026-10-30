@@ -102,6 +102,10 @@ export function edgeSegment(a: Box, b: Box, lane = 0, lanes = 1): Segment {
   return { x1, y1, x2, y2, lx: (x1 + x2) / 2, ly: (y1 + y2) / 2 }
 }
 
+export function segmentPoints(s: Segment): Point[] {
+  return [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]
+}
+
 export function overlaps(a: Box, b: Box): boolean {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
 }

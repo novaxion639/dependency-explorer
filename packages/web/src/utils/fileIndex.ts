@@ -1,4 +1,4 @@
-import type { ConnectivityMap, MonolithRoute, ResourceRelation, ServiceFlow } from '@dependency-explorer/data'
+import { MONOLITH, type ConnectivityMap, type MonolithRoute, type ResourceRelation, type ServiceFlow } from '@dependency-explorer/data'
 
 /**
  * Reverse code→flows index: source file → the flows whose code layer traverses
@@ -40,7 +40,7 @@ export function buildFileIndex(map: ConnectivityMap, routes: MonolithRoute[] = [
     }
   }
   for (const r of routes) {
-    entryFor('skello-app', r.controllerFile).routes.push(`${r.verb} ${r.path}`)
+    entryFor(MONOLITH, r.controllerFile).routes.push(`${r.verb} ${r.path}`)
   }
   for (const r of relations) {
     if (!r.file) {

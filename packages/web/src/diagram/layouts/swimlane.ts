@@ -1,7 +1,7 @@
 import { allStates, type FlowCodeEdge, type FlowCodeUnit, type MachineState, type ServiceFlow, type StateMachine } from '@dependency-explorer/data'
 import { EDGE_LABEL_FONT, EDGE_LABEL_LINE, fitLabel, linesHeight, overlaps, textWidth, wrapText } from '../geometry'
 import { catchTargets, machineFrames, machineLane, machineOrder, machineStores, machineTransitions, stateKey, stateNodeId } from './machines'
-import { ALL_RENDERERS, type Box, type DiagramEdge, type DiagramGroup, type DiagramModel, type DiagramNode, type EdgeMode, type RoutePoint } from '../model'
+import { type Box, type DiagramEdge, type DiagramGroup, type DiagramModel, type DiagramNode, type EdgeMode, type RoutePoint } from '../model'
 
 const FONT = 12
 const LANE_W = 250
@@ -27,8 +27,8 @@ const FRAME_PAD = 10
 const FRAME_HEAD = 22
 const PORT = { inLeft: 1 / 5, inRight: 2 / 5, outLeft: 3 / 5, outRight: 4 / 5 }
 
-export const STORES_LANE = 'lane:stores'
-export const OTHERS_LANE = 'lane:others'
+const STORES_LANE = 'lane:stores'
+const OTHERS_LANE = 'lane:others'
 
 const KIND_LABEL: Record<FlowCodeUnit['kind'], string> = {
   controller: 'controller', service: 'service', manager: 'manager', job: 'background job',
@@ -45,10 +45,10 @@ export function infraNodeId(id: string): string {
 export function serviceNodeId(name: string): string {
   return `s:${name}`
 }
-export function requestLane(service: string): string {
+function requestLane(service: string): string {
   return `lane:${service}`
 }
-export function backgroundLane(service: string): string {
+function backgroundLane(service: string): string {
   return `lane:${service}:bg`
 }
 
@@ -153,10 +153,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
     add(e.to)
   }
 
-  const out = new Map<string, FlowCodeEdge[]>()
-  for (const e of [...codeEdges, ...machineEdges]) {
-    out.set(e.from, [...(out.get(e.from) ?? []), e])
-  }
+  const out = Map.groupBy([...codeEdges, ...machineEdges], e => e.from)
   for (const list of out.values()) {
     list.sort((a, b) => MODE_RANK[a.mode ?? 'sync'] - MODE_RANK[b.mode ?? 'sync'])
   }
@@ -534,7 +531,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
   return {
     model: {
       id: `flow:${flow.id}`, title: `${flow.name} — swimlanes`, width, height: bottom,
-      nodes, groups, edges, renderers: ALL_RENDERERS,
+      nodes, groups, edges,
     },
     crowded,
     overflow,
