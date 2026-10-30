@@ -16,19 +16,19 @@ const page = (qs: string) => renderToStaticMarkup(<FlowPage flow={shift} url={va
 
 describe('FlowPage', () => {
   it('heads the flow with its trigger, a one-sentence summary and the rest under "more"', () => {
-    const html = page('?page=flows&flow=shift-creation&renderer=svg')
+    const html = page('?page=flows&flow=shift-creation')
     expect(html).toContain('<h1>Shift Creation</h1>')
     expect(html).toContain('👤 manager')
     expect(html).toContain('>A planner creates a shift on the planning page.</p>')
     expect(html).toContain('<summary>more</summary>')
   })
   it('draws the swimlanes when exploring', () => {
-    const html = page('?page=flows&flow=shift-creation&renderer=svg')
+    const html = page('?page=flows&flow=shift-creation')
     expect(html).toContain('aria-label="Shift Creation — swimlanes"')
     expect(html).not.toContain('aria-label="Chapters"')
   })
   it('tells the story when presenting, with the selected chapter marked', () => {
-    const html = page('?page=flows&flow=shift-creation&renderer=svg&present=1&chapter=2')
+    const html = page('?page=flows&flow=shift-creation&present=1&chapter=2')
     expect(html).toContain('aria-label="Chapters"')
     expect(html.match(/aria-current="step"/g)).toHaveLength(1)
     expect(html).toContain('aria-label="Shift Creation — swimlanes"')

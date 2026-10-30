@@ -15,12 +15,12 @@ describe('MonolithPage', () => {
     expect(html).toMatch(/aria-pressed="true"[^>]*>Inside · by product area</)
   })
   it('draws the treemap when presenting', () => {
-    const html = page('?page=monolith&present=1&renderer=svg')
+    const html = page('?page=monolith&present=1')
     expect(html).not.toContain('<table')
-    expect(html).toContain('role="img" aria-label="skello-app by product area"')
+    expect(html).toContain('aria-label="skello-app by product area"')
   })
   it("shows skello-app's connections on the Connections view", () => {
-    const html = page('?page=monolith&s=skello-app&renderer=svg')
+    const html = page('?page=monolith&s=skello-app')
     expect(html).toContain('skello-app — grouped by how they talk')
     expect(html).toMatch(/aria-pressed="true"[^>]*>Connections</)
   })

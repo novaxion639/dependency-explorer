@@ -15,7 +15,6 @@ export const PAINT: Record<Emphasis, Paint> = {
 
 export const DASH: Record<EdgeMode, string | undefined> = { sync: undefined, async: '6 4', 'data-feed': '2 4' }
 export const MODE_LABEL: Record<EdgeMode, string> = { sync: 'sync', async: 'async', 'data-feed': 'data feed' }
-export const EMPHASIS_WORD: Partial<Record<Emphasis, string>> = { origin: 'origin', fails: 'fails', starves: 'starves', degrades: 'degrades' }
 
 const TINTED = new Set<NodeKind>(['subject', 'summary', 'monolith', 'store'])
 

@@ -49,8 +49,6 @@ function Overview({ url, patch }: Props) {
     <Diagram
       model={model}
       focus={focus}
-      renderer={url.renderer}
-      onRenderer={renderer => patch({ renderer })}
       onSelect={ref => {
         const next = selectPatch(ref, url.present)
         if (next) {
@@ -78,8 +76,6 @@ function ServiceView({ service, url, patch, onSelectService }: Props & { service
       <Diagram
         model={model}
         focus={NO_FOCUS}
-        renderer={url.renderer}
-        onRenderer={renderer => patch({ renderer })}
         onSelect={ref => {
           const next = selectPatch(ref, url.present)
           if (next) {

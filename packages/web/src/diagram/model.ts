@@ -3,7 +3,6 @@ import type { ServiceConnection } from '@dependency-explorer/data'
 export type EdgeMode = 'sync' | 'async' | 'data-feed'
 export type NodeKind = 'service' | 'client' | 'monolith' | 'subject' | 'area' | 'summary' | 'unmapped' | 'unit' | 'job' | 'store' | 'choice' | 'state'
 export type GroupKind = 'group' | 'band' | 'lane' | 'machine' | 'frame'
-export type Renderer = 'react-flow' | 'svg' | 'mermaid'
 export type DiagramRef =
   | { type: 'service'; name: string }
   | { type: 'area'; id: string }
@@ -56,10 +55,7 @@ export interface DiagramModel {
   nodes: DiagramNode[]
   groups: DiagramGroup[]
   edges: DiagramEdge[]
-  renderers: Renderer[]
 }
-
-export const ALL_RENDERERS: Renderer[] = ['react-flow', 'svg', 'mermaid']
 
 export function edgeMode(c: Pick<ServiceConnection, 'protocol' | 'communicationType'>): EdgeMode {
   return c.protocol === 'cdc' ? 'data-feed' : c.communicationType

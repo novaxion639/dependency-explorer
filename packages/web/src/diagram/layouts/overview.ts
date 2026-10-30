@@ -1,7 +1,7 @@
 import { buildContextLanes, getServiceLane, type ConnectivityMap, type ProductArea } from '@dependency-explorer/data'
 import { aggregateEdges } from '../aggregate'
 import { linesHeight } from '../geometry'
-import { ALL_RENDERERS, type DiagramGroup, type DiagramModel, type DiagramNode, type NodeKind } from '../model'
+import { type DiagramGroup, type DiagramModel, type DiagramNode, type NodeKind } from '../model'
 import { areaId, CLIENTS_ID, MONOLITH_ID, PLATFORM_ID, serviceId } from './ids'
 
 const FONT = 12
@@ -82,6 +82,6 @@ export function overviewMap(map: ConnectivityMap, spotlight: string | null): Dia
   groups.sort((a, b) => b.w * b.h - a.w * a.h)
   return {
     id: 'overview', title: 'Microservices by product area', width, height: platformY + HEAD + platformInner + PAD,
-    nodes, groups, edges, renderers: ALL_RENDERERS,
+    nodes, groups, edges,
   }
 }

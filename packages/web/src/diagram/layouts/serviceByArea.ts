@@ -1,7 +1,7 @@
 import { buildContextLanes, getServiceLane, type ConnectivityMap, type Resource, type ServiceConnection } from '@dependency-explorer/data'
 import { connectionsRef, edgeLabel } from '../aggregate'
 import { fitLabel, linesHeight } from '../geometry'
-import { ALL_RENDERERS, edgeMode, type DiagramEdge, type DiagramModel, type DiagramNode, type EdgeMode } from '../model'
+import { edgeMode, type DiagramEdge, type DiagramModel, type DiagramNode, type EdgeMode } from '../model'
 import { areaId, CLIENTS_ID, MONOLITH_ID, SUBJECT_ID } from './ids'
 import { subjectCard } from './subject'
 
@@ -102,6 +102,6 @@ export function serviceByArea(map: ConnectivityMap, resources: Resource[], name:
   const edges = [...shown.map(b => boxEdge(b.id, b.conns)), ...(rest.length ? [boxEdge(OTHER_ID, rest.flatMap(b => b.conns))] : [])]
   return {
     id: `service-areas:${name}`, title: `${name} — neighbours by product area`, width: 3 * CELL_W + 2 * GAP_X, height: h0 + h1 + h2 + 2 * GAP_Y,
-    nodes: [subject, ...cards], groups: [], edges, renderers: ALL_RENDERERS,
+    nodes: [subject, ...cards], groups: [], edges,
   }
 }

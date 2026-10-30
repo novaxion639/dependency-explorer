@@ -1,7 +1,7 @@
 import { allStates, type FlowCodeEdge, type FlowCodeUnit, type MachineState, type ServiceFlow, type StateMachine } from '@dependency-explorer/data'
 import { EDGE_LABEL_FONT, EDGE_LABEL_LINE, fitLabel, linesHeight, overlaps, textWidth, wrapText } from '../geometry'
 import { catchTargets, machineFrames, machineLane, machineOrder, machineStores, machineTransitions, stateKey, stateNodeId } from './machines'
-import { ALL_RENDERERS, type Box, type DiagramEdge, type DiagramGroup, type DiagramModel, type DiagramNode, type EdgeMode, type RoutePoint } from '../model'
+import { type Box, type DiagramEdge, type DiagramGroup, type DiagramModel, type DiagramNode, type EdgeMode, type RoutePoint } from '../model'
 
 const FONT = 12
 const LANE_W = 250
@@ -534,7 +534,7 @@ function laneLayout(flow: ServiceFlow, extra: ReadonlyMap<number, number>, detou
   return {
     model: {
       id: `flow:${flow.id}`, title: `${flow.name} — swimlanes`, width, height: bottom,
-      nodes, groups, edges, renderers: ALL_RENDERERS,
+      nodes, groups, edges,
     },
     crowded,
     overflow,

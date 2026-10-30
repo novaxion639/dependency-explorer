@@ -2,7 +2,7 @@ import { Graph, layout } from '@dagrejs/dagre'
 import { buildContextLanes, getServiceLane, type ConnectivityMap } from '@dependency-explorer/data'
 import { aggregateEdges } from '../aggregate'
 import { linesHeight } from '../geometry'
-import { ALL_RENDERERS, type DiagramEdge, type DiagramModel, type DiagramNode } from '../model'
+import { type DiagramEdge, type DiagramModel, type DiagramNode } from '../model'
 import { areaId, CLIENTS_ID, MONOLITH_ID, PLATFORM_ID } from './ids'
 
 const FONT = 16
@@ -98,6 +98,6 @@ export function areaGraph(map: ConnectivityMap, minWeight: number): DiagramModel
   ]
   return {
     id: 'area-graph', title: 'How product areas connect', width, height: bottom + GAP + BAND_H,
-    nodes: [...bands, ...laid], groups: [], edges: all.filter(e => e.weight >= minWeight), renderers: ALL_RENDERERS,
+    nodes: [...bands, ...laid], groups: [], edges: all.filter(e => e.weight >= minWeight),
   }
 }

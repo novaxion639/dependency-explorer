@@ -47,8 +47,6 @@ export function FlowPage({ flow, url, patch, onBack }: Props) {
     <Diagram
       model={model}
       focus={focus}
-      renderer={url.renderer}
-      onRenderer={renderer => patch({ renderer })}
       onSelect={ref => {
         const next = selectPatch(ref, url.present)
         if (next) {

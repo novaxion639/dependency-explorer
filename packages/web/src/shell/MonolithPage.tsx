@@ -35,8 +35,6 @@ export function MonolithPage({ url, patch }: Props) {
           <Diagram
             model={TREEMAP}
             focus={focus}
-            renderer={url.renderer}
-            onRenderer={renderer => patch({ renderer })}
             onSelect={ref => {
               const next = selectPatch(ref, url.present)
               if (next) {

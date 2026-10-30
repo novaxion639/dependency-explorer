@@ -117,19 +117,13 @@ Per-team service ownership is resolved from CODEOWNERS:
 
 **Unowned services** are listed as the adoption call-to-action. Coverage grows with zero code changes as teams add CODEOWNERS wildcards.
 
-## Renderers and export
+## Export
 
-Every architecture and flow diagram is one model, drawn by a choice of three renderers. The choice is switched from the diagram toolbar and kept in the URL (`&renderer=svg|mermaid`):
-- **React Flow** (default): pan, zoom, drag;
-- **plain SVG**;
-- **Mermaid**: lazy-loaded, with its own layout.
+Every architecture and flow diagram is drawn with React Flow: pan, zoom and drag nodes. The diagram toolbar exports it:
+- **PNG**, keeping dragged nodes;
+- **SVG**, a standalone file with the Paper colours resolved.
 
-**Export:**
-- PNG works from all three; React Flow keeps dragged nodes. Flow swimlanes export too.
-- SVG from the SVG renderer: a standalone file with the Paper colours resolved.
-- Copy Mermaid from the Mermaid renderer.
-
-A view a renderer cannot draw hides that option; the monolith treemap, for example, has no Mermaid form.
+Flow swimlanes export too.
 
 ## Global search (⌘K)
 
@@ -145,8 +139,7 @@ Every view state is encoded in the query string:
 - a `page` key: `home`, `areas`, `microservices`, `monolith`, `flows`, `resources`, `impact` or `ownership`;
 - the page's own keys: `area`, `term`, `s`, `flow`, `unit`, `chapter`, `file`, `flag`, `resource`, `blast`, `team`;
 - the detail-panel keys: `edge` (one or more `from~to~protocol` keys joined by `,`), `drawer`, `ep`;
-- `area` on the architecture pages (spotlight and slice);
-- `renderer`.
+- `area` on the architecture pages (spotlight and slice).
 
 Older links still open the equivalent page: `?view=…`, a bare `?s=…`, `?flow=…`, `?blast=1&s=…`, `&detail=code|sequence`.
 

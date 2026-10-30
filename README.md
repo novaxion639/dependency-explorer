@@ -36,7 +36,7 @@ pnpm discover    # drift report against the sibling Skello repos (more in docs/g
 
 | Document | Covers |
 |---|---|
-| [docs/guide/explorer.md](docs/guide/explorer.md) | Pages, presenting, renderers, search and permalinks |
+| [docs/guide/explorer.md](docs/guide/explorer.md) | Pages, presenting, export, search and permalinks |
 | [docs/guide/flows.md](docs/guide/flows.md) | Flow pages, the code layer and its grades, rules, flags, failure, auth and PII |
 | [docs/guide/data.md](docs/guide/data.md) | Principles, packages, the endpoint surface, the resource registry, contributing |
 | [docs/guide/discovery.md](docs/guide/discovery.md) | The scanner, its commands and the nightly job |

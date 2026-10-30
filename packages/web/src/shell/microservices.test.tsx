@@ -9,21 +9,20 @@ const page = (qs: string) => renderToStaticMarkup(<MicroservicesPage url={valida
 
 describe('MicroservicesPage', () => {
   it('maps the microservices by product area when exploring', () => {
-    const html = page('?page=microservices&renderer=svg')
+    const html = page('?page=microservices')
     expect(html).toContain('aria-label="Microservices by product area"')
-    expect(html).toContain('aria-label="Planning"')
     expect(html).toContain('select an area to draw its connections')
     expect(html).toContain('aria-label="Services"')
   })
   it('draws the weighted area graph with a threshold slider, without the service list, when presenting', () => {
-    const html = page('?page=microservices&renderer=svg&present=1')
+    const html = page('?page=microservices&present=1')
     expect(html).toContain('aria-label="How product areas connect"')
     expect(html).toContain('aria-label="Minimum connections per edge"')
     expect(html).not.toContain('aria-label="Services"')
   })
   it('groups a service by how its neighbours talk when exploring, by product area when presenting', () => {
-    expect(page('?page=microservices&s=svc-punch&renderer=svg')).toContain('svc-punch — grouped by how they talk')
-    expect(page('?page=microservices&s=svc-punch&renderer=svg&present=1')).toContain('svc-punch — neighbours by product area')
+    expect(page('?page=microservices&s=svc-punch')).toContain('svc-punch — grouped by how they talk')
+    expect(page('?page=microservices&s=svc-punch&present=1')).toContain('svc-punch — neighbours by product area')
   })
   it('gives the overview the room of the services list while a panel is open', () => {
     expect(page('?page=microservices')).toContain('aria-label="Services"')

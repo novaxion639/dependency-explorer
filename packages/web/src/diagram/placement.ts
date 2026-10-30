@@ -1,6 +1,5 @@
-import { withPositions } from './exportImage'
 import type { Point } from './geometry'
-import type { DiagramModel } from './model'
+import type { Box, DiagramModel } from './model'
 
 export interface Placement { model: string; positions: ReadonlyMap<string, Point> }
 
@@ -28,5 +27,13 @@ export function placed(model: DiagramModel, placement: Placement): DiagramModel 
 }
 
 export function placedForExport(model: DiagramModel, placement: Placement): DiagramModel {
-  return placement.model === model.id ? withPositions(model, placement.positions) : model
+  const moved = placed(model, placement)
+  const all: Box[] = [...moved.groups, ...moved.nodes]
+  const dx = Math.min(0, ...all.map(b => b.x))
+  const dy = Math.min(0, ...all.map(b => b.y))
+  if (!dx && !dy) {
+    return moved
+  }
+  const shift = <T extends Box>(b: T): T => ({ ...b, x: b.x - dx, y: b.y - dy })
+  return { ...moved, nodes: moved.nodes.map(shift), groups: moved.groups.map(shift), width: moved.width - dx, height: moved.height - dy }
 }

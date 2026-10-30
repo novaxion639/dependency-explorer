@@ -1,27 +1,20 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { download, exportName, standaloneSvg, svgSize, svgToPng } from './exportImage'
-import { CopyMermaid } from './CopyMermaid'
 import { emphasise, focusBounds, type FocusState } from './focus'
 import type { Point } from './geometry'
-import type { DiagramModel, DiagramRef, EdgeMode, Renderer } from './model'
+import type { DiagramModel, DiagramRef, EdgeMode } from './model'
 import { DASH, MODE_LABEL } from './paint'
-import { MermaidDiagram, renderedSvg, type MermaidRender } from './renderers/MermaidDiagram'
 import { moveNode, NO_PLACEMENT, placed, placedForExport, type Placement } from './placement'
 import { ReactFlowDiagram } from './renderers/ReactFlowDiagram'
-import { SvgDiagram } from './renderers/SvgDiagram'
-import { toMermaid } from './renderers/toMermaid'
 import { readRootToken } from './tokens'
 import styles from './Diagram.module.css'
 
-const RENDERER_LABEL: Record<Renderer, string> = { 'react-flow': 'React Flow', svg: 'SVG', mermaid: 'Mermaid' }
 const MODES: EdgeMode[] = ['sync', 'async', 'data-feed']
 const EFFECTS = ['fails', 'starves', 'degrades'] as const
 
 interface Props {
   model: DiagramModel
   focus: FocusState
-  renderer: Renderer
-  onRenderer: (renderer: Renderer) => void
   onSelect: (ref: DiagramRef) => void
   filename: string
   notes?: string[]
@@ -44,28 +37,20 @@ function Legend({ notes, impact }: { notes: string[]; impact: boolean }) {
   )
 }
 
-export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename, notes = [], children }: Props) {
-  const active: Renderer = model.renderers.includes(renderer) ? renderer : 'react-flow'
+export function Diagram({ model, focus, onSelect, filename, notes = [], children }: Props) {
   const emphases = useMemo(() => emphasise(model, focus), [model, focus])
   const zoomTo = useMemo(() => focusBounds(model, focus.chapter), [model, focus.chapter])
   const frame = useMemo(() => zoomTo ?? { x: 0, y: 0, w: model.width, h: model.height }, [zoomTo, model])
   const [placement, setPlacement] = useState<Placement>(NO_PLACEMENT)
   const display = useMemo(() => placed(model, placement), [model, placement])
-  const mermaidRender = useRef<MermaidRender | null>(null)
-  const source = useMemo(() => (active === 'mermaid' ? toMermaid(model, emphases, readRootToken) : ''), [active, model, emphases])
 
   const onMove = useCallback((id: string, position: Point) => {
     setPlacement(prev => moveNode(prev, model.id, id, position))
   }, [model.id])
-  const onRendered = useCallback((render: MermaidRender) => {
-    mermaidRender.current = render
-  }, [])
   const standalone = () => standaloneSvg(placedForExport(model, placement), emphases, readRootToken)
   const exportPng = async () => {
-    const svg = active === 'mermaid' ? renderedSvg(mermaidRender.current, source) : standalone()
-    if (svg) {
-      download(exportName(filename, 'png'), await svgToPng(svg, svgSize(svg), readRootToken('--paper')))
-    }
+    const svg = standalone()
+    download(exportName(filename, 'png'), await svgToPng(svg, svgSize(svg), readRootToken('--paper')))
   }
   const exportSvg = () => {
     download(exportName(filename, 'svg'), `data:image/svg+xml;charset=utf-8,${encodeURIComponent(standalone())}`)
@@ -74,38 +59,12 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
   return (
     <section className={styles.frame} aria-label={model.title}>
       <div role="toolbar" aria-label="Diagram tools" className={styles.toolbar}>
-        <div
-          role="radiogroup"
-          aria-label="Renderer"
-          className={styles.renderers}
-          onKeyDown={e => {
-            const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0
-            if (step === 0) {
-              return
-            }
-            e.preventDefault()
-            const list = model.renderers
-            const index = (list.indexOf(active) + step + list.length) % list.length
-            const next = list[index]
-            if (next) {
-              onRenderer(next)
-              e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')[index]?.focus()
-            }
-          }}
-        >
-          {model.renderers.map(r => (
-            <button key={r} type="button" role="radio" aria-checked={r === active} tabIndex={r === active ? 0 : -1} onClick={() => onRenderer(r)}>{RENDERER_LABEL[r]}</button>
-          ))}
-        </div>
         <button type="button" onClick={() => { void exportPng() }}>Export PNG</button>
-        {active === 'svg' && <button type="button" onClick={exportSvg}>Export SVG</button>}
-        {active === 'mermaid' && <CopyMermaid source={source} />}
+        <button type="button" onClick={exportSvg}>Export SVG</button>
         {children}
       </div>
       <div className={styles.canvas}>
-        {active === 'react-flow' && <ReactFlowDiagram key={model.id} model={display} emphases={emphases} frame={frame} focused={zoomTo !== null} onSelect={onSelect} onMove={onMove} />}
-        {active === 'svg' && <SvgDiagram model={display} emphases={emphases} zoomTo={zoomTo} onSelect={onSelect} />}
-        {active === 'mermaid' && <MermaidDiagram source={source} onRendered={onRendered} />}
+        <ReactFlowDiagram key={model.id} model={display} emphases={emphases} frame={frame} focused={zoomTo !== null} onSelect={onSelect} onMove={onMove} />
       </div>
       <Legend notes={notes} impact={focus.impact !== null} />
     </section>

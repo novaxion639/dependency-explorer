@@ -66,5 +66,5 @@ export function monolithTreemap(rows: MonolithRow[]): DiagramModel {
     .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
   const laid = treemap<Datum>().size([WIDTH, HEIGHT]).paddingInner(6).round(true).tile(treemapSquarify)(root)
   const nodes = laid.leaves().flatMap(leaf => (leaf.data.block ? [blockNode(leaf.data.block, leaf.x0, leaf.y0, leaf.x1 - leaf.x0, leaf.y1 - leaf.y0)] : []))
-  return { id: 'monolith-treemap', title: 'skello-app by product area', width: WIDTH, height: HEIGHT, nodes, groups: [], edges: [], renderers: ['react-flow', 'svg'] }
+  return { id: 'monolith-treemap', title: 'skello-app by product area', width: WIDTH, height: HEIGHT, nodes, groups: [], edges: [] }
 }

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { WriteEvent } from '@dependency-explorer/data'
-import type { Renderer } from '../diagram/model'
 
 /**
  * Permalink state — every shareable bit of UI state lives in the query string
@@ -24,14 +23,12 @@ import type { Renderer } from '../diagram/model'
  *   &edge=from~to~protocol[,…] · &drawer=svc · &ep=id   detail panel content
  *   &unit=<unit or store id> · &chapter=<n>   flow page panel · story step
  *   &present=1                           present mode
- *   &renderer=svg | mermaid              diagram renderer (React Flow by default)
  *
  * Legacy keys (`view=…`, a bare `s`, `flow`, `blast=1&s=…`) parse into the page form.
  */
 export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | 'resources' | 'impact' | 'ownership'
 
 export const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
-const RENDERERS: readonly Renderer[] = ['react-flow', 'svg', 'mermaid']
 const WRITE_EVENT_PARAMS: readonly WriteEvent[] = ['create', 'update', 'destroy']
 const MONOLITH = 'skello-app'
 const LEGACY_VIEW_PAGE: Record<string, Page> = { areas: 'areas', domains: 'areas', context: 'microservices', services: 'microservices', resources: 'resources', teams: 'ownership' }
@@ -40,7 +37,6 @@ export interface UrlState {
   s: string | null
   page: Page
   present: boolean
-  renderer: Renderer
   area: string | null
   term: string | null
   team: string | null
@@ -111,7 +107,6 @@ export function parseUrl(search: string): UrlState {
     s: p.get('s'),
     page: parsePage(p),
     present: p.get('present') === '1',
-    renderer: RENDERERS.find(r => r === p.get('renderer')) ?? 'react-flow',
     area: p.get('area'),
     term: p.get('term'),
     team: p.get('team'),
@@ -163,9 +158,6 @@ export function toQueryString(state: UrlState): string {
     if (value !== null && allowed.has(key) && (!parent || state[parent] !== null)) {
       p.set(key, String(value))
     }
-  }
-  if (state.renderer !== 'react-flow') {
-    p.set('renderer', state.renderer)
   }
   if (state.present) {
     p.set('present', '1')
