@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
+import { beforeAll, describe, it, expect } from 'vitest'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { searchIndex } from '../shell/dataIndexes'
@@ -11,13 +11,18 @@ function type(input: HTMLInputElement, value: string) {
 }
 
 describe('SearchModal', () => {
-  it('is an open dialog holding a combobox over a listbox, and gives focus back on close', async () => {
-    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
-    Element.prototype.scrollIntoView = () => {}
+  beforeAll(() => {
     HTMLDialogElement.prototype.showModal = function showModal() {
       this.open = true
       this.querySelector('input')?.focus()
     }
+    HTMLDialogElement.prototype.close = function close() {
+      this.open = false
+    }
+  })
+  it('is an open dialog holding a combobox over a listbox, and gives focus back on close', async () => {
+    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+    Element.prototype.scrollIntoView = () => {}
     const opener = document.createElement('button')
     document.body.append(opener)
     opener.focus()
@@ -41,9 +46,6 @@ describe('SearchModal', () => {
   })
   it('names listeners and jobs among the kinds it searches', async () => {
     Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
-    HTMLDialogElement.prototype.showModal = function showModal() {
-      this.open = true
-    }
     const host = document.createElement('div')
     document.body.append(host)
     const root = createRoot(host)

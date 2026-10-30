@@ -21,9 +21,13 @@ export function SearchModal({ index, onNavigate, onClose }: Props) {
   const results = useMemo(() => searchEntries(index, query), [index, query])
 
   useEffect(() => {
+    const dialog = dialogRef.current
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    dialogRef.current?.showModal()
-    return () => opener?.focus()
+    dialog?.showModal()
+    return () => {
+      dialog?.close()
+      opener?.focus()
+    }
   }, [])
   useEffect(() => {
     document.getElementById(optionId(cursor))?.scrollIntoView({ block: 'nearest' })
