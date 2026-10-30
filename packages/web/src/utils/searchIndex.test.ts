@@ -44,3 +44,11 @@ describe('listener entries', () => {
     expect(entries.length).toBeGreaterThan(1)
   })
 })
+
+describe('file entries', () => {
+  it('lists only files a flow touches or a route serves', () => {
+    const files = searchIndex.filter(e => e.type === 'file')
+    expect(files.length).toBeGreaterThan(0)
+    expect(files.filter(e => e.sublabel.includes('touched by 0 flows') && !e.sublabel.includes('serves'))).toEqual([])
+  })
+})

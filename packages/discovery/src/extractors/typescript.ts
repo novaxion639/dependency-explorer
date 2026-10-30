@@ -97,7 +97,9 @@ export function findPackageDirs(repoPath: string): string[] {
       return
     }
     if (entries.some(e => e.isFile() && e.name === 'package.json')) out.push(dir)
-    if (depth >= MAX_PACKAGE_DEPTH) return
+    if (depth >= MAX_PACKAGE_DEPTH) {
+      return
+    }
     for (const e of entries) {
       if (!e.isDirectory() || e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) continue
       walk(path.join(dir, e.name), depth + 1)

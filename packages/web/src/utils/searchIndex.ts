@@ -92,7 +92,7 @@ export function buildSearchIndex(map: ConnectivityMap, files: Map<string, FileIn
   }
 
   // Reverse code→flows index — derived from codeUnits[].path, zero authored data
-  for (const entry of files.values()) {
+  for (const entry of [...files.values()].filter(f => f.flows.length > 0 || f.routes.length > 0)) {
     entries.push({
       type: 'file',
       label: entry.path,
