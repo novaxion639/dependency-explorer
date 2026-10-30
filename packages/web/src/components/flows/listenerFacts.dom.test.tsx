@@ -49,7 +49,7 @@ describe('ListenerFacts', () => {
     const host = mount('cu-upd-service')
     const fires = host.querySelector('section')
     const reached = [...(fires?.querySelectorAll('ul ul button') ?? [])].map(b => b.textContent)
-    expect(reached).toContain('paid_leaves_counters')
+    expect(reached).toContain('predicted_shifts')
   })
   it('reads runs none with the call for a write that skips every listener', () => {
     const host = mount('cu-upd-service')
@@ -65,7 +65,7 @@ describe('ListenerFacts', () => {
   })
   it('shows a cascade hop under a text-graded write as unverified', () => {
     const host = mount('cu-upd-service')
-    const hop = [...host.querySelectorAll('ul ul li')].find(li => li.querySelector('button')?.textContent === 'paid_leaves_counters')
+    const hop = [...host.querySelectorAll('ul ul li')].find(li => li.querySelector('button')?.textContent === 'predicted_shifts')
     expect(hop?.querySelector('[role="img"]')?.getAttribute('aria-label')).toMatch(/^unverified/)
   })
   it('shows each write site’s source, and none on a table-event row', () => {

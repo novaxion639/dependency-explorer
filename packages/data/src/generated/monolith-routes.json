@@ -574,6 +574,13 @@
     "controllerFile": "app/controllers/private/svc_employees/annualization_contract_history_controller.rb"
   },
   {
+    "verb": "PATCH",
+    "path": "/private/employees/document_variables",
+    "controller": "private/svc_employees/employee_document_variables",
+    "action": "update_document_variables",
+    "controllerFile": "app/controllers/private/svc_employees/employee_document_variables_controller.rb"
+  },
+  {
     "verb": "POST",
     "path": "/private/employees/document_variables",
     "controller": "private/svc_employees/employee_document_variables",
@@ -833,6 +840,13 @@
     "controllerFile": "app/controllers/private/svc_shops/organisations_controller.rb"
   },
   {
+    "verb": "PATCH",
+    "path": "/private/shops/organisations/:id/document_variables",
+    "controller": "private/svc_shops/organisations",
+    "action": "update_document_variables",
+    "controllerFile": "app/controllers/private/svc_shops/organisations_controller.rb"
+  },
+  {
     "verb": "GET",
     "path": "/private/shops/shops",
     "controller": "private/svc_shops/shops",
@@ -844,6 +858,13 @@
     "path": "/private/shops/shops/:id",
     "controller": "private/svc_shops/shops",
     "action": "show",
+    "controllerFile": "app/controllers/private/svc_shops/shops_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/private/shops/shops/:id/billing_data",
+    "controller": "private/svc_shops/shops",
+    "action": "billing_data",
     "controllerFile": "app/controllers/private/svc_shops/shops_controller.rb"
   },
   {
@@ -1575,13 +1596,6 @@
     "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
   },
   {
-    "verb": "POST",
-    "path": "/super_admin/api/organisations/migrate_to_billing_new_process",
-    "controller": "super_admin/api/organisations",
-    "action": "migrate_to_billing_new_process",
-    "controllerFile": "app/controllers/super_admin/api/organisations_controller.rb"
-  },
-  {
     "verb": "GET",
     "path": "/super_admin/api/organisations/new",
     "controller": "super_admin/api/organisations",
@@ -1789,13 +1803,6 @@
     "path": "/super_admin/api/stripe_charges/kinds",
     "controller": "super_admin/api/stripe_charges",
     "action": "kinds",
-    "controllerFile": "app/controllers/super_admin/api/stripe_charges_controller.rb"
-  },
-  {
-    "verb": "POST",
-    "path": "/super_admin/api/stripe_charges/undispute_last",
-    "controller": "super_admin/api/stripe_charges",
-    "action": "undispute_last",
     "controllerFile": "app/controllers/super_admin/api/stripe_charges_controller.rb"
   },
   {
@@ -3557,27 +3564,6 @@
   },
   {
     "verb": "GET",
-    "path": "/v3/api/plannings/user_kpis_settings",
-    "controller": "v3/api/plannings/user_kpis_settings",
-    "action": "show",
-    "controllerFile": "app/controllers/v3/api/plannings/user_kpis_settings_controller.rb"
-  },
-  {
-    "verb": "PATCH",
-    "path": "/v3/api/plannings/user_kpis_settings",
-    "controller": "v3/api/plannings/user_kpis_settings",
-    "action": "update",
-    "controllerFile": "app/controllers/v3/api/plannings/user_kpis_settings_controller.rb"
-  },
-  {
-    "verb": "PUT",
-    "path": "/v3/api/plannings/user_kpis_settings",
-    "controller": "v3/api/plannings/user_kpis_settings",
-    "action": "update",
-    "controllerFile": "app/controllers/v3/api/plannings/user_kpis_settings_controller.rb"
-  },
-  {
-    "verb": "GET",
     "path": "/v3/api/plannings/user/planning_config",
     "controller": "v3/api/plannings/user/planning_configs",
     "action": "show",
@@ -4249,6 +4235,13 @@
     "controllerFile": "app/controllers/v3/api/shops/lateness_inclusion_controller.rb"
   },
   {
+    "verb": "POST",
+    "path": "/v3/api/shops/:shop_id/legacy_pto_tracker_history",
+    "controller": "v3/api/shops/legacy_pto_tracker_histories",
+    "action": "create",
+    "controllerFile": "app/controllers/v3/api/shops/legacy_pto_tracker_histories_controller.rb"
+  },
+  {
     "verb": "DELETE",
     "path": "/v3/api/shops/:shop_id/meal_rule",
     "controller": "v3/api/shops/meal_rules",
@@ -4730,13 +4723,6 @@
     "controller": "v3/api/users",
     "action": "reset_pin",
     "controllerFile": "app/controllers/v3/api/users_controller.rb"
-  },
-  {
-    "verb": "GET",
-    "path": "/v3/api/users/:id/self_serve/activate_by_qa",
-    "controller": "v3/api/self_serve",
-    "action": "activate_by_qa",
-    "controllerFile": "app/controllers/v3/api/self_serve_controller.rb"
   },
   {
     "verb": "POST",
