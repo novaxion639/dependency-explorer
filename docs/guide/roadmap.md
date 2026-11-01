@@ -7,7 +7,9 @@
 | 1.5 | More extractors: serverless configs (deploy state and static, endpoint verification), Rails routes (the monolith's inbound surface), frontend env and usage, async queue cross-reference. Layer 4 live AWS verification ships as the `aws-live` extractor (`pnpm discover -- --aws`) | ✅ done (nightly AWS automation waits on the Infra role) |
 | 1.7 | AWS resource discovery. Layer 1: stream, S3 and schedule event sources and owned CloudFormation resources from serverless config. Layer 2: application-code AWS client usage. Layer 3: Terraform ground truth | ✅ done |
 | 2 | Org-audience features: permalinks, global search, ownership pages, export | ✅ done (ownership coverage grows with CODEOWNERS adoption, not code) |
+| 2.5 | Adopted from skello-cockpit: ownership cross-walk (CODEOWNERS teams ↔ Datadog teams ↔ Jira squads), Jira Feature Area → product area map, golden test for `discover:apply`, a network guard in tests, knip on unused exports, `AGENTS.md` with a code → doc map, exact dependency pins, an in-app "to fix" bar for baseline findings, `skello-ds-web` tokens with dark mode | planned |
 | 3 | "Suggest edit" → pre-filled PR through a GitHub App, with permissions from GitHub teams | |
-| 4 | Live operational overlays (deploys, alarms, queue depth, on-call) through a read-only API | |
+| 4 | Live operational overlays (deploys, alarms, queue depth, on-call) through a read-only API. Datadog first, on skello-cockpit's endpoints and rules: monitors, SLOs and noisy monitors on service pages, DLQ depth on resource pages, release verdicts beside the pinned commit, from a gitignored snapshot joined by service id | |
+| 5 | Desktop app: an independent macOS app around the static bundle, shipped to other users as a DMG on GitHub releases with an update check, on skello-cockpit's distribution (electron-vite, electron-builder, `gh release download`). A distribution channel next to hosting ([ADR-0005](../adr/0005-local-poc-first.md)), recorded in its own ADR when started | later |
 
 Architecture decisions are recorded in [docs/adr/](../adr/).
