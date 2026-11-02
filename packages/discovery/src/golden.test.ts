@@ -17,6 +17,7 @@ const NOT_COVERED: Partial<Record<keyof Report, string>> = {
   piiFacts: 'needs a skello-libs-ts checkout with lib-anonymizer decorators',
   piiCheck: 'verifies edge PII refs against piiFacts, which needs skello-libs-ts',
   machineCheck: 'needs a Step Functions definition, its handlers and a src/container.ts wiring in a service repo',
+  datadog: 'runs only with datadogSnapshotDir',
 }
 
 const isBlank = (value: unknown): boolean =>

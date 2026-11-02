@@ -706,5 +706,6 @@
     "dmsTasks": [],
     "scheduledRules": [],
     "unresolvedPrefixes": []
-  }
+  },
+  "datadog": null
 }

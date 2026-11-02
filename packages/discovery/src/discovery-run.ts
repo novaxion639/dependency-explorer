@@ -9,6 +9,8 @@ import { extractRailsMonolith } from './extractors/rails'
 import { extractServerless, type ServerlessFacts } from './extractors/serverless'
 import { extractAwsClients, type AwsUsageFact, type AwsUsageKind } from './extractors/aws-clients'
 import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extractors/aws-live'
+import { joinDatadog, type DatadogJoin } from './extractors/datadog'
+import { readDatadogSnapshot } from './datadog/snapshot'
 import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
@@ -122,6 +124,7 @@ export interface Report {
   serviceFacts: DiscoveredOverlay['services']
   /** Layer 4: read-only AWS snapshot diff (only with --aws <dir>) */
   awsLive: AwsLiveFindings | null
+  datadog: DatadogJoin | null
 }
 
 export interface Dataset {
@@ -249,6 +252,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
     unmappedGithubTeams: [],
     serviceFacts: {},
     awsLive: null,
+    datadog: options.datadogSnapshotDir ? joinDatadog(readDatadogSnapshot(options.datadogSnapshotDir), dataset) : null,
   }
 
   const allSlugs = new Set<string>()
