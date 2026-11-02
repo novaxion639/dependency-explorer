@@ -1,0 +1,11 @@
+{
+  "data": [
+    {
+      "id": "evt-0002",
+      "type": "event",
+      "attributes": { "attributes": { "monitor_id": 1003, "status": "warn", "timestamp": 1761894000000 } }
+    },
+    { "id": "evt-0003", "type": "event", "attributes": { "attributes": { "status": "warn" } } }
+  ],
+  "meta": { "page": {} }
+}

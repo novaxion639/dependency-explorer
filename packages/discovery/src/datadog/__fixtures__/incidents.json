@@ -1,0 +1,30 @@
+{
+  "data": [
+    {
+      "id": "inc-0001",
+      "type": "incidents",
+      "attributes": {
+        "title": "svc-alpha checkout degraded",
+        "severity": "SEV-2",
+        "state": "active",
+        "created": "2026-10-30T09:00:00.000000+00:00",
+        "customer_impact_scope": "SENTINEL-INCIDENT-BODY",
+        "fields": {
+          "services": { "type": "autocomplete", "value": ["svc-alpha"] },
+          "summary": { "type": "textbox", "value": "SENTINEL-INCIDENT-SUMMARY" }
+        }
+      }
+    },
+    {
+      "id": "inc-0002",
+      "type": "incidents",
+      "attributes": {
+        "title": "svc-beta past outage",
+        "severity": "SEV-3",
+        "state": "resolved",
+        "created": "2026-10-01T09:00:00.000000+00:00",
+        "fields": { "services": { "type": "autocomplete", "value": null } }
+      }
+    }
+  ]
+}

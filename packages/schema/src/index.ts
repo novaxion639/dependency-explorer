@@ -532,6 +532,7 @@ export const TeamSchema = z.object({
   // GitHub team slugs (from CODEOWNERS, e.g. "@skelloapp/squad-planning")
   // that map to this team — used by discovery to assign service ownership.
   githubTeams: z.array(z.string()).optional(),
+  datadogTeams: z.array(z.string()).optional(),
 })
 
 // ── Product areas ────────────────────────────────────────────────────────────
@@ -630,6 +631,53 @@ export const DiscoveredOverlaySchema = z.object({
   // "<flowId>#<from>→<to>" → call-graph evidence grade at the pinned commit (🫀)
   codeEdgeGrades: z.record(z.string(), CodeEdgeGradeSchema).optional(),
 })
+
+export const DatadogOverlayStateSchema = z.enum(['problem', 'dig', 'fellBack', 'healthy', 'noData'])
+
+export const DatadogOverlayServiceSchema = z.object({
+  state: DatadogOverlayStateSchema,
+  reasons: z.array(z.string()),
+  monitors: z.array(z.object({
+    id: z.number(),
+    name: z.string(),
+    status: z.string(),
+    noisy: z.boolean(),
+    url: z.string(),
+  })),
+  slos: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    target: z.number(),
+    value: z.number().nullable(),
+    url: z.string(),
+  })),
+  strip: z.array(z.object({
+    day: z.string(),
+    requests: z.number().nullable(),
+    errors5xx: z.number().nullable(),
+    p95ms: z.number().nullable(),
+  })),
+  releases: z.array(z.object({
+    sha: z.string(),
+    title: z.string(),
+    mergedAt: z.string(),
+    verdict: z.enum(['regressed', 'steady', 'tooRecent']),
+  })),
+  incidents: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    severity: z.string(),
+    url: z.string(),
+  })),
+})
+
+export const DatadogOverlaySchema = z.object({
+  snapshotDate: z.string(),
+  eventsCapped: z.boolean(),
+  services: z.record(z.string(), DatadogOverlayServiceSchema),
+  queues: z.record(z.string(), z.object({ depthNow: z.number(), depthMax14d: z.number() })),
+})
+export type DatadogOverlay = z.infer<typeof DatadogOverlaySchema>
 
 // ── Top-level map ─────────────────────────────────────────────────────────────
 

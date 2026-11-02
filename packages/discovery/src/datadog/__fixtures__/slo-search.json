@@ -1,0 +1,29 @@
+{
+  "data": {
+    "type": "slos_results",
+    "attributes": {
+      "slos": [
+        {
+          "data": {
+            "id": "slo-0001",
+            "type": "slo",
+            "attributes": {
+              "name": "svc-beta availability",
+              "all_tags": ["service:svc-beta", "env:prod"],
+              "description": "SENTINEL-SLO-DESCRIPTION",
+              "query": { "numerator": "SENTINEL-SLO-QUERY", "denominator": "SENTINEL-SLO-QUERY" }
+            }
+          }
+        },
+        {
+          "data": {
+            "id": "slo-0002",
+            "type": "slo",
+            "attributes": { "name": "svc-delta staging availability", "all_tags": ["service:svc-delta", "env:staging"] }
+          }
+        }
+      ]
+    }
+  },
+  "meta": { "pagination": { "number": 0, "next_number": 0, "size": 100, "total": 2 } }
+}
