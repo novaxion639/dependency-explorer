@@ -82,7 +82,7 @@ describe('buildOverlay', () => {
   it('renders each reason with its rule and figures', () => {
     const { services } = overlay()
     expect(services['svc-planning']?.reasons).toEqual(['5xx 4.1× (+62) over 72 h'])
-    expect(services['svc-reports']?.reasons).toEqual(['DLQ svc-reports-exportdlq-prod above 0 for 72 h, 4 now'])
+    expect(services['svc-reports']?.reasons).toEqual(['DLQ svcreports-exportDlq-prod above 0 for 72 h, 4 now'])
     expect(services['svc-billing']?.reasons).toEqual([`Fell back on ${new Date((MIDNIGHT - 3 * DAY) * 1000).toISOString().slice(0, 10)}: 5xx 30`])
     expect(services['svc-search']?.reasons).toEqual([])
   })
@@ -119,10 +119,11 @@ describe('buildOverlay', () => {
     ])
   })
 
-  it('lists the releases of the last 14 days with their verdict', () => {
-    expect(overlay().services['svc-planning']?.releases).toEqual([
+  it('lists the releases of the last 14 days with their verdict, titled by their PR or else their version', () => {
+    const titled = buildOverlay(snapshot, join, engine, NOW, new Map([['sha456', 'feat(planning): faster export']]))
+    expect(titled.services['svc-planning']?.releases).toEqual([
       { sha: 'sha400', title: 'v2.3.0', mergedAt: new Date((TO - 5 * DAY) * 1000).toISOString(), verdict: 'steady' },
-      { sha: 'sha456', title: 'v2.4.0', mergedAt: new Date((TO - DAY) * 1000).toISOString(), verdict: 'tooRecent' },
+      { sha: 'sha456', title: 'feat(planning): faster export', mergedAt: new Date((TO - DAY) * 1000).toISOString(), verdict: 'tooRecent' },
     ])
   })
 
@@ -195,7 +196,7 @@ describe('overlayOf', () => {
     vi.restoreAllMocks()
   })
 
-  const mergeAt = (t: number, n: number) => `sha${n}\t${new Date(t * 1000).toISOString()}\tMerge pull request #${n} from skelloapp/staging\t`
+  const mergeAt = (t: number, n: number) => `sha${n}\t${new Date(t * 1000).toISOString()}\tMerge pull request #${n} from skelloapp/staging\tfeat: change ${n}\n`
   const git: GitRunner = (cwd) => {
     if (cwd.endsWith('svc-planning')) {
       return mergeAt(TO - 2 * DAY, 900)
@@ -235,15 +236,32 @@ describe('overlayOf', () => {
     }
     const twoSpellings: DatadogJoin = { serviceOfDatadog: new Map([['svcsearch', 'svc-search'], ['svc-search', 'svc-search']]), queueOfDatadog: new Map(), findings: [] }
     const search = overlayOf(spelled, twoSpellings, '/repos', false, () => mergeAt(MERGED, 77)).services['svc-search']
-    expect(search?.releases).toEqual([{ sha: 'sha77', title: '#77', mergedAt: new Date(MERGED * 1000).toISOString(), verdict: 'regressed' }])
+    expect(search?.releases).toEqual([{ sha: 'sha77', title: 'feat: change 77', mergedAt: new Date(MERGED * 1000).toISOString(), verdict: 'regressed' }])
     expect(search?.reasons).toEqual(['5xx 72× (+72) over 72 h'])
     expect(search?.monitors.map((m) => m.id)).toEqual([801])
+  })
+
+  it('merges the series two spellings carry for one metric, summing counts and keeping the highest p95', () => {
+    const DAY_BEFORE = MIDNIGHT - DAY
+    const keyed = metrics({
+      api_count: { svcsearch: hourly(() => 100), 'svc-search': hourly(() => 50) },
+      api_p95: { svcsearch: hourly(() => 200), 'svc-search': hourly(() => 300) },
+    })
+    const gap = { tag_set: ['name:svcSearch-prod'], pointlist: [[DAY_BEFORE * 1000, null], [(DAY_BEFORE + HOUR) * 1000, null]] satisfies [number, null][] }
+    const spelled: DatadogSnapshot = { ...snapshot, metrics: { ...keyed, api_count: [...(keyed.api_count ?? []), gap] } }
+    const twoSpellings: DatadogJoin = {
+      serviceOfDatadog: new Map([['svcsearch', 'svc-search'], ['svc-search', 'svc-search'], ['svcSearch', 'svc-search']]),
+      queueOfDatadog: new Map(),
+      findings: [],
+    }
+    const strip = overlayOf(spelled, twoSpellings, '/repos', false, () => '').services['svc-search']?.strip
+    expect(strip?.at(-2)).toEqual({ day: new Date(DAY_BEFORE * 1000).toISOString().slice(0, 10), requests: 3600, errors5xx: null, p95ms: 300 })
   })
 
   it('judges each repo from its production branch, a missing branch leaving it without releases', () => {
     const built = overlayOf(snapshot, join, '/repos', false, git)
     expect(built.services['svc-planning']?.releases).toEqual([
-      { sha: 'sha900', title: '#900', mergedAt: new Date((TO - 2 * DAY) * 1000).toISOString(), verdict: 'tooRecent' },
+      { sha: 'sha900', title: 'feat: change 900', mergedAt: new Date((TO - 2 * DAY) * 1000).toISOString(), verdict: 'tooRecent' },
     ])
     expect(built.services['svc-search']?.releases).toEqual([])
     expect(built.services['svc-planning']?.state).toBe('problem')
