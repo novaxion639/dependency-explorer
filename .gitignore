@@ -10,3 +10,4 @@ build/
 .pinned/
 .datadog-snapshots/
 packages/web/overlay/
+coverage/

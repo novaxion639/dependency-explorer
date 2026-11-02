@@ -1,6 +1,7 @@
+import { CLIENT_TYPES } from '@dependency-explorer/data'
+import type { ConnectivityMap, ResourceSurface } from '@dependency-explorer/schema'
 import type { DatadogSnapshot } from '../datadog/snapshot'
-import { isProd, normaliseName, serviceOf, tagValues, type MetricKey } from '../datadog/scope'
-import type { Dataset } from '../discovery-run'
+import { isProd, normaliseName, rawServiceOf, rawTagValues, type MetricKey } from '../datadog/scope'
 import { buildServiceResolver, stripEnvSuffix } from './aws-live'
 
 export interface DatadogJoin {
@@ -16,24 +17,24 @@ type DatadogFinding =
   | { kind: 'silent-dlq'; resource: string; fix: string }
   | { kind: 'team-mismatch'; service: string; datadogTeam: string; codeownersTeam: string | null; fix: string }
 
-const CLIENT_TYPES = new Set(['vue-frontend', 'react-native'])
 const API_GATEWAY_METRICS: MetricKey[] = ['api_count', 'api_5xx', 'api_4xx', 'api_p95']
 const SERVICE_METRICS: MetricKey[] = ['lambda_errors', 'fn_invocations', 'fn_errors', 'apm_hits', 'apm_p95', 'apm_status']
 
 const sortedUnique = (values: string[]): string[] => [...new Set(values)].sort()
 
-export function joinDatadog(snapshot: DatadogSnapshot, dataset: Dataset): DatadogJoin {
+export function joinDatadog(snapshot: DatadogSnapshot, dataset: { map: ConnectivityMap; resources: ResourceSurface }): DatadogJoin {
   const { map, resources } = dataset
   const findings: DatadogFinding[] = []
   const seriesTags = (keys: MetricKey[], tag: string) =>
-    keys.flatMap(key => snapshot.metrics[key] ?? []).flatMap(s => tagValues(s.tag_set, tag))
+    keys.flatMap(key => snapshot.metrics[key] ?? []).flatMap(s => rawTagValues(s.tag_set, tag))
   const prodMonitors = snapshot.monitors.filter(m => isProd(m.tags))
   const prodItems = [...prodMonitors, ...snapshot.slos.filter(s => isProd(s.tags))]
 
   const mapServiceByKey = new Map(map.services.map(s => [normaliseName(s.name), s.name]))
   const serviceOfDatadog = new Map<string, string>()
+  const taggedNames = new Set(prodItems.flatMap(item => rawServiceOf(item) ?? []))
   const datadogNames = sortedUnique([
-    ...prodItems.flatMap(item => serviceOf(item) ?? []),
+    ...taggedNames,
     ...seriesTags(API_GATEWAY_METRICS, 'name').map(stripEnvSuffix),
     ...seriesTags(SERVICE_METRICS, 'service'),
   ])
@@ -42,10 +43,13 @@ export function joinDatadog(snapshot: DatadogSnapshot, dataset: Dataset): Datado
     if (service) {
       serviceOfDatadog.set(name, service)
     } else {
-      findings.push({ kind: 'unknown-service', datadog: name, fix: `Tag its monitors \`service:<map service name>\`, or add ${name} to the map` })
+      const fix = taggedNames.has(name)
+        ? `Tag its monitors and SLOs \`service:<map service name>\`, or add ${name} to the map`
+        : `Rename the API Gateway or Lambda service ${name} after its map service, or add ${name} to the map`
+      findings.push({ kind: 'unknown-service', datadog: name, fix })
     }
   }
-  const mapServiceOf = (item: { tags: string[]; name: string }) => serviceOfDatadog.get(serviceOf(item) ?? '')
+  const mapServiceOf = (item: { tags: string[]; name: string }) => serviceOfDatadog.get(rawServiceOf(item) ?? '')
 
   const monitored = new Set(prodItems.map(mapServiceOf))
   for (const s of map.services) {
@@ -59,12 +63,11 @@ export function joinDatadog(snapshot: DatadogSnapshot, dataset: Dataset): Datado
   const resolve = buildServiceResolver(map.services.map(s => s.name))
   const queueOfDatadog = new Map<string, string>()
   for (const queuename of sortedUnique(seriesTags(['dlq'], 'queuename'))) {
-    const deployed = stripEnvSuffix(queuename)
-    const owner = resolve(deployed)
-    const full = normaliseName(deployed)
-    const prefix = normaliseName(owner ?? '')
-    const bare = full.startsWith(prefix) ? full.slice(prefix.length) : full
-    const resource = registryDlqs.find(r => [full, bare].includes(normaliseName(r.name)))
+    const stripped = stripEnvSuffix(queuename)
+    const deployed = normaliseName(stripped)
+    const owner = resolve(stripped)
+    const resource = registryDlqs.find(r =>
+      normaliseName(r.name) === deployed || (r.owner === owner && normaliseName(`${r.owner}${r.name}`) === deployed))
     if (resource) {
       queueOfDatadog.set(queuename, resource.id)
     } else {
@@ -82,13 +85,18 @@ export function joinDatadog(snapshot: DatadogSnapshot, dataset: Dataset): Datado
   const handlesOf = new Map<string, Set<string>>()
   for (const m of prodMonitors) {
     const service = mapServiceOf(m)
-    if (service) {
-      tagValues(m.tags, 'team').forEach(handle => handlesOf.set(service, (handlesOf.get(service) ?? new Set()).add(handle)))
+    if (!service) {
+      continue
     }
+    const handles = handlesOf.get(service) ?? new Set<string>()
+    for (const handle of rawTagValues(m.tags, 'team')) {
+      handles.add(handle)
+    }
+    handlesOf.set(service, handles)
   }
   for (const s of map.services) {
     for (const handle of sortedUnique([...(handlesOf.get(s.name) ?? [])])) {
-      const teamId = teamOfHandle.get(handle)
+      const teamId = teamOfHandle.get(handle.toLowerCase())
       const codeownersTeam = s.teamId ?? null
       if (teamId === undefined) {
         findings.push({ kind: 'team-mismatch', service: s.name, datadogTeam: handle, codeownersTeam, fix: `Add \`${handle}\` to the datadogTeams of its team in packages/data/src/teams.ts` })
@@ -101,7 +109,7 @@ export function joinDatadog(snapshot: DatadogSnapshot, dataset: Dataset): Datado
   return { serviceOfDatadog, queueOfDatadog, findings }
 }
 
-function describe(f: DatadogFinding): string {
+function findingLine(f: DatadogFinding): string {
   switch (f.kind) {
     case 'unknown-service':
       return `**${f.datadog}** names no map service`
@@ -120,6 +128,6 @@ export function datadogSection(join: DatadogJoin | null): string | null {
   if (!join) {
     return null
   }
-  const lines = join.findings.map(f => `- ${describe(f)} — ${f.fix}`)
+  const lines = join.findings.map(f => `- ${findingLine(f)} — ${f.fix}`)
   return ['\n## 🐶 Datadog drift (advisory, not in the baseline)\n', ...(lines.length ? lines : ['_none_'])].join('\n')
 }

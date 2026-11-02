@@ -48,8 +48,6 @@ const BASELINE_PATH = path.resolve(__dirname, '../baseline.json')
 const BASELINE_MODE = process.argv.includes('--write-baseline')
 const FAIL_ON_NEW = process.argv.includes('--fail-on-new')
 const APPLY_MODE = process.argv.includes('--apply')
-// A given dir resolves against the cwd, then the workspace root, then the package;
-// without one, the latest snapshot under the package's snapshot folder is used.
 function resolveSnapshotDir(flag: string, folder: string, fetchScript: string): string | null {
   const i = process.argv.indexOf(flag)
   if (i < 0) {
@@ -531,7 +529,7 @@ const report = discover()
 const pinnedRepos = report.pinned?.repos
 const unscanned = pinnedRepos ? unscannedRepos(readBaselineRepos(BASELINE_PATH), pinnedRepos.map(p => p.repo)) : []
 if (JSON_MODE) {
-  console.log(JSON.stringify(report, null, 2))
+  console.log(JSON.stringify(report, (_key, value: unknown) => (value instanceof Map ? Object.fromEntries(value) : value), 2))
 } else {
   printMarkdown(report, unscanned)
 }
