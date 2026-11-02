@@ -77,15 +77,27 @@ describe('HealthSection', () => {
     expect(releases[1]).toContain('Steady')
     expect(releases[2]).toContain('Too recent')
   })
-  it('draws the strip as three sparklines with the last day marked partial', async () => {
+  it('names each sparkline with its figures and the partial snapshot day', async () => {
     const host = await render()
     const names = [...host.querySelectorAll('svg[role="img"]')].map(svg => svg.getAttribute('aria-label'))
     expect(names).toEqual([
-      'Requests per day over 14 days, today partial',
-      '5xx per day over 14 days, today partial',
-      'p95 ms per day over 14 days, today partial',
+      'Requests, max 1130, last 1130; the last point is the snapshot day, partial',
+      '5xx, max 13, last 13; the last point is the snapshot day, partial',
+      'p95 ms, max 213, last 213; the last point is the snapshot day, partial',
     ])
-    expect(host.textContent).toContain('today, partial')
+    expect(host.textContent).toContain('the hollow last point is the snapshot day, partial')
+    expect(host.textContent).not.toContain('today')
+  })
+  it('names a sparkline with no figures no data', async () => {
+    const strip = serviceHealth().strip.map(d => ({ ...d, p95ms: null }))
+    const host = await render({ health: serviceHealth({ strip }) })
+    expect(host.querySelector('svg[aria-label^="p95 ms"]')?.getAttribute('aria-label')).toBe('p95 ms, no data')
+  })
+  it('leaves a gap in the line for a day without data', async () => {
+    const host = await render()
+    const lines = (name: string) => host.querySelectorAll(`svg[aria-label^="${name},"] polyline`).length
+    expect(lines('Requests')).toBe(1)
+    expect(lines('5xx')).toBe(2)
   })
   it('leaves out empty lists and the strip when Datadog has none', async () => {
     const host = await render({ health: serviceHealth({ state: 'noData', reasons: [], monitors: [], slos: [], incidents: [], releases: [], strip: [] }) })
@@ -101,6 +113,10 @@ describe('HealthSection', () => {
     expect(host.querySelector('footer')?.textContent).toContain('stale')
     const fresh = await render({ snapshotDate: '2026-10-27' })
     expect(fresh.querySelector('footer')?.textContent).not.toContain('stale')
+  })
+  it('marks a snapshot with an unreadable date as stale', async () => {
+    const host = await render({ snapshotDate: 'not a date' })
+    expect(host.querySelector('footer')?.textContent).toContain('stale')
   })
   it('warns that noisy counts may be low when the events were capped', async () => {
     const host = await render({ eventsCapped: true })
