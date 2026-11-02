@@ -87,10 +87,10 @@ flowchart LR
 - Exit code 1: a key is unset, Datadog refuses the keys (`Datadog refused the keys (HTTP 403)`, with no folder written), a request fails, or the target folder holds files other than a Datadog snapshot (it is never replaced).
 - The folder is written whole or not at all, and re-running on the same day replaces that day's snapshot.
 
-**Discover.** `pnpm discover -- --datadog [dir]` reads a snapshot (the latest by default, or `dir` as a path or a folder name under `.datadog-snapshots/`), prints the 🐶 section and writes `packages/web/overlay/datadog.json`, validated by `DatadogOverlaySchema` ([data.md](data.md#datadog-overlay)). Without `--datadog`, discovery reads no snapshot, prints no 🐶 section and writes no overlay.
+**Discover.** `pnpm discover -- --datadog [dir]` reads a snapshot (the latest by default, or `dir`, a path such as `.datadog-snapshots/2026-11-02`, resolved against the current directory, the repo root, then `packages/discovery`; a bare folder name does not resolve), prints the 🐶 section and writes `packages/web/overlay/datadog.json`, validated by `DatadogOverlaySchema` ([data.md](data.md#datadog-overlay)). Without `--datadog`, discovery reads no snapshot, prints no 🐶 section and writes no overlay.
 
 **Release verdicts.** Releases come from the local clones: merge commits on each service's production branch over the last 14 days, or on `HEAD` of the pinned worktree when the run is `--pinned`. Each merge is judged against the 72 hours after it, compared with the same hours a week earlier:
-- `Regressed`: 5xx, Lambda errors or p95 latency rose past the bars below;
+- `Regressed`: 5xx, Lambda errors or p95 latency rose past the bars below, and the merge has a full week of baseline inside the snapshot window (an earlier merge is never `Regressed`);
 - `Steady`: no rise;
 - `Too recent`: the merge is under 72 hours old.
 
@@ -100,7 +100,7 @@ flowchart LR
 |---|---|
 | Problem now | 5xx, Lambda errors or p95 latency rose over the last 72 hours and are still elevated over the last 24 hours |
 | To dig into | a route, function or DLQ is failing without a service-wide problem |
-| Fell back | a past day in the 14 shown was bad |
+| Fell back | a day in the last 7 days, before the last 24 hours and before the start of any open problem, was bad and no longer holds |
 | Healthy | measured, none of the above |
 | No data | no metric reads |
 
@@ -113,7 +113,7 @@ The bars come from skello-cockpit's code: a 5xx rise needs 3× the week before a
 | `unknown-service` | a Datadog service or API name matches no map service |
 | `unmonitored-service` | a map service (clients excepted) has no prod monitor and no SLO |
 | `unknown-dlq` | a DLQ Datadog reports matches no registry DLQ |
-| `silent-dlq` | a registry DLQ has no depth series, because the deployed queue is not tagged `sqsdlq:true` |
+| `silent-dlq` | a registry DLQ has no depth series, because the deployed queue is not tagged `sqsdlq:true`; reported only when the snapshot read the DLQ metric |
 | `team-mismatch` | the Datadog team on a service's monitors differs from its CODEOWNERS team, or is in no team's `datadogTeams` |
 
 Names match across spellings: `svc-alpha` and `svcalpha` fold into one map service.
@@ -127,6 +127,8 @@ The test suite guards discovery's behaviour and keeps tests off the network.
 - **Golden test** (`src/golden.test.ts`): runs `runDiscovery` and `writeOutputs` over a fictitious workspace built in a temp directory, and compares every generated dataset and the whole report with `src/__golden__/expected/`. A diff fails the test. After an intended change, run `golden:update`, then review the rewritten files in the diff.
 - **Covered sections:** every report section must hold data in the fixture, or be listed in the test's `NOT_COVERED` map with the reason it cannot. A section without fixture data fails the test until it is covered or listed.
 - **Network guard** (`test-support/guard.ts`): every test refuses outbound requests except to `localhost`, and refuses to spawn `aws`, `gh`, `curl` or `graphify`.
+- **`AGENTS.md`:** the repo's agent guidance: commands, hard rules and a code → doc sync table. A change to a code path in that table updates its doc in the same change.
+- **Exact pins:** every dependency in every `package.json` carries an exact version, never `^` or `~`; a new dependency takes a version published at least two weeks earlier.
 - **Unused code:** `pnpm check:exports` (knip) fails on an unused file, export or type.
 - **`--no-fetch`:** a pinned run fetches each repo's origin first; `--no-fetch` skips it, for offline runs and tests. `DE_FIXED_NOW` (an ISO date) fixes the run's clock for reproducible output.
 
