@@ -25,6 +25,7 @@ const VERDICT_LABEL: Record<ServiceHealth['releases'][number]['verdict'], string
 }
 const STALE_AFTER_MS = 7 * 24 * 60 * 60 * 1000
 const SPARK = { width: 140, height: 28 }
+const percent = new Intl.NumberFormat('en', { maximumFractionDigits: 2, roundingMode: 'trunc', useGrouping: false })
 
 function Sparkline({ label, values }: { label: string; values: Array<number | null> }) {
   const known = values.filter(v => v !== null)
@@ -101,7 +102,7 @@ export function HealthSection({ health, snapshotDate, eventsCapped, now }: Props
       <List title="SLOs" items={health.slos}>
         {s => (
           <li key={s.id}>
-            <DatadogLink href={s.url}>{s.name}</DatadogLink> <span className={styles.muted}>target {s.target} % · {s.value === null ? 'no value' : `${s.value} %`}</span>
+            <DatadogLink href={s.url}>{s.name}</DatadogLink> <span className={styles.muted}>target {percent.format(s.target)} % · {s.value === null ? 'no value' : `${percent.format(s.value)} %`}</span>
           </li>
         )}
       </List>

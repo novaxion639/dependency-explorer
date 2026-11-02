@@ -65,6 +65,16 @@ describe('HealthSection', () => {
     expect(slos[0]).toContain('99.95 %')
     expect(slos[1]).toContain('no value')
   })
+  it('shows SLO figures to two decimals at most, never rounded up to a met target', async () => {
+    const slos = [
+      { id: 'c3', name: 'Punch uptime', target: 99.95, value: 99.99757641742285, url: 'https://app.datadoghq.eu/slo?slo_id=c3' },
+      { id: 'd4', name: 'Punch exports', target: 99, value: 31.944444444443, url: 'https://app.datadoghq.eu/slo?slo_id=d4' },
+    ]
+    const host = await render({ health: serviceHealth({ slos }) })
+    const [uptime, exports] = items(host, 'SLOs')
+    expect(uptime).toContain('target 99.95 % · 99.99 %')
+    expect(exports).toContain('target 99 % · 31.94 %')
+  })
   it('lists the open incidents', async () => {
     const host = await render()
     expect(items(host, 'Incidents')[0]).toContain('SEV-2')
