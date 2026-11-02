@@ -1,5 +1,6 @@
 import type { ResourceRelation } from '@dependency-explorer/data'
 import { allResourceRelations, connectivityMap, inRailsOrder, listenerSurface, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
+import { useOverlay } from '../../hooks/useOverlay'
 import { evidenceHref } from '../../utils/evidenceLink'
 import { plural } from '../../utils/plural'
 import { CascadeSection } from './CascadeSection'
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSelectService, onBlast, listeners, onListeners }: Props) {
+  const overlay = useOverlay()
   const impact = resourceImpact(id, connectivityMap, resourceSurface.resources, allResourceRelations)
   if (!impact) {
     return null
@@ -40,6 +42,8 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
   const { resource, byService, flows, dlq, counts } = impact
   const note = resourceNotes[id]
   const tableListeners = resource.kind === 'table' ? inRailsOrder(listenerSurface.listeners.filter(l => l.table === id)) : []
+  const depth = overlay?.queues[id]
+  const dlqDepth = dlq ? overlay?.queues[dlq] : undefined
   const tables = resource.kind === 'database' ? resourceSurface.resources.filter(r => r.id.startsWith(`${id}.`)) : []
   return (
     <section aria-label={resource.name} className={styles.page}>
@@ -52,6 +56,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
           })}
         </p>
         {note?.description && <p className={styles.note}>{note.description}</p>}
+        {depth && <p className={styles.meta}>Depth: {depth.depthNow} now, {depth.depthMax14d} max over 14 days</p>}
         <p className={styles.counts}>{plural(counts.services, 'service')} · {plural(counts.files, 'file')} · {plural(counts.flows, 'flow')}</p>
         <button type="button" className={styles.impact} onClick={() => onBlast(id)}>If this is down…</button>
       </header>
@@ -94,7 +99,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
       <ListenersSection listeners={tableListeners} filters={listeners} open={listeners.listener} onFilters={onListeners} onToggle={listener => onListeners({ listener })} onOpenResource={onOpenResource} />
       {resource.kind === 'table' && <CascadeSection table={id} event={listeners.event} onEvent={event => onListeners({ event })} onOpenResource={onOpenResource} />}
       {resource.kind === 'table' && <WritePathsSection table={id} onOpenFlow={onOpenFlow} />}
-      {dlq && <p className={styles.meta}>Dead letters go to <button type="button" className={styles.link} onClick={() => onOpenResource(dlq)}>{dlq}</button></p>}
+      {dlq && <p className={styles.meta}>Dead letters go to <button type="button" className={styles.link} onClick={() => onOpenResource(dlq)}>{dlq}</button>{dlqDepth && ` (${dlqDepth.depthNow} waiting)`}</p>}
       {(resource.related ?? []).length > 0 && (
         <section aria-label="Related tables" className={styles.section}>
           <h2>Related tables</h2>
