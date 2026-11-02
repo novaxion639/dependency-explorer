@@ -4,7 +4,7 @@ import * as path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { datadogClient } from './client'
 import { runFetchCli } from './fetch-cli'
-import { fetchDatadogSnapshot, readDatadogSnapshot, writeDatadogSnapshot, type DatadogSnapshot } from './snapshot'
+import { fetchDatadogSnapshot, readDatadogSnapshot, SnapshotFormatError, writeDatadogSnapshot, type DatadogSnapshot } from './snapshot'
 
 const API_KEY = 'fake-api-key-0123456789'
 const APP_KEY = 'fake-app-key-9876543210'
@@ -249,7 +249,35 @@ describe('writeDatadogSnapshot', () => {
     writeDatadogSnapshot(dir, snapshot)
     fs.writeFileSync(path.join(dir, 'slos.json'), JSON.stringify(snapshot.slos.map(({ target: _, ...older }) => older)))
 
+    expect(() => readDatadogSnapshot(dir)).toThrow(SnapshotFormatError)
     expect(() => readDatadogSnapshot(dir)).toThrow(`${path.join(dir, 'slos.json')} does not match the Datadog snapshot format`)
+    expect(() => readDatadogSnapshot(dir)).toThrow('Re-run `pnpm discover:datadog:fetch` for a fresh snapshot.')
+  })
+
+  it('reads incidents from a fetch that kept no public id', async () => {
+    const { fetch } = fakeDatadog()
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    const dir = path.join(root, '2026-11-02')
+    const older = snapshot.incidents.map(({ public_id: _, ...incident }) => incident)
+    writeDatadogSnapshot(dir, { ...snapshot, incidents: older })
+
+    expect(readDatadogSnapshot(dir).incidents).toEqual(older)
+  })
+
+  it.each([
+    ['is missing', (file: string) => fs.rmSync(file), 'ENOENT'],
+    ['holds no JSON', (file: string) => fs.writeFileSync(file, '{"from":'), 'JSON'],
+  ])('refuses a snapshot whose file %s, naming it and the fetch to re-run', async (_, damage, cause) => {
+    const { fetch } = fakeDatadog()
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    const dir = path.join(root, '2026-11-02')
+    writeDatadogSnapshot(dir, snapshot)
+    const file = path.join(dir, 'meta.json')
+    damage(file)
+
+    expect(() => readDatadogSnapshot(dir)).toThrow(SnapshotFormatError)
+    expect(() => readDatadogSnapshot(dir)).toThrow(`${file} cannot be read:`)
+    expect(() => readDatadogSnapshot(dir)).toThrow(cause)
     expect(() => readDatadogSnapshot(dir)).toThrow('Re-run `pnpm discover:datadog:fetch` for a fresh snapshot.')
   })
 

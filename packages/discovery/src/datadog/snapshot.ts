@@ -10,7 +10,7 @@ const TeamSchema = z.object({ id: z.string(), handle: z.string(), name: z.string
 const SloSchema = z.object({ id: z.string(), name: z.string(), tags: z.array(z.string()), target: z.number().nullable(), value: z.number().nullable() })
 const IncidentSchema = z.object({
   id: z.string(),
-  public_id: z.number().nullable(),
+  public_id: z.number().nullish(),
   title: z.string(),
   severity: z.string().nullable(),
   created: z.string().nullable(),
@@ -243,12 +243,24 @@ export function writeDatadogSnapshot(dir: string, s: DatadogSnapshot): void {
   }
 }
 
+export class SnapshotFormatError extends Error {}
+
+const RE_FETCH = 'Re-run `pnpm discover:datadog:fetch` for a fresh snapshot.'
+
+function readSnapshotFile(file: string): unknown {
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'))
+  } catch (e) {
+    throw new SnapshotFormatError(`${file} cannot be read: ${causeOf(e)}\n${RE_FETCH}`)
+  }
+}
+
 export function readDatadogSnapshot(dir: string): DatadogSnapshot {
-  const files = Object.fromEntries(SNAPSHOT_KEYS.map((key) => [key, JSON.parse(fs.readFileSync(path.join(dir, `${key}.json`), 'utf8'))]))
+  const files = Object.fromEntries(SNAPSHOT_KEYS.map((key) => [key, readSnapshotFile(path.join(dir, `${key}.json`))]))
   const parsed = SnapshotSchema.safeParse(files)
   if (!parsed.success) {
     const file = path.join(dir, `${String(parsed.error.issues[0]?.path[0])}.json`)
-    throw new Error(`${file} does not match the Datadog snapshot format: ${z.prettifyError(parsed.error)}\nRe-run \`pnpm discover:datadog:fetch\` for a fresh snapshot.`)
+    throw new SnapshotFormatError(`${file} does not match the Datadog snapshot format: ${z.prettifyError(parsed.error)}\n${RE_FETCH}`)
   }
   return parsed.data
 }

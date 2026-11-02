@@ -52,7 +52,7 @@ const snapshot: DatadogSnapshot = {
   ],
   incidents: [
     { id: 'inc-1', public_id: 42, title: 'Search is down', severity: 'SEV-2', created: null, services: ['svc-search'] },
-    { id: 'inc-2', public_id: null, title: 'Search is slow', severity: null, created: null, services: ['svcSearch'] },
+    { id: 'inc-2', title: 'Search is slow', severity: null, created: null, services: ['svcSearch'] },
     { id: 'inc-3', public_id: 43, title: 'Billing is late', severity: 'SEV-3', created: null, services: ['svc-billing'] },
   ],
   metrics: metrics(KEYED),
