@@ -32,7 +32,7 @@ function removeWorktree(source: string, dir: string, git: GitRunner): void {
   }
 }
 
-export function pinRepos(repos: string[], sourceBase: string, pinnedBase: string, git: GitRunner = defaultGit): { pinned: PinnedRepo[]; skipped: PinSkip[] } {
+export function pinRepos(repos: string[], sourceBase: string, pinnedBase: string, git: GitRunner = defaultGit, fetchOrigin = true): { pinned: PinnedRepo[]; skipped: PinSkip[] } {
   fs.mkdirSync(pinnedBase, { recursive: true })
   const pinned: PinnedRepo[] = []
   const skipped: PinSkip[] = []
@@ -45,8 +45,10 @@ export function pinRepos(repos: string[], sourceBase: string, pinnedBase: string
     const branch = productionBranch(repo)
     const dir = path.join(pinnedBase, repo)
     try {
-      git(source, ['fetch', '--quiet', 'origin', branch])
-      const sha = git(source, ['rev-parse', 'FETCH_HEAD'])
+      if (fetchOrigin) {
+        git(source, ['fetch', '--quiet', 'origin', branch])
+      }
+      const sha = git(source, ['rev-parse', fetchOrigin ? 'FETCH_HEAD' : branch])
       if (fs.existsSync(dir)) {
         git(dir, ['checkout', '--quiet', '--detach', sha])
       } else {
