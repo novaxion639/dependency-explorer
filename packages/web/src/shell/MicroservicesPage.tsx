@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { resourceSurface, type ConnectivityService } from '@dependency-explorer/data'
 import { selectServicePatch, type UrlState } from '../hooks/useUrlState'
+import { useOverlay } from '../hooks/useOverlay'
+import { HealthSection } from '../components/health/HealthSection'
 import { ServiceSidebar } from '../components/connectivity/ServiceSidebar'
 import { FlowsPanel } from '../components/connectivity/FlowsPanel'
 import { Diagram } from '../diagram/Diagram'
@@ -72,6 +74,8 @@ function Overview({ url, patch }: Props) {
 
 function ServiceView({ service, url, patch, onSelectService }: Props & { service: ConnectivityService; onSelectService: (name: string) => void }) {
   const model = useMemo(() => (url.present ? serviceByArea : serviceByHow)(map, resourceSurface.resources, service.name), [service.name, url.present])
+  const overlay = useOverlay()
+  const health = overlay?.services[service.name]
   return (
     <>
       <ServiceHeader service={service} onBlast={() => patch({ page: 'impact', blast: service.name })} onOpenResource={id => patch(refPatch({ type: 'resource', id }))} />
@@ -89,6 +93,7 @@ function ServiceView({ service, url, patch, onSelectService }: Props & { service
         filename={`service_${service.name}`}
         notes={url.present ? MARKS : []}
       />
+      {!url.present && overlay && health && <HealthSection health={health} snapshotDate={overlay.snapshotDate} eventsCapped={overlay.eventsCapped} now={new Date()} />}
       {!url.present && (
         <FlowsPanel flows={map.flows} selectedService={service.name} map={map} onSelectService={onSelectService} onOpenFlow={flow => patch({ page: 'flows', flow: flow.id })} />
       )}
