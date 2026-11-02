@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { vi } from 'vitest'
 
 const ALLOWED_HOSTS = new Set(['localhost', '127.0.0.1'])
@@ -14,26 +15,34 @@ const hostOf = (input: Parameters<typeof fetch>[0]): string => {
 }
 
 const realFetch = globalThis.fetch
-globalThis.fetch = (input, init) => {
+globalThis.fetch = async (input, init) => {
   const host = hostOf(input)
   if (!ALLOWED_HOSTS.has(host)) {
-    return Promise.reject(new Error(`network guard: ${host}`))
+    throw new Error(`network guard: ${host}`)
   }
   return realFetch(input, init)
 }
 
-const guarded = <Args extends unknown[], Result>(run: (bin: string, ...rest: Args) => Result) =>
-  (bin: string, ...rest: Args): Result => {
+const firstToken = (command: string): string => command.trim().split(/\s+/)[0] ?? ''
+
+const guarded = <Args extends unknown[], Result>(
+  run: (target: string, ...rest: Args) => Result,
+  binOf: (target: string) => string = (target) => target,
+) =>
+  (target: string, ...rest: Args): Result => {
+    const bin = path.basename(binOf(target))
     if (BLOCKED_BINARIES.has(bin)) {
       throw new Error(`spawn guard: ${bin}`)
     }
-    return run(bin, ...rest)
+    return run(target, ...rest)
   }
 
 vi.mock('node:child_process', async (importOriginal) => {
   const actual = await importOriginal<typeof import('node:child_process')>()
   return {
     ...actual,
+    exec: guarded(actual.exec, firstToken),
+    execSync: guarded(actual.execSync, firstToken),
     execFileSync: guarded(actual.execFileSync),
     execFile: guarded(actual.execFile),
     spawn: guarded(actual.spawn),
