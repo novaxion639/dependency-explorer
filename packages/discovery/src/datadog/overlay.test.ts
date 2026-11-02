@@ -1,4 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest'
 import { DatadogOverlaySchema } from '@dependency-explorer/schema'
 import type { DatadogJoin } from '../extractors/datadog'
 import type { GitRunner } from '../pinned'
@@ -48,9 +51,9 @@ const snapshot: DatadogSnapshot = {
     { id: 'slo-3', name: 'svc-search draft', tags: ['service:svcsearch', 'env:prod'], target: null, value: null },
   ],
   incidents: [
-    { id: 'inc-1', title: 'Search is down', severity: 'SEV-2', created: null, services: ['svc-search'] },
-    { id: 'inc-2', title: 'Search is slow', severity: null, created: null, services: ['svcSearch'] },
-    { id: 'inc-3', title: 'Billing is late', severity: 'SEV-3', created: null, services: ['svc-billing'] },
+    { id: 'inc-1', public_id: 42, title: 'Search is down', severity: 'SEV-2', created: null, services: ['svc-search'] },
+    { id: 'inc-2', public_id: null, title: 'Search is slow', severity: null, created: null, services: ['svcSearch'] },
+    { id: 'inc-3', public_id: 43, title: 'Billing is late', severity: 'SEV-3', created: null, services: ['svc-billing'] },
   ],
   metrics: metrics(KEYED),
   events: { items: [...noisyTriggers(701, 50), ...noisyTriggers(702, 49)], capped: false },
@@ -68,6 +71,14 @@ const join: DatadogJoin = {
   queueOfDatadog: new Map([['svcreports-exportDlq-prod', 'sqs:exportDlq']]),
   findings: [],
 }
+
+const REPOS = fs.mkdtempSync(path.join(os.tmpdir(), 'overlay-repos-'))
+for (const repo of ['svc-planning', 'svc-reports', 'svc-billing', 'svc-search', 'svc-ghost', 'svc-alpha', 'svc-beta', 'svc-gamma']) {
+  fs.mkdirSync(path.join(REPOS, repo))
+}
+afterAll(() => {
+  fs.rmSync(REPOS, { recursive: true, force: true })
+})
 
 const engine = healthOf(snapshot, join, [release('svc-planning', 456, '2.4.0', TO - DAY), release('svc-planning', 400, '2.3.0', TO - 5 * DAY)])
 
@@ -107,14 +118,14 @@ describe('buildOverlay', () => {
     ])
   })
 
-  it('keeps SLOs with a target and the incidents naming the service', () => {
+  it('keeps SLOs with a target and the incidents naming the service, linked by public id or else id', () => {
     const search = overlay().services['svc-search']
     expect(search?.slos).toEqual([
       { id: 'slo-1', name: 'svc-search availability', target: 99.9, value: 99.95, url: 'https://app.datadoghq.eu/slo?slo_id=slo-1' },
       { id: 'slo-2', name: 'svc-search latency', target: 99, value: null, url: 'https://app.datadoghq.eu/slo?slo_id=slo-2' },
     ])
     expect(search?.incidents).toEqual([
-      { id: 'inc-1', title: 'Search is down', severity: 'SEV-2', url: 'https://app.datadoghq.eu/incidents/inc-1' },
+      { id: 'inc-1', title: 'Search is down', severity: 'SEV-2', url: 'https://app.datadoghq.eu/incidents/42' },
       { id: 'inc-2', title: 'Search is slow', severity: 'unknown', url: 'https://app.datadoghq.eu/incidents/inc-2' },
     ])
   })
@@ -171,7 +182,7 @@ describe('buildOverlay reasons', () => {
     queueOfDatadog: join.queueOfDatadog,
     findings: [],
   }
-  const built = () => overlayOf(others, othersJoin, '/repos', false, () => '')
+  const built = () => overlayOf(others, othersJoin, REPOS, false, () => '')
 
   it('renders Lambda error and p95 rises, failing functions, failing routes and bad-day causes', () => {
     const reasons = Object.fromEntries(Object.entries(built().services).map(([name, s]) => [name, s.reasons]))
@@ -186,12 +197,26 @@ describe('buildOverlay reasons', () => {
     expect(built()).toMatchObject({ queues: {}, eventsCapped: true })
   })
 
+  it('keeps the highest depths when two Datadog queue names fold into one resource', () => {
+    const series = (name: string, pointlist: [number, number][]) => ({ tag_set: [`queuename:${name}`], pointlist })
+    const twoNames: DatadogSnapshot = {
+      ...others,
+      metrics: { ...others.metrics, dlq: [series('svcreports-exportDlq-prod', [[(TO - DAY) * 1000, 9], [TO * 1000, 2]]), series('svcReports-exportDlq-prod', [[TO * 1000, 5]])] },
+    }
+    const queueJoin: DatadogJoin = { ...othersJoin, queueOfDatadog: new Map([['svcreports-exportDlq-prod', 'sqs:exportDlq'], ['svcReports-exportDlq-prod', 'sqs:exportDlq']]) }
+    expect(buildOverlay(twoNames, queueJoin, engine, NOW).queues).toEqual({ 'sqs:exportDlq': { depthNow: 5, depthMax14d: 9 } })
+  })
+
   it('reads no queue when the DLQ query failed', () => {
     expect(buildOverlay({ ...others, metrics: metrics() }, othersJoin, engine, NOW).queues).toEqual({})
   })
 })
 
 describe('overlayOf', () => {
+  let error: MockInstance<typeof console.error>
+  beforeEach(() => {
+    error = vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
   afterEach(() => {
     vi.restoreAllMocks()
   })
@@ -205,23 +230,32 @@ describe('overlayOf', () => {
   }
 
   it('prints one line per repo whose releases cannot be read', () => {
-    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
-    overlayOf(snapshot, join, '/repos', false, git)
+    overlayOf(snapshot, join, REPOS, false, git)
     expect(error).toHaveBeenCalledWith('  releases of svc-search skipped: fatal: ambiguous argument master')
     expect(error).toHaveBeenCalledTimes(4)
+  })
+
+  it('skips a repo with no checkout without calling git', () => {
+    const seen: string[] = []
+    overlayOf(snapshot, join, path.join(REPOS, 'missing'), false, (cwd) => {
+      seen.push(cwd)
+      return ''
+    })
+    expect(error).toHaveBeenCalledWith('  releases of svc-planning skipped: no checkout')
+    expect(seen).toEqual([])
   })
 
   it('reads HEAD of the pinned worktree, the production branch otherwise', () => {
     const refs = (pinned: boolean) => {
       const seen: string[] = []
-      overlayOf(snapshot, join, '/repos', pinned, (cwd, args) => {
+      overlayOf(snapshot, join, REPOS, pinned, (cwd, args) => {
         seen.push(`${cwd} ${args.at(-1)}`)
         return ''
       })
       return seen
     }
-    expect(refs(true)).toContain('/repos/svc-planning HEAD')
-    expect(refs(false)).toContain('/repos/svc-planning master')
+    expect(refs(true)).toContain(`${path.join(REPOS, 'svc-planning')} HEAD`)
+    expect(refs(false)).toContain(`${path.join(REPOS, 'svc-planning')} master`)
   })
 
   it('judges a release once when Datadog spells its service two ways', () => {
@@ -235,7 +269,7 @@ describe('overlayOf', () => {
       metrics: metrics({ api_count: { svcsearch: hourly(() => 100) }, api_5xx: { svcsearch: hourly((t) => (t >= MERGED ? 1 : 0)) } }),
     }
     const twoSpellings: DatadogJoin = { serviceOfDatadog: new Map([['svcsearch', 'svc-search'], ['svc-search', 'svc-search']]), queueOfDatadog: new Map(), findings: [] }
-    const search = overlayOf(spelled, twoSpellings, '/repos', false, () => mergeAt(MERGED, 77)).services['svc-search']
+    const search = overlayOf(spelled, twoSpellings, REPOS, false, () => mergeAt(MERGED, 77)).services['svc-search']
     expect(search?.releases).toEqual([{ sha: 'sha77', title: 'feat: change 77', mergedAt: new Date(MERGED * 1000).toISOString(), verdict: 'regressed' }])
     expect(search?.reasons).toEqual(['5xx 72× (+72) over 72 h'])
     expect(search?.monitors.map((m) => m.id)).toEqual([801])
@@ -254,12 +288,12 @@ describe('overlayOf', () => {
       queueOfDatadog: new Map(),
       findings: [],
     }
-    const strip = overlayOf(spelled, twoSpellings, '/repos', false, () => '').services['svc-search']?.strip
+    const strip = overlayOf(spelled, twoSpellings, REPOS, false, () => '').services['svc-search']?.strip
     expect(strip?.at(-2)).toEqual({ day: new Date(DAY_BEFORE * 1000).toISOString().slice(0, 10), requests: 3600, errors5xx: null, p95ms: 300 })
   })
 
   it('judges each repo from its production branch, a missing branch leaving it without releases', () => {
-    const built = overlayOf(snapshot, join, '/repos', false, git)
+    const built = overlayOf(snapshot, join, REPOS, false, git)
     expect(built.services['svc-planning']?.releases).toEqual([
       { sha: 'sha900', title: 'feat: change 900', mergedAt: new Date((TO - 2 * DAY) * 1000).toISOString(), verdict: 'tooRecent' },
     ])
@@ -269,6 +303,6 @@ describe('overlayOf', () => {
 
   it('judges case variants of a service name once', () => {
     const folded: DatadogJoin = { ...join, serviceOfDatadog: new Map([...join.serviceOfDatadog, ['SvcPlanning', 'svc-planning']]) }
-    expect(overlayOf(snapshot, folded, '/repos', false, git).services['svc-planning']?.reasons).toEqual(['5xx 4.1× (+62) over 72 h'])
+    expect(overlayOf(snapshot, folded, REPOS, false, git).services['svc-planning']?.reasons).toEqual(['5xx 4.1× (+62) over 72 h'])
   })
 })

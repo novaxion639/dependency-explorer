@@ -88,8 +88,10 @@ flowchart LR
 - The folder is written whole or not at all, and re-running on the same day replaces that day's snapshot.
 
 **Discover.** `pnpm discover -- --datadog [dir]` reads a snapshot (the latest by default, or `dir`, a path such as `.datadog-snapshots/2026-11-02`, resolved against the current directory, the repo root, then `packages/discovery`; a bare folder name does not resolve), prints the 🐶 section and writes `packages/web/overlay/datadog.json`, validated by `DatadogOverlaySchema` ([data.md](data.md#datadog-overlay)). Without `--datadog`, discovery reads no snapshot, prints no 🐶 section and writes no overlay.
+- A snapshot file that does not match the current snapshot format (for example one written by an older fetch) stops the run before any report prints, naming the file; re-run `pnpm discover:datadog:fetch`.
+- Incident links open the incident by its public number in Datadog.
 
-**Release verdicts.** Releases come from the local clones: merge commits on each service's production branch over the last 14 days, or on `HEAD` of the pinned worktree when the run is `--pinned`. Each merge is judged against the 72 hours after it, compared with the same hours a week earlier:
+**Release verdicts.** Releases come from the local clones: merge commits on each service's production branch over the last 14 days, or on `HEAD` of the pinned worktree when the run is `--pinned`. A service with no checkout under the repo base is skipped with `releases of <service> skipped: no checkout`. Each merge is judged against the 72 hours after it, compared with the same hours a week earlier:
 - `Regressed`: 5xx, Lambda errors or p95 latency rose past the bars below, and the merge has a full week of baseline inside the snapshot window (an earlier merge is never `Regressed`);
 - `Steady`: no rise;
 - `Too recent`: the merge is under 72 hours old.

@@ -96,7 +96,7 @@ describe('fetchDatadogSnapshot', () => {
     expect(snapshot.metrics.api_count).toEqual([{ tag_set: ['name:svc-alpha-prod'], pointlist: [[1761897600000, 12], [1761901200000, null]] }])
     expect(snapshot.metrics.dlq).toBeNull()
     expect(snapshot.incidents).toEqual([
-      { id: 'inc-0001', title: 'svc-alpha checkout degraded', severity: 'SEV-2', created: '2026-10-30T09:00:00.000000+00:00', services: ['svc-alpha'] },
+      { id: 'inc-0001', public_id: 117, title: 'svc-alpha checkout degraded', severity: 'SEV-2', created: '2026-10-30T09:00:00.000000+00:00', services: ['svc-alpha'] },
     ])
   })
 
@@ -240,6 +240,17 @@ describe('writeDatadogSnapshot', () => {
     expect(fs.readdirSync(dir).sort()).toEqual(['events.json', 'incidents.json', 'meta.json', 'metrics.json', 'monitors.json', 'slos.json', 'teams.json'])
     expect(fs.readdirSync(path.dirname(dir))).toEqual(['2026-11-02'])
     expect(readDatadogSnapshot(dir)).toEqual(snapshot)
+  })
+
+  it('refuses to read a snapshot from an older fetch, naming the file and the fetch to re-run', async () => {
+    const { fetch } = fakeDatadog()
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    const dir = path.join(root, '2026-11-02')
+    writeDatadogSnapshot(dir, snapshot)
+    fs.writeFileSync(path.join(dir, 'slos.json'), JSON.stringify(snapshot.slos.map(({ target: _, ...older }) => older)))
+
+    expect(() => readDatadogSnapshot(dir)).toThrow(`${path.join(dir, 'slos.json')} does not match the Datadog snapshot format`)
+    expect(() => readDatadogSnapshot(dir)).toThrow('Re-run `pnpm discover:datadog:fetch` for a fresh snapshot.')
   })
 
   it('refuses a folder holding anything but a snapshot, leaving it intact', async () => {

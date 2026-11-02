@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "@dependency-explorer/data": "workspace:*",
-    "@dependency-explorer/schema": "workspace:*"
+    "@dependency-explorer/schema": "workspace:*",
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/node": "22.19.20",

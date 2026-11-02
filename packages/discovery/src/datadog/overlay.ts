@@ -1,3 +1,4 @@
+import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { DatadogOverlay } from '@dependency-explorer/schema'
 import type { DatadogJoin } from '../extractors/datadog'
@@ -97,7 +98,8 @@ function queuesOf(snapshot: DatadogSnapshot, join: DatadogJoin, now: number): Da
       continue
     }
     const depthMax14d = Math.max(...points.filter((p) => p.t >= now - FORTNIGHT).map((p) => p.v), depthNow)
-    out[id] = { depthNow, depthMax14d }
+    const seen = out[id]
+    out[id] = seen === undefined ? { depthNow, depthMax14d } : { depthNow: Math.max(seen.depthNow, depthNow), depthMax14d: Math.max(seen.depthMax14d, depthMax14d) }
   }
   return out
 }
@@ -201,7 +203,7 @@ export function buildOverlay(snapshot: DatadogSnapshot, join: DatadogJoin, engin
         .map((r) => ({ sha: r.sha, title: titles.get(r.sha) ?? r.v, mergedAt: new Date(r.ts * 1000).toISOString(), verdict: r.verdict })),
       incidents: snapshot.incidents
         .filter((i) => i.services.some((s) => normaliseName(s) === normaliseName(service)))
-        .map((i) => ({ id: i.id, title: i.title, severity: i.severity ?? 'unknown', url: `https://app.${site}/incidents/${i.id}` })),
+        .map((i) => ({ id: i.id, title: i.title, severity: i.severity ?? 'unknown', url: `https://app.${site}/incidents/${i.public_id ?? i.id}` })),
     }
   }
   return { snapshotDate: snapshot.meta.fetchedAt.slice(0, 10), eventsCapped: snapshot.events.capped, services, queues: queuesOf(snapshot, join, to) }
@@ -210,8 +212,13 @@ export function buildOverlay(snapshot: DatadogSnapshot, join: DatadogJoin, engin
 export function overlayOf(snapshot: DatadogSnapshot, join: DatadogJoin, repoBase: string, pinned: boolean, git: GitRunner = defaultGit): DatadogOverlay {
   const since = new Date((snapshot.meta.to - FORTNIGHT) * 1000)
   const releases = mapServicesOf(join).flatMap((repo) => {
+    const repoDir = path.join(repoBase, repo)
+    if (!fs.existsSync(repoDir)) {
+      console.error(`  releases of ${repo} skipped: no checkout`)
+      return []
+    }
     try {
-      return releasesOf(path.join(repoBase, repo), repo, pinned ? 'HEAD' : productionBranch(repo), since, git)
+      return releasesOf(repoDir, repo, pinned ? 'HEAD' : productionBranch(repo), since, git)
     } catch (e) {
       console.error(`  releases of ${repo} skipped: ${errorText(e)}`)
       return []
