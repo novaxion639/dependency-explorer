@@ -533,6 +533,7 @@ export const TeamSchema = z.object({
   // that map to this team — used by discovery to assign service ownership.
   githubTeams: z.array(z.string()).optional(),
   datadogTeams: z.array(z.string()).optional(),
+  jiraBoards: z.array(z.number().int()).optional(),
 })
 
 // ── Product areas ────────────────────────────────────────────────────────────
@@ -679,6 +680,32 @@ export const DatadogOverlaySchema = z.object({
 })
 export type DatadogOverlay = z.infer<typeof DatadogOverlaySchema>
 
+export const FeatureAreaSchema = z.object({
+  label: z.string().min(1),
+  tribe: z.string().nullable(),
+  area: z.string().nullable(),
+})
+
+const JiraBugCountsSchema = z.object({
+  open: z.number(),
+  breached: z.number(),
+  opened90d: z.number(),
+})
+
+export const JiraOverlaySchema = z.object({
+  snapshotDate: z.string(),
+  host: z.string(),
+  areas: z.record(z.string(), JiraBugCountsSchema.extend({
+    weekly: z.array(z.number()).length(13),
+    featureAreas: z.array(JiraBugCountsSchema.extend({ name: z.string() })),
+    teams: z.array(z.object({ teamId: z.string().nullable(), open: z.number() })),
+    jql: z.string(),
+  })),
+  unmapped: z.object({ open: z.number(), breached: z.number(), jql: z.string() }),
+  boards: z.record(z.string(), z.object({ name: z.string() })),
+})
+export type JiraOverlay = z.infer<typeof JiraOverlaySchema>
+
 // ── Top-level map ─────────────────────────────────────────────────────────────
 
 export const ConnectivityMapSchema = z.object({
@@ -689,6 +716,7 @@ export const ConnectivityMapSchema = z.object({
   rules: z.array(DomainRuleSchema).optional(),
   areas: z.array(ProductAreaSchema).optional(),
   externals: z.array(ExternalSystemSchema).optional(),
+  featureAreas: z.array(FeatureAreaSchema).optional(),
 })
 
 // ── Inferred types (replaces types-connectivity.ts) ──────────────────────────
@@ -727,6 +755,7 @@ export type Platform = z.infer<typeof PlatformSchema>
 export type DomainRuleDivergence = z.infer<typeof DomainRuleDivergenceSchema>
 export type DomainRule = z.infer<typeof DomainRuleSchema>
 export type Team = z.infer<typeof TeamSchema>
+export type FeatureArea = z.infer<typeof FeatureAreaSchema>
 export type CodeLocation = z.infer<typeof CodeLocationSchema>
 export type GlossaryTerm = z.infer<typeof GlossaryTermSchema>
 export type ReadingPathEntry = z.infer<typeof ReadingPathEntrySchema>

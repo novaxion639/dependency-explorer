@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { DiscoveredOverlaySchema } from '@dependency-explorer/schema'
+import type { FeatureArea } from '@dependency-explorer/schema'
 import { connectivityMap, monolithRoutes, codeEdgeGrades, resourceSurface, listenerSurface, allResourceRelations } from './index'
 import { resourceNotes } from './resource-notes'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
@@ -8,7 +9,7 @@ import { flowRefIds } from './flow-chapters'
 import { machineProblems } from './state-machines'
 import discoveredJson from './generated/discovered.json'
 
-const { services, connections, flows, teams, rules, areas, externals } = connectivityMap
+const { services, connections, flows, teams, rules, areas, externals, featureAreas } = connectivityMap
 
 const serviceNames = new Set(services.map(s => s.name))
 const teamIds = new Set((teams ?? []).map(t => t.id))
@@ -563,5 +564,24 @@ describe('table listeners', () => {
   })
   it('pins skello-app at the registry’s commit', () => {
     expect(listenerSurface.pins['skello-app']).toBe(resourceSurface.pins['skello-app'])
+  })
+})
+
+const duplicateLabels = (list: FeatureArea[]) => list.map(f => f.label).filter((label, i, all) => all.indexOf(label) !== i)
+const unknownAreas = (list: FeatureArea[], known: Set<string>) => list.filter(f => f.area !== null && !known.has(f.area)).map(f => f.label)
+
+describe('feature areas', () => {
+  const areaIds = new Set((areas ?? []).map(a => a.id))
+  const fixture: FeatureArea[] = [
+    { label: 'Shifts', tribe: 'Planning', area: 'planning' },
+    { label: 'Shifts', tribe: null, area: 'nowhere' },
+  ]
+  it('labels are unique', () => {
+    expect(duplicateLabels(featureAreas ?? [])).toEqual([])
+    expect(duplicateLabels(fixture)).toEqual(['Shifts'])
+  })
+  it('every feature area names a known area or null', () => {
+    expect(unknownAreas(featureAreas ?? [], areaIds)).toEqual([])
+    expect(unknownAreas(fixture, areaIds)).toEqual(['Shifts'])
   })
 })

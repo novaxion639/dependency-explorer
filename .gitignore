@@ -9,5 +9,6 @@ build/
 .vscode/
 .pinned/
 .datadog-snapshots/
+.jira-snapshots/
 packages/web/overlay/
 coverage/
