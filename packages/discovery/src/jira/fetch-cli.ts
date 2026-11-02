@@ -14,8 +14,7 @@ Read-only: GET calls only.`
 
 const messageOf = (e: unknown): string => (e instanceof Error ? e.message : String(e))
 
-const requestLine = (input: Parameters<typeof fetch>[0], init?: RequestInit): string =>
-  `${init?.method ?? 'GET'} ${new URL(input instanceof Request ? input.url : input).pathname}`
+const requestLine = (input: Parameters<typeof fetch>[0]): string => `GET ${new URL(new Request(input).url).pathname}`
 
 export async function runJiraFetchCli(
   argv: string[],
@@ -31,14 +30,16 @@ export async function runJiraFetchCli(
   const email = env.JIRA_EMAIL
   const token = env.JIRA_API_TOKEN
   if (!email || !token) {
-    console.error(`${email ? 'JIRA_API_TOKEN' : 'JIRA_EMAIL'} is not set`)
+    for (const name of [email ? null : 'JIRA_EMAIL', token ? null : 'JIRA_API_TOKEN'].filter((n) => n !== null)) {
+      console.error(`${name} is not set`)
+    }
     return 1
   }
   const outAt = argv.indexOf('--out')
   const outDir = path.resolve((outAt >= 0 && argv[outAt + 1]) || path.join(PACKAGE_ROOT, '.jira-snapshots', now.toISOString().slice(0, 10)))
 
   const logged: typeof globalThis.fetch = (input, init) => {
-    console.error(`  ${requestLine(input, init)}`)
+    console.error(`  ${requestLine(input)}`)
     return fetch(input, init)
   }
   let snapshot: Awaited<ReturnType<typeof fetchJiraSnapshot>>

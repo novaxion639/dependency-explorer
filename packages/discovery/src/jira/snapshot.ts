@@ -1,17 +1,18 @@
-import * as fs from 'node:fs'
-import * as path from 'node:path'
 import { z } from 'zod'
-import { SnapshotFormatError } from '../datadog/snapshot'
+import { list, num, obj, present, text } from '../json'
 import { mapAtMost } from '../net/at-most'
 import { readPages } from '../net/pages'
+import { snapshotFolder } from '../snapshot-dir'
 import type { JiraClient } from './client'
 import { BR_SCOPE, EXCLUDED_RESOLUTIONS, FEATURE_AREA_FIELD, FEATURE_AREA_JQL, openClause, SLA_FIELD } from './fields'
+
+const STATUS_CATEGORIES = ['new', 'indeterminate', 'done', 'undefined'] as const
 
 const BugSchema = z.object({
   key: z.string(),
   created: z.string(),
   status: z.string(),
-  statusCategory: z.enum(['new', 'indeterminate', 'done']),
+  statusCategory: z.enum(STATUS_CATEGORIES),
   priority: z.string().nullable(),
   featureArea: z.string().nullable(),
   breached: z.boolean(),
@@ -32,8 +33,6 @@ type JiraBoard = z.infer<typeof BoardSchema>
 
 export type JiraSnapshot = z.infer<typeof SnapshotSchema>
 
-type Json = Record<string, unknown>
-
 const RECENT_DAYS = 90
 const SEARCH_PAGE = 100
 const AGILE_PAGE = 50
@@ -44,14 +43,7 @@ const LABEL_MAX_PREFIX = 2
 const LABEL_CHARS = [...'abcdefghijklmnopqrstuvwxyz0123456789éèàâçîôœ']
 const SUGGESTIONS_PATH = '/rest/api/3/jql/autocompletedata/suggestions'
 const SEARCH_FIELDS = ['created', 'status', 'priority', 'resolution', FEATURE_AREA_FIELD, SLA_FIELD].join(',')
-const STATUS_CATEGORIES = ['new', 'indeterminate', 'done'] as const
 
-const isJson = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v)
-const obj = (v: unknown): Json => (isJson(v) ? v : {})
-const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
-const text = (v: unknown): string | null => (typeof v === 'string' ? v : null)
-const num = (v: unknown): number | null => (typeof v === 'number' ? v : null)
-const present = <T>(v: T | null): v is T => v !== null
 const isStatusCategory = (v: unknown): v is JiraBug['statusCategory'] => STATUS_CATEGORIES.some((category) => category === v)
 
 const unquoted = (value: string): string => value.replace(/^"(.*)"$/s, (_, inner: string) => inner.replace(/\\(.)/g, '$1'))
@@ -111,7 +103,7 @@ function bugOf(v: unknown): JiraBug | null {
     key,
     created,
     status: statusName,
-    statusCategory: isStatusCategory(category) ? category : 'new',
+    statusCategory: isStatusCategory(category) ? category : 'undefined',
     priority: text(obj(f.priority).name),
     featureArea: firstValue(f[FEATURE_AREA_FIELD]),
     breached: breachedOf(f[SLA_FIELD]),
@@ -161,47 +153,8 @@ export async function fetchJiraSnapshot(client: JiraClient, boardIds: number[], 
   return { meta: { fetchedAt: now.toISOString(), host: client.host }, featureAreaLabels: labels, statuses, boards: boardList, bugs: bugList, boardBugs }
 }
 
-const SNAPSHOT_KEYS = ['meta', 'featureAreaLabels', 'statuses', 'boards', 'bugs', 'boardBugs'] as const
-const SNAPSHOT_FILES = new Set(SNAPSHOT_KEYS.map((key) => `${key}.json`))
+const folder = snapshotFolder({ schema: SnapshotSchema, label: 'Jira', fetchScript: 'discover:jira:fetch' })
 
-const holdsOnlySnapshotFiles = (dir: string): boolean =>
-  fs.readdirSync(dir, { withFileTypes: true }).every((entry) => entry.isFile() && SNAPSHOT_FILES.has(entry.name))
+export const writeJiraSnapshot = (dir: string, s: JiraSnapshot): void => folder.write(dir, s)
 
-export function writeJiraSnapshot(dir: string, s: JiraSnapshot): void {
-  if (fs.existsSync(dir) && !holdsOnlySnapshotFiles(dir)) {
-    throw new Error(`${dir} holds files other than a Jira snapshot; nothing written`)
-  }
-  const parent = path.dirname(dir)
-  fs.mkdirSync(parent, { recursive: true })
-  const temp = fs.mkdtempSync(path.join(parent, `.${path.basename(dir)}-`))
-  try {
-    for (const key of SNAPSHOT_KEYS) {
-      fs.writeFileSync(path.join(temp, `${key}.json`), JSON.stringify(s[key], null, 1))
-    }
-    fs.rmSync(dir, { recursive: true, force: true })
-    fs.renameSync(temp, dir)
-  } catch (e) {
-    fs.rmSync(temp, { recursive: true, force: true })
-    throw e
-  }
-}
-
-const RE_FETCH = 'Re-run `pnpm discover:jira:fetch` for a fresh snapshot.'
-
-function readSnapshotFile(file: string): unknown {
-  try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'))
-  } catch (e) {
-    throw new SnapshotFormatError(`${file} cannot be read: ${e instanceof Error ? e.message : String(e)}\n${RE_FETCH}`)
-  }
-}
-
-export function readJiraSnapshot(dir: string): JiraSnapshot {
-  const files = Object.fromEntries(SNAPSHOT_KEYS.map((key) => [key, readSnapshotFile(path.join(dir, `${key}.json`))]))
-  const parsed = SnapshotSchema.safeParse(files)
-  if (!parsed.success) {
-    const file = path.join(dir, `${String(parsed.error.issues[0]?.path[0])}.json`)
-    throw new SnapshotFormatError(`${file} does not match the Jira snapshot format: ${z.prettifyError(parsed.error)}\n${RE_FETCH}`)
-  }
-  return parsed.data
-}
+export const readJiraSnapshot = (dir: string): JiraSnapshot => folder.read(dir)

@@ -1,8 +1,9 @@
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { SnapshotFormatError } from '../datadog/snapshot'
+import { SnapshotFormatError } from '../snapshot-dir'
 import { jiraClient } from './client'
 import { runJiraFetchCli } from './fetch-cli'
 import { fetchJiraSnapshot, readJiraSnapshot, writeJiraSnapshot, type JiraSnapshot } from './snapshot'
@@ -211,7 +212,18 @@ describe('fetchJiraSnapshot', () => {
     const { fetch } = fakeJira({ overrides: { '/rest/api/3/search/jql': () => answer({ issues: [issue], isLast: true }) } })
     const { bugs } = await fetchJiraSnapshot(clientOf(fetch), [], NOW)
 
-    expect(bugs).toEqual([{ key: 'BR-7', created: '2026-10-01T00:00:00.000Z', status: 'To Do', statusCategory: 'new', priority: null, featureArea: null, breached: true }])
+    expect(bugs).toEqual([{ key: 'BR-7', created: '2026-10-01T00:00:00.000Z', status: 'To Do', statusCategory: 'undefined', priority: null, featureArea: null, breached: true }])
+  })
+
+  it('keeps a status without a known category as undefined, not as new', async () => {
+    const issues = [
+      { key: 'BR-7', fields: { created: 'x', status: { name: 'Odd', statusCategory: { key: 'undefined' } } } },
+      { key: 'BR-8', fields: { created: 'x', status: { name: 'Odder' } } },
+    ]
+    const { fetch } = fakeJira({ overrides: { '/rest/api/3/search/jql': () => answer({ issues, isLast: true }) } })
+    const { bugs } = await fetchJiraSnapshot(clientOf(fetch), [], NOW)
+
+    expect(bugs.map((b) => b.statusCategory)).toEqual(['undefined', 'undefined'])
   })
 
   it('drops excluded resolutions', async () => {
@@ -386,6 +398,13 @@ describe('runJiraFetchCli', () => {
     expect(fs.readdirSync(out)).toEqual(['report.pdf'])
   })
 
+  it('names every missing variable', async () => {
+    const { fetch } = fakeJira()
+
+    expect(await runJiraFetchCli([], {}, fetch, NOW)).toBe(1)
+    expect(printed).toEqual(['JIRA_EMAIL is not set', 'JIRA_API_TOKEN is not set'])
+  })
+
   it.each(['JIRA_EMAIL', 'JIRA_API_TOKEN'])('names a missing %s', async (name) => {
     const { fetch, calls } = fakeJira()
 
@@ -412,7 +431,10 @@ describe('runJiraFetchCli', () => {
     expect(written).not.toMatch(SENTINEL)
     expect(written).not.toContain(TOKEN)
     expect(written).not.toContain(EMAIL)
-    expect(printed.join('\n')).not.toContain(TOKEN)
+    const output = printed.join('\n')
+    expect(output).not.toContain(TOKEN)
+    expect(output).not.toContain(EMAIL)
+    expect(output).not.toContain(Buffer.from(`${EMAIL}:${TOKEN}`).toString('base64'))
     expect(fs.readdirSync(root)).toEqual(['snap'])
   })
 
@@ -430,5 +452,29 @@ describe('runJiraFetchCli', () => {
     expect(output).toContain('GET /rest/agile/1.0/board/12/issue')
     expect(output).toContain('bugs 3, boards 2, statuses 5, feature area labels 3, board bugs 2 boards')
     expect(output).toContain(`snapshot written to ${out}`)
+  })
+
+  it('reports a rejection that is not an Error', async () => {
+    const rejecting: typeof globalThis.fetch = () => Promise.reject('connection reset')
+
+    expect(await runJiraFetchCli(['--out', path.join(root, 'snap')], ENV, rejecting, NOW)).toBe(1)
+    expect(printed.join('\n')).toContain('Jira fetch failed: connection reset')
+  })
+
+  describe('without an output folder', () => {
+    const LONG_AGO = new Date('2001-02-03T04:05:06Z')
+    const packageRoot = fileURLToPath(new URL('../..', import.meta.url))
+    const dated = path.join(packageRoot, '.jira-snapshots', '2001-02-03')
+    afterEach(() => {
+      fs.rmSync(dated, { recursive: true, force: true })
+    })
+
+    it.each([[[]], [['--out']]])('writes to .jira-snapshots/<date> in the package (%j)', async (argv) => {
+      const { fetch } = fakeJira()
+
+      expect(await runJiraFetchCli(argv, ENV, fetch, LONG_AGO)).toBe(0)
+      expect(printed.join('\n')).toContain(`snapshot written to ${dated}`)
+      expect(readJiraSnapshot(dated).meta.fetchedAt).toBe(LONG_AGO.toISOString())
+    })
   })
 })

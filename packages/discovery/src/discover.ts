@@ -30,7 +30,7 @@ import { machineSection } from './state-machines-report'
 import { listenerSection } from './listeners-report'
 import { datadogSection } from './extractors/datadog'
 import { findingKeys, diffBaseline, readBaseline, readBaselineRepos, unscannedRepos, writeBaseline } from './baseline'
-import { SnapshotFormatError } from './datadog/snapshot'
+import { SnapshotFormatError } from './snapshot-dir'
 import { runDiscovery, writeOutputs, PinError, type Dataset, type DiscoveryOptions, type Report } from './discovery-run'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
