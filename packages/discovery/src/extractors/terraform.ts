@@ -36,7 +36,7 @@ export interface TfDmsTask {
   tableMappings?: string
 }
 
-export interface TfDmsEndpoint {
+interface TfDmsEndpoint {
   label: string
   endpointId?: string
   endpointType?: string
@@ -44,7 +44,7 @@ export interface TfDmsEndpoint {
   streamLabel?: string
 }
 
-export interface TfMongoRole {
+interface TfMongoRole {
   role: string
   database: string
 }

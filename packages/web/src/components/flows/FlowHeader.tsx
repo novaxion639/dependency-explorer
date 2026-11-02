@@ -16,7 +16,7 @@ interface Props {
   onOpenArea: (id: string) => void
 }
 
-export function splitSummary(text: string): { summary: string; rest: string } {
+function splitSummary(text: string): { summary: string; rest: string } {
   const end = text.search(/[.!?]\s/)
   return end === -1 ? { summary: text, rest: '' } : { summary: text.slice(0, end + 1), rest: text.slice(end + 2) }
 }

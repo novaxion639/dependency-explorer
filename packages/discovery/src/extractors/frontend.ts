@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 
-export interface FrontendServiceEvidence {
+interface FrontendServiceEvidence {
   /** env var names whose value points at this service host (values are never recorded) */
   envVars: string[]
   /** source files referencing those vars or the service host directly (capped sample) */

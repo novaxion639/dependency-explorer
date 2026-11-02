@@ -4,10 +4,10 @@ import type { RailsModel } from './extractors/rails-schema'
 import type { ServerlessFacts } from './extractors/serverless'
 import { OWNING_ROLES, READING_ROLES, type TerraformFacts } from './extractors/terraform'
 
-export const STORE_PREFIX: Record<string, string> = {
+const STORE_PREFIX: Record<string, string> = {
   postgresql: 'pg', mongodb: 'mongo', dynamodb: 'ddb', s3: 's3', sqs: 'sqs', sns: 'sns', kinesis: 'kinesis', redis: 'redis', elasticsearch: 'es',
 }
-export const MONOLITH_DB = 'skello_production'
+const MONOLITH_DB = 'skello_production'
 
 export function tableId(table: string): string {
   return `pg:${MONOLITH_DB}.${table}`

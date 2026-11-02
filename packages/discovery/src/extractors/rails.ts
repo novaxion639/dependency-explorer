@@ -2,7 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { RAILS_CLIENT_TARGETS, RAILS_CLIENT_DIR_TARGETS } from '../mapping'
 
-export interface RailsClientEdge {
+interface RailsClientEdge {
   to: string
   /** Relative paths of the client files proving this edge */
   evidence: string[]

@@ -6,7 +6,7 @@ import { OWNING_ROLES, READING_ROLES, type TerraformFacts, type TfDmsTask } from
 import { normalizeResourceName } from '@dependency-explorer/data'
 import type { ServerlessFacts } from './extractors/serverless'
 
-export const WRITE_CALL = /\.(create!?|create_or_find_by!?|find_or_create_by!?|insert!?|insert_all!?|upsert|upsert_all|update_all|delete_all|destroy_all|delete_by|destroy_by)\b/
+const WRITE_CALL = /\.(create!?|create_or_find_by!?|find_or_create_by!?|insert!?|insert_all!?|upsert|upsert_all|update_all|delete_all|destroy_all|delete_by|destroy_by)\b/
 
 export function tableWriters(files: Array<{ file: string; source: string }>, models: RailsModel[]): Map<string, Set<string>> {
   const writers = new Map<string, Set<string>>()

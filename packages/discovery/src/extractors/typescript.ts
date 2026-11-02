@@ -7,7 +7,7 @@ import * as path from 'node:path'
  *  - type-only: only `import type` statements → types reuse, NOT a runtime call
  *  - declared-only: in package.json but never imported under src/
  */
-export type SdkUsage = 'value' | 'type-only' | 'declared-only'
+type SdkUsage = 'value' | 'type-only' | 'declared-only'
 
 export interface CodeownersFacts {
   /** all team slugs seen anywhere in CODEOWNERS, with occurrence counts */

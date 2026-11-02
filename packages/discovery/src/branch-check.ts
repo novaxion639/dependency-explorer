@@ -3,7 +3,7 @@ import * as path from 'node:path'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import { stripComments } from './code-grades'
 
-export interface BranchFinding { flow: string; kind: 'missing-branch-literal'; subject: string; detail: string }
+interface BranchFinding { flow: string; kind: 'missing-branch-literal'; subject: string; detail: string }
 
 export function checkBranches(map: ConnectivityMap, repoBase: string) {
   const findings: BranchFinding[] = []

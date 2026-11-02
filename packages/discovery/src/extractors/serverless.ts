@@ -22,13 +22,13 @@ export interface StreamConsumerFact {
   file?: string
 }
 
-export interface S3TriggerFact {
+interface S3TriggerFact {
   /** bucket name with template parts stripped */
   bucket: string
   functionName?: string
 }
 
-export interface ScheduleFact {
+interface ScheduleFact {
   /** rate(...)/cron(...) literals; conditional configs carry every branch */
   expressions: string[]
   name?: string
@@ -36,7 +36,7 @@ export interface ScheduleFact {
   functionName?: string
 }
 
-export interface OwnedResourceFact {
+interface OwnedResourceFact {
   cfType: string
   name: string
 }
@@ -49,7 +49,7 @@ export interface OwnedResourceFact {
 //                + sibling maximumRetryAttempts
 //  'terraform' — <repo>-tf module blocks with dlq_name/redrive_policy (queues
 //                managed outside serverless, e.g. svc-intelligence extract queue)
-export interface DlqWiringFact {
+interface DlqWiringFact {
   /** owning queue/consumer name when identifiable (template parts stripped) */
   queue: string | null
   /** DLQ name/logical id — null = wiring block found but target unresolvable */
@@ -321,7 +321,7 @@ function findFunctionIdentity(lines: string[], eventLineIdx: number): { function
  * DLQ/retry wiring from serverless TS source — the three static shapes.
  * Exported for tests.
  */
-export function parseDlqStatic(content: string): DlqWiringFact[] {
+function parseDlqStatic(content: string): DlqWiringFact[] {
   const facts: DlqWiringFact[] = []
   const lines = content.split('\n')
 
@@ -420,7 +420,7 @@ export function parseDlqStatic(content: string): DlqWiringFact[] {
  * DLQ wiring from Terraform module blocks (<repo>-tf) — queues managed
  * outside serverless: `name = "…"` + `dlq_name = "…"` (+ maxReceiveCount).
  */
-export function parseTerraformDlq(content: string): DlqWiringFact[] {
+function parseTerraformDlq(content: string): DlqWiringFact[] {
   const facts: DlqWiringFact[] = []
   const dlqRe = /\bdlq_name\s*=\s*"([^"]+)"/g
   for (let m = dlqRe.exec(content); m; m = dlqRe.exec(content)) {

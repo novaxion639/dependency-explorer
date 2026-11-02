@@ -4,7 +4,7 @@ import { edgeKey, servicePage } from '../hooks/useUrlState'
 import { buildFlagRegistry } from './flagRegistry'
 import { buildFileIndex } from './fileIndex'
 
-export type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' | 'term' | 'external' | 'team' | 'resource' | 'listener' | 'flag' | 'file'
+type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' | 'term' | 'external' | 'team' | 'resource' | 'listener' | 'flag' | 'file'
 
 export interface SearchEntry {
   type: SearchResultType

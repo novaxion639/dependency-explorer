@@ -15,11 +15,13 @@
     "discover:aws:fetch": "pnpm --filter @dependency-explorer/discovery discover:aws:fetch",
     "discover:scaffold": "pnpm --filter @dependency-explorer/discovery discover:scaffold",
     "docs:gen": "pnpm --filter @dependency-explorer/discovery docs:gen",
-    "check": "pnpm typecheck && pnpm test && pnpm build",
-    "discover:trace": "pnpm --filter @dependency-explorer/discovery discover:trace"
+    "check": "pnpm typecheck && pnpm check:exports && pnpm test && pnpm build",
+    "discover:trace": "pnpm --filter @dependency-explorer/discovery discover:trace",
+    "check:exports": "knip --include files,exports,types"
   },
   "devDependencies": {
-    "typescript": "~5.7.2"
+    "knip": "6.42.0",
+    "typescript": "5.7.3"
   },
   "packageManager": "pnpm@10.30.2+sha512.36cdc707e7b7940a988c9c1ecf88d084f8514b5c3f085f53a2e244c2921d3b2545bc20dd4ebe1fc245feec463bb298aecea7a63ed1f7680b877dc6379d8d0cb4"
 }

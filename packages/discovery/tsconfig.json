@@ -1,7 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node"]
+    "types": ["node"],
+    "paths": { "vitest": ["./node_modules/vitest"] }
   },
-  "include": ["src"]
+  "include": ["src", "../../test-support"]
 }

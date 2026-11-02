@@ -4,10 +4,10 @@ import { blockEnd, declarations, methodSpans, resolveConstant, rubyCode, type De
 
 export interface SpanAt extends Span { file: string }
 export interface DeclarationAt extends Declaration { file: string }
-export interface Segment { file: string; lines: string[]; from: number; to: number }
+interface Segment { file: string; lines: string[]; from: number; to: number }
 export interface ModelEntry { className: string; table: string; file: string; modules: string[]; methods: Map<string, SpanAt>; segments: Segment[] }
 
-export const MODULE_ROOTS = ['app/models/concerns', 'app/models', 'lib']
+const MODULE_ROOTS = ['app/models/concerns', 'app/models', 'lib']
 const INCLUDE = /^\s*include\s+((?:[\w:]+\s*,\s*)*[\w:]+)\s*$/
 const INCLUDED_BLOCK = /^\s*included\s+do\b/
 

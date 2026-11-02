@@ -5,7 +5,7 @@ import type { ConnectivityMap, MachineState } from '@dependency-explorer/schema'
 import { escapeRegExp, loadWiring, readerFor, resolveSpecifier, type Alias, type Read } from './code-wiring'
 import { closer, readMachine, textOf, type SourceState } from './state-machine-source'
 
-export interface MachineFinding { flow: string; kind: 'state-machine-drift'; subject: string; detail: string }
+interface MachineFinding { flow: string; kind: 'state-machine-drift'; subject: string; detail: string }
 
 const TYPES: Record<string, MachineState['type']> = { Task: 'task', Choice: 'choice', Map: 'map', Parallel: 'parallel', Pass: 'pass', Wait: 'wait' }
 const TERMINAL = new Set(['Succeed', 'Fail'])
