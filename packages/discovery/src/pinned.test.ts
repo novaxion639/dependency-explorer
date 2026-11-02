@@ -67,6 +67,19 @@ describe('pinRepos', () => {
     expect(fs.existsSync(path.join(root, 'pinned', 'svc-a'))).toBe(false)
   })
 
+  it('pins to the local branch without fetching when fetchOrigin is false', () => {
+    git(path.join(root, 'src', 'svc-a'), 'branch', '-f', 'master', 'origin/master')
+    const calls: string[][] = []
+    const recording = (cwd: string, args: string[]) => {
+      calls.push(args)
+      return defaultGit(cwd, args)
+    }
+    const { pinned } = pinRepos(['svc-a'], path.join(root, 'src'), path.join(root, 'pinned-local'), recording, false)
+    expect(calls.some(args => args[0] === 'fetch')).toBe(false)
+    expect(calls).toContainEqual(['rev-parse', 'master'])
+    expect(pinned[0]?.sha).toBe(git(path.join(root, 'src', 'svc-a'), 'rev-parse', 'master'))
+  })
+
   it('re-pins an existing worktree in place', () => {
     const again = pinRepos(['svc-a'], path.join(root, 'src'), path.join(root, 'pinned'))
     expect(again.pinned).toHaveLength(1)
