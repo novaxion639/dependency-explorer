@@ -9,7 +9,7 @@ importers:
   .:
     devDependencies:
       typescript:
-        specifier: ~5.7.2
+        specifier: 5.7.3
         version: 5.7.3
 
   packages/data:
@@ -18,14 +18,14 @@ importers:
         specifier: workspace:*
         version: link:../schema
       zod:
-        specifier: ^4.3.6
+        specifier: 4.3.6
         version: 4.3.6
     devDependencies:
       typescript:
-        specifier: ~5.7.2
+        specifier: 5.7.3
         version: 5.7.3
       vitest:
-        specifier: ^3.2.0
+        specifier: 3.2.6
         version: 3.2.6(@types/node@25.5.2)(jsdom@26.1.0)(tsx@4.21.0)
 
   packages/discovery:
@@ -38,26 +38,26 @@ importers:
         version: link:../schema
     devDependencies:
       '@types/node':
-        specifier: ^22.10.0
+        specifier: 22.19.20
         version: 22.19.20
       tsx:
-        specifier: ^4.21.0
+        specifier: 4.21.0
         version: 4.21.0
       typescript:
-        specifier: ~5.7.2
+        specifier: 5.7.3
         version: 5.7.3
       vitest:
-        specifier: ^3.2.0
+        specifier: 3.2.6
         version: 3.2.6(@types/node@22.19.20)(jsdom@26.1.0)(tsx@4.21.0)
 
   packages/schema:
     dependencies:
       zod:
-        specifier: ^4.3.6
+        specifier: 4.3.6
         version: 4.3.6
     devDependencies:
       typescript:
-        specifier: ~5.7.2
+        specifier: 5.7.3
         version: 5.7.3
 
   packages/web:
@@ -69,7 +69,7 @@ importers:
         specifier: workspace:*
         version: link:../data
       '@xyflow/react':
-        specifier: ^12.10.2
+        specifier: 12.10.2
         version: 12.10.2(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       d3-hierarchy:
         specifier: 3.1.2
@@ -78,35 +78,35 @@ importers:
         specifier: 12.1.0
         version: 12.1.0
       react:
-        specifier: ^19.0.0
+        specifier: 19.2.5
         version: 19.2.5
       react-dom:
-        specifier: ^19.0.0
+        specifier: 19.2.5
         version: 19.2.5(react@19.2.5)
     devDependencies:
       '@types/d3-hierarchy':
         specifier: 3.1.7
         version: 3.1.7
       '@types/react':
-        specifier: ^19.0.0
+        specifier: 19.2.14
         version: 19.2.14
       '@types/react-dom':
-        specifier: ^19.0.0
+        specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.14)
       '@vitejs/plugin-react':
-        specifier: ^4.3.4
+        specifier: 4.7.0
         version: 4.7.0(vite@6.4.2(@types/node@25.5.2)(tsx@4.21.0))
       jsdom:
         specifier: 26.1.0
         version: 26.1.0
       typescript:
-        specifier: ~5.7.2
+        specifier: 5.7.3
         version: 5.7.3
       vite:
-        specifier: ^6.2.0
+        specifier: 6.4.2
         version: 6.4.2(@types/node@25.5.2)(tsx@4.21.0)
       vitest:
-        specifier: ^3.2.0
+        specifier: 3.2.6
         version: 3.2.6(@types/node@25.5.2)(jsdom@26.1.0)(tsx@4.21.0)
 
 packages:
