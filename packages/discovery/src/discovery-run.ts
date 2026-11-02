@@ -174,10 +174,10 @@ function pickTeamId(slugToTeamId: Map<string, string>, wildcardOwners: string[])
 }
 
 
-function datadogOf(dir: string, dataset: Dataset, repoBase: string): Report['datadog'] {
+function datadogOf(dir: string, dataset: Dataset, repoBase: string, pinned: boolean): Report['datadog'] {
   const snapshot = readDatadogSnapshot(dir)
   const join = joinDatadog(snapshot, dataset)
-  return { join, overlay: overlayOf(snapshot, join, repoBase) }
+  return { join, overlay: overlayOf(snapshot, join, repoBase, pinned) }
 }
 
 // ── Scan ──────────────────────────────────────────────────────────────────────
@@ -259,7 +259,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
     unmappedGithubTeams: [],
     serviceFacts: {},
     awsLive: null,
-    datadog: options.datadogSnapshotDir ? datadogOf(options.datadogSnapshotDir, dataset, repoBase) : null,
+    datadog: options.datadogSnapshotDir ? datadogOf(options.datadogSnapshotDir, dataset, repoBase, pin !== null) : null,
   }
 
   const allSlugs = new Set<string>()

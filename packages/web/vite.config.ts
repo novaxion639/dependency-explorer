@@ -5,21 +5,25 @@ import react from '@vitejs/plugin-react'
 
 const OVERLAY_FILE = fileURLToPath(new URL('./overlay/datadog.json', import.meta.url))
 
-function overlayServe(): Plugin {
-  let route = '/overlay/datadog.json'
-  const serve: Connect.NextHandleFunction = (req, res, next) => {
+export const serveOverlay =
+  (file: string, route: string): Connect.NextHandleFunction =>
+  (req, res, next) => {
     if (req.method !== 'GET' || req.url?.split('?')[0] !== route) {
       next()
       return
     }
-    if (!fs.existsSync(OVERLAY_FILE)) {
+    if (!fs.existsSync(file)) {
       res.statusCode = 404
       res.end()
       return
     }
     res.setHeader('Content-Type', 'application/json')
-    res.end(fs.readFileSync(OVERLAY_FILE))
+    res.end(fs.readFileSync(file))
   }
+
+function overlayServe(): Plugin {
+  let route = '/overlay/datadog.json'
+  const serve: Connect.NextHandleFunction = (req, res, next) => serveOverlay(OVERLAY_FILE, route)(req, res, next)
   return {
     name: 'overlay-serve',
     configResolved(config) {

@@ -1,11 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DatadogOverlaySchema } from '@dependency-explorer/schema'
 import type { DatadogJoin } from '../extractors/datadog'
 import type { GitRunner } from '../pinned'
 import { metrics, monitor, release, type KeyedMetrics } from './health/__fixtures__/fake-metrics'
 import { DAY, HOUR, WEEK } from './health/series'
-import { topicsOf } from './health/topics'
-import { buildOverlay, overlayOf } from './overlay'
+import { buildOverlay, healthOf, overlayOf } from './overlay'
 import type { DatadogSnapshot } from './snapshot'
 
 const TO = 1773302400
@@ -70,23 +69,7 @@ const join: DatadogJoin = {
   findings: [],
 }
 
-const ENGINE_SERVICES = [
-  { name: 'svcplanning', repo: 'svc-planning' },
-  { name: 'svcreports', repo: 'svc-reports' },
-  { name: 'svcbilling', repo: 'svc-billing' },
-  { name: 'svcSearch', repo: 'svc-search' },
-  { name: 'svcghost', repo: 'svc-ghost' },
-]
-
-const engine = topicsOf({
-  now: TO,
-  from: FROM,
-  metrics: snapshot.metrics,
-  services: ENGINE_SERVICES,
-  monitors: snapshot.monitors,
-  triggers: snapshot.events.items,
-  releases: [release('svc-planning', 456, '2.4.0', TO - DAY), release('svc-planning', 400, '2.3.0', TO - 5 * DAY)],
-})
+const engine = healthOf(snapshot, join, [release('svc-planning', 456, '2.4.0', TO - DAY), release('svc-planning', 400, '2.3.0', TO - 5 * DAY)])
 
 const overlay = () => buildOverlay(snapshot, join, engine, NOW)
 
@@ -99,7 +82,7 @@ describe('buildOverlay', () => {
   it('renders each reason with its rule and figures', () => {
     const { services } = overlay()
     expect(services['svc-planning']?.reasons).toEqual(['5xx 4.1× (+62) over 72 h'])
-    expect(services['svc-reports']?.reasons).toEqual(['DLQ svcreports-exportdlq-prod above 0 for 72 h, 4 now'])
+    expect(services['svc-reports']?.reasons).toEqual(['DLQ svc-reports-exportdlq-prod above 0 for 72 h, 4 now'])
     expect(services['svc-billing']?.reasons).toEqual([`Fell back on ${new Date((MIDNIGHT - 3 * DAY) * 1000).toISOString().slice(0, 10)}: 5xx 30`])
     expect(services['svc-search']?.reasons).toEqual([])
   })
@@ -187,7 +170,7 @@ describe('buildOverlay reasons', () => {
     queueOfDatadog: join.queueOfDatadog,
     findings: [],
   }
-  const built = () => overlayOf(others, othersJoin, '/repos', () => '')
+  const built = () => overlayOf(others, othersJoin, '/repos', false, () => '')
 
   it('renders Lambda error and p95 rises, failing functions, failing routes and bad-day causes', () => {
     const reasons = Object.fromEntries(Object.entries(built().services).map(([name, s]) => [name, s.reasons]))
@@ -208,15 +191,57 @@ describe('buildOverlay reasons', () => {
 })
 
 describe('overlayOf', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  const mergeAt = (t: number, n: number) => `sha${n}\t${new Date(t * 1000).toISOString()}\tMerge pull request #${n} from skelloapp/staging\t`
   const git: GitRunner = (cwd) => {
     if (cwd.endsWith('svc-planning')) {
-      return `sha900\t${new Date((TO - 2 * DAY) * 1000).toISOString()}\tMerge pull request #900 from skelloapp/feat`
+      return mergeAt(TO - 2 * DAY, 900)
     }
-    throw new Error('fatal: ambiguous argument master')
+    throw new Error('fatal: ambiguous argument master\nUse -- to separate paths')
   }
 
+  it('prints one line per repo whose releases cannot be read', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    overlayOf(snapshot, join, '/repos', false, git)
+    expect(error).toHaveBeenCalledWith('  releases of svc-search skipped: fatal: ambiguous argument master')
+    expect(error).toHaveBeenCalledTimes(4)
+  })
+
+  it('reads HEAD of the pinned worktree, the production branch otherwise', () => {
+    const refs = (pinned: boolean) => {
+      const seen: string[] = []
+      overlayOf(snapshot, join, '/repos', pinned, (cwd, args) => {
+        seen.push(`${cwd} ${args.at(-1)}`)
+        return ''
+      })
+      return seen
+    }
+    expect(refs(true)).toContain('/repos/svc-planning HEAD')
+    expect(refs(false)).toContain('/repos/svc-planning master')
+  })
+
+  it('judges a release once when Datadog spells its service two ways', () => {
+    const MERGED = TO - 5 * DAY
+    const spelled: DatadogSnapshot = {
+      ...snapshot,
+      monitors: [{ ...monitor(801, 'svc-search', 'Errors'), name: 'Errors' }],
+      slos: [],
+      incidents: [],
+      events: { items: [], capped: false },
+      metrics: metrics({ api_count: { svcsearch: hourly(() => 100) }, api_5xx: { svcsearch: hourly((t) => (t >= MERGED ? 1 : 0)) } }),
+    }
+    const twoSpellings: DatadogJoin = { serviceOfDatadog: new Map([['svcsearch', 'svc-search'], ['svc-search', 'svc-search']]), queueOfDatadog: new Map(), findings: [] }
+    const search = overlayOf(spelled, twoSpellings, '/repos', false, () => mergeAt(MERGED, 77)).services['svc-search']
+    expect(search?.releases).toEqual([{ sha: 'sha77', title: '#77', mergedAt: new Date(MERGED * 1000).toISOString(), verdict: 'regressed' }])
+    expect(search?.reasons).toEqual(['5xx 72× (+72) over 72 h'])
+    expect(search?.monitors.map((m) => m.id)).toEqual([801])
+  })
+
   it('judges each repo from its production branch, a missing branch leaving it without releases', () => {
-    const built = overlayOf(snapshot, join, '/repos', git)
+    const built = overlayOf(snapshot, join, '/repos', false, git)
     expect(built.services['svc-planning']?.releases).toEqual([
       { sha: 'sha900', title: '#900', mergedAt: new Date((TO - 2 * DAY) * 1000).toISOString(), verdict: 'tooRecent' },
     ])
@@ -226,6 +251,6 @@ describe('overlayOf', () => {
 
   it('judges case variants of a service name once', () => {
     const folded: DatadogJoin = { ...join, serviceOfDatadog: new Map([...join.serviceOfDatadog, ['SvcPlanning', 'svc-planning']]) }
-    expect(overlayOf(snapshot, folded, '/repos', git).services['svc-planning']?.reasons).toEqual(['5xx 4.1× (+62) over 72 h'])
+    expect(overlayOf(snapshot, folded, '/repos', false, git).services['svc-planning']?.reasons).toEqual(['5xx 4.1× (+62) over 72 h'])
   })
 })

@@ -1,12 +1,12 @@
 import * as path from 'node:path'
 import type { DatadogOverlay } from '@dependency-explorer/schema'
 import type { DatadogJoin } from '../extractors/datadog'
-import { defaultGit, productionBranch, type GitRunner } from '../pinned'
-import { noisyMonitors, rise, type Day } from './health/rules'
+import { defaultGit, errorText, productionBranch, type GitRunner } from '../pinned'
+import { noisyMonitors, rise, type Day, type EngineInput } from './health/rules'
 import { DAY, RECENT, at, keyedOf, middle, ms, signalsOf, span, tenth, total, windowOf, type Signals, type Window } from './health/series'
 import { topicsOf } from './health/topics'
 import { releasesOf } from './releases'
-import { isProd, normaliseName, rawServiceOf, rawTagValues } from './scope'
+import { isProd, METRIC_KEYS, normaliseName, rawServiceOf, rawTagValues } from './scope'
 import type { DatadogSnapshot } from './snapshot'
 
 type Engine = ReturnType<typeof topicsOf>
@@ -77,13 +77,13 @@ function stateOf(topics: Topic[], measured: boolean): ServiceOverlay['state'] {
 
 const summed = (xs: Hourly): number | null => (xs.some((x) => x !== null) ? total(xs) : null)
 
-function stripOf(signals: Signals[], w: Window): ServiceOverlay['strip'] {
+function stripOf(s: Signals, w: Window): ServiceOverlay['strip'] {
   const ofDay = (xs: Hourly, d: number) => span(xs, at(w, d), at(w, d) + 24)
   return w.shown.map((d) => ({
     day: dateOf(d),
-    requests: summed(signals.flatMap((s) => ofDay(s.count, d))),
-    errors5xx: summed(signals.flatMap((s) => ofDay(s.e5, d))),
-    p95ms: ms(middle(signals.flatMap((s) => ofDay(s.p95, d)))),
+    requests: summed(ofDay(s.count, d)),
+    errors5xx: summed(ofDay(s.e5, d)),
+    p95ms: ms(middle(ofDay(s.p95, d))),
   }))
 }
 
@@ -102,24 +102,62 @@ function queuesOf(snapshot: DatadogSnapshot, join: DatadogJoin, now: number): Da
   return out
 }
 
+function foldedMetrics(metrics: DatadogSnapshot['metrics'], join: DatadogJoin): DatadogSnapshot['metrics'] {
+  const mapService = new Map([...join.serviceOfDatadog].map(([name, service]) => [name.toLowerCase(), service]))
+  const spellings = [...mapService.keys()].sort((a, b) => b.length - a.length)
+  const prefixed = (value: string) => {
+    const spelling = spellings.find((s) => value.toLowerCase().startsWith(`${s}-`))
+    return spelling === undefined ? value : `${mapService.get(spelling)}-${value.slice(spelling.length + 1)}`
+  }
+  const fold = (tag: string): string => {
+    const [key, value] = [tag.slice(0, tag.indexOf(':')), tag.slice(tag.indexOf(':') + 1)]
+    const service = mapService.get(value.toLowerCase().replace(/-prod$/, ''))
+    if ((key === 'service' || key === 'name') && service !== undefined) {
+      return key === 'name' ? `name:${service}-prod` : `service:${service}`
+    }
+    return key === 'queuename' || key === 'functionname' ? `${key}:${prefixed(value)}` : tag
+  }
+  const out = { ...metrics }
+  for (const key of METRIC_KEYS) {
+    out[key] = metrics[key]?.map((series) => ({ ...series, tag_set: series.tag_set.map(fold) })) ?? null
+  }
+  return out
+}
+
+const mapServicesOf = (join: DatadogJoin) => [...new Set(join.serviceOfDatadog.values())]
+
+export function healthOf(snapshot: DatadogSnapshot, join: DatadogJoin, releases: EngineInput['releases']): Engine {
+  const monitors = snapshot.monitors.map((m) => {
+    const service = join.serviceOfDatadog.get(rawServiceOf(m) ?? '')
+    return service === undefined ? m : { ...m, tags: [`service:${service}`, ...m.tags] }
+  })
+  return topicsOf({
+    now: snapshot.meta.to,
+    from: snapshot.meta.from,
+    metrics: foldedMetrics(snapshot.metrics, join),
+    services: mapServicesOf(join).map((service) => ({ name: service, repo: service })),
+    monitors,
+    triggers: snapshot.events.items,
+    releases,
+  })
+}
+
 export function buildOverlay(snapshot: DatadogSnapshot, join: DatadogJoin, engine: Engine, now: Date): DatadogOverlay {
   const to = Math.floor(now.getTime() / 1000)
   const w = windowOf(snapshot.meta.from, to)
-  const metrics = keyedOf(snapshot.metrics)
+  const metrics = keyedOf(foldedMetrics(snapshot.metrics, join))
   const site = snapshot.meta.site
   const noisy = noisyMonitors(snapshot.events.items, to)
+  const mapServices = mapServicesOf(join)
   const mapServiceOf = (item: { tags: string[]; name: string }) => join.serviceOfDatadog.get(rawServiceOf(item) ?? '')
   const services: DatadogOverlay['services'] = {}
-  for (const service of new Set(join.serviceOfDatadog.values())) {
-    const names = [...new Set([...join.serviceOfDatadog].flatMap(([name, mapped]) => (mapped === service ? [name.toLowerCase()] : [])))]
-    const signals = names.map((name) => signalsOf(metrics, name, w, names))
-    const mine = (svc: string) => join.serviceOfDatadog.get(svc) === service
-    const topics = engine.topics.filter((t) => mine(t.svc))
-    const signalOf = (svc: string) => signalsOf(metrics, svc, w, names)
-    const releases = new Map(engine.releases.filter((r) => mine(r.svc)).map((r) => [r.sha, r]))
+  for (const service of mapServices) {
+    const signals = signalsOf(metrics, service, w, mapServices)
+    const topics = engine.topics.filter((t) => t.svc === service)
+    const names = (spellings: string[]) => spellings.some((s) => join.serviceOfDatadog.get(s) === service || normaliseName(s) === normaliseName(service))
     services[service] = {
-      state: stateOf(topics, engine.services.some((v) => mine(v.name) && v.measured.length > 0)),
-      reasons: topics.flatMap((t) => reasonsOf(t, signalOf(t.svc), w)),
+      state: stateOf(topics, engine.services.some((v) => v.name === service && v.measured.length > 0)),
+      reasons: topics.flatMap((t) => reasonsOf(t, signals, w)),
       monitors: snapshot.monitors
         .filter((m) => isProd(m.tags) && mapServiceOf(m) === service)
         .map((m) => ({ id: m.id, name: m.name, status: m.overall_state ?? 'unknown', noisy: noisy.has(m.id), url: `https://app.${site}/monitors/${m.id}` })),
@@ -129,34 +167,26 @@ export function buildOverlay(snapshot: DatadogSnapshot, join: DatadogJoin, engin
           : [],
       ),
       strip: stripOf(signals, w),
-      releases: [...releases.values()].map((r) => ({ sha: r.sha, title: r.v, mergedAt: new Date(r.ts * 1000).toISOString(), verdict: r.verdict })),
+      releases: engine.releases
+        .filter((r) => r.svc === service)
+        .map((r) => ({ sha: r.sha, title: r.v, mergedAt: new Date(r.ts * 1000).toISOString(), verdict: r.verdict })),
       incidents: snapshot.incidents
-        .filter((i) => i.services.some((s) => normaliseName(s) === normaliseName(service)))
+        .filter((i) => names(i.services))
         .map((i) => ({ id: i.id, title: i.title, severity: i.severity ?? 'unknown', url: `https://app.${site}/incidents/${i.id}` })),
     }
   }
   return { snapshotDate: snapshot.meta.fetchedAt.slice(0, 10), eventsCapped: snapshot.events.capped, services, queues: queuesOf(snapshot, join, to) }
 }
 
-export function overlayOf(snapshot: DatadogSnapshot, join: DatadogJoin, repoBase: string, git: GitRunner = defaultGit): DatadogOverlay {
-  const now = snapshot.meta.to
-  const since = new Date((now - FORTNIGHT) * 1000)
-  const releases = [...new Set(join.serviceOfDatadog.values())].flatMap((repo) => {
+export function overlayOf(snapshot: DatadogSnapshot, join: DatadogJoin, repoBase: string, pinned: boolean, git: GitRunner = defaultGit): DatadogOverlay {
+  const since = new Date((snapshot.meta.to - FORTNIGHT) * 1000)
+  const releases = mapServicesOf(join).flatMap((repo) => {
     try {
-      return releasesOf(path.join(repoBase, repo), repo, productionBranch(repo), since, git)
-    } catch {
+      return releasesOf(path.join(repoBase, repo), repo, pinned ? 'HEAD' : productionBranch(repo), since, git)
+    } catch (e) {
+      console.error(`  releases of ${repo} skipped: ${errorText(e)}`)
       return []
     }
   })
-  const services = new Map([...join.serviceOfDatadog].map(([name, repo]) => [name.toLowerCase(), { name, repo }]))
-  const engine = topicsOf({
-    now,
-    from: snapshot.meta.from,
-    metrics: snapshot.metrics,
-    services: [...services.values()],
-    monitors: snapshot.monitors,
-    triggers: snapshot.events.items,
-    releases,
-  })
-  return buildOverlay(snapshot, join, engine, new Date(now * 1000))
+  return buildOverlay(snapshot, join, healthOf(snapshot, join, releases), new Date(snapshot.meta.to * 1000))
 }

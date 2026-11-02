@@ -40,7 +40,7 @@ beforeAll(() => {
   at(NOW - 30 * DAY, ['init', '-q', '-b', 'master'])
   at(NOW - 30 * DAY, ['commit', '-q', '--allow-empty', '-m', 'initial'])
   merge(NOW - 20 * DAY, 'old', 'Merge pull request #7 from skello/old')
-  merge(NOW - 3 * DAY, 'export', 'Merge pull request #12 from skello/export')
+  merge(NOW - 3 * DAY, 'export', 'Merge pull request #12 from skello/export\n\n\tfeat(planning): export plans\n\nmore detail')
   at(NOW - 2 * DAY, ['commit', '-q', '--allow-empty', '-m', 'direct push'])
   at(NOW - 2 * DAY, ['checkout', '-q', '-b', 'staging'])
   merge(NOW - DAY, 'staged', 'Merge pull request #13 from skello/staged', 'staging')
@@ -55,9 +55,18 @@ test('reads merges on the production branch', () => {
   const rows = releasesOf(dir, 'svc-planning', 'master', SINCE, git)
   expect(rows.map((r) => [r.title, Date.parse(r.merged) / 1000])).toEqual([
     ["Merge branch 'hotfix'", NOW - 10 * H],
-    ['Merge pull request #12 from skello/export', NOW - 3 * DAY],
+    ['feat(planning): export plans', NOW - 3 * DAY],
   ])
   expect(rows.every((r) => r.repo === 'svc-planning' && /^[0-9a-f]{40}$/.test(r.sha) && r.changes.length === 0)).toBe(true)
+})
+
+test('reads HEAD of a detached worktree', () => {
+  at(NOW, ['checkout', '-q', '--detach', 'staging'])
+  try {
+    expect(releasesOf(dir, 'svc-planning', 'HEAD', SINCE, git).map((r) => r.number)).toEqual([13, 12])
+  } finally {
+    at(NOW, ['checkout', '-q', 'master'])
+  }
 })
 
 test('parses the PR number', () => {
