@@ -1,0 +1,605 @@
+{
+  "pinned": {
+    "repos": [
+      {
+        "repo": "skello-app",
+        "branch": "master",
+        "sha": "3d244a3be3429892bcc614d75b5c0abd71f6f2aa",
+        "dir": "<root>/pinned/skello-app"
+      },
+      {
+        "repo": "svc-alpha",
+        "branch": "master",
+        "sha": "64696b1e3d77fed2cb89b538a55302a24e0b9be8",
+        "dir": "<root>/pinned/svc-alpha"
+      },
+      {
+        "repo": "svc-alpha-tf",
+        "branch": "main",
+        "sha": "6c4e57cd68bacbf3f94f0756d4866be425a3e05b",
+        "dir": "<root>/pinned/svc-alpha-tf"
+      },
+      {
+        "repo": "svc-beta",
+        "branch": "master",
+        "sha": "c63282468152f0d959197a9e7ee0d875d397e3ba",
+        "dir": "<root>/pinned/svc-beta"
+      }
+    ],
+    "skipped": []
+  },
+  "resourceCheck": {
+    "findings": [
+      {
+        "subject": "kinesis:alpha-bus",
+        "kind": "resource-new",
+        "detail": "kinesis:alpha-bus (svc-alpha-tf:terraform, svc-alpha:serverless) is not in resources.json — pnpm discover:apply adds it"
+      },
+      {
+        "subject": "pg:skello_production",
+        "kind": "resource-new",
+        "detail": "pg:skello_production (skello-app:db/schema.rb) is not in resources.json — pnpm discover:apply adds it"
+      },
+      {
+        "subject": "pg:skello_production.shifts",
+        "kind": "resource-new",
+        "detail": "pg:skello_production.shifts (skello-app:db/schema.rb) is not in resources.json — pnpm discover:apply adds it"
+      },
+      {
+        "subject": "pg:skello_production.shops",
+        "kind": "resource-new",
+        "detail": "pg:skello_production.shops (skello-app:db/schema.rb) is not in resources.json — pnpm discover:apply adds it"
+      },
+      {
+        "subject": "sqs:alphaJobs",
+        "kind": "resource-new",
+        "detail": "sqs:alphaJobs (svc-alpha:serverless) is not in resources.json — pnpm discover:apply adds it"
+      },
+      {
+        "subject": "sqs:alphaJobsDlq",
+        "kind": "resource-new",
+        "detail": "sqs:alphaJobsDlq (svc-alpha:serverless) is not in resources.json — pnpm discover:apply adds it"
+      }
+    ],
+    "modelLess": [],
+    "total": 6,
+    "byKind": {
+      "stream": 1,
+      "database": 1,
+      "table": 2,
+      "queue": 2
+    }
+  },
+  "liveResources": [
+    {
+      "id": "kinesis:alpha-bus",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "alpha-bus",
+      "owner": "svc-alpha",
+      "evidence": [
+        "svc-alpha-tf:terraform",
+        "svc-alpha:serverless"
+      ]
+    },
+    {
+      "id": "pg:skello_production",
+      "kind": "database",
+      "store": "postgresql",
+      "name": "skello_production",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shifts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shifts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shift.rb",
+        "className": "Shift"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shops",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shops",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shop.rb",
+        "className": "Shop"
+      },
+      "related": [
+        "pg:skello_production.shifts"
+      ]
+    },
+    {
+      "id": "sqs:alphaJobs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "alphaJobs",
+      "owner": "svc-alpha",
+      "evidence": [
+        "svc-alpha:serverless"
+      ]
+    },
+    {
+      "id": "sqs:alphaJobsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "alphaJobsDlq",
+      "owner": "svc-alpha",
+      "evidence": [
+        "svc-alpha:serverless"
+      ]
+    }
+  ],
+  "liveRelations": [
+    {
+      "resource": "pg:skello_production.shifts",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/controllers/shifts_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/models/shift.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:alphaJobs",
+      "relation": "consumes",
+      "service": "svc-alpha",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:alpha-bus",
+      "relation": "consumes",
+      "service": "svc-alpha",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:alphaJobs",
+      "relation": "dead-letters-to",
+      "service": "svc-alpha",
+      "target": "sqs:alphaJobsDlq",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:alpha-bus",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "pg:skello_production.shifts",
+      "relation": "feeds",
+      "service": "skello-app",
+      "target": "kinesis:alpha-bus",
+      "grade": "config"
+    },
+    {
+      "resource": "pg:skello_production.shifts",
+      "relation": "consumes",
+      "service": "svc-alpha",
+      "target": "kinesis:alpha-bus",
+      "file": "serverless.ts",
+      "grade": "config"
+    }
+  ],
+  "listenerCheck": {
+    "findings": [
+      {
+        "kind": "surface-drift",
+        "subject": "listeners.json",
+        "detail": "packages/data/src/generated/listeners.json is absent — pnpm discover:apply writes it"
+      }
+    ],
+    "listeners": 2,
+    "writeSites": 1,
+    "feeds": 1,
+    "skipped": false
+  },
+  "liveListeners": {
+    "listeners": [
+      {
+        "id": "shifts.touch.shop",
+        "table": "pg:skello_production.shifts",
+        "kind": "touch",
+        "hook": "touch: true",
+        "events": [
+          "create",
+          "update",
+          "destroy"
+        ],
+        "phase": "event",
+        "declaredAt": {
+          "file": "app/models/shift.rb",
+          "line": 2
+        },
+        "grade": "code",
+        "effects": [
+          {
+            "kind": "writes",
+            "target": "pg:skello_production.shops",
+            "mode": "sync",
+            "events": [
+              "update"
+            ],
+            "runs": "touch",
+            "at": {
+              "file": "app/models/shift.rb",
+              "line": 2
+            },
+            "grade": "constant"
+          }
+        ]
+      },
+      {
+        "table": "pg:skello_production.shifts",
+        "kind": "callback",
+        "hook": "after_commit",
+        "events": [
+          "create"
+        ],
+        "phase": "commit",
+        "declaredAt": {
+          "file": "app/models/shift.rb",
+          "line": 4
+        },
+        "grade": "code",
+        "id": "shifts.after_commit.sync_shift",
+        "method": "sync_shift",
+        "definedAt": {
+          "file": "app/models/shift.rb",
+          "line": 6
+        },
+        "effects": [
+          {
+            "kind": "enqueues",
+            "target": "ShiftSyncJob",
+            "targetFile": "app/jobs/shift_sync_job.rb",
+            "mode": "async-job",
+            "at": {
+              "file": "app/models/shift.rb",
+              "line": 7
+            },
+            "grade": "graph"
+          }
+        ]
+      }
+    ],
+    "writeSites": [
+      {
+        "table": "pg:skello_production.shifts",
+        "file": "app/controllers/shifts_controller.rb",
+        "line": 7,
+        "call": "update!",
+        "events": [
+          "update"
+        ],
+        "runs": "all",
+        "grade": "constant"
+      }
+    ]
+  },
+  "scannedRepos": [
+    "skello-app",
+    "svc-alpha",
+    "svc-beta"
+  ],
+  "connectionEvidence": {
+    "svc-alpha→svc-beta": [
+      "package.json: @skelloapp/svc-beta-client (value import)"
+    ]
+  },
+  "candidates": [],
+  "unknownTargets": [
+    {
+      "from": "svc-alpha",
+      "evidence": "@skelloapp/svc-gamma-client",
+      "normalizedTarget": "svc-gamma"
+    }
+  ],
+  "stale": [
+    {
+      "from": "svc-beta",
+      "to": "svc-alpha",
+      "sdkPackage": "@skelloapp/svc-alpha-client"
+    }
+  ],
+  "unverifiable": [],
+  "endpointChecks": [
+    {
+      "service": "svc-alpha",
+      "source": "static-scan",
+      "verified": 1,
+      "total": 1,
+      "missingInCode": [],
+      "extraInCode": 0
+    },
+    {
+      "service": "svc-beta",
+      "source": "static-scan",
+      "verified": 1,
+      "total": 1,
+      "missingInCode": [],
+      "extraInCode": 0
+    }
+  ],
+  "endpointStamps": {
+    "svc-alpha#list-items": {
+      "lastVerified": "2026-11-02",
+      "evidence": "serverless static-scan: GET /alpha/items"
+    },
+    "svc-beta#create-job": {
+      "lastVerified": "2026-11-02",
+      "evidence": "serverless static-scan: POST /beta/jobs"
+    }
+  },
+  "asyncSenders": [],
+  "awsBindings": [
+    {
+      "service": "svc-alpha",
+      "streams": [
+        {
+          "stream": "alpha-bus",
+          "kind": "kinesis",
+          "source": "self",
+          "listeners": 1,
+          "cdcChannelInMap": false,
+          "pairInMap": false
+        }
+      ],
+      "s3Triggers": [],
+      "schedules": [],
+      "ownedResources": []
+    },
+    {
+      "service": "svc-beta",
+      "streams": [],
+      "s3Triggers": [],
+      "schedules": [
+        {
+          "name": "purgeJobs",
+          "schedule": "rate(1 day)"
+        }
+      ],
+      "ownedResources": []
+    }
+  ],
+  "awsClientUsage": [
+    {
+      "service": "svc-alpha",
+      "facts": [
+        {
+          "kind": "kinesis",
+          "operations": [
+            "produce"
+          ],
+          "files": [
+            "src/stream/publish.ts"
+          ],
+          "fileCount": 1
+        }
+      ],
+      "missingDatabaseEntries": [
+        "kinesis"
+      ],
+      "unevidencedDatabaseEntries": []
+    }
+  ],
+  "terraform": [
+    {
+      "tfRepo": "svc-alpha-tf",
+      "service": "svc-alpha",
+      "inMap": true,
+      "facts": {
+        "resources": [
+          {
+            "tfType": "aws_kinesis_stream",
+            "label": "bus",
+            "name": "alpha-bus"
+          }
+        ],
+        "mongoRoles": [],
+        "dmsTasks": [
+          {
+            "label": "shifts_cdc",
+            "taskId": "alpha-shifts-cdc",
+            "migrationType": "cdc",
+            "source": "aws_dms_endpoint.skelloapp_aurora.endpoint_arn",
+            "target": "aws_dms_endpoint.kinesis_target.endpoint_arn",
+            "tableMappings": "file(\"${path.module}/configs/tables.json\")"
+          }
+        ],
+        "dmsEndpoints": [
+          {
+            "label": "skelloapp_aurora",
+            "endpointId": "skelloapp-aurora",
+            "endpointType": "source",
+            "engineName": "aurora-postgresql"
+          },
+          {
+            "label": "kinesis_target",
+            "endpointId": "alpha-kinesis",
+            "endpointType": "target",
+            "engineName": "kinesis",
+            "streamLabel": "bus"
+          }
+        ],
+        "iamActions": []
+      }
+    }
+  ],
+  "frontendServices": [],
+  "monolithSurface": {
+    "totalRoutes": 2,
+    "unparsed": [],
+    "topSegments": [
+      [
+        "shifts",
+        2
+      ]
+    ]
+  },
+  "weakSdkEvidence": [],
+  "sdkUsage": [],
+  "sdkRegistryStats": null,
+  "flowCheck": {
+    "findings": [],
+    "stepsChecked": 1,
+    "responseSteps": 0,
+    "pathsChecked": 0
+  },
+  "codeGrades": {
+    "findings": [],
+    "grades": {},
+    "distribution": {
+      "graph": 0,
+      "constant": 0,
+      "import": 0,
+      "text": 0,
+      "none": 0
+    },
+    "backlog": []
+  },
+  "branchCheck": {
+    "findings": [],
+    "verified": 0,
+    "skippedRepos": []
+  },
+  "machineCheck": {
+    "findings": [],
+    "verified": 0,
+    "skippedRepos": []
+  },
+  "codeLayerCheck": {
+    "findings": [],
+    "flowsWithCodeLayer": 1,
+    "pathsVerified": 2,
+    "skippedRepos": []
+  },
+  "ruleCheck": {
+    "findings": [],
+    "rulesChecked": 0,
+    "pathsVerified": 0,
+    "hashesVerified": 0,
+    "skippedRepos": []
+  },
+  "areaCheck": {
+    "findings": [],
+    "coverage": {
+      "skello-app": {
+        "mapped": 0,
+        "total": 4,
+        "unmappedByDir": [
+          {
+            "dir": "app/models",
+            "files": 2
+          },
+          {
+            "dir": "app/controllers",
+            "files": 1
+          },
+          {
+            "dir": "app/jobs",
+            "files": 1
+          }
+        ]
+      }
+    },
+    "overlaps": [],
+    "areaFiles": {},
+    "anchorsVerified": 0,
+    "evidenceVerified": 0,
+    "skippedRepos": [
+      "skello-app-front",
+      "skello-mobile",
+      "skello-punchclock",
+      "superadmin"
+    ]
+  },
+  "flagCheck": {
+    "findings": [],
+    "refsChecked": 0,
+    "refsVerified": 0,
+    "distinctFlags": 0,
+    "skippedRepos": []
+  },
+  "failureCheck": {
+    "findings": [],
+    "inScopeEdges": 0,
+    "verifiedDlqs": 0,
+    "waivers": 0,
+    "skippedServices": []
+  },
+  "authCheck": {
+    "findings": [],
+    "gatesChecked": 0,
+    "gatesVerified": 0,
+    "authorizersChecked": 0,
+    "authorizersVerified": 0,
+    "skippedRepos": []
+  },
+  "piiFacts": null,
+  "piiCheck": {
+    "findings": [],
+    "refsChecked": 0,
+    "refsVerified": 0,
+    "skippedServices": []
+  },
+  "contractCheck": {
+    "findings": [],
+    "refsChecked": 0,
+    "refsVerified": 0,
+    "skippedServices": []
+  },
+  "ignoredSdks": {},
+  "reposWithoutServiceDefinition": [],
+  "railsUnmapped": [],
+  "unmappedGithubTeams": [
+    "@skelloapp/pastry"
+  ],
+  "serviceFacts": {
+    "skello-app": {
+      "repoUrl": "https://github.com/skelloapp/skello-app",
+      "teamId": "squad-alpha",
+      "githubTeams": [
+        "@skelloapp/pastry",
+        "@skelloapp/squad-alpha"
+      ]
+    },
+    "svc-alpha": {
+      "repoUrl": "https://github.com/skelloapp/svc-alpha",
+      "githubTeams": []
+    },
+    "svc-beta": {
+      "repoUrl": "https://github.com/skelloapp/svc-beta",
+      "githubTeams": [],
+      "recurringTasks": [
+        {
+          "name": "purgeJobs",
+          "schedule": "rate(1 day)"
+        }
+      ]
+    }
+  },
+  "awsLive": null
+}

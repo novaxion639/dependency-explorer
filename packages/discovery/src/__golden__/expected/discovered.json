@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-11-02T00:00:00.000Z",
+  "scannedRepos": [
+    "skello-app",
+    "svc-alpha",
+    "svc-beta"
+  ],
+  "services": {
+    "skello-app": {
+      "repoUrl": "https://github.com/skelloapp/skello-app",
+      "teamId": "squad-alpha",
+      "githubTeams": [
+        "@skelloapp/pastry",
+        "@skelloapp/squad-alpha"
+      ]
+    },
+    "svc-alpha": {
+      "repoUrl": "https://github.com/skelloapp/svc-alpha",
+      "githubTeams": []
+    },
+    "svc-beta": {
+      "repoUrl": "https://github.com/skelloapp/svc-beta",
+      "githubTeams": [],
+      "recurringTasks": [
+        {
+          "name": "purgeJobs",
+          "schedule": "rate(1 day)"
+        }
+      ]
+    }
+  },
+  "connections": {
+    "svc-alpha→svc-beta": {
+      "lastVerified": "2026-11-02",
+      "evidence": "package.json: @skelloapp/svc-beta-client (value import)"
+    }
+  },
+  "endpoints": {
+    "svc-alpha#list-items": {
+      "lastVerified": "2026-11-02",
+      "evidence": "serverless static-scan: GET /alpha/items"
+    },
+    "svc-beta#create-job": {
+      "lastVerified": "2026-11-02",
+      "evidence": "serverless static-scan: POST /beta/jobs"
+    }
+  },
+  "areaFiles": {},
+  "areaCoverage": {
+    "skello-app": {
+      "mapped": 0,
+      "total": 4
+    }
+  },
+  "codeEdgeGrades": {}
+}

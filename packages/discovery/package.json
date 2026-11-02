@@ -18,7 +18,8 @@
     "discover:unit-paths": "tsx src/unit-paths-cli.ts",
     "discover:grades": "tsx src/grades-cli.ts",
     "discover:machines": "tsx src/state-machines-cli.ts",
-    "discover:listeners": "tsx src/listeners-cli.ts"
+    "discover:listeners": "tsx src/listeners-cli.ts",
+    "golden:update": "GOLDEN_UPDATE=1 vitest run src/golden.test.ts"
   },
   "dependencies": {
     "@dependency-explorer/data": "workspace:*",

@@ -1,0 +1,86 @@
+{
+  "listeners": [
+    {
+      "id": "shifts.touch.shop",
+      "table": "pg:skello_production.shifts",
+      "kind": "touch",
+      "hook": "touch: true",
+      "events": [
+        "create",
+        "update",
+        "destroy"
+      ],
+      "phase": "event",
+      "declaredAt": {
+        "file": "app/models/shift.rb",
+        "line": 2
+      },
+      "grade": "code",
+      "effects": [
+        {
+          "kind": "writes",
+          "target": "pg:skello_production.shops",
+          "mode": "sync",
+          "events": [
+            "update"
+          ],
+          "runs": "touch",
+          "at": {
+            "file": "app/models/shift.rb",
+            "line": 2
+          },
+          "grade": "constant"
+        }
+      ]
+    },
+    {
+      "table": "pg:skello_production.shifts",
+      "kind": "callback",
+      "hook": "after_commit",
+      "events": [
+        "create"
+      ],
+      "phase": "commit",
+      "declaredAt": {
+        "file": "app/models/shift.rb",
+        "line": 4
+      },
+      "grade": "code",
+      "id": "shifts.after_commit.sync_shift",
+      "method": "sync_shift",
+      "definedAt": {
+        "file": "app/models/shift.rb",
+        "line": 6
+      },
+      "effects": [
+        {
+          "kind": "enqueues",
+          "target": "ShiftSyncJob",
+          "targetFile": "app/jobs/shift_sync_job.rb",
+          "mode": "async-job",
+          "at": {
+            "file": "app/models/shift.rb",
+            "line": 7
+          },
+          "grade": "graph"
+        }
+      ]
+    }
+  ],
+  "writeSites": [
+    {
+      "table": "pg:skello_production.shifts",
+      "file": "app/controllers/shifts_controller.rb",
+      "line": 7,
+      "call": "update!",
+      "events": [
+        "update"
+      ],
+      "runs": "all",
+      "grade": "constant"
+    }
+  ],
+  "pins": {
+    "skello-app": "3d244a3be3429892bcc614d75b5c0abd71f6f2aa"
+  }
+}

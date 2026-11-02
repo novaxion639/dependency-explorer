@@ -1,0 +1,18 @@
+{
+  "built_at_commit": "",
+  "nodes": [
+    { "id": "ctrl", "label": "ShiftsController", "source_file": "app/controllers/shifts_controller.rb", "_callable_class": true },
+    { "id": "ctrl-index", "label": "index", "source_file": "app/controllers/shifts_controller.rb" },
+    { "id": "shift", "label": "Shift", "source_file": "app/models/shift.rb", "_callable_class": true },
+    { "id": "shift-sync", "label": "sync_shift", "source_file": "app/models/shift.rb" },
+    { "id": "shop", "label": "Shop", "source_file": "app/models/shop.rb", "_callable_class": true },
+    { "id": "job", "label": "ShiftSyncJob", "source_file": "app/jobs/shift_sync_job.rb", "_callable_class": true }
+  ],
+  "links": [
+    { "source": "ctrl", "target": "ctrl-index", "relation": "method", "confidence": "EXTRACTED" },
+    { "source": "ctrl-index", "target": "shift", "relation": "calls", "confidence": "EXTRACTED" },
+    { "source": "shift", "target": "shift-sync", "relation": "method", "confidence": "EXTRACTED" },
+    { "source": "shift-sync", "target": "job", "relation": "calls", "confidence": "EXTRACTED" },
+    { "source": "shift", "target": "shop", "relation": "references", "confidence": "EXTRACTED" }
+  ]
+}
