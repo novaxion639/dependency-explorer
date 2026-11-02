@@ -118,6 +118,7 @@ export const ResourceSurfaceSchema = z.object({
   relations: z.array(ResourceRelationSchema),
   pins: z.record(z.string(), z.string()).default({}),
 })
+export type ResourceSurface = z.infer<typeof ResourceSurfaceSchema>
 
 export const WriteEventSchema = z.enum(['create', 'update', 'destroy'])
 export const RunsSchema = z.enum(['all', 'validation', 'touch', 'none', 'subset'])
