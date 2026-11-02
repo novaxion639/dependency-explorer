@@ -76,7 +76,7 @@ if (MODE_ERROR) {
   console.error(MODE_ERROR)
   process.exit(2)
 }
-const PIN = PINNED_MODE ? pinRepos(scanTargets(SOURCE_BASE), SOURCE_BASE, PINNED_BASE) : null
+const PIN = PINNED_MODE ? pinRepos(scanTargets(SOURCE_BASE), SOURCE_BASE, PINNED_BASE, undefined, !process.argv.includes('--no-fetch')) : null
 const PIN_ERROR = PIN ? emptyPinError(PIN.pinned.length, SOURCE_BASE) : null
 if (PIN_ERROR) {
   console.error(PIN_ERROR)
@@ -214,7 +214,8 @@ interface Report {
   awsLive: AwsLiveFindings | null
 }
 
-const TODAY = new Date().toISOString().slice(0, 10)
+const NOW = process.env.DE_FIXED_NOW ? new Date(process.env.DE_FIXED_NOW) : new Date()
+const TODAY = NOW.toISOString().slice(0, 10)
 
 function findRepos(): string[] {
   try {
@@ -760,7 +761,7 @@ function run(): Report {
 
 function writeOverlay(report: Report) {
   const overlay: DiscoveredOverlay = {
-    generatedAt: new Date().toISOString(),
+    generatedAt: NOW.toISOString(),
     scannedRepos: report.scannedRepos,
     services: report.serviceFacts,
     connections: Object.fromEntries(
