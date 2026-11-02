@@ -18,16 +18,16 @@ import { z } from 'zod'
 const teams: Team[] = z.array(TeamSchema).parse([
   { id: 'team-branza', name: 'Team Branza', githubTeams: ['@skelloapp/team-branza'] },
   { id: 'team-cheesebuzzer', name: 'Team CheeseBuzzer', githubTeams: ['@skelloapp/team-cheesebuzzer'] },
-  { id: 'team-gouda', name: 'Team Gouda', githubTeams: ['@skelloapp/team-gouda'] },
-  { id: 'team-harissa', name: 'Team Harissa', githubTeams: ['@skelloapp/team-harissa'] },
-  { id: 'team-honey', name: 'Team Honey', githubTeams: ['@skelloapp/team-honey'] },
-  { id: 'team-mozza', name: 'Team Mozza', githubTeams: ['@skelloapp/team-mozza'] },
-  { id: 'team-pesto', name: 'Team Pesto', githubTeams: ['@skelloapp/team-pesto'] },
-  { id: 'team-reaper', name: 'Team Reaper', githubTeams: ['@skelloapp/team-reaper'] },
-  { id: 'team-roquefort', name: 'Team Roquefort', githubTeams: ['@skelloapp/team-roquefort'] },
-  { id: 'team-salsa', name: 'Team Salsa', githubTeams: ['@skelloapp/team-salsa'] },
-  { id: 'team-szechuan', name: 'Team Szechuan', githubTeams: ['@skelloapp/team-szechuan'] },
-  { id: 'team-wasabi', name: 'Team Wasabi', githubTeams: ['@skelloapp/team-wasabi'] },
+  { id: 'team-gouda', name: 'Team Gouda', githubTeams: ['@skelloapp/team-gouda'], jiraBoards: [307] },
+  { id: 'team-harissa', name: 'Team Harissa', githubTeams: ['@skelloapp/team-harissa'], jiraBoards: [48] },
+  { id: 'team-honey', name: 'Team Honey', githubTeams: ['@skelloapp/team-honey'], jiraBoards: [109] },
+  { id: 'team-mozza', name: 'Team Mozza', githubTeams: ['@skelloapp/team-mozza'], jiraBoards: [74] },
+  { id: 'team-pesto', name: 'Team Pesto', githubTeams: ['@skelloapp/team-pesto'], jiraBoards: [70] },
+  { id: 'team-reaper', name: 'Team Reaper', githubTeams: ['@skelloapp/team-reaper'], jiraBoards: [45] },
+  { id: 'team-roquefort', name: 'Team Roquefort', githubTeams: ['@skelloapp/team-roquefort'], jiraBoards: [17] },
+  { id: 'team-salsa', name: 'Team Salsa', githubTeams: ['@skelloapp/team-salsa'], jiraBoards: [23] },
+  { id: 'team-szechuan', name: 'Team Szechuan', githubTeams: ['@skelloapp/team-szechuan'], jiraBoards: [67] },
+  { id: 'team-wasabi', name: 'Team Wasabi', githubTeams: ['@skelloapp/team-wasabi'], jiraBoards: [176] },
 ])
 
 export default teams
