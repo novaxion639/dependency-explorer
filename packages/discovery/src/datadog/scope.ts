@@ -45,19 +45,23 @@ export function metricQueries(services: string[]): Record<MetricKey, string> {
 export const isProd = (tags: string[]): boolean =>
   tags.some((tag) => ['env:prod', 'environment:prod'].includes(tag.toLowerCase()))
 
-export const tagValues = (tags: string[], name: string): string[] =>
+export const rawTagValues = (tags: string[], name: string): string[] =>
   tags
     .filter((t) => t.toLowerCase().startsWith(`${name}:`))
-    .map((t) => t.slice(name.length + 1).toLowerCase())
+    .map((t) => t.slice(name.length + 1))
     .filter((value) => value !== '')
 
-export function serviceOf(monitor: { tags: string[]; name: string }): string | null {
+export const tagValues = (tags: string[], name: string): string[] => rawTagValues(tags, name).map((value) => value.toLowerCase())
+
+export function rawServiceOf(monitor: { tags: string[]; name: string }): string | null {
   return (
-    tagValues(monitor.tags, 'service').at(0) ??
-    tagValues(monitor.tags, 'project').at(0) ??
-    SERVICE_IN_NAME.exec(monitor.name)?.[1]?.toLowerCase() ??
+    rawTagValues(monitor.tags, 'service').at(0) ??
+    rawTagValues(monitor.tags, 'project').at(0) ??
+    SERVICE_IN_NAME.exec(monitor.name)?.[1] ??
     null
   )
 }
+
+export const serviceOf = (monitor: { tags: string[]; name: string }): string | null => rawServiceOf(monitor)?.toLowerCase() ?? null
 
 export const normaliseName = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]/g, '')

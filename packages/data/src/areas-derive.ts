@@ -90,7 +90,7 @@ export function getCrossAreaEdges(area: ProductArea, map: ConnectivityMap): Cros
   return [...counts.values()]
 }
 
-const CLIENT_TYPES = new Set(['vue-frontend', 'react-native'])
+export const CLIENT_TYPES = new Set(['vue-frontend', 'react-native'])
 
 export interface ContextLanes {
   clients: string[]

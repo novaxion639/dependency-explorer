@@ -14,7 +14,7 @@ export function productionBranch(repo: string): 'master' | 'main' {
   return repo.endsWith('-tf') ? 'main' : 'master'
 }
 
-function errorText(e: unknown): string {
+export function errorText(e: unknown): string {
   const stderr = e instanceof Error && 'stderr' in e && e.stderr ? String(e.stderr).trim() : ''
   const text = stderr || (e instanceof Error ? e.message : String(e))
   return text.split('\n')[0] ?? text

@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { flowListenerDrift } from '@dependency-explorer/data'
-import type { ConnectivityMap, DiscoveredOverlay, Listener, ListenerSurface, Resource, ResourceRelation, ResourceSurface, WriteSite } from '@dependency-explorer/schema'
+import type { ConnectivityMap, DatadogOverlay, DiscoveredOverlay, Listener, ListenerSurface, Resource, ResourceRelation, ResourceSurface, WriteSite } from '@dependency-explorer/schema'
 import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService, tfRepoToService } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
@@ -9,6 +9,9 @@ import { extractRailsMonolith } from './extractors/rails'
 import { extractServerless, type ServerlessFacts } from './extractors/serverless'
 import { extractAwsClients, type AwsUsageFact, type AwsUsageKind } from './extractors/aws-clients'
 import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extractors/aws-live'
+import { joinDatadog, type DatadogJoin } from './extractors/datadog'
+import { readDatadogSnapshot } from './datadog/snapshot'
+import { overlayOf } from './datadog/overlay'
 import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
@@ -122,6 +125,7 @@ export interface Report {
   serviceFacts: DiscoveredOverlay['services']
   /** Layer 4: read-only AWS snapshot diff (only with --aws <dir>) */
   awsLive: AwsLiveFindings | null
+  datadog: { join: DatadogJoin; overlay: DatadogOverlay } | null
 }
 
 export interface Dataset {
@@ -169,6 +173,12 @@ function pickTeamId(slugToTeamId: Map<string, string>, wildcardOwners: string[])
   return mapped.length === 1 ? slugToTeamId.get(mapped[0]!) : undefined
 }
 
+
+function datadogOf(dir: string, dataset: Dataset, repoBase: string, pinned: boolean): Report['datadog'] {
+  const snapshot = readDatadogSnapshot(dir)
+  const join = joinDatadog(snapshot, dataset)
+  return { join, overlay: overlayOf(snapshot, join, repoBase, pinned) }
+}
 
 // ── Scan ──────────────────────────────────────────────────────────────────────
 
@@ -249,6 +259,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
     unmappedGithubTeams: [],
     serviceFacts: {},
     awsLive: null,
+    datadog: options.datadogSnapshotDir ? datadogOf(options.datadogSnapshotDir, dataset, repoBase, pin !== null) : null,
   }
 
   const allSlugs = new Set<string>()

@@ -23,11 +23,12 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
-import { ListenerSurfaceSchema } from '@dependency-explorer/schema'
+import { DatadogOverlaySchema, ListenerSurfaceSchema } from '@dependency-explorer/schema'
 import { IGNORED_SDKS } from './mapping'
 import { applyModeError } from './pinned'
 import { machineSection } from './state-machines-report'
 import { listenerSection } from './listeners-report'
+import { datadogSection } from './extractors/datadog'
 import { findingKeys, diffBaseline, readBaseline, readBaselineRepos, unscannedRepos, writeBaseline } from './baseline'
 import { runDiscovery, writeOutputs, PinError, type Dataset, type DiscoveryOptions, type Report } from './discovery-run'
 
@@ -47,30 +48,35 @@ const BASELINE_PATH = path.resolve(__dirname, '../baseline.json')
 const BASELINE_MODE = process.argv.includes('--write-baseline')
 const FAIL_ON_NEW = process.argv.includes('--fail-on-new')
 const APPLY_MODE = process.argv.includes('--apply')
-// --aws [dir]: diff a read-only AWS snapshot (see aws-fetch.ts) against the map.
-// The dir resolves against the cwd, then the workspace root; without a value,
-// the most recent snapshot under .aws-snapshots/ is used.
-function resolveAwsSnapshotDir(): string | null {
-  const i = process.argv.indexOf('--aws')
-  if (i < 0) return null
+function resolveSnapshotDir(flag: string, folder: string, fetchScript: string): string | null {
+  const i = process.argv.indexOf(flag)
+  if (i < 0) {
+    return null
+  }
   const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
   const given = process.argv[i + 1]
   if (given && !given.startsWith('--')) {
     for (const base of [process.cwd(), path.resolve(pkgRoot, '../..'), pkgRoot]) {
       const candidate = path.resolve(base, given)
-      if (fs.existsSync(candidate)) return candidate
+      if (fs.existsSync(candidate)) {
+        return candidate
+      }
     }
-    throw new Error(`--aws snapshot directory not found: ${given}`)
+    throw new Error(`${flag} snapshot directory not found: ${given}`)
   }
-  const home = path.join(pkgRoot, '.aws-snapshots')
+  const home = path.join(pkgRoot, folder)
   const latest = fs.existsSync(home)
     ? fs.readdirSync(home, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort().pop()
     : undefined
-  if (!latest) throw new Error(`--aws given but no snapshot found under ${home} — run pnpm discover:aws:fetch first`)
+  if (!latest) {
+    throw new Error(`${flag} given but no snapshot found under ${home} — run pnpm ${fetchScript} first`)
+  }
   return path.join(home, latest)
 }
-const AWS_SNAPSHOT_DIR = resolveAwsSnapshotDir()
+const AWS_SNAPSHOT_DIR = resolveSnapshotDir('--aws', '.aws-snapshots', 'discover:aws:fetch')
+const DATADOG_SNAPSHOT_DIR = resolveSnapshotDir('--datadog', '.datadog-snapshots', 'discover:datadog:fetch')
 const OUT_DIR = path.resolve(__dirname, '../../data/src/generated')
+const OVERLAY_PATH = path.resolve(__dirname, '../../web/overlay/datadog.json')
 const LISTENERS_PATH = path.join(OUT_DIR, 'listeners.json')
 const REPO_BASE = PINNED_MODE ? PINNED_BASE : SOURCE_BASE
 const NOW = process.env.DE_FIXED_NOW ? new Date(process.env.DE_FIXED_NOW) : new Date()
@@ -232,6 +238,11 @@ function printMarkdown(r: Report, unscanned: string[]) {
     if (live.unresolvedPrefixes.length) {
       console.log(`\nUnresolved function prefixes (noise/POCs/unmodeled): ${live.unresolvedPrefixes.join(', ')}`)
     }
+  }
+
+  const datadog = datadogSection(r.datadog?.join ?? null)
+  if (datadog) {
+    console.log(datadog)
   }
 
   section('🖥 Frontend service usage',
@@ -500,6 +511,7 @@ const options: DiscoveryOptions = {
   fetchOrigin: !process.argv.includes('--no-fetch'),
   now: NOW,
   awsSnapshotDir: AWS_SNAPSHOT_DIR ?? undefined,
+  datadogSnapshotDir: DATADOG_SNAPSHOT_DIR ?? undefined,
 }
 
 function discover(): Report {
@@ -518,9 +530,14 @@ const report = discover()
 const pinnedRepos = report.pinned?.repos
 const unscanned = pinnedRepos ? unscannedRepos(readBaselineRepos(BASELINE_PATH), pinnedRepos.map(p => p.repo)) : []
 if (JSON_MODE) {
-  console.log(JSON.stringify(report, null, 2))
+  console.log(JSON.stringify(report, (_key, value: unknown) => (value instanceof Map ? Object.fromEntries(value) : value), 2))
 } else {
   printMarkdown(report, unscanned)
+}
+if (report.datadog) {
+  fs.mkdirSync(path.dirname(OVERLAY_PATH), { recursive: true })
+  fs.writeFileSync(OVERLAY_PATH, JSON.stringify(DatadogOverlaySchema.parse(report.datadog.overlay), null, 1))
+  console.error(`Datadog overlay written: ${path.relative(process.cwd(), OVERLAY_PATH)}`)
 }
 if (APPLY_MODE) {
   writeOutputs(report, { outDir: OUT_DIR, repoBase: REPO_BASE, now: NOW })
