@@ -1,0 +1,14 @@
+{
+  "monitors": [
+    {
+      "id": 1003,
+      "name": "beta latency",
+      "type": "metric alert",
+      "status": "Warn",
+      "tags": ["Project:svc-beta", "Environment:Prod", "team:beta-squad"],
+      "query": "SENTINEL-MONITOR-QUERY-3",
+      "message": "SENTINEL-MONITOR-MESSAGE-3"
+    }
+  ],
+  "metadata": { "page": 1, "page_count": 2, "per_page": 100, "total_count": 3 }
+}

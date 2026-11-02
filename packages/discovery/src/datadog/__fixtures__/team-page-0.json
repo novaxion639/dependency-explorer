@@ -1,0 +1,6 @@
+{
+  "data": [
+    { "id": "team-0001", "type": "team", "attributes": { "handle": "alpha-squad", "name": "Alpha Squad", "description": "SENTINEL-TEAM-DESCRIPTION" } }
+  ],
+  "meta": { "pagination": { "number": 0, "next_number": 1, "last_number": 1, "size": 100, "total": 2 } }
+}

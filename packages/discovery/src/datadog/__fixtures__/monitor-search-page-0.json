@@ -1,0 +1,23 @@
+{
+  "monitors": [
+    {
+      "id": 1001,
+      "name": "svc-alpha 5xx rate",
+      "type": "query alert",
+      "status": "OK",
+      "tags": ["service:svc-alpha", "env:prod", "team:alpha-squad"],
+      "query": "SENTINEL-MONITOR-QUERY-1",
+      "message": "SENTINEL-MONITOR-MESSAGE-1 @slack-fake-channel"
+    },
+    {
+      "id": 1002,
+      "name": "[svcGamma] staging errors",
+      "type": "log alert",
+      "status": "Alert",
+      "tags": ["environment:staging"],
+      "query": "SENTINEL-MONITOR-QUERY-2",
+      "message": "SENTINEL-MONITOR-MESSAGE-2"
+    }
+  ],
+  "metadata": { "page": 0, "page_count": 2, "per_page": 100, "total_count": 3 }
+}

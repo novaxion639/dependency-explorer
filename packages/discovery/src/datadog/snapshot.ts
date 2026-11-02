@@ -1,0 +1,201 @@
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+import { readPages } from '../net/pages'
+import type { DatadogClient } from './client'
+import { isProd, METRIC_KEYS, metricQueries, serviceOf, type MetricKey } from './scope'
+
+type Monitor = { id: number; name: string; tags: string[]; overall_state: string | null }
+type Team = { id: string; handle: string; name: string }
+type Slo = { id: string; name: string; tags: string[] }
+type Incident = { id: string; title: string; severity: string | null; created: string | null; services: string[] }
+type Series = { tag_set: string[]; pointlist: [number, number | null][] }
+type MonitorTransition = { monitor_id: number; ts: number; status: string | null }
+
+export interface DatadogSnapshot {
+  meta: { fetchedAt: string; site: string; from: number; to: number }
+  monitors: Monitor[]
+  teams: Team[]
+  slos: Slo[]
+  incidents: Incident[]
+  metrics: Record<MetricKey, Series[] | null>
+  events: { items: MonitorTransition[]; capped: boolean }
+}
+
+type Json = Record<string, unknown>
+
+const HOUR_S = 3600
+const DAY_S = 86_400
+const METRIC_DAYS = 21
+const APM_DAYS = 14
+const EVENT_DAYS = 7
+const PAGE_SIZE = 100
+const EVENT_PAGE = 500
+const MAX_EVENT_PAGES = 4
+const CLOSED_INCIDENT_STATES = ['resolved', 'stable']
+
+const isJson = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v)
+const obj = (v: unknown): Json => (isJson(v) ? v : {})
+const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
+const text = (v: unknown): string | null => (typeof v === 'string' ? v : null)
+const num = (v: unknown): number | null => (typeof v === 'number' ? v : null)
+const strings = (v: unknown): string[] => list(v).filter((x): x is string => typeof x === 'string')
+
+function monitorOf(v: unknown): Monitor | null {
+  const m = obj(v)
+  const id = num(m.id)
+  return id === null ? null : { id, name: text(m.name) ?? '', tags: strings(m.tags), overall_state: text(m.status) }
+}
+
+function teamOf(v: unknown): Team {
+  const t = obj(v)
+  const a = obj(t.attributes)
+  return { id: text(t.id) ?? '', handle: text(a.handle) ?? '', name: text(a.name) ?? '' }
+}
+
+function sloOf(v: unknown): Slo {
+  const d = obj(obj(v).data)
+  const a = obj(d.attributes)
+  return { id: text(d.id) ?? '', name: text(a.name) ?? '', tags: strings(a.all_tags) }
+}
+
+function incidentOf(v: unknown): Incident | null {
+  const i = obj(v)
+  const a = obj(i.attributes)
+  const state = text(a.state)
+  if (state === null || CLOSED_INCIDENT_STATES.includes(state)) {
+    return null
+  }
+  const services = strings(obj(obj(a.fields).services).value)
+  return { id: text(i.id) ?? '', title: text(a.title) ?? '', severity: text(a.severity), created: text(a.created), services }
+}
+
+function pointOf(v: unknown): [number, number | null] | null {
+  const [t, y] = list(v)
+  return typeof t === 'number' && (typeof y === 'number' || y === null) ? [t, y] : null
+}
+
+const seriesOf = (r: Json): Series[] =>
+  list(r.series).map((s) => ({
+    tag_set: strings(obj(s).tag_set),
+    pointlist: list(obj(s).pointlist).map(pointOf).filter((p) => p !== null),
+  }))
+
+function transitionOf(v: unknown): MonitorTransition | null {
+  const a = obj(obj(obj(v).attributes).attributes)
+  const id = num(a.monitor_id)
+  const ms = num(a.timestamp)
+  return id === null || ms === null ? null : { monitor_id: id, ts: Math.floor(ms / 1000), status: text(a.status) }
+}
+
+const present = <T>(v: T | null): v is T => v !== null
+
+function prodServices(monitors: Monitor[], slos: Slo[]): string[] {
+  const named = [...monitors, ...slos].filter((m) => isProd(m.tags)).map(serviceOf).filter(present)
+  return [...new Set(named)].sort()
+}
+
+async function metrics(client: DatadogClient, services: string[], from: number, to: number): Promise<Record<MetricKey, Series[] | null>> {
+  const queries = metricQueries(services)
+  const out: Record<MetricKey, Series[] | null> = {
+    api_count: null,
+    api_5xx: null,
+    api_4xx: null,
+    api_p95: null,
+    lambda_errors: null,
+    fn_invocations: null,
+    fn_errors: null,
+    apm_hits: null,
+    apm_p95: null,
+    apm_status: null,
+    dlq: null,
+  }
+  for (const key of METRIC_KEYS) {
+    const start = key.startsWith('apm_') ? to - APM_DAYS * DAY_S : from
+    const r = obj(await client.get('/api/v1/query', { from: String(start), to: String(to), query: queries[key] }).catch(() => null))
+    out[key] = r.status === 'ok' ? seriesOf(r) : null
+  }
+  return out
+}
+
+async function events(client: DatadogClient, services: string[], now: Date): Promise<DatadogSnapshot['events']> {
+  const named = services.join(' OR ')
+  const query = `status:(error OR warn) (env:prod OR environment:prod) (service:(${named}) OR project:(${named}))`
+  const filter = { query, from: new Date(now.getTime() - EVENT_DAYS * DAY_S * 1000).toISOString(), to: now.toISOString() }
+  const pages = await readPages<string, MonitorTransition>(
+    '',
+    async (cursor) => {
+      const page = { limit: EVENT_PAGE, ...(cursor ? { cursor } : {}) }
+      const r = obj(await client.post('/api/v2/events/search', { filter, page, sort: '-timestamp' }))
+      return { items: list(r.data).map(transitionOf).filter(present), next: text(obj(obj(r.meta).page).after) }
+    },
+    MAX_EVENT_PAGES,
+  )
+  return { items: pages.items, capped: pages.unread }
+}
+
+export async function fetchDatadogSnapshot(client: DatadogClient, now: Date): Promise<DatadogSnapshot> {
+  await client.get('/api/v1/validate')
+  const monitors = await readPages(0, async (page) => {
+    const r = obj(await client.get('/api/v1/monitor/search', { per_page: String(PAGE_SIZE), page: String(page) }))
+    const count = num(obj(r.metadata).page_count) ?? 0
+    return { items: list(r.monitors).map(monitorOf).filter(present), next: page + 1 < count ? page + 1 : null }
+  })
+  const teams = await readPages(0, async (page) => {
+    const r = obj(await client.get('/api/v2/team', { 'page[size]': String(PAGE_SIZE), 'page[number]': String(page) }))
+    const next = num(obj(obj(r.meta).pagination).next_number)
+    return { items: list(r.data).map(teamOf), next: next !== null && next > page ? next : null }
+  })
+  const slos = await readPages(0, async (page) => {
+    const r = obj(await client.get('/api/v1/slo/search', { 'page[size]': String(PAGE_SIZE), 'page[number]': String(page) }))
+    const items = list(obj(obj(r.data).attributes).slos)
+    return { items: items.map(sloOf), next: items.length < PAGE_SIZE ? null : page + 1 }
+  })
+  const incidents = await readPages(0, async (offset) => {
+    const r = obj(await client.get('/api/v2/incidents', { 'page[size]': String(PAGE_SIZE), 'page[offset]': String(offset) }))
+    const data = list(r.data)
+    return { items: data.map(incidentOf).filter(present), next: data.length < PAGE_SIZE ? null : offset + PAGE_SIZE }
+  })
+  const services = prodServices(monitors.items, slos.items)
+  const to = Math.trunc(now.getTime() / 1000 / HOUR_S) * HOUR_S
+  const from = to - METRIC_DAYS * DAY_S
+  return {
+    meta: { fetchedAt: now.toISOString(), site: client.site, from, to },
+    monitors: monitors.items,
+    teams: teams.items,
+    slos: slos.items,
+    incidents: incidents.items,
+    metrics: await metrics(client, services, from, to),
+    events: await events(client, services, now),
+  }
+}
+
+const SNAPSHOT_KEYS = ['meta', 'monitors', 'teams', 'slos', 'incidents', 'metrics', 'events'] as const
+
+export function writeDatadogSnapshot(dir: string, s: DatadogSnapshot): void {
+  const parent = path.dirname(dir)
+  fs.mkdirSync(parent, { recursive: true })
+  const temp = fs.mkdtempSync(path.join(parent, `.${path.basename(dir)}-`))
+  try {
+    for (const key of SNAPSHOT_KEYS) {
+      fs.writeFileSync(path.join(temp, `${key}.json`), JSON.stringify(s[key], null, 1))
+    }
+    fs.rmSync(dir, { recursive: true, force: true })
+    fs.renameSync(temp, dir)
+  } catch (e) {
+    fs.rmSync(temp, { recursive: true, force: true })
+    throw e
+  }
+}
+
+export function readDatadogSnapshot(dir: string): DatadogSnapshot {
+  const read = (key: (typeof SNAPSHOT_KEYS)[number]) => JSON.parse(fs.readFileSync(path.join(dir, `${key}.json`), 'utf8'))
+  return {
+    meta: read('meta'),
+    monitors: read('monitors'),
+    teams: read('teams'),
+    slos: read('slos'),
+    incidents: read('incidents'),
+    metrics: read('metrics'),
+    events: read('events'),
+  }
+}

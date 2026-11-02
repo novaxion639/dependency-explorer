@@ -1,0 +1,13 @@
+{
+  "status": "ok",
+  "res_type": "time_series",
+  "series": [
+    {
+      "metric": "aws.apigateway.count",
+      "expression": "SENTINEL-SERIES-EXPRESSION",
+      "scope": "name:svc-alpha-prod",
+      "tag_set": ["name:svc-alpha-prod"],
+      "pointlist": [[1761897600000, 12], [1761901200000, null]]
+    }
+  ]
+}

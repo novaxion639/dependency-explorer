@@ -1,0 +1,13 @@
+{
+  "data": [
+    {
+      "id": "evt-0001",
+      "type": "event",
+      "attributes": {
+        "message": "SENTINEL-EVENT-MESSAGE",
+        "attributes": { "monitor_id": 1001, "status": "error", "timestamp": 1761897600000, "title": "SENTINEL-EVENT-TITLE" }
+      }
+    }
+  ],
+  "meta": { "page": { "after": "fake-cursor" } }
+}
