@@ -52,6 +52,9 @@ end
   end
 end
 `,
+  'app/services/microservices/mystery_client.rb': `class MysteryClient
+end
+`,
   '.github/CODEOWNERS': `* @skelloapp/squad-alpha
 /app/jobs/ @skelloapp/pastry
 `,
@@ -61,7 +64,9 @@ const SVC_ALPHA = {
   'package.json': `{
   "name": "svc-alpha",
   "dependencies": {
+    "@skelloapp/skello-auth-client": "1.0.0",
     "@skelloapp/svc-beta-client": "1.0.0",
+    "@skelloapp/svc-beta-sdk": "1.0.0",
     "@skelloapp/svc-gamma-client": "1.0.0"
   }
 }
@@ -70,6 +75,8 @@ const SVC_ALPHA = {
 
 export const beta = new BetaClient()
 `,
+  'src/queues/beta.ts': `export const BETA_JOBS_QUEUE = 'svcBetaJobs'
+`,
   'src/stream/publish.ts': `import { KinesisClient, PutRecordCommand } from '@aws-sdk/client-kinesis'
 
 export const publish = (data: Uint8Array) =>
@@ -77,6 +84,9 @@ export const publish = (data: Uint8Array) =>
 `,
   'serverless.ts': `export default {
   service: 'svc-alpha',
+  environment: {
+    ALPHA_JOBS_ENABLED: 'true',
+  },
   functions: {
     listItems: {
       handler: 'src/handlers/list-items.handler',
@@ -141,6 +151,7 @@ const SVC_BETA = {
           httpApi: {
             method: 'POST',
             path: '/beta/jobs',
+            authorizer: 'betaAuthorizer',
           },
         },
       ],
@@ -150,7 +161,32 @@ const SVC_BETA = {
       events: [{ schedule: 'rate(1 day)' }],
     },
   },
+  resources: {
+    Resources: {
+      SvcBetaJobsQueue: {
+        Type: 'AWS::SQS::Queue',
+        Properties: {
+          QueueName: 'svcBetaJobs',
+        },
+      },
+    },
+  },
 }
+`,
+  'tmp/swagger.json': `{
+  "paths": {
+    "/beta/jobs": {
+      "post": { "operationId": "CreateJob" }
+    }
+  }
+}
+`,
+}
+
+const SKELLO_APP_FRONT = {
+  '.env': `VUE_APP_SVC_ALPHA_URL=https://svc-alpha.example.test
+`,
+  'src/api.ts': `export const alphaUrl = process.env.VUE_APP_SVC_ALPHA_URL
 `,
 }
 
@@ -194,6 +230,7 @@ resource "aws_dms_replication_task" "shifts_cdc" {
 
 const REPOS: Array<{ name: string; branch: string; files: Record<string, string> }> = [
   { name: 'skello-app', branch: 'master', files: SKELLO_APP },
+  { name: 'skello-app-front', branch: 'master', files: SKELLO_APP_FRONT },
   { name: 'svc-alpha', branch: 'master', files: SVC_ALPHA },
   { name: 'svc-beta', branch: 'master', files: SVC_BETA },
   { name: 'svc-alpha-tf', branch: 'main', files: SVC_ALPHA_TF },
@@ -201,7 +238,7 @@ const REPOS: Array<{ name: string; branch: string; files: Record<string, string>
 
 const FIXED_DATE = '2026-11-01T12:00:00Z'
 const GIT_ENV = {
-  ...process.env,
+  ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_'))),
   GIT_CONFIG_GLOBAL: '/dev/null',
   GIT_CONFIG_NOSYSTEM: '1',
   GIT_AUTHOR_NAME: 'Golden Fixture',

@@ -2,6 +2,7 @@
   "generatedAt": "2026-11-02T00:00:00.000Z",
   "scannedRepos": [
     "skello-app",
+    "skello-app-front",
     "svc-alpha",
     "svc-beta"
   ],
@@ -32,7 +33,7 @@
   "connections": {
     "svc-alpha→svc-beta": {
       "lastVerified": "2026-11-02",
-      "evidence": "package.json: @skelloapp/svc-beta-client (value import)"
+      "evidence": "package.json: @skelloapp/svc-beta-client (value import); package.json: @skelloapp/svc-beta-sdk (declared-only import); queue literal svcBetaJobs in src/queues/beta.ts"
     }
   },
   "endpoints": {
@@ -45,12 +46,22 @@
       "evidence": "serverless static-scan: POST /beta/jobs"
     }
   },
-  "areaFiles": {},
-  "areaCoverage": {
-    "skello-app": {
-      "mapped": 0,
-      "total": 4
+  "areaFiles": {
+    "scheduling": {
+      "skello-app:app/models/**": 2
     }
   },
-  "codeEdgeGrades": {}
+  "areaCoverage": {
+    "skello-app": {
+      "mapped": 2,
+      "total": 5
+    },
+    "skello-app-front": {
+      "mapped": 0,
+      "total": 0
+    }
+  },
+  "codeEdgeGrades": {
+    "alpha-jobs#shift-model→shift-job": "graph"
+  }
 }

@@ -11,19 +11,16 @@ const GOLDEN_DIR = join(import.meta.dirname, '__golden__')
 const NOW = new Date('2026-11-02T00:00:00Z')
 
 const NOT_COVERED: Partial<Record<keyof Report, string>> = {
-  candidates: 'every evidence lands on one of the two dataset connections; the queue-literal path needs an svc-prefixed queue name',
-  asyncSenders: 'the sender scan only matches svc-prefixed queue names (svcAlphaJobs); the fixture queue is alphaJobs',
-  unverifiable: 'every connection starts in a checked-out TypeScript repo with an @skelloapp SDK package',
-  frontendServices: 'no skello-app-front repo in the fixture workspace',
-  weakSdkEvidence: 'a type-only or declared-only import of svc-alpha in svc-beta would verify the stale connection',
+  unverifiable: 'the dataset holds two connections, both from checked-out TypeScript repos declaring an @skelloapp SDK package',
   sdkUsage: 'needs a skello-libs-ts checkout for the SDK registry',
   sdkRegistryStats: 'needs a skello-libs-ts checkout for the SDK registry',
   piiFacts: 'needs a skello-libs-ts checkout with lib-anonymizer decorators',
-  ignoredSdks: 'no package of IGNORED_SDKS in the fixtures',
-  reposWithoutServiceDefinition: 'every scanned repo is a dataset service',
-  railsUnmapped: 'no outbound Rails client in the fixture monolith',
-  awsLive: 'the AWS snapshot comparison runs only with awsSnapshotDir',
+  piiCheck: 'verifies edge PII refs against piiFacts, which needs skello-libs-ts',
+  machineCheck: 'needs a Step Functions definition, its handlers and a src/container.ts wiring in a service repo',
 }
+
+const isBlank = (value: unknown): boolean =>
+  value === null || value === 0 || (typeof value === 'object' && Object.values(value).every(isBlank))
 
 let root = ''
 
@@ -41,7 +38,7 @@ function copyFixtureGraph(cwd: string): void {
 }
 
 function expectGolden(actual: unknown, expectedFile: string): void {
-  const text = [root, realpathSync(root)].reduce((json, dir) => json.replaceAll(dir, '<root>'), JSON.stringify(actual, null, 2)) + '\n'
+  const text = [realpathSync(root), root].reduce((json, dir) => json.replaceAll(dir, '<root>'), JSON.stringify(actual, null, 2)) + '\n'
   const expectedPath = join(GOLDEN_DIR, expectedFile)
   if (process.env.GOLDEN_UPDATE === '1') {
     writeFileSync(expectedPath, text)
@@ -62,7 +59,7 @@ it('reproduces the golden outputs', () => {
       built.push(cwd)
       copyFixtureGraph(cwd)
     },
-    now: NOW, dataset: goldenDataset,
+    now: NOW, dataset: goldenDataset, awsSnapshotDir: join(GOLDEN_DIR, 'aws-snapshot'),
   })
   writeOutputs(report, { outDir: join(root, 'out'), repoBase: join(root, 'pinned'), now: NOW })
 
@@ -72,7 +69,7 @@ it('reproduces the golden outputs', () => {
     expectGolden(JSON.parse(readFileSync(join(root, 'out', file), 'utf-8')), `expected/${file}`)
   }
   expectGolden(report, 'expected/report.json')
-  for (const section of Object.keys(NOT_COVERED)) {
-    expect(JSON.stringify(Object.entries(report).find(([key]) => key === section)?.[1]), section).toMatch(/^(null|\[\]|\{\})$/)
+  for (const [section, value] of Object.entries(report)) {
+    expect(isBlank(value), section).toBe(section in NOT_COVERED)
   }
 })

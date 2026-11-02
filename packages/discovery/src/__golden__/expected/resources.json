@@ -74,6 +74,16 @@
       "evidence": [
         "svc-alpha:serverless"
       ]
+    },
+    {
+      "id": "sqs:svcBetaJobs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svcBetaJobs",
+      "owner": "svc-beta",
+      "evidence": [
+        "svc-beta:serverless"
+      ]
     }
   ],
   "relations": [
@@ -96,6 +106,13 @@
       "relation": "consumes",
       "service": "svc-alpha",
       "grade": "config"
+    },
+    {
+      "resource": "sqs:svcBetaJobs",
+      "relation": "produces",
+      "service": "svc-alpha",
+      "file": "src/queues/beta.ts",
+      "grade": "code"
     },
     {
       "resource": "kinesis:alpha-bus",
@@ -133,9 +150,10 @@
     }
   ],
   "pins": {
-    "skello-app": "3d244a3be3429892bcc614d75b5c0abd71f6f2aa",
-    "svc-alpha": "64696b1e3d77fed2cb89b538a55302a24e0b9be8",
+    "skello-app": "19bbcb643a329c9df6f0c1af3eebeb8bbdf897f2",
+    "skello-app-front": "36d01007c39d38dc9a25c148057130dba91e266f",
+    "svc-alpha": "bb77715880f65800744d3c87535a4b7c27f4a61f",
     "svc-alpha-tf": "6c4e57cd68bacbf3f94f0756d4866be425a3e05b",
-    "svc-beta": "c63282468152f0d959197a9e7ee0d875d397e3ba"
+    "svc-beta": "237087da70735a2ac888ff2c9f91db7bea11b558"
   }
 }

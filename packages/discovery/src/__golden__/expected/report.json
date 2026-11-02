@@ -4,13 +4,19 @@
       {
         "repo": "skello-app",
         "branch": "master",
-        "sha": "3d244a3be3429892bcc614d75b5c0abd71f6f2aa",
+        "sha": "19bbcb643a329c9df6f0c1af3eebeb8bbdf897f2",
         "dir": "<root>/pinned/skello-app"
+      },
+      {
+        "repo": "skello-app-front",
+        "branch": "master",
+        "sha": "36d01007c39d38dc9a25c148057130dba91e266f",
+        "dir": "<root>/pinned/skello-app-front"
       },
       {
         "repo": "svc-alpha",
         "branch": "master",
-        "sha": "64696b1e3d77fed2cb89b538a55302a24e0b9be8",
+        "sha": "bb77715880f65800744d3c87535a4b7c27f4a61f",
         "dir": "<root>/pinned/svc-alpha"
       },
       {
@@ -22,7 +28,7 @@
       {
         "repo": "svc-beta",
         "branch": "master",
-        "sha": "c63282468152f0d959197a9e7ee0d875d397e3ba",
+        "sha": "237087da70735a2ac888ff2c9f91db7bea11b558",
         "dir": "<root>/pinned/svc-beta"
       }
     ],
@@ -59,15 +65,20 @@
         "subject": "sqs:alphaJobsDlq",
         "kind": "resource-new",
         "detail": "sqs:alphaJobsDlq (svc-alpha:serverless) is not in resources.json — pnpm discover:apply adds it"
+      },
+      {
+        "subject": "sqs:svcBetaJobs",
+        "kind": "resource-new",
+        "detail": "sqs:svcBetaJobs (svc-beta:serverless) is not in resources.json — pnpm discover:apply adds it"
       }
     ],
     "modelLess": [],
-    "total": 6,
+    "total": 7,
     "byKind": {
       "stream": 1,
       "database": 1,
       "table": 2,
-      "queue": 2
+      "queue": 3
     }
   },
   "liveResources": [
@@ -145,6 +156,16 @@
       "evidence": [
         "svc-alpha:serverless"
       ]
+    },
+    {
+      "id": "sqs:svcBetaJobs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svcBetaJobs",
+      "owner": "svc-beta",
+      "evidence": [
+        "svc-beta:serverless"
+      ]
     }
   ],
   "liveRelations": [
@@ -167,6 +188,13 @@
       "relation": "consumes",
       "service": "svc-alpha",
       "grade": "config"
+    },
+    {
+      "resource": "sqs:svcBetaJobs",
+      "relation": "produces",
+      "service": "svc-alpha",
+      "file": "src/queues/beta.ts",
+      "grade": "code"
     },
     {
       "resource": "kinesis:alpha-bus",
@@ -205,6 +233,11 @@
   ],
   "listenerCheck": {
     "findings": [
+      {
+        "kind": "flow-listener-unsupported",
+        "subject": "alpha-jobs",
+        "detail": "shift-job (app/jobs/shift_sync_job.rb) is drawn from a model-callback unit; no write site in this flow fires a listener"
+      },
       {
         "kind": "surface-drift",
         "subject": "listeners.json",
@@ -301,15 +334,25 @@
   },
   "scannedRepos": [
     "skello-app",
+    "skello-app-front",
     "svc-alpha",
     "svc-beta"
   ],
   "connectionEvidence": {
     "svc-alpha→svc-beta": [
-      "package.json: @skelloapp/svc-beta-client (value import)"
+      "package.json: @skelloapp/svc-beta-client (value import)",
+      "package.json: @skelloapp/svc-beta-sdk (declared-only import)",
+      "queue literal svcBetaJobs in src/queues/beta.ts"
     ]
   },
-  "candidates": [],
+  "candidates": [
+    {
+      "from": "skello-app-front",
+      "to": "svc-alpha",
+      "evidence": "frontend: env VUE_APP_SVC_ALPHA_URL used in 1 files",
+      "transport": "rest (HTTP)"
+    }
+  ],
   "unknownTargets": [
     {
       "from": "svc-alpha",
@@ -353,7 +396,18 @@
       "evidence": "serverless static-scan: POST /beta/jobs"
     }
   },
-  "asyncSenders": [],
+  "asyncSenders": [
+    {
+      "from": "svc-alpha",
+      "to": "svc-beta",
+      "queues": [
+        "svcBetaJobs"
+      ],
+      "files": [
+        "src/queues/beta.ts"
+      ]
+    }
+  ],
   "awsBindings": [
     {
       "service": "svc-alpha",
@@ -448,7 +502,13 @@
       }
     }
   ],
-  "frontendServices": [],
+  "frontendServices": [
+    {
+      "service": "svc-alpha",
+      "inMap": true,
+      "evidence": "env VUE_APP_SVC_ALPHA_URL used in 1 files"
+    }
+  ],
   "monolithSurface": {
     "totalRoutes": 2,
     "unparsed": [],
@@ -459,7 +519,14 @@
       ]
     ]
   },
-  "weakSdkEvidence": [],
+  "weakSdkEvidence": [
+    {
+      "from": "svc-alpha",
+      "to": "svc-beta",
+      "pkg": "@skelloapp/svc-beta-sdk",
+      "usage": "declared-only"
+    }
+  ],
   "sdkUsage": [],
   "sdkRegistryStats": null,
   "flowCheck": {
@@ -470,9 +537,11 @@
   },
   "codeGrades": {
     "findings": [],
-    "grades": {},
+    "grades": {
+      "alpha-jobs#shift-model→shift-job": "graph"
+    },
     "distribution": {
-      "graph": 0,
+      "graph": 1,
       "constant": 0,
       "import": 0,
       "text": 0,
@@ -482,7 +551,7 @@
   },
   "branchCheck": {
     "findings": [],
-    "verified": 0,
+    "verified": 1,
     "skippedRepos": []
   },
   "machineCheck": {
@@ -493,27 +562,29 @@
   "codeLayerCheck": {
     "findings": [],
     "flowsWithCodeLayer": 1,
-    "pathsVerified": 2,
+    "pathsVerified": 3,
     "skippedRepos": []
   },
   "ruleCheck": {
     "findings": [],
-    "rulesChecked": 0,
-    "pathsVerified": 0,
+    "rulesChecked": 1,
+    "pathsVerified": 1,
     "hashesVerified": 0,
     "skippedRepos": []
   },
   "areaCheck": {
-    "findings": [],
+    "findings": [
+      {
+        "kind": "empty-reading-path",
+        "subject": "scheduling",
+        "detail": "no reading path yet — backlog"
+      }
+    ],
     "coverage": {
       "skello-app": {
-        "mapped": 0,
-        "total": 4,
+        "mapped": 2,
+        "total": 5,
         "unmappedByDir": [
-          {
-            "dir": "app/models",
-            "files": 2
-          },
           {
             "dir": "app/controllers",
             "files": 1
@@ -521,16 +592,28 @@
           {
             "dir": "app/jobs",
             "files": 1
+          },
+          {
+            "dir": "app/services/microservices",
+            "files": 1
           }
         ]
+      },
+      "skello-app-front": {
+        "mapped": 0,
+        "total": 0,
+        "unmappedByDir": []
       }
     },
     "overlaps": [],
-    "areaFiles": {},
+    "areaFiles": {
+      "scheduling": {
+        "skello-app:app/models/**": 2
+      }
+    },
     "anchorsVerified": 0,
     "evidenceVerified": 0,
     "skippedRepos": [
-      "skello-app-front",
       "skello-mobile",
       "skello-punchclock",
       "superadmin"
@@ -538,15 +621,15 @@
   },
   "flagCheck": {
     "findings": [],
-    "refsChecked": 0,
-    "refsVerified": 0,
-    "distinctFlags": 0,
+    "refsChecked": 1,
+    "refsVerified": 1,
+    "distinctFlags": 1,
     "skippedRepos": []
   },
   "failureCheck": {
     "findings": [],
-    "inScopeEdges": 0,
-    "verifiedDlqs": 0,
+    "inScopeEdges": 1,
+    "verifiedDlqs": 1,
     "waivers": 0,
     "skippedServices": []
   },
@@ -554,8 +637,8 @@
     "findings": [],
     "gatesChecked": 0,
     "gatesVerified": 0,
-    "authorizersChecked": 0,
-    "authorizersVerified": 0,
+    "authorizersChecked": 1,
+    "authorizersVerified": 1,
     "skippedRepos": []
   },
   "piiFacts": null,
@@ -567,13 +650,25 @@
   },
   "contractCheck": {
     "findings": [],
-    "refsChecked": 0,
-    "refsVerified": 0,
+    "refsChecked": 1,
+    "refsVerified": 1,
     "skippedServices": []
   },
-  "ignoredSdks": {},
-  "reposWithoutServiceDefinition": [],
-  "railsUnmapped": [],
+  "ignoredSdks": {
+    "@skelloapp/skello-auth-client": [
+      "svc-alpha"
+    ]
+  },
+  "reposWithoutServiceDefinition": [
+    {
+      "repo": "skello-app-front",
+      "httpEndpoints": 0,
+      "queues": 0
+    }
+  ],
+  "railsUnmapped": [
+    "app/services/microservices/mystery_client.rb (unrecognised — add to RAILS_CLIENT_TARGETS)"
+  ],
   "unmappedGithubTeams": [
     "@skelloapp/pastry"
   ],
@@ -601,5 +696,15 @@
       ]
     }
   },
-  "awsLive": null
+  "awsLive": {
+    "streamConsumptions": [],
+    "mapEdgesWithoutLiveBinding": [],
+    "orphanQueues": [
+      "svcBetaJobs"
+    ],
+    "bucketCouplings": [],
+    "dmsTasks": [],
+    "scheduledRules": [],
+    "unresolvedPrefixes": []
+  }
 }
