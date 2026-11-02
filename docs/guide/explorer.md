@@ -64,6 +64,20 @@ Any of the 37 services, including the three client apps: the Vue web front, skel
 
 Discovered recurring tasks (⏰ EventBridge schedules) show with the endpoint list.
 
+### Health
+
+With a Datadog overlay present, the Exploring view of a service shows a Health section under the diagram (Presenting hides it). It reads, from top to bottom:
+- the state — Problem now, To dig into, Fell back, Healthy or No data — with the reasons behind it;
+- three sparklines over 14 days: requests, 5xx and p95 latency; the hollow last point is the snapshot day, still partial, and a gap is a day with no reading;
+- Monitors (a "noisy" tag marks a monitor that changed state 50 times or more in 7 days), SLOs with target and value, open Incidents, each linking to Datadog;
+- Releases, each with a verdict: Regressed, Steady or Too recent.
+
+The footer names the snapshot date. A snapshot older than 7 days reads "stale", and "Noisy counts may be low" appears when the events fetch hit its page cap. The states and verdict rules are in [discovery.md](discovery.md#datadog-snapshot-and-overlay).
+
+**No overlay.** Without `packages/web/overlay/datadog.json`, or when it fails `DatadogOverlaySchema` (ignored, with one console error), the app shows no Health section and no Depth line, and behaves as without Datadog. A service the overlay does not name shows no Health section either.
+
+The overlay is served by `pnpm dev` and `pnpm preview` only, from the gitignored `packages/web/overlay/`; the production build never includes it.
+
 ## Monolith
 
 `?page=monolith` shows skello-app by product area.
@@ -77,9 +91,11 @@ The Connections view (`&s=skello-app`) shows skello-app's service views. Clickin
 `?page=resources&resource=<id>` answers the change-impact question for one table, queue, topic, stream, bucket or store. It opens with "N services · M files · K flows", then lists:
 - writers, readers, producers and consumers, grouped by service, each marked ✓ (code or config evidence) or ~ (authored flow edge only);
 - feeds: the CDC relations that copy the table out to a stream, each with its target stream as a link;
-- the DLQ;
+- the DLQ, with its depth when the overlay has it: "N waiting";
 - the ActiveRecord model and related tables;
 - the flows touching the resource, with their CRUD.
+
+**Depth line.** A queue page with an overlay shows "Depth: N now, M max over 14 days", from the DLQ depth series the snapshot holds. A DLQ shows the same line, and the source queue's page shows the DLQ's current depth beside its link.
 
 ### Table listeners
 

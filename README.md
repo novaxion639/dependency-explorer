@@ -10,7 +10,7 @@ It is a local proof of concept: a static bundle with no backend and no external 
 - **48 verified flows:** swimlanes of the code each action traverses, with every call graded against the code at its pinned commit. [→ flows](docs/guide/flows.md)
 - **Resources and impact:** who reads, writes, produces and consumes each table, queue and store, and what fails when one is down. [→ explorer](docs/guide/explorer.md#resource-pages), [→ impact](docs/guide/explorer.md#impact), [→ data](docs/guide/data.md#resource-registry)
 - **Ownership, search and permalinks:** team pages from CODEOWNERS, ⌘K over everything, and every view in the URL. [→ explorer](docs/guide/explorer.md#ownership)
-- **Discovery:** a scanner that reports drift between the map and the code, the Terraform estate and live AWS. [→ discovery](docs/guide/discovery.md)
+- **Discovery:** a scanner that reports drift between the map and the code, the Terraform estate, live AWS and Datadog; with a local Datadog snapshot, service pages show a Health section. [→ discovery](docs/guide/discovery.md#datadog-snapshot-and-overlay)
 
 ## Quickstart
 

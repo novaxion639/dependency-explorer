@@ -144,6 +144,23 @@ A write runs its listeners in Rails order: validation, save before, event before
 | `bypassing` | write sites on the table with `runs: none` |
 | `onCycle` | the table sits on a cascade cycle: a cascade from the table reaches the same (table, event) again |
 
+## Datadog overlay
+
+Live Datadog state is a read-only overlay beside the dataset ([ADR-0010](../adr/0010-datadog-overlay-from-a-local-snapshot.md)). It is never part of the dataset: `packages/web/overlay/datadog.json` is gitignored, derived by `pnpm discover -- --datadog` ([discovery.md](discovery.md#datadog-snapshot-and-overlay)) and fetched by the web app at runtime. The overlay never adds or changes a service, connection or resource.
+
+`DatadogOverlaySchema` (`packages/schema`) is the contract:
+
+| Field | Content |
+|---|---|
+| `snapshotDate` | the day the snapshot was fetched (`YYYY-MM-DD`) |
+| `eventsCapped` | `true` when the monitor-transition fetch stopped at its page cap, so noisy counts may be low |
+| `services` | keyed by map service `name`: `state` (`problem`, `dig`, `fellBack`, `healthy`, `noData`), `reasons`, `monitors` (id, name, status, `noisy`, link), `slos` (target, value, link), `strip` (14 daily points: requests, 5xx, p95 ms; `null` for no reading), `releases` (sha, title, merge time, verdict `regressed`, `steady` or `tooRecent`), `incidents` (open ones: id, title, severity, link) |
+| `queues` | keyed by resource id: `depthNow` and `depthMax14d` of a DLQ |
+
+The join to the map is by service `name` and resource id, after folding spelling variants (`svc-alpha` and `svcalpha`). The overlay holds no log line, incident body, monitor message or monitor query.
+
+**`datadogTeams`.** An optional list on `TeamSchema`: the Datadog team handles that map to the team, as `githubTeams` does for CODEOWNERS. Discovery uses it to compare the team tagged on a service's monitors with its CODEOWNERS team (`team-mismatch`).
+
 ## Contributing data
 
 - **Flows:** follow the [flow authoring guide](../flow-authoring-guide.md). Every claim is verified against deployed code, never against documentation, and the integrity tests enforce the node naming conventions.
