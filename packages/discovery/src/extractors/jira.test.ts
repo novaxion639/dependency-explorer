@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ConnectivityMapSchema } from '@dependency-explorer/schema'
 import { findingKeys } from '../baseline'
+import { buildJiraOverlay } from '../jira/overlay'
 import type { JiraSnapshot } from '../jira/snapshot'
 import { jiraSection, joinJira } from './jira'
 
@@ -100,9 +101,11 @@ describe('joinJira', () => {
   })
 
   it('keeps 🎫 findings out of the baseline keys', () => {
-    const join = joinJira(snapshot({ featureAreaLabels: [], bugs: [bug('BR-1', 'Badges')] }), map)
+    const s = snapshot({ featureAreaLabels: [], bugs: [bug('BR-1', 'Badges')] })
+    const join = joinJira(s, map)
+    const jira = { join, overlay: buildJiraOverlay(s, join, map, new Date(s.meta.fetchedAt)) }
     expect(join.findings.length).toBeGreaterThan(0)
-    expect(findingKeys({ scannedRepos: [], jira: join })).toEqual(findingKeys({ scannedRepos: [], jira: null }))
+    expect(findingKeys({ scannedRepos: [], jira })).toEqual(findingKeys({ scannedRepos: [], jira: null }))
   })
 })
 

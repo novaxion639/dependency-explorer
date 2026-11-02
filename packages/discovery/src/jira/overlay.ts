@@ -5,6 +5,7 @@ import type { JiraSnapshot } from './snapshot'
 
 type Bug = JiraSnapshot['bugs'][number]
 type TeamRow = JiraOverlay['areas'][string]['teams'][number]
+type FeatureAreaRow = JiraOverlay['areas'][string]['featureAreas'][number]
 
 const DAY = 24 * 3600 * 1000
 const WEEK = 7 * DAY
@@ -15,6 +16,13 @@ const quoted = (label: string): string => `"${label.replace(/\\/g, '\\\\').repla
 const labelsIn = (labels: string[]): string => `${FEATURE_AREA_JQL} in (${labels.map(quoted).join(', ')})`
 
 export const jqlOf = (labels: string[], open: string): string => `${BR_SCOPE} AND (${open}) AND ${labelsIn(labels)}`
+
+const compare = (a: string, b: string): number => Number(a > b) - Number(a < b)
+
+const byOpenThenTeam = (a: TeamRow, b: TeamRow): number =>
+  b.open - a.open || (a.teamId === null ? 1 : b.teamId === null ? -1 : compare(a.teamId, b.teamId))
+
+const byOpenThenName = (a: FeatureAreaRow, b: FeatureAreaRow): number => b.open - a.open || compare(a.name, b.name)
 
 function isoWeekStart(now: Date): number {
   const midnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
@@ -43,7 +51,7 @@ export function buildJiraOverlay(snapshot: JiraSnapshot, join: JiraJoin, map: Co
         openOf.set(teamId, (openOf.get(teamId) ?? 0) + 1)
       }
     }
-    return [...openOf].map(([teamId, n]) => ({ teamId, open: n })).sort((a, b) => b.open - a.open)
+    return [...openOf].map(([teamId, n]) => ({ teamId, open: n })).sort(byOpenThenTeam)
   }
 
   const labelsOf = new Map<string, string[]>()
@@ -62,12 +70,14 @@ export function buildJiraOverlay(snapshot: JiraSnapshot, join: JiraJoin, map: Co
     const featureAreas = labels
       .map(name => ({ name, ...counts(bugs.filter(b => b.featureArea === name)) }))
       .filter(row => row.open > 0 || row.opened90d > 0)
-      .sort((a, b) => b.open - a.open)
+      .sort(byOpenThenName)
     areas[area] = { ...total, weekly: weekly(bugs), featureAreas, teams: teamsOf(bugs), jql: jqlOf(labels, open) }
   }
 
   const unmapped = snapshot.bugs.filter(b => isOpen(b) && (join.areaOfBug.get(b.key) ?? null) === null)
-  const unmappedLabels = [...new Set(unmapped.flatMap(b => b.featureArea ?? []))].sort()
+  const areaOfLabel = new Map((map.featureAreas ?? []).map(f => [f.label, f.area]))
+  const knownLabels = [...snapshot.featureAreaLabels, ...snapshot.bugs.flatMap(b => b.featureArea ?? [])]
+  const unmappedLabels = [...new Set(knownLabels.filter(label => (areaOfLabel.get(label) ?? null) === null))].sort()
   const empty = `${FEATURE_AREA_JQL} is EMPTY`
   return {
     snapshotDate: snapshot.meta.fetchedAt.slice(0, 10),

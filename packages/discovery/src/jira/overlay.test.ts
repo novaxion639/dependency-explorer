@@ -109,8 +109,26 @@ describe('buildJiraOverlay', () => {
     })
   })
 
-  it('queries only empty labels when every unmapped bug is unlabelled', () => {
-    expect(overlayOf(snapshot({ bugs: [bug('BR-1', null)] })).unmapped.jql).toBe(`${BR_SCOPE} AND (${OPEN}) AND cf[11070] is EMPTY`)
+  it('links every known unmapped label, open bug or not', () => {
+    expect(overlayOf(snapshot({})).unmapped).toEqual({ open: 0, breached: 0, jql: `${BR_SCOPE} AND (${OPEN}) AND (cf[11070] is EMPTY OR cf[11070] in ("Legacy"))` })
+  })
+
+  it('queries only empty labels when every known label is mapped', () => {
+    const s = snapshot({ featureAreaLabels: ['Shifts'], bugs: [bug('BR-1', null)] })
+    expect(overlayOf(s).unmapped.jql).toBe(`${BR_SCOPE} AND (${OPEN}) AND cf[11070] is EMPTY`)
+  })
+
+  it('orders ties by team id with no team last, and feature areas by name', () => {
+    const s = snapshot({ bugs: [bug('BR-1', 'Shifts'), bug('BR-2', 'Breaks'), bug('BR-3', 'Shifts')], boardBugs: { 20: ['BR-1'], 10: ['BR-2'] } })
+    const planning = overlayOf(s).areas.planning
+    expect(planning?.teams).toEqual([
+      { teamId: 'team-honey', open: 1 },
+      { teamId: 'team-mozza', open: 1 },
+      { teamId: null, open: 1 },
+    ])
+    expect(planning?.featureAreas.map(row => row.name)).toEqual(['Shifts', 'Breaks'])
+    const tied = snapshot({ bugs: [bug('BR-1', 'Shifts'), bug('BR-2', 'Breaks')] })
+    expect(overlayOf(tied).areas.planning?.featureAreas.map(row => row.name)).toEqual(['Breaks', 'Shifts'])
   })
 
   it('names every board and dates the snapshot', () => {
