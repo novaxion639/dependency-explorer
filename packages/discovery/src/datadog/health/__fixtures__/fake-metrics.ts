@@ -1,9 +1,10 @@
-import type { DatadogSnapshot } from '../snapshot'
-import type { MetricKey } from '../scope'
-import type { EngineInput } from './rules'
+import type { DatadogSnapshot } from '../../snapshot'
+import type { MetricKey } from '../../scope'
+import type { EngineInput } from '../rules'
+import { DAY, HOUR as H } from '../series'
 
-export const H = 3600
-export const DAY = 86400
+export { DAY, H }
+
 export const NOW = 1773304200
 export const MIDNIGHT = NOW - (NOW % DAY)
 export const FROM = NOW - 1800 - 21 * DAY

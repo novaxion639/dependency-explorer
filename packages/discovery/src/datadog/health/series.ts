@@ -4,6 +4,7 @@ import type { MetricKey } from '../scope'
 export const HOUR = 3600
 export const DAY = 86400
 export const WEEK = 7 * DAY
+export const RECENT = 72 * HOUR
 const METRIC_DAYS = 21
 const SHOWN_DAYS = 14
 const PROD = '-prod'

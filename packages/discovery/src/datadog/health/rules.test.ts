@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { DAY, FROM, H, NOW, hourly, metrics, type KeyedMetrics } from './fake-metrics'
+import { DAY, FROM, H, NOW, hourly, metrics, type KeyedMetrics } from './__fixtures__/fake-metrics'
 import { keyedOf, signalsOf, windowOf } from './series'
 import { DAY_BAR, NOW_BAR, noisyMonitors, rise } from './rules'
 

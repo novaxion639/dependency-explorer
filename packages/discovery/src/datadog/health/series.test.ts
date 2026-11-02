@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { DAY, FROM, H, MIDNIGHT, NOW, metrics } from './fake-metrics'
+import { DAY, FROM, H, MIDNIGHT, NOW, metrics } from './__fixtures__/fake-metrics'
 import { between, keyedOf, signalsOf, windowOf } from './series'
 
 test('the window shows the last 14 UTC days, today cut at now, after a 7 day baseline', () => {

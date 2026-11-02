@@ -1,6 +1,6 @@
 import type { DatadogSnapshot } from '../snapshot'
 import { isProd, serviceOf } from '../scope'
-import { DAY, HOUR, WEEK, at, between, filled, lastWeek, middle, ms, span, total, weekBefore, type Signals, type Window } from './series'
+import { DAY, HOUR, RECENT, WEEK, at, between, filled, lastWeek, middle, ms, span, total, weekBefore, type Signals, type Window } from './series'
 
 type Signal = '5xx' | 'lerr' | 'p95'
 type Why = { kind: '5xx' | 'p95' | 'fn'; value: number; fn?: string }
@@ -57,7 +57,6 @@ type Rise = { why: Signal[]; e5: [number, number]; lerr: [number, number]; p95: 
 export const NOW_BAR = { min5: 20, mine: 100 }
 export const DAY_BAR = { min5: 5, mine: 30 }
 const NOISY = 50
-const TOO_RECENT = 72 * HOUR
 
 export function rise(s: Signals, w: Window, a: number, b: number, bar = NOW_BAR): Rise {
   const pair = <T>(xs: (number | null)[], f: (v: (number | null)[]) => T): [T, T] => [f(between(xs, w, a - WEEK, b - WEEK)), f(between(xs, w, a, b))]
@@ -84,9 +83,9 @@ type ReleaseRow = EngineInput['releases'][number]
 
 function judged(svc: string, r: ReleaseRow, s: Signals, w: Window): Release {
   const ts = Math.floor(Date.parse(r.merged) / 1000)
-  const { why } = rise(s, w, ts, Math.min(ts + 72 * HOUR, w.now))
+  const { why } = rise(s, w, ts, Math.min(ts + RECENT, w.now))
   const reg = why.length > 0 && ts >= w.from + WEEK
-  const verdict = w.now - ts < TOO_RECENT ? 'tooRecent' : reg ? 'regressed' : 'steady'
+  const verdict = w.now - ts < RECENT ? 'tooRecent' : reg ? 'regressed' : 'steady'
   return { svc, repo: r.repo, n: r.number, sha: r.sha, v: versionOf(r.title, r.number), ts, changes: r.changes, verdict, why: reg ? why : [] }
 }
 
@@ -201,7 +200,7 @@ function linkedFrom(x: ServiceContext, t0: number): Linked[] {
     const name = names.get(id)
     return name === undefined ? [] : [{ id, ts, name }]
   })
-  const before = new Set(rang.filter((t) => t.ts < t0 && t.ts >= t0 - 72 * HOUR).map((t) => t.id))
+  const before = new Set(rang.filter((t) => t.ts < t0 && t.ts >= t0 - RECENT).map((t) => t.id))
   const first = new Map<number, Linked>()
   for (const t of rang) {
     if (t.ts >= t0 && !before.has(t.id) && t.ts < (first.get(t.id)?.ts ?? Infinity)) {
@@ -251,14 +250,14 @@ function riseStart(s: Signals, w: Window, r72: Rise): number {
     : r72.why.includes('lerr')
       ? [s.lerr, (v: number) => v > 0]
       : [s.p95, (v: number) => v >= slow]
-  const i0 = Math.max(at(w, w.now - 72 * HOUR), 0)
+  const i0 = Math.max(at(w, w.now - RECENT), 0)
   const i = series.findIndex((v, k) => k >= i0 && v !== null && rose(v))
-  return i >= 0 ? w.from + i * HOUR : w.now - 72 * HOUR
+  return i >= 0 ? w.from + i * HOUR : w.now - RECENT
 }
 
 export function problemOf(x: ServiceContext): Problem | null {
   const { s, w } = x
-  const r72 = rise(s, w, w.now - 72 * HOUR, w.now)
+  const r72 = rise(s, w, w.now - RECENT, w.now)
   if (!r72.why.length || !rise(s, w, w.now - 24 * HOUR, w.now, DAY_BAR).why.length) {
     return null
   }

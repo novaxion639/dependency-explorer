@@ -4,7 +4,7 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import { afterAll, beforeAll, expect, test } from 'vitest'
 import type { GitRunner } from '../pinned'
-import { DAY, H, NOW, engineInput } from './health/fake-metrics'
+import { DAY, H, NOW, engineInput } from './health/__fixtures__/fake-metrics'
 import { topicsOf } from './health/topics'
 import { releasesOf } from './releases'
 

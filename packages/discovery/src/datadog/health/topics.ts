@@ -1,4 +1,4 @@
-import { DAY, HOUR, at, filled, keyedOf, middle, ms, signalsOf, span, tenth, total, windowOf, type FnSignal, type QueueSignal, type RouteSignal, type Signals, type Window } from './series'
+import { DAY, HOUR, RECENT, at, filled, keyedOf, middle, ms, signalsOf, span, tenth, total, windowOf, type FnSignal, type QueueSignal, type RouteSignal, type Signals, type Window } from './series'
 import { dayStates, judgeReleases, problemOf, serviceMonitors, type Day, type EngineInput, type Problem, type Release, type ServiceContext } from './rules'
 
 type Why = Day['why'][number]
@@ -59,7 +59,7 @@ function fnTopic(svc: string, fn: string, f: FnSignal): Topic | null {
 
 function queueTopic(svc: string, queue: string, q: QueueSignal, now: number): Topic | null {
   const [times, values] = [q.points.map(([t]) => t), q.points.map(([, v]) => v)]
-  const recent = q.points.filter(([t]) => t >= now - 72 * HOUR)
+  const recent = q.points.filter(([t]) => t >= now - RECENT)
   const count = values.at(-1) ?? 0
   if (count <= 0 || !recent.length || recent.some(([, v]) => v <= 0)) {
     return null

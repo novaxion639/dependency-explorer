@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { DAY, H, MIDNIGHT, NOW, daily, dayOf, engineInput, hourly, metrics, monitor, release, type KeyedMetrics } from './fake-metrics'
+import { DAY, H, MIDNIGHT, NOW, daily, dayOf, engineInput, hourly, metrics, monitor, release, type KeyedMetrics } from './__fixtures__/fake-metrics'
 import { topicsOf } from './topics'
 
 const PLANNING = { name: 'svcplanning', repo: 'svc-planning' }
@@ -448,7 +448,7 @@ describe('services', () => {
     expect(services[0]?.measured).toEqual(['lambda'])
   })
 
-  test('a failed query leaves only its series empty, its figures unknown rather than 0, the rest is judged', () => {
+  test('a failed query leaves only its series empty, the rest is judged', () => {
     const m = metrics({
       ...regressionOf(),
       api_5xx: null,
