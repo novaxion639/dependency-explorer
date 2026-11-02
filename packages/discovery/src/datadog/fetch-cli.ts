@@ -1,13 +1,11 @@
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { HttpStatus } from '../net/retry'
-import { datadogClient } from './client'
+import { datadogClient, Refused } from './client'
 import { METRIC_KEYS } from './scope'
 import { fetchDatadogSnapshot, writeDatadogSnapshot } from './snapshot'
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const DEFAULT_SITE = 'datadoghq.eu'
-const REFUSED = [401, 403]
 
 const HELP = `usage: pnpm discover:datadog:fetch [--out <dir>]
 
@@ -15,6 +13,8 @@ Reads a Datadog snapshot into packages/discovery/.datadog-snapshots/<YYYY-MM-DD>
 Environment: DATADOG_API_KEY, DATADOG_APP_KEY, DD_SITE (default ${DEFAULT_SITE}).
 The application key needs these read scopes:
   monitors_read, slos_read, teams_read, incident_read, timeseries_query, events_read`
+
+const messageOf = (e: unknown): string => (e instanceof Error ? e.message : String(e))
 
 const requestLine = (input: Parameters<typeof fetch>[0], init?: RequestInit): string =>
   `${init?.method ?? 'GET'} ${new URL(input instanceof Request ? input.url : input).pathname}`
@@ -38,22 +38,28 @@ export async function runFetchCli(argv: string[], env: Record<string, string | u
     console.error(`  ${requestLine(input, init)}`)
     return fetch(input, init)
   }
+  let fetched: Awaited<ReturnType<typeof fetchDatadogSnapshot>>
   try {
-    const snapshot = await fetchDatadogSnapshot(datadogClient({ fetch: logged, site, apiKey, appKey }), now)
-    writeDatadogSnapshot(outDir, snapshot)
-    const metricsRead = METRIC_KEYS.filter((key) => snapshot.metrics[key] !== null).length
-    console.error(
-      `monitors ${snapshot.monitors.length}, teams ${snapshot.teams.length}, slos ${snapshot.slos.length}, incidents ${snapshot.incidents.length}, ` +
-        `metrics ${metricsRead} of ${METRIC_KEYS.length}, events ${snapshot.events.items.length}${snapshot.events.capped ? ' (capped)' : ''}`,
-    )
-    console.error(`snapshot written to ${outDir}`)
-    return 0
+    fetched = await fetchDatadogSnapshot(datadogClient({ fetch: logged, site, apiKey, appKey }), now)
   } catch (e) {
-    if (e instanceof HttpStatus && REFUSED.includes(e.status)) {
-      console.error(`Datadog refused the keys (HTTP ${e.status})`)
-    } else {
-      console.error(`Datadog fetch failed: ${e instanceof Error ? e.message : String(e)}`)
-    }
+    console.error(e instanceof Refused ? e.message : `Datadog fetch failed: ${messageOf(e)}`)
     return 1
   }
+  const { snapshot, failures } = fetched
+  try {
+    writeDatadogSnapshot(outDir, snapshot)
+  } catch (e) {
+    console.error(messageOf(e))
+    return 1
+  }
+  for (const failure of failures) {
+    console.error(`  metric ${failure.key} unavailable: ${failure.cause}`)
+  }
+  const metricsRead = METRIC_KEYS.filter((key) => snapshot.metrics[key] !== null).length
+  console.error(
+    `monitors ${snapshot.monitors.length}, teams ${snapshot.teams.length}, slos ${snapshot.slos.length}, incidents ${snapshot.incidents.length}, ` +
+      `metrics ${metricsRead} of ${METRIC_KEYS.length}, events ${snapshot.events.items.length}${snapshot.events.capped ? ' (capped)' : ''}`,
+  )
+  console.error(`snapshot written to ${outDir}`)
+  return 0
 }

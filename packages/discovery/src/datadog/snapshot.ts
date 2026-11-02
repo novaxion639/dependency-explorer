@@ -2,7 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { readPages } from '../net/pages'
 import type { DatadogClient } from './client'
-import { isProd, METRIC_KEYS, metricQueries, serviceOf, type MetricKey } from './scope'
+import { isProd, METRIC_KEYS, metricQueries, serviceOf, tagValues, type MetricKey } from './scope'
 
 type Monitor = { id: number; name: string; tags: string[]; overall_state: string | null }
 type Team = { id: string; handle: string; name: string }
@@ -32,6 +32,7 @@ const PAGE_SIZE = 100
 const EVENT_PAGE = 500
 const MAX_EVENT_PAGES = 4
 const CLOSED_INCIDENT_STATES = ['resolved', 'stable']
+const UNSCOPED_METRICS: MetricKey[] = ['dlq']
 
 const isJson = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v)
 const obj = (v: unknown): Json => (isJson(v) ? v : {})
@@ -55,7 +56,7 @@ function teamOf(v: unknown): Team {
 function sloOf(v: unknown): Slo {
   const d = obj(obj(v).data)
   const a = obj(d.attributes)
-  return { id: text(d.id) ?? '', name: text(a.name) ?? '', tags: strings(a.all_tags) }
+  return { id: text(d.id) ?? '', name: text(a.name) ?? '', tags: strings(a.all_tags ?? a.tags) }
 }
 
 function incidentOf(v: unknown): Incident | null {
@@ -89,12 +90,23 @@ function transitionOf(v: unknown): MonitorTransition | null {
 
 const present = <T>(v: T | null): v is T => v !== null
 
-function prodServices(monitors: Monitor[], slos: Slo[]): string[] {
-  const named = [...monitors, ...slos].filter((m) => isProd(m.tags)).map(serviceOf).filter(present)
-  return [...new Set(named)].sort()
-}
+const sortedUnique = (values: string[]): string[] => [...new Set(values)].sort()
 
-async function metrics(client: DatadogClient, services: string[], from: number, to: number): Promise<Record<MetricKey, Series[] | null>> {
+const prodServices = (monitors: Monitor[], slos: Slo[]): string[] =>
+  sortedUnique([...monitors, ...slos].filter((m) => isProd(m.tags)).map(serviceOf).filter(present))
+
+const prodTeams = (monitors: Monitor[]): string[] => sortedUnique(monitors.filter((m) => isProd(m.tags)).flatMap((m) => tagValues(m.tags, 'team')))
+
+type MetricFailure = { key: MetricKey; cause: string }
+
+const causeOf = (e: unknown): string => (e instanceof Error ? e.message : String(e))
+
+async function metrics(
+  client: DatadogClient,
+  services: string[],
+  from: number,
+  to: number,
+): Promise<{ series: Record<MetricKey, Series[] | null>; failures: MetricFailure[] }> {
   const queries = metricQueries(services)
   const out: Record<MetricKey, Series[] | null> = {
     api_count: null,
@@ -109,31 +121,45 @@ async function metrics(client: DatadogClient, services: string[], from: number, 
     apm_status: null,
     dlq: null,
   }
-  for (const key of METRIC_KEYS) {
+  const failures: MetricFailure[] = []
+  const read = services.length > 0 ? METRIC_KEYS : UNSCOPED_METRICS
+  for (const key of read) {
     const start = key.startsWith('apm_') ? to - APM_DAYS * DAY_S : from
-    const r = obj(await client.get('/api/v1/query', { from: String(start), to: String(to), query: queries[key] }).catch(() => null))
-    out[key] = r.status === 'ok' ? seriesOf(r) : null
+    try {
+      const r = obj(await client.get('/api/v1/query', { from: String(start), to: String(to), query: queries[key] }))
+      if (r.status === 'ok') {
+        out[key] = seriesOf(r)
+      } else {
+        failures.push({ key, cause: text(r.error) ?? 'query refused' })
+      }
+    } catch (e) {
+      failures.push({ key, cause: causeOf(e) })
+    }
   }
-  return out
+  return { series: out, failures }
 }
 
-async function events(client: DatadogClient, services: string[], now: Date): Promise<DatadogSnapshot['events']> {
+async function events(client: DatadogClient, teams: string[], services: string[], now: Date): Promise<DatadogSnapshot['events']> {
   const named = services.join(' OR ')
-  const query = `status:(error OR warn) (env:prod OR environment:prod) (service:(${named}) OR project:(${named}))`
+  const parts = [...(teams.length ? [`team:(${teams.join(' OR ')})`] : []), ...(services.length ? [`service:(${named})`, `project:(${named})`] : [])]
+  if (parts.length === 0) {
+    return { items: [], capped: false }
+  }
+  const query = `status:(error OR warn) (env:prod OR environment:prod) (${parts.join(' OR ')})`
   const filter = { query, from: new Date(now.getTime() - EVENT_DAYS * DAY_S * 1000).toISOString(), to: now.toISOString() }
   const pages = await readPages<string, MonitorTransition>(
     '',
     async (cursor) => {
       const page = { limit: EVENT_PAGE, ...(cursor ? { cursor } : {}) }
       const r = obj(await client.post('/api/v2/events/search', { filter, page, sort: '-timestamp' }))
-      return { items: list(r.data).map(transitionOf).filter(present), next: text(obj(obj(r.meta).page).after) }
+      return { items: list(r.data).map(transitionOf).filter(present), next: text(obj(obj(r.meta).page).after) || null }
     },
     MAX_EVENT_PAGES,
   )
   return { items: pages.items, capped: pages.unread }
 }
 
-export async function fetchDatadogSnapshot(client: DatadogClient, now: Date): Promise<DatadogSnapshot> {
+export async function fetchDatadogSnapshot(client: DatadogClient, now: Date): Promise<{ snapshot: DatadogSnapshot; failures: MetricFailure[] }> {
   await client.get('/api/v1/validate')
   const monitors = await readPages(0, async (page) => {
     const r = obj(await client.get('/api/v1/monitor/search', { per_page: String(PAGE_SIZE), page: String(page) }))
@@ -158,20 +184,29 @@ export async function fetchDatadogSnapshot(client: DatadogClient, now: Date): Pr
   const services = prodServices(monitors.items, slos.items)
   const to = Math.trunc(now.getTime() / 1000 / HOUR_S) * HOUR_S
   const from = to - METRIC_DAYS * DAY_S
-  return {
+  const read = await metrics(client, services, from, to)
+  const snapshot: DatadogSnapshot = {
     meta: { fetchedAt: now.toISOString(), site: client.site, from, to },
     monitors: monitors.items,
     teams: teams.items,
     slos: slos.items,
     incidents: incidents.items,
-    metrics: await metrics(client, services, from, to),
-    events: await events(client, services, now),
+    metrics: read.series,
+    events: await events(client, prodTeams(monitors.items), services, now),
   }
+  return { snapshot, failures: read.failures }
 }
 
 const SNAPSHOT_KEYS = ['meta', 'monitors', 'teams', 'slos', 'incidents', 'metrics', 'events'] as const
+const SNAPSHOT_FILES = new Set(SNAPSHOT_KEYS.map((key) => `${key}.json`))
+
+const holdsOnlySnapshotFiles = (dir: string): boolean =>
+  fs.readdirSync(dir, { withFileTypes: true }).every((entry) => entry.isFile() && SNAPSHOT_FILES.has(entry.name))
 
 export function writeDatadogSnapshot(dir: string, s: DatadogSnapshot): void {
+  if (fs.existsSync(dir) && !holdsOnlySnapshotFiles(dir)) {
+    throw new Error(`${dir} holds files other than a Datadog snapshot; nothing written`)
+  }
   const parent = path.dirname(dir)
   fs.mkdirSync(parent, { recursive: true })
   const temp = fs.mkdtempSync(path.join(parent, `.${path.basename(dir)}-`))

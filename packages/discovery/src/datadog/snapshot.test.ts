@@ -12,7 +12,7 @@ const ENV = { DATADOG_API_KEY: API_KEY, DATADOG_APP_KEY: APP_KEY }
 const NOW = new Date('2026-11-02T10:30:00Z')
 const SENTINEL = /SENTINEL-[A-Z-]+/
 
-type Call = { method: string; path: string; params: URLSearchParams; body: unknown; headers: Headers; host: string }
+type Call = { method: string; path: string; params: URLSearchParams; body: unknown; headers: Headers; host: string; signal: unknown }
 
 const fixture = (name: string): unknown =>
   JSON.parse(fs.readFileSync(new URL(`./__fixtures__/${name}.json`, import.meta.url), 'utf8'))
@@ -20,23 +20,29 @@ const fixture = (name: string): unknown =>
 const answer = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers })
 
-function fakeDatadog(options: { validate?: number; eventPages?: number; failures?: number[] } = {}) {
-  const { validate = 200, eventPages = 2 } = options
+const refused = () => answer({ errors: ['Forbidden'] }, 403)
+
+function fakeDatadog(options: { overrides?: Record<string, () => Response>; eventPages?: number; failures?: number[] } = {}) {
+  const { overrides = {}, eventPages = 2 } = options
   const failures = [...(options.failures ?? [])]
   const calls: Call[] = []
   let eventPage = 0
   const fetch: typeof globalThis.fetch = async (input, init) => {
     const url = new URL(input instanceof Request ? input.url : input)
     const body = typeof init?.body === 'string' ? JSON.parse(init.body) : null
-    calls.push({ method: init?.method ?? 'GET', path: url.pathname, params: url.searchParams, body, headers: new Headers(init?.headers), host: url.host })
+    calls.push({ method: init?.method ?? 'GET', path: url.pathname, params: url.searchParams, body, headers: new Headers(init?.headers), host: url.host, signal: init?.signal })
     const failure = failures.shift()
     if (failure !== undefined) {
       return answer({ errors: ['fictitious'] }, failure)
     }
+    const override = overrides[url.pathname]
+    if (override) {
+      return override()
+    }
     const page = url.searchParams.get('page') ?? url.searchParams.get('page[number]')
     switch (url.pathname) {
       case '/api/v1/validate':
-        return validate === 200 ? answer(fixture('validate')) : answer({ errors: ['Forbidden'] }, validate)
+        return answer(fixture('validate'))
       case '/api/v1/monitor/search':
         return answer(fixture(`monitor-search-page-${page}`))
       case '/api/v2/team':
@@ -63,7 +69,7 @@ const clientOf = (fetch: typeof globalThis.fetch, sleeps: number[] = []) =>
 describe('fetchDatadogSnapshot', () => {
   it('validates first, then reads metadata, then series scoped to the prod services', async () => {
     const { fetch, calls } = fakeDatadog()
-    const snapshot = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
 
     expect(calls.map((c) => `${c.method} ${c.path}`)).toEqual([
       'GET /api/v1/validate',
@@ -82,7 +88,10 @@ describe('fetchDatadogSnapshot', () => {
     expect([...named].sort()).toEqual(['svc-alpha', 'svc-beta'])
     expect(queries.filter((q) => !q.includes('sqsdlq')).every((q) => q.includes('svc-alpha') && q.includes('svc-beta'))).toBe(true)
     const [events] = calls.filter((c) => c.path === '/api/v2/events/search')
-    expect(JSON.stringify(events?.body)).toContain('service:(svc-alpha OR svc-beta)')
+    expect(events?.body).toMatchObject({
+      filter: { query: 'status:(error OR warn) (env:prod OR environment:prod) (team:(alpha-squad OR beta-squad) OR service:(svc-alpha OR svc-beta) OR project:(svc-alpha OR svc-beta))' },
+    })
+    expect(calls.every((c) => c.signal instanceof AbortSignal)).toBe(true)
     expect(snapshot.meta).toEqual({ fetchedAt: NOW.toISOString(), site: 'datadoghq.eu', from: Date.parse('2026-10-12T10:00:00Z') / 1000, to: Date.parse('2026-11-02T10:00:00Z') / 1000 })
     expect(snapshot.metrics.api_count).toEqual([{ tag_set: ['name:svc-alpha-prod'], pointlist: [[1761897600000, 12], [1761901200000, null]] }])
     expect(snapshot.metrics.dlq).toBeNull()
@@ -93,7 +102,7 @@ describe('fetchDatadogSnapshot', () => {
 
   it('reads every monitor and team page', async () => {
     const { fetch, calls } = fakeDatadog()
-    const snapshot = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
 
     expect(calls.filter((c) => c.path === '/api/v1/monitor/search').map((c) => c.params.get('page'))).toEqual(['0', '1'])
     expect(calls.filter((c) => c.path === '/api/v2/team').map((c) => c.params.get('page[number]'))).toEqual(['0', '1'])
@@ -108,7 +117,7 @@ describe('fetchDatadogSnapshot', () => {
 
   it('caps events at 4 pages of 500 and records capped', async () => {
     const { fetch, calls } = fakeDatadog({ eventPages: 6 })
-    const snapshot = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
 
     const pages = calls.filter((c) => c.path === '/api/v2/events/search').map((c) => c.body)
     expect(pages).toHaveLength(4)
@@ -119,7 +128,7 @@ describe('fetchDatadogSnapshot', () => {
 
   it('records events uncapped when the last page names no cursor', async () => {
     const { fetch } = fakeDatadog()
-    const snapshot = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
 
     expect(snapshot.events).toEqual({
       items: [
@@ -132,7 +141,7 @@ describe('fetchDatadogSnapshot', () => {
 
   it('keeps no monitor message, query or incident body', async () => {
     const { fetch } = fakeDatadog()
-    const snapshot = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
 
     expect(JSON.stringify(fixture('monitor-search-page-0'))).toMatch(SENTINEL)
     expect(JSON.stringify(snapshot)).not.toMatch(SENTINEL)
@@ -148,6 +157,57 @@ describe('fetchDatadogSnapshot', () => {
     expect(calls[0]?.host).toBe('api.datadoghq.eu')
     expect(calls[0]?.headers.get('DD-API-KEY')).toBe(API_KEY)
     expect(calls[0]?.headers.get('DD-APPLICATION-KEY')).toBe(APP_KEY)
+  })
+
+  it('reports each metric it could not read, with its cause, and keeps the causes out of the snapshot', async () => {
+    const { fetch } = fakeDatadog()
+    const { snapshot, failures } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+
+    expect(failures).toEqual([{ key: 'dlq', cause: 'fictitious refusal' }])
+    expect(JSON.stringify(snapshot)).not.toContain('fictitious refusal')
+  })
+
+  it('names the call Datadog refused among the series', async () => {
+    const { fetch } = fakeDatadog({ overrides: { '/api/v1/query': refused } })
+    const { snapshot, failures } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+
+    expect(failures).toHaveLength(11)
+    expect(new Set(failures.map((f) => f.cause))).toEqual(new Set(['Datadog refused GET /api/v1/query (HTTP 403)']))
+    expect(Object.values(snapshot.metrics).every((series) => series === null)).toBe(true)
+  })
+
+  it('reads only the unscoped DLQ series and no events without a prod service', async () => {
+    const { fetch, calls } = fakeDatadog({
+      overrides: {
+        '/api/v1/monitor/search': () => answer({ monitors: [], metadata: { page_count: 1 } }),
+        '/api/v1/slo/search': () => answer({ data: { attributes: { slos: [] } } }),
+      },
+    })
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+
+    const queries = calls.filter((c) => c.path === '/api/v1/query').map((c) => c.params.get('query') ?? '')
+    expect(queries).toHaveLength(1)
+    expect(queries[0]).toContain('sqsdlq:true')
+    expect(calls.some((c) => c.path === '/api/v2/events/search')).toBe(false)
+    expect(snapshot.events).toEqual({ items: [], capped: false })
+    expect(snapshot.metrics.api_count).toBeNull()
+  })
+
+  it('ends the event pages on an empty cursor', async () => {
+    const { fetch, calls } = fakeDatadog({ overrides: { '/api/v2/events/search': () => answer({ data: [], meta: { page: { after: '' } } }) } })
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+
+    expect(calls.filter((c) => c.path === '/api/v2/events/search')).toHaveLength(1)
+    expect(snapshot.events).toEqual({ items: [], capped: false })
+  })
+
+  it('reads SLO tags from all_tags, falling back to tags', async () => {
+    const slo = { data: { id: 'slo-0003', attributes: { name: 'svc-epsilon latency', tags: ['service:svc-epsilon', 'env:prod'] } } }
+    const { fetch, calls } = fakeDatadog({ overrides: { '/api/v1/slo/search': () => answer({ data: { attributes: { slos: [slo] } } }) } })
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+
+    expect(snapshot.slos).toEqual([{ id: 'slo-0003', name: 'svc-epsilon latency', tags: ['service:svc-epsilon', 'env:prod'] }])
+    expect(calls.find((c) => c.path === '/api/v1/query')?.params.get('query')).toContain('svc-epsilon')
   })
 
   it('gives up after 5 attempts on a status still failing', async () => {
@@ -170,16 +230,26 @@ describe('writeDatadogSnapshot', () => {
 
   it('writes one file per top-level key and reads them back, replacing an older run', async () => {
     const { fetch } = fakeDatadog()
-    const snapshot = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
     const dir = path.join(root, 'snaps', '2026-11-02')
-    fs.mkdirSync(dir, { recursive: true })
-    fs.writeFileSync(path.join(dir, 'stale.json'), '{}')
+    writeDatadogSnapshot(dir, { ...snapshot, monitors: [] })
 
     writeDatadogSnapshot(dir, snapshot)
 
     expect(fs.readdirSync(dir).sort()).toEqual(['events.json', 'incidents.json', 'meta.json', 'metrics.json', 'monitors.json', 'slos.json', 'teams.json'])
     expect(fs.readdirSync(path.dirname(dir))).toEqual(['2026-11-02'])
     expect(readDatadogSnapshot(dir)).toEqual(snapshot)
+  })
+
+  it('refuses a folder holding anything but a snapshot, leaving it intact', async () => {
+    const { fetch } = fakeDatadog()
+    const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
+    fs.writeFileSync(path.join(root, 'notes.txt'), 'keep me')
+    fs.mkdirSync(path.join(root, 'meta.json'))
+
+    expect(() => writeDatadogSnapshot(root, snapshot)).toThrow(`${root} holds files other than a Datadog snapshot; nothing written`)
+    expect(fs.readdirSync(root).sort()).toEqual(['meta.json', 'notes.txt'])
+    expect(fs.readFileSync(path.join(root, 'notes.txt'), 'utf8')).toBe('keep me')
   })
 
   it('leaves no folder when a write fails', () => {
@@ -226,13 +296,34 @@ describe('runFetchCli', () => {
   })
 
   it('exits 1 and leaves no folder when validate is refused', async () => {
-    const { fetch } = fakeDatadog({ validate: 403 })
+    const { fetch } = fakeDatadog({ overrides: { '/api/v1/validate': refused } })
     const out = path.join(root, 'snap')
 
     expect(await runFetchCli(['--out', out], ENV, fetch, NOW)).toBe(1)
     expect(printed.join('\n')).toContain('Datadog refused the keys (HTTP 403)')
     expect(fs.existsSync(out)).toBe(false)
     expect(fs.readdirSync(root)).toEqual([])
+  })
+
+  it('names any later call Datadog refused', async () => {
+    const { fetch } = fakeDatadog({ overrides: { '/api/v2/incidents': refused } })
+
+    expect(await runFetchCli(['--out', path.join(root, 'snap')], ENV, fetch, NOW)).toBe(1)
+    expect(printed.join('\n')).toContain('Datadog refused GET /api/v2/incidents (HTTP 403)')
+    expect(printed.join('\n')).not.toContain('refused the keys')
+    expect(fs.readdirSync(root)).toEqual([])
+  })
+
+  it('exits 1 and leaves a foreign --out folder intact', async () => {
+    const { fetch } = fakeDatadog()
+    const out = path.join(root, 'desktop')
+    fs.mkdirSync(out)
+    fs.writeFileSync(path.join(out, 'report.pdf'), 'keep me')
+
+    expect(await runFetchCli(['--out', out], ENV, fetch, NOW)).toBe(1)
+    expect(printed.join('\n')).toContain(`${out} holds files other than a Datadog snapshot; nothing written`)
+    expect(fs.readdirSync(out)).toEqual(['report.pdf'])
+    expect(fs.readdirSync(root)).toEqual(['desktop'])
   })
 
   it('never writes a key', async () => {
@@ -256,6 +347,7 @@ describe('runFetchCli', () => {
     expect(output).toContain('POST /api/v2/events/search')
     expect(output).toContain('monitors 3')
     expect(output).toContain('metrics 10 of 11')
+    expect(output).toContain('metric dlq unavailable: fictitious refusal')
     expect(output).toContain(out)
     expect(output).not.toContain(API_KEY)
     expect(output).not.toContain(APP_KEY)
@@ -288,12 +380,14 @@ describe('runFetchCli', () => {
   it('writes under the package snapshot folder by default, named by the date', async () => {
     const { fetch } = fakeDatadog()
     const day = new Date('2001-02-03T04:05:06Z')
-    const dir = path.resolve(import.meta.dirname, '../../.datadog-snapshots/2001-02-03')
+    const snapshots = path.resolve(import.meta.dirname, '../../.datadog-snapshots')
+    const dir = path.join(snapshots, '2001-02-03')
+    const existed = fs.existsSync(snapshots)
     try {
       expect(await runFetchCli([], ENV, fetch, day)).toBe(0)
       expect(fs.existsSync(path.join(dir, 'meta.json'))).toBe(true)
     } finally {
-      fs.rmSync(dir, { recursive: true, force: true })
+      fs.rmSync(existed ? dir : snapshots, { recursive: true, force: true })
     }
   })
 

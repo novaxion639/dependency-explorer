@@ -9,7 +9,8 @@ describe('scope', () => {
   it('names the service by its service tag, then its project tag, then its name', () => {
     expect(serviceOf({ tags: ['project:svc-b', 'service:svc-a'], name: '[svcC]' })).toBe('svc-a')
     expect(serviceOf({ tags: ['Project:svc-b'], name: '[svcC]' })).toBe('svc-b')
-    expect(serviceOf({ tags: [], name: 'Errors [svcSearchMCP] high' })).toBe('svcSearch')
+    expect(serviceOf({ tags: [], name: 'Errors [svcSearchMCP] high' })).toBe('svcsearch')
+    expect(serviceOf({ tags: ['service:', 'Project:SVC-B'], name: '' })).toBe('svc-b')
     expect(serviceOf({ tags: ['team:x'], name: 'no service' })).toBeNull()
   })
 

@@ -45,13 +45,19 @@ export function metricQueries(services: string[]): Record<MetricKey, string> {
 export const isProd = (tags: string[]): boolean =>
   tags.some((tag) => ['env:prod', 'environment:prod'].includes(tag.toLowerCase()))
 
-const tagValue = (tags: string[], name: string): string | null => {
-  const tag = tags.find((t) => t.toLowerCase().startsWith(`${name}:`))
-  return tag === undefined ? null : tag.slice(name.length + 1)
-}
+export const tagValues = (tags: string[], name: string): string[] =>
+  tags
+    .filter((t) => t.toLowerCase().startsWith(`${name}:`))
+    .map((t) => t.slice(name.length + 1).toLowerCase())
+    .filter((value) => value !== '')
 
 export function serviceOf(monitor: { tags: string[]; name: string }): string | null {
-  return tagValue(monitor.tags, 'service') ?? tagValue(monitor.tags, 'project') ?? SERVICE_IN_NAME.exec(monitor.name)?.[1] ?? null
+  return (
+    tagValues(monitor.tags, 'service').at(0) ??
+    tagValues(monitor.tags, 'project').at(0) ??
+    SERVICE_IN_NAME.exec(monitor.name)?.[1]?.toLowerCase() ??
+    null
+  )
 }
 
 export const normaliseName = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]/g, '')
