@@ -30,8 +30,14 @@ export function snapshotDirOf(argv: string[], home: string): string | null {
 
 const quoted = (value: string): string => `'${value.replace(/[\\']/g, '\\$&')}'`
 
-const byTribeThenLabel = (a: { tribe: string | null; label: string }, b: { tribe: string | null; label: string }): number =>
-  Number(a.tribe === null) - Number(b.tribe === null) || (a.tribe ?? '').localeCompare(b.tribe ?? '', 'en') || a.label.localeCompare(b.label, 'en')
+const compare = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
+
+const byTribeThenLabel = (a: { tribe: string | null; label: string }, b: { tribe: string | null; label: string }): number => {
+  if (a.tribe !== b.tribe) {
+    return a.tribe === null ? 1 : b.tribe === null ? -1 : compare(a.tribe, b.tribe)
+  }
+  return compare(a.label, b.label)
+}
 
 export async function runDraftCli(argv: string[], snapshotDir: string | null): Promise<number> {
   if (argv.includes('--help')) {
@@ -49,18 +55,15 @@ export async function runDraftCli(argv: string[], snapshotDir: string | null): P
     console.error(e instanceof Error ? e.message : String(e))
     return 1
   }
-  const openBugs = snapshot.bugs.filter((bug) => isOpenBug(bug, snapshot.statuses))
+  const siteStatuses = new Set(snapshot.statuses)
+  const openBugs = snapshot.bugs.filter((bug) => isOpenBug(bug, siteStatuses))
   const labels = new Set([...snapshot.featureAreaLabels, ...snapshot.bugs.map((bug) => bug.featureArea).filter((label) => label !== null)])
-  const rows = [...labels].map((label) => ({
-    label,
-    entry: catalogEntryOf(label),
-    open: openBugs.filter((bug) => bug.featureArea === label).length,
-  }))
-  rows
-    .map((row) => ({ ...row, tribe: row.entry?.tribe ?? null }))
-    .sort(byTribeThenLabel)
-    .forEach(({ label, tribe, entry, open }) => {
-      console.log(`{ label: ${quoted(label)}, tribe: ${tribe === null ? 'null' : quoted(tribe)}, area: null }, // catalog: ${entry?.name ?? 'none'}, ${open} open BRs`)
-    })
+  const rows = [...labels].map((label) => {
+    const entry = catalogEntryOf(label)
+    return { label, tribe: entry?.tribe ?? null, catalog: entry?.name ?? 'none', open: openBugs.filter((bug) => bug.featureArea === label).length }
+  })
+  for (const { label, tribe, catalog, open } of rows.sort(byTribeThenLabel)) {
+    console.log(`{ label: ${quoted(label)}, tribe: ${tribe === null ? 'null' : quoted(tribe)}, area: null }, // catalog: ${catalog}, ${open} open BRs`)
+  }
   return 0
 }

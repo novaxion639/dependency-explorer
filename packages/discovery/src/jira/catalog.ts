@@ -1,5 +1,6 @@
 import catalog from './catalog.json'
 
+const PYTHON_SPACES = /[\t\n\v\f\r\x1c-\x20\x85\xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+/u
 const NO_TRIBE = 'Sans tribe'
 
 type CatalogEntry = { name: string; tribe: string | null }
@@ -10,7 +11,7 @@ export function featureKey(label: string): string {
     .replace(/\([^\n]*?\)|\[[^\n]*?\]/g, '')
     .replaceAll('/', ' and ')
     .replaceAll('-', ' ')
-    .split(/\s+/)
+    .split(PYTHON_SPACES)
     .filter((word) => word !== '')
     .join(' ')
     .toLowerCase()

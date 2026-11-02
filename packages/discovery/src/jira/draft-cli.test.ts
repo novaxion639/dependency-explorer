@@ -63,6 +63,13 @@ describe('runDraftCli', () => {
     expect(err).toEqual([])
   })
 
+  it('sorts by tribe, nulls last, then by code point', async () => {
+    const dir = path.join(root, '2026-11-02')
+    writeJiraSnapshot(dir, { ...snapshot, featureAreaLabels: ['Zeta', 'Staff needs', 'alpha', 'Clock-in API access', 'Analytics API access', 'Alpha', 'Staffing requirements'], bugs: [] })
+    expect(await runDraftCli([], dir)).toBe(0)
+    expect(out.map((row) => /label: '([^']*)'/.exec(row)?.[1])).toEqual(['Analytics API access', 'Clock-in API access', 'Staff needs', 'Staffing requirements', 'Alpha', 'Zeta', 'alpha'])
+  })
+
   it('exits 1 naming the fetch script when the snapshot is missing', async () => {
     expect(await runDraftCli([], path.join(root, 'nowhere'))).toBe(1)
     expect(err.join('\n')).toContain('pnpm discover:jira:fetch')

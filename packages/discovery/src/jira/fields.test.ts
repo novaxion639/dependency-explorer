@@ -14,7 +14,7 @@ describe('isOpenBug', () => {
 
   it('counts a to-ship status in the done category when the site has it', () => {
     expect(isOpenBug(bug('QA', 'done'), site)).toBe(true)
-    expect(isOpenBug(bug('Go for MEP', 'done'), ['Go for MEP'])).toBe(true)
+    expect(isOpenBug(bug('Go for MEP', 'done'), new Set(['Go for MEP']))).toBe(true)
   })
 
   it('does not count a done bug, nor a to-ship status the site lacks', () => {
