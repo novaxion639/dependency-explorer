@@ -6,23 +6,28 @@ import { build } from 'vite'
 
 const WEB = path.resolve(import.meta.dirname, '..')
 const OVERLAY_DIR = path.join(WEB, 'overlay')
-const OVERLAY = path.join(OVERLAY_DIR, 'datadog.json')
+const NAMES = ['datadog', 'jira']
 let outDir = ''
-let createdDir = false
+let created: string[] = []
 
 afterEach(() => {
   fs.rmSync(outDir, { recursive: true, force: true })
-  if (createdDir) {
-    fs.rmSync(OVERLAY_DIR, { recursive: true, force: true })
+  created.forEach(file => fs.rmSync(file, { force: true }))
+  created = []
+  if (fs.existsSync(OVERLAY_DIR) && fs.readdirSync(OVERLAY_DIR).length === 0) {
+    fs.rmdirSync(OVERLAY_DIR)
   }
 })
 
-it('leaves the Datadog overlay out of the build output', async () => {
+it('leaves both overlays out of the build output', async () => {
   outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'web-build-'))
-  createdDir = !fs.existsSync(OVERLAY_DIR)
-  if (createdDir) {
-    fs.mkdirSync(OVERLAY_DIR)
-    fs.writeFileSync(OVERLAY, '{}')
+  fs.mkdirSync(OVERLAY_DIR, { recursive: true })
+  for (const name of NAMES) {
+    const file = path.join(OVERLAY_DIR, `${name}.json`)
+    if (!fs.existsSync(file)) {
+      fs.writeFileSync(file, '{}')
+      created.push(file)
+    }
   }
 
   await build({ root: WEB, configFile: path.join(WEB, 'vite.config.ts'), logLevel: 'silent', build: { outDir, emptyOutDir: true } })

@@ -1,5 +1,5 @@
 import type { ResourceRelation } from '@dependency-explorer/data'
-import { allResourceRelations, connectivityMap, inRailsOrder, listenerSurface, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
+import { allResourceRelations, connectivityMap, DatadogOverlaySchema, inRailsOrder, listenerSurface, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
 import { useOverlay } from '../../hooks/useOverlay'
 import { evidenceHref } from '../../utils/evidenceLink'
 import { plural } from '../../utils/plural'
@@ -34,7 +34,7 @@ interface Props {
 }
 
 export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSelectService, onBlast, listeners, onListeners }: Props) {
-  const overlay = useOverlay()
+  const overlay = useOverlay('datadog', DatadogOverlaySchema)
   const impact = resourceImpact(id, connectivityMap, resourceSurface.resources, allResourceRelations)
   if (!impact) {
     return null

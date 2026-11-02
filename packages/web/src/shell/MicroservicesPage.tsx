@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { resourceSurface, type ConnectivityService } from '@dependency-explorer/data'
+import { DatadogOverlaySchema, resourceSurface, type ConnectivityService } from '@dependency-explorer/data'
 import { selectServicePatch, type UrlState } from '../hooks/useUrlState'
 import { useOverlay } from '../hooks/useOverlay'
 import { HealthSection } from '../components/health/HealthSection'
@@ -74,7 +74,7 @@ function Overview({ url, patch }: Props) {
 
 function ServiceView({ service, url, patch, onSelectService }: Props & { service: ConnectivityService; onSelectService: (name: string) => void }) {
   const model = useMemo(() => (url.present ? serviceByArea : serviceByHow)(map, resourceSurface.resources, service.name), [service.name, url.present])
-  const overlay = useOverlay()
+  const overlay = useOverlay('datadog', DatadogOverlaySchema)
   const health = overlay?.services[service.name]
   return (
     <>
