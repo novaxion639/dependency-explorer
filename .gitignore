@@ -8,3 +8,5 @@ build/
 *.log
 .vscode/
 .pinned/
+.datadog-snapshots/
+packages/web/overlay/
