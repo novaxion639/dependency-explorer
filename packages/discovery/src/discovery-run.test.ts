@@ -3,6 +3,7 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { ConnectivityMapSchema, ResourceSurfaceSchema } from '@dependency-explorer/schema'
+import { writeDatadogSnapshot } from './datadog/snapshot'
 import { OUTPUT_FILES, PinError, runDiscovery, writeOutputs, type Dataset } from './discovery-run'
 
 const NOW = new Date('2026-11-02T00:00:00Z')
@@ -44,4 +45,18 @@ it('writes the overlay and the resource surface to the out dir', () => {
   expect(OUTPUT_FILES.filter(file => fs.existsSync(path.join(outDir, file)))).toEqual(['discovered.json', 'resources.json'])
   const overlay: unknown = JSON.parse(fs.readFileSync(path.join(outDir, 'discovered.json'), 'utf-8'))
   expect(overlay).toMatchObject({ generatedAt: '2026-11-02T00:00:00.000Z', scannedRepos: [] })
+})
+
+it('joins a Datadog snapshot and builds its overlay', () => {
+  const dir = path.join(base, 'snapshot')
+  const metrics = { api_count: null, api_5xx: null, api_4xx: null, api_p95: null, lambda_errors: null, fn_invocations: null, fn_errors: null, apm_hits: null, apm_p95: null, apm_status: null, dlq: null }
+  writeDatadogSnapshot(dir, {
+    meta: { fetchedAt: '2026-11-01T08:00:00.000Z', site: 'datadoghq.eu', from: 0, to: 1 },
+    monitors: [], teams: [], slos: [], incidents: [], metrics, events: { items: [], capped: false },
+  })
+
+  const report = runDiscovery({ sourceBase: base, dataset, now: NOW, datadogSnapshotDir: dir })
+
+  expect(report.datadog?.overlay).toEqual({ snapshotDate: '2026-11-01', eventsCapped: false, services: {}, queues: {} })
+  expect(report.datadog?.join.findings).toEqual([])
 })

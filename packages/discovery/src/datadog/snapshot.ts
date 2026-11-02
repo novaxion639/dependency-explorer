@@ -6,7 +6,7 @@ import { isProd, METRIC_KEYS, metricQueries, serviceOf, tagValues, type MetricKe
 
 type Monitor = { id: number; name: string; tags: string[]; overall_state: string | null }
 type Team = { id: string; handle: string; name: string }
-type Slo = { id: string; name: string; tags: string[] }
+type Slo = { id: string; name: string; tags: string[]; target: number | null; value: number | null }
 type Incident = { id: string; title: string; severity: string | null; created: string | null; services: string[] }
 type Series = { tag_set: string[]; pointlist: [number, number | null][] }
 type MonitorTransition = { monitor_id: number; ts: number; status: string | null }
@@ -56,7 +56,13 @@ function teamOf(v: unknown): Team {
 function sloOf(v: unknown): Slo {
   const d = obj(obj(v).data)
   const a = obj(d.attributes)
-  return { id: text(d.id) ?? '', name: text(a.name) ?? '', tags: strings(a.all_tags ?? a.tags) }
+  return {
+    id: text(d.id) ?? '',
+    name: text(a.name) ?? '',
+    tags: strings(a.all_tags ?? a.tags),
+    target: num(obj(list(a.thresholds).at(0)).target),
+    value: num(obj(list(a.overall_status).at(0)).status),
+  }
 }
 
 function incidentOf(v: unknown): Incident | null {

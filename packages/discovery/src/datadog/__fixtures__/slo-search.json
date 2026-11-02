@@ -11,6 +11,8 @@
               "name": "svc-beta availability",
               "all_tags": ["service:svc-beta", "env:prod"],
               "description": "SENTINEL-SLO-DESCRIPTION",
+              "thresholds": [{ "timeframe": "30d", "target": 99.9 }],
+              "overall_status": [{ "timeframe": "30d", "status": 99.95, "target": 99.9 }],
               "query": { "numerator": "SENTINEL-SLO-QUERY", "denominator": "SENTINEL-SLO-QUERY" }
             }
           }

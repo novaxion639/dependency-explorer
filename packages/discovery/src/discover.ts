@@ -23,7 +23,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
-import { ListenerSurfaceSchema } from '@dependency-explorer/schema'
+import { DatadogOverlaySchema, ListenerSurfaceSchema } from '@dependency-explorer/schema'
 import { IGNORED_SDKS } from './mapping'
 import { applyModeError } from './pinned'
 import { machineSection } from './state-machines-report'
@@ -76,6 +76,7 @@ function resolveSnapshotDir(flag: string, folder: string, fetchScript: string): 
 const AWS_SNAPSHOT_DIR = resolveSnapshotDir('--aws', '.aws-snapshots', 'discover:aws:fetch')
 const DATADOG_SNAPSHOT_DIR = resolveSnapshotDir('--datadog', '.datadog-snapshots', 'discover:datadog:fetch')
 const OUT_DIR = path.resolve(__dirname, '../../data/src/generated')
+const OVERLAY_PATH = path.resolve(__dirname, '../../web/overlay/datadog.json')
 const LISTENERS_PATH = path.join(OUT_DIR, 'listeners.json')
 const REPO_BASE = PINNED_MODE ? PINNED_BASE : SOURCE_BASE
 const NOW = process.env.DE_FIXED_NOW ? new Date(process.env.DE_FIXED_NOW) : new Date()
@@ -239,7 +240,7 @@ function printMarkdown(r: Report, unscanned: string[]) {
     }
   }
 
-  const datadog = datadogSection(r.datadog)
+  const datadog = datadogSection(r.datadog?.join ?? null)
   if (datadog) {
     console.log(datadog)
   }
@@ -532,6 +533,11 @@ if (JSON_MODE) {
   console.log(JSON.stringify(report, (_key, value: unknown) => (value instanceof Map ? Object.fromEntries(value) : value), 2))
 } else {
   printMarkdown(report, unscanned)
+}
+if (report.datadog) {
+  fs.mkdirSync(path.dirname(OVERLAY_PATH), { recursive: true })
+  fs.writeFileSync(OVERLAY_PATH, JSON.stringify(DatadogOverlaySchema.parse(report.datadog.overlay), null, 1))
+  console.error(`Datadog overlay written: ${path.relative(process.cwd(), OVERLAY_PATH)}`)
 }
 if (APPLY_MODE) {
   writeOutputs(report, { outDir: OUT_DIR, repoBase: REPO_BASE, now: NOW })

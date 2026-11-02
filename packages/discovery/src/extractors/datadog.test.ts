@@ -83,7 +83,7 @@ describe('joinDatadog', () => {
   })
 
   it('reports a Datadog service matching no map service', () => {
-    expect(kinds(snapshot({ slos: [{ id: 's1', name: 'Ghost SLO', tags: ['service:svc-ghost', 'env:prod'] }] }), 'unknown-service')).toEqual([
+    expect(kinds(snapshot({ slos: [{ id: 's1', name: 'Ghost SLO', tags: ['service:svc-ghost', 'env:prod'], target: null, value: null }] }), 'unknown-service')).toEqual([
       { kind: 'unknown-service', datadog: 'svc-ghost', fix: 'Tag its monitors and SLOs `service:<map service name>`, or add svc-ghost to the map' },
     ])
   })

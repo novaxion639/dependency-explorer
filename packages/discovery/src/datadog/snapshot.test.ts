@@ -113,6 +113,7 @@ describe('fetchDatadogSnapshot', () => {
       { id: 'team-0002', handle: 'beta-squad', name: 'Beta Squad' },
     ])
     expect(snapshot.slos.map((s) => s.id)).toEqual(['slo-0001', 'slo-0002'])
+    expect(snapshot.slos[0]).toMatchObject({ target: 99.9, value: 99.95 })
   })
 
   it('caps events at 4 pages of 500 and records capped', async () => {
@@ -206,7 +207,7 @@ describe('fetchDatadogSnapshot', () => {
     const { fetch, calls } = fakeDatadog({ overrides: { '/api/v1/slo/search': () => answer({ data: { attributes: { slos: [slo] } } }) } })
     const { snapshot } = await fetchDatadogSnapshot(clientOf(fetch), NOW)
 
-    expect(snapshot.slos).toEqual([{ id: 'slo-0003', name: 'svc-epsilon latency', tags: ['service:svc-epsilon', 'env:prod'] }])
+    expect(snapshot.slos).toEqual([{ id: 'slo-0003', name: 'svc-epsilon latency', tags: ['service:svc-epsilon', 'env:prod'], target: null, value: null }])
     expect(calls.find((c) => c.path === '/api/v1/query')?.params.get('query')).toContain('svc-epsilon')
   })
 
