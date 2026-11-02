@@ -1,25 +1,40 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { z } from 'zod'
 import { readPages } from '../net/pages'
 import type { DatadogClient } from './client'
 import { isProd, METRIC_KEYS, metricQueries, serviceOf, tagValues, type MetricKey } from './scope'
 
-type Monitor = { id: number; name: string; tags: string[]; overall_state: string | null }
-type Team = { id: string; handle: string; name: string }
-type Slo = { id: string; name: string; tags: string[]; target: number | null; value: number | null }
-type Incident = { id: string; title: string; severity: string | null; created: string | null; services: string[] }
-type Series = { tag_set: string[]; pointlist: [number, number | null][] }
-type MonitorTransition = { monitor_id: number; ts: number; status: string | null }
+const MonitorSchema = z.object({ id: z.number(), name: z.string(), tags: z.array(z.string()), overall_state: z.string().nullable() })
+const TeamSchema = z.object({ id: z.string(), handle: z.string(), name: z.string() })
+const SloSchema = z.object({ id: z.string(), name: z.string(), tags: z.array(z.string()), target: z.number().nullable(), value: z.number().nullable() })
+const IncidentSchema = z.object({
+  id: z.string(),
+  public_id: z.number().nullish(),
+  title: z.string(),
+  severity: z.string().nullable(),
+  created: z.string().nullable(),
+  services: z.array(z.string()),
+})
+const SeriesSchema = z.object({ tag_set: z.array(z.string()), pointlist: z.array(z.tuple([z.number(), z.number().nullable()])) })
+const TransitionSchema = z.object({ monitor_id: z.number(), ts: z.number(), status: z.string().nullable() })
 
-export interface DatadogSnapshot {
-  meta: { fetchedAt: string; site: string; from: number; to: number }
-  monitors: Monitor[]
-  teams: Team[]
-  slos: Slo[]
-  incidents: Incident[]
-  metrics: Record<MetricKey, Series[] | null>
-  events: { items: MonitorTransition[]; capped: boolean }
-}
+const SnapshotSchema = z.object({
+  meta: z.object({ fetchedAt: z.string(), site: z.string(), from: z.number(), to: z.number() }),
+  monitors: z.array(MonitorSchema),
+  teams: z.array(TeamSchema),
+  slos: z.array(SloSchema),
+  incidents: z.array(IncidentSchema),
+  metrics: z.record(z.enum(METRIC_KEYS), z.array(SeriesSchema).nullable()),
+  events: z.object({ items: z.array(TransitionSchema), capped: z.boolean() }),
+})
+
+type Monitor = z.infer<typeof MonitorSchema>
+type Slo = z.infer<typeof SloSchema>
+type Series = z.infer<typeof SeriesSchema>
+type MonitorTransition = z.infer<typeof TransitionSchema>
+
+export type DatadogSnapshot = z.infer<typeof SnapshotSchema>
 
 type Json = Record<string, unknown>
 
@@ -47,7 +62,7 @@ function monitorOf(v: unknown): Monitor | null {
   return id === null ? null : { id, name: text(m.name) ?? '', tags: strings(m.tags), overall_state: text(m.status) }
 }
 
-function teamOf(v: unknown): Team {
+function teamOf(v: unknown): DatadogSnapshot['teams'][number] {
   const t = obj(v)
   const a = obj(t.attributes)
   return { id: text(t.id) ?? '', handle: text(a.handle) ?? '', name: text(a.name) ?? '' }
@@ -65,7 +80,7 @@ function sloOf(v: unknown): Slo {
   }
 }
 
-function incidentOf(v: unknown): Incident | null {
+function incidentOf(v: unknown): DatadogSnapshot['incidents'][number] | null {
   const i = obj(v)
   const a = obj(i.attributes)
   const state = text(a.state)
@@ -73,7 +88,7 @@ function incidentOf(v: unknown): Incident | null {
     return null
   }
   const services = strings(obj(obj(a.fields).services).value)
-  return { id: text(i.id) ?? '', title: text(a.title) ?? '', severity: text(a.severity), created: text(a.created), services }
+  return { id: text(i.id) ?? '', public_id: num(a.public_id), title: text(a.title) ?? '', severity: text(a.severity), created: text(a.created), services }
 }
 
 function pointOf(v: unknown): [number, number | null] | null {
@@ -228,15 +243,24 @@ export function writeDatadogSnapshot(dir: string, s: DatadogSnapshot): void {
   }
 }
 
-export function readDatadogSnapshot(dir: string): DatadogSnapshot {
-  const read = (key: (typeof SNAPSHOT_KEYS)[number]) => JSON.parse(fs.readFileSync(path.join(dir, `${key}.json`), 'utf8'))
-  return {
-    meta: read('meta'),
-    monitors: read('monitors'),
-    teams: read('teams'),
-    slos: read('slos'),
-    incidents: read('incidents'),
-    metrics: read('metrics'),
-    events: read('events'),
+export class SnapshotFormatError extends Error {}
+
+const RE_FETCH = 'Re-run `pnpm discover:datadog:fetch` for a fresh snapshot.'
+
+function readSnapshotFile(file: string): unknown {
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'))
+  } catch (e) {
+    throw new SnapshotFormatError(`${file} cannot be read: ${causeOf(e)}\n${RE_FETCH}`)
   }
+}
+
+export function readDatadogSnapshot(dir: string): DatadogSnapshot {
+  const files = Object.fromEntries(SNAPSHOT_KEYS.map((key) => [key, readSnapshotFile(path.join(dir, `${key}.json`))]))
+  const parsed = SnapshotSchema.safeParse(files)
+  if (!parsed.success) {
+    const file = path.join(dir, `${String(parsed.error.issues[0]?.path[0])}.json`)
+    throw new SnapshotFormatError(`${file} does not match the Datadog snapshot format: ${z.prettifyError(parsed.error)}\n${RE_FETCH}`)
+  }
+  return parsed.data
 }

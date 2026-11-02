@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
+import { allByRole, byRole, byText } from '../../test/roles'
 import { HealthSection } from './HealthSection'
 import { serviceHealth } from './overlayFixture'
 
@@ -18,7 +19,11 @@ const render = async (props: Partial<Parameters<typeof HealthSection>[0]> = {}) 
   return host
 }
 
-const items = (host: HTMLElement, label: string) => [...(host.querySelector(`section[aria-label="${label}"]`)?.querySelectorAll('li') ?? [])].map(li => li.textContent ?? '')
+const items = (host: HTMLElement, label: string) => {
+  const region = byRole(host, 'region', label)
+  return region === null ? [] : allByRole(region, 'listitem').map(li => li.textContent ?? '')
+}
+const footer = (host: HTMLElement) => byText(host, /^Datadog snapshot of/)?.textContent
 
 afterEach(async () => {
   await act(async () => roots.splice(0).forEach(r => r.unmount()))
@@ -28,7 +33,7 @@ afterEach(async () => {
 describe('HealthSection', () => {
   it('heads the section Health and states the problem with its reason', async () => {
     const host = await render()
-    expect(host.querySelector('h2')?.textContent).toBe('Health')
+    expect(byRole(host, 'heading', 'Health')).not.toBeNull()
     expect(host.textContent).toContain('Problem now')
     expect(host.textContent).toContain('5xx 4.1× (+63) over 72 h')
   })
@@ -51,7 +56,7 @@ describe('HealthSection', () => {
   })
   it('opens every Datadog link in a new tab without a referrer', async () => {
     const host = await render()
-    const links = [...host.querySelectorAll('a')]
+    const links = allByRole(host, 'link')
     expect(links.map(a => a.textContent)).toEqual(expect.arrayContaining(['svc-punch 5xx rate', 'Punch availability', 'Punch exports fail']))
     for (const link of links) {
       expect(link.getAttribute('target')).toBe('_blank')
@@ -89,7 +94,7 @@ describe('HealthSection', () => {
   })
   it('names each sparkline with its figures and the partial snapshot day', async () => {
     const host = await render()
-    const names = [...host.querySelectorAll('svg[role="img"]')].map(svg => svg.getAttribute('aria-label'))
+    const names = allByRole(host, 'img').map(svg => svg.getAttribute('aria-label'))
     expect(names).toEqual([
       'Requests, max 1130, last 1130; the last point is the snapshot day, partial',
       '5xx, max 13, last 13; the last point is the snapshot day, partial',
@@ -101,35 +106,36 @@ describe('HealthSection', () => {
   it('names a sparkline with no figures no data', async () => {
     const strip = serviceHealth().strip.map(d => ({ ...d, p95ms: null }))
     const host = await render({ health: serviceHealth({ strip }) })
-    expect(host.querySelector('svg[aria-label^="p95 ms"]')?.getAttribute('aria-label')).toBe('p95 ms, no data')
+    expect(byRole(host, 'img', /^p95 ms/)?.getAttribute('aria-label')).toBe('p95 ms, no data')
   })
   it('leaves a gap in the line for a day without data', async () => {
     const host = await render()
-    const lines = (name: string) => host.querySelectorAll(`svg[aria-label^="${name},"] polyline`).length
+    const lines = (name: string) => byRole(host, 'img', new RegExp(`^${name},`))?.querySelectorAll('polyline').length
     expect(lines('Requests')).toBe(1)
     expect(lines('5xx')).toBe(2)
   })
   it('leaves out empty lists and the strip when Datadog has none', async () => {
     const host = await render({ health: serviceHealth({ state: 'noData', reasons: [], monitors: [], slos: [], incidents: [], releases: [], strip: [] }) })
-    expect(host.querySelectorAll('section section')).toHaveLength(0)
-    expect(host.querySelector('svg')).toBeNull()
+    expect(allByRole(host, 'region').map(r => r.getAttribute('aria-label'))).toEqual(['Health'])
+    expect(allByRole(host, 'list')).toHaveLength(0)
+    expect(allByRole(host, 'img')).toHaveLength(0)
   })
   it('signs the footer with the snapshot date', async () => {
     const host = await render()
-    expect(host.querySelector('footer')?.textContent).toBe('Datadog snapshot of 2026-11-02')
+    expect(footer(host)).toBe('Datadog snapshot of 2026-11-02')
   })
   it('marks a snapshot older than 7 days as stale', async () => {
     const host = await render({ snapshotDate: '2026-10-25' })
-    expect(host.querySelector('footer')?.textContent).toContain('stale')
+    expect(footer(host)).toContain('stale')
     const fresh = await render({ snapshotDate: '2026-10-27' })
-    expect(fresh.querySelector('footer')?.textContent).not.toContain('stale')
+    expect(footer(fresh)).not.toContain('stale')
   })
   it('marks a snapshot with an unreadable date as stale', async () => {
     const host = await render({ snapshotDate: 'not a date' })
-    expect(host.querySelector('footer')?.textContent).toContain('stale')
+    expect(footer(host)).toContain('stale')
   })
   it('warns that noisy counts may be low when the events were capped', async () => {
     const host = await render({ eventsCapped: true })
-    expect(host.querySelector('footer')?.textContent).toContain('Noisy counts may be low')
+    expect(footer(host)).toContain('Noisy counts may be low')
   })
 })

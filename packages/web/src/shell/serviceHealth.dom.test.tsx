@@ -4,6 +4,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { overlayOf } from '../components/health/overlayFixture'
 import { parseUrl } from '../hooks/useUrlState'
+import { byRole } from '../test/roles'
 import { MicroservicesPage } from './MicroservicesPage'
 import { validateUrlState } from './validateUrlState'
 
@@ -19,7 +20,7 @@ const render = async (qs: string, fetchImpl: typeof fetch) => {
   return host
 }
 
-const health = (host: HTMLElement) => host.querySelector('section[aria-label="Health"]')
+const health = (host: HTMLElement) => byRole(host, 'region', 'Health')
 
 afterEach(async () => {
   await act(async () => roots.splice(0).forEach(r => r.unmount()))

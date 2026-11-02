@@ -36,6 +36,7 @@
 - **Live AWS state** (Layer 4), compared with the map: a read-only account snapshot of event source mappings, subscriptions and filter policies, DMS tasks, bucket notifications and schedules.
   - Snapshots are gitignored.
   - Sandbox account only, per the credentials story (`research/aws-live-verification-credentials.md` in the shared docs).
+- **Datadog state** (🐶 report section): a read-only snapshot of monitors, SLOs, teams, open incidents, request and error series, DLQ depth and monitor transitions, joined to the map by service name. It feeds the web app's [Health section](explorer.md#health) and is described in [Datadog snapshot and overlay](#datadog-snapshot-and-overlay).
 
 ## Commands
 
@@ -51,10 +52,87 @@ pnpm --filter @dependency-explorer/discovery discover:machines     # check flow 
 pnpm --filter @dependency-explorer/discovery discover:listeners   # listeners at the pinned skello-app: extraction findings (unresolved-callback, unresolved-job, unknown-gem-macro) and listener counts for the busiest tables
 pnpm discover -- --aws [dir]  # + 🛰 live AWS snapshot diff (defaults to the latest snapshot)
 pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (~215 calls, MFA'd session required)
+pnpm discover:datadog:fetch   # capture a read-only Datadog snapshot (needs DATADOG_API_KEY and DATADOG_APP_KEY)
+pnpm discover -- --datadog [dir]   # + 🐶 Datadog drift, and write the web overlay (defaults to the latest snapshot)
+pnpm discover -- --pinned --no-fetch   # pin against the local origin refs, with no `git fetch`
+pnpm --filter @dependency-explorer/discovery golden:update   # rewrite the golden files after an intended output change
 pnpm docs:gen                 # rewrite the generated sections of the inventory docs (CI fails on drift)
 ```
 
 `--pinned` runs fail when they pin no repo — run discovery from the main clone; a `.claude/worktrees` checkout finds no sibling repos.
+
+## Datadog snapshot and overlay
+
+Two commands, run in order from the main clone, turn Datadog state into the web app's Health section. Nothing Datadog returns is committed or shipped: snapshots and the overlay are gitignored, and the built bundle never contains them ([ADR-0010](../adr/0010-datadog-overlay-from-a-local-snapshot.md)).
+
+```mermaid
+flowchart LR
+  A[Datadog API] -->|pnpm discover:datadog:fetch| B[".datadog-snapshots/DATE/"]
+  B -->|pnpm discover -- --datadog| C["web/overlay/datadog.json"]
+  B -->|pnpm discover -- --datadog| D["🐶 drift report"]
+  C -->|dev and preview only| E[Health section]
+```
+
+**Fetch.** `pnpm discover:datadog:fetch [--out <dir>]` reads Datadog with your own keys and writes `packages/discovery/.datadog-snapshots/<YYYY-MM-DD>/` (gitignored). `--help` prints the usage.
+
+| Setting | Value |
+|---|---|
+| `DATADOG_API_KEY`, `DATADOG_APP_KEY` | Required, from the environment only; never written to a file or printed |
+| `DD_SITE` | Datadog site, default `datadoghq.eu` |
+| Application key scopes | `monitors_read`, `slos_read`, `teams_read`, `incident_read`, `timeseries_query`, `events_read` |
+
+- Datadog is read-only: GET calls, plus the events search, a POST that reads. No log lines, incident bodies, monitor messages or monitor queries are fetched.
+- Metrics cover 21 days (APM series 14 days), monitor transitions 7 days.
+- A metric Datadog refuses is reported as unavailable and left empty in the snapshot; the rest is still written.
+- Exit code 1: a key is unset, Datadog refuses the keys (`Datadog refused the keys (HTTP 403)`, with no folder written), a request fails, or the target folder holds files other than a Datadog snapshot (it is never replaced).
+- The folder is written whole or not at all, and re-running on the same day replaces that day's snapshot.
+
+**Discover.** `pnpm discover -- --datadog [dir]` reads a snapshot (the latest by default, or `dir`, a path such as `.datadog-snapshots/2026-11-02`, resolved against the current directory, the repo root, then `packages/discovery`; a bare folder name does not resolve), prints the 🐶 section and writes `packages/web/overlay/datadog.json`, validated by `DatadogOverlaySchema` ([data.md](data.md#datadog-overlay)). Without `--datadog`, discovery reads no snapshot, prints no 🐶 section and writes no overlay.
+- A snapshot file that is missing, unreadable or off the current snapshot format stops the run with exit code 1 before any report prints, naming the file; re-run `pnpm discover:datadog:fetch`.
+- Incident links open the incident by its public number in Datadog.
+
+**Release verdicts.** Releases come from the local clones: merge commits on each service's production branch over the last 14 days, or on `HEAD` of the pinned worktree when the run is `--pinned`. A service with no checkout under the repo base is skipped with `releases of <service> skipped: no checkout`. Each merge is judged against the 72 hours after it, compared with the same hours a week earlier:
+- `Regressed`: 5xx, Lambda errors or p95 latency rose past the bars below, and the merge has a full week of baseline inside the snapshot window (an earlier merge is never `Regressed`);
+- `Steady`: no rise;
+- `Too recent`: the merge is under 72 hours old.
+
+**Health states.** A service is in the first state that applies:
+
+| State | Meaning |
+|---|---|
+| Problem now | 5xx, Lambda errors or p95 latency rose over the last 72 hours and are still elevated over the last 24 hours |
+| To dig into | a route, function or DLQ is failing without a service-wide problem |
+| Fell back | a day in the last 7 days, before the last 24 hours and before the start of any open problem, was bad and no longer holds |
+| Healthy | measured, none of the above |
+| No data | no metric reads |
+
+The bars come from skello-cockpit's code: a 5xx rise needs 3× the week before and at least 20 more errors (5 over the last 24 hours); a Lambda-error rise 1.5× and at least 100 more (30 over 24 hours); p95 1.5×. A monitor is noisy at 50 transitions in 7 days.
+
+**Drift (🐶).** The section lists where Datadog and the map disagree, each finding with its fix:
+
+| Kind | Meaning |
+|---|---|
+| `unknown-service` | a Datadog service or API name matches no map service |
+| `unmonitored-service` | a map service (clients excepted) has no prod monitor and no SLO |
+| `unknown-dlq` | a DLQ Datadog reports matches no registry DLQ |
+| `silent-dlq` | a registry DLQ has no depth series, because the deployed queue is not tagged `sqsdlq:true`; reported only when the snapshot read the DLQ metric |
+| `team-mismatch` | the Datadog team on a service's monitors differs from its CODEOWNERS team, or is in no team's `datadogTeams` |
+
+Names match across spellings: `svc-alpha` and `svcalpha` fold into one map service.
+
+**Why advisory.** 🐶 findings never enter `baseline.json` and never trip `--fail-on-new`. They carry operational names, and nobody else can reproduce a run on your local snapshot, so the nightly job could not check them.
+
+## Gates
+
+The test suite guards discovery's behaviour and keeps tests off the network.
+
+- **Golden test** (`src/golden.test.ts`): runs `runDiscovery` and `writeOutputs` over a fictitious workspace built in a temp directory, and compares every generated dataset and the whole report with `src/__golden__/expected/`. A diff fails the test. After an intended change, run `golden:update`, then review the rewritten files in the diff.
+- **Covered sections:** every report section must hold data in the fixture, or be listed in the test's `NOT_COVERED` map with the reason it cannot. A section without fixture data fails the test until it is covered or listed.
+- **Network guard** (`test-support/guard.ts`): every test refuses outbound requests except to `localhost`, and refuses to spawn `aws`, `gh`, `curl` or `graphify`.
+- **`AGENTS.md`:** the repo's agent guidance: commands, hard rules and a code → doc sync table. A change to a code path in that table updates its doc in the same change.
+- **Exact pins:** every dependency in every `package.json` carries an exact version, never `^` or `~`; a new dependency takes a version published at least two weeks earlier.
+- **Unused code:** `pnpm check:exports` (knip) fails on an unused file, export or type.
+- **`--no-fetch`:** a pinned run fetches each repo's origin first; `--no-fetch` skips it, for offline runs and tests. `DE_FIXED_NOW` (an ISO date) fixes the run's clock for reproducible output.
 
 ## Listener drift (👂)
 

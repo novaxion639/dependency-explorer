@@ -4,6 +4,7 @@
       "id": "inc-0001",
       "type": "incidents",
       "attributes": {
+        "public_id": 117,
         "title": "svc-alpha checkout degraded",
         "severity": "SEV-2",
         "state": "active",
@@ -19,6 +20,7 @@
       "id": "inc-0002",
       "type": "incidents",
       "attributes": {
+        "public_id": 98,
         "title": "svc-beta past outage",
         "severity": "SEV-3",
         "state": "resolved",
