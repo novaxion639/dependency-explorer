@@ -1,0 +1,16 @@
+[
+  {
+    "verb": "GET",
+    "path": "/shifts",
+    "controller": "shifts",
+    "action": "index",
+    "controllerFile": "app/controllers/shifts_controller.rb"
+  },
+  {
+    "verb": "POST",
+    "path": "/shifts/:id/approve",
+    "controller": "shifts",
+    "action": "approve",
+    "controllerFile": "app/controllers/shifts_controller.rb"
+  }
+]

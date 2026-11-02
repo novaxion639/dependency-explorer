@@ -1,0 +1,159 @@
+{
+  "resources": [
+    {
+      "id": "kinesis:alpha-bus",
+      "kind": "stream",
+      "store": "kinesis",
+      "name": "alpha-bus",
+      "owner": "svc-alpha",
+      "evidence": [
+        "svc-alpha-tf:terraform",
+        "svc-alpha:serverless"
+      ]
+    },
+    {
+      "id": "pg:skello_production",
+      "kind": "database",
+      "store": "postgresql",
+      "name": "skello_production",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shifts",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shifts",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shift.rb",
+        "className": "Shift"
+      },
+      "related": [
+        "pg:skello_production.shops"
+      ]
+    },
+    {
+      "id": "pg:skello_production.shops",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shops",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/shop.rb",
+        "className": "Shop"
+      },
+      "related": [
+        "pg:skello_production.shifts"
+      ]
+    },
+    {
+      "id": "sqs:alphaJobs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "alphaJobs",
+      "owner": "svc-alpha",
+      "evidence": [
+        "svc-alpha:serverless"
+      ]
+    },
+    {
+      "id": "sqs:alphaJobsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "alphaJobsDlq",
+      "owner": "svc-alpha",
+      "evidence": [
+        "svc-alpha:serverless"
+      ]
+    },
+    {
+      "id": "sqs:svcBetaJobs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "svcBetaJobs",
+      "owner": "svc-beta",
+      "evidence": [
+        "svc-beta:serverless"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "resource": "pg:skello_production.shifts",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/controllers/shifts_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/models/shift.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:alphaJobs",
+      "relation": "consumes",
+      "service": "svc-alpha",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:svcBetaJobs",
+      "relation": "produces",
+      "service": "svc-alpha",
+      "file": "src/queues/beta.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "kinesis:alpha-bus",
+      "relation": "consumes",
+      "service": "svc-alpha",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:alphaJobs",
+      "relation": "dead-letters-to",
+      "service": "svc-alpha",
+      "target": "sqs:alphaJobsDlq",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:alpha-bus",
+      "relation": "produces",
+      "service": "skello-app",
+      "grade": "config"
+    },
+    {
+      "resource": "pg:skello_production.shifts",
+      "relation": "feeds",
+      "service": "skello-app",
+      "target": "kinesis:alpha-bus",
+      "grade": "config"
+    },
+    {
+      "resource": "pg:skello_production.shifts",
+      "relation": "consumes",
+      "service": "svc-alpha",
+      "target": "kinesis:alpha-bus",
+      "file": "serverless.ts",
+      "grade": "config"
+    }
+  ],
+  "pins": {
+    "skello-app": "19bbcb643a329c9df6f0c1af3eebeb8bbdf897f2",
+    "skello-app-front": "36d01007c39d38dc9a25c148057130dba91e266f",
+    "svc-alpha": "bb77715880f65800744d3c87535a4b7c27f4a61f",
+    "svc-alpha-tf": "6c4e57cd68bacbf3f94f0756d4866be425a3e05b",
+    "svc-beta": "237087da70735a2ac888ff2c9f91db7bea11b558"
+  }
+}

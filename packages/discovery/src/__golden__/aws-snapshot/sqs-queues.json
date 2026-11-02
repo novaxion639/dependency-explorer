@@ -1,0 +1,6 @@
+{
+  "QueueUrls": [
+    "https://sqs.eu-west-3.amazonaws.com/000000000000/svcBetaJobs-production",
+    "https://sqs.eu-west-3.amazonaws.com/000000000000/svcBetaJobsDlq-production"
+  ]
+}
