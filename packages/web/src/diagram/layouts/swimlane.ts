@@ -27,8 +27,8 @@ const FRAME_PAD = 10
 const FRAME_HEAD = 22
 const PORT = { inLeft: 1 / 5, inRight: 2 / 5, outLeft: 3 / 5, outRight: 4 / 5 }
 
-export const STORES_LANE = 'lane:stores'
-export const OTHERS_LANE = 'lane:others'
+const STORES_LANE = 'lane:stores'
+const OTHERS_LANE = 'lane:others'
 
 const KIND_LABEL: Record<FlowCodeUnit['kind'], string> = {
   controller: 'controller', service: 'service', manager: 'manager', job: 'background job',
@@ -45,10 +45,10 @@ export function infraNodeId(id: string): string {
 export function serviceNodeId(name: string): string {
   return `s:${name}`
 }
-export function requestLane(service: string): string {
+function requestLane(service: string): string {
   return `lane:${service}`
 }
-export function backgroundLane(service: string): string {
+function backgroundLane(service: string): string {
   return `lane:${service}:bg`
 }
 

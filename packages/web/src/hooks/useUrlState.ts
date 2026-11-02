@@ -30,7 +30,7 @@ import type { Renderer } from '../diagram/model'
  */
 export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | 'resources' | 'impact' | 'ownership'
 
-export const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
+const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
 const RENDERERS: readonly Renderer[] = ['react-flow', 'svg', 'mermaid']
 const WRITE_EVENT_PARAMS: readonly WriteEvent[] = ['create', 'update', 'destroy']
 const MONOLITH = 'skello-app'
@@ -64,7 +64,7 @@ export interface UrlState {
   notFound: { param: 'area' | 'term' | 'flow' | 's' | 'resource' | 'blast'; value: string } | null
 }
 
-export const EDGE_SEP = '~'
+const EDGE_SEP = '~'
 export const EDGE_LIST_SEP = ','
 
 const NAVIGATION_KEYS = ['page', 'area', 's', 'team', 'flows', 'flow', 'edge', 'drawer', 'flag', 'file', 'resource', 'blast'] as const

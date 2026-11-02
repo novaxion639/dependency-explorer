@@ -179,7 +179,7 @@ export function resolveSpecifier(spec: string, fromPath: string, aliases: Alias[
   return alias ? path.posix.join(alias.dir, spec.slice(alias.prefix.length)) : null
 }
 
-export function resolvesTo(base: string, file: string): boolean {
+function resolvesTo(base: string, file: string): boolean {
   return RESOLVE_SUFFIXES.some(s => `${base}${s}` === file)
 }
 

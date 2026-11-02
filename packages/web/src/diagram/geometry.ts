@@ -72,7 +72,7 @@ export function linesHeight(lines: number, fontSize: number): number {
   return Math.ceil(lines * fontSize * LINE_HEIGHT + 2 * PAD_Y)
 }
 
-export function centre(b: Box): Point {
+function centre(b: Box): Point {
   return { x: b.x + b.w / 2, y: b.y + b.h / 2 }
 }
 

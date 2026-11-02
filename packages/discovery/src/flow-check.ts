@@ -20,7 +20,7 @@ import { createHash } from 'node:crypto'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import { normalizeEndpoint, normalizeEndpointVersionless } from './endpoints'
 
-export interface FlowFinding {
+interface FlowFinding {
   flow: string
   kind: 'no-connection' | 'unknown-endpoint-path'
   detail: string
@@ -42,7 +42,7 @@ const PATH_FRAGMENT_RE = /\b(GET|POST|PUT|PATCH|DELETE)\s+(\/[^\s,—()]+)/g
 //     caller's file (longest Constant-like token of the callee label)
 //  3. every codeEdge endpoint must resolve to a unit, a service, or an infra node
 
-export interface CodeLayerFinding {
+interface CodeLayerFinding {
   flow: string
   kind: 'missing-code-path' | 'unknown-code-edge-endpoint' | 'unknown-unit-service' | 'controller-without-route'
   detail: string
@@ -120,7 +120,7 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string, cont
 // in the spec — a navigation ref that goes stale loudly when a route is
 // renamed or retired. Services without a checked-in spec are skipped.
 
-export interface ContractCheckFinding {
+interface ContractCheckFinding {
   flow: string
   kind: 'contract-not-in-spec'
   detail: string
@@ -170,7 +170,7 @@ export function checkContractRefs(
 // the target service's SDK. The name-heuristic candidates never gate
 // anything; they surface in the report as review-assist material.
 
-export interface PiiCheckFinding {
+interface PiiCheckFinding {
   flow: string
   kind: 'pii-class-not-decorator-typed'
   detail: string
@@ -221,7 +221,7 @@ export function checkPiiRefs(
 // declarations. Kind/tier semantics stay authored — authorizer NAMES mix
 // token type and permission tier, so no inference is attempted.
 
-export interface AuthCheckFinding {
+interface AuthCheckFinding {
   flow: string
   kind: 'gate-not-in-source' | 'authorizer-not-in-config'
   detail: string
@@ -316,7 +316,7 @@ export interface DlqFactLike {
   via: string
 }
 
-export interface FailureCheckFinding {
+interface FailureCheckFinding {
   flow: string
   kind: 'dlq-not-in-config' | 'stale-dlq-waiver' | 'unannotated-async-edge'
   detail: string
@@ -408,7 +408,7 @@ export function checkFailureLayer(
 // wrap can live on either side of the call). Kind stays authored — it is a
 // call-site property (can_access? vs dev_flag_activated?), not a name rule.
 
-export interface FlagCheckFinding {
+interface FlagCheckFinding {
   flow: string
   kind: 'flag-not-in-source'
   detail: string
@@ -493,7 +493,7 @@ export function checkFeatureFlags(map: ConnectivityMap, repoBase: string): FlagC
 //     means the source changed since the rule was authored, so the statement
 //     needs a human re-review (and a re-stamp with the printed hash)
 
-export interface RuleCheckFinding {
+interface RuleCheckFinding {
   rule: string
   kind: 'missing-rule-source' | 'rule-source-drift'
   detail: string

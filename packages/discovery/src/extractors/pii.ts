@@ -12,7 +12,7 @@ import * as path from 'node:path'
  * bookkeeping), so it flags candidates for humans, never facts.
  */
 
-export interface PiiFieldFact {
+interface PiiFieldFact {
   pkg: string
   file: string
   field: string
@@ -20,7 +20,7 @@ export interface PiiFieldFact {
   format?: string
 }
 
-export interface PiiCandidate {
+interface PiiCandidate {
   pkg: string
   file: string
   field: string

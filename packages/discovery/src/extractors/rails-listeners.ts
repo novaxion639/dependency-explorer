@@ -7,7 +7,7 @@ import type { RailsModel } from './rails-schema'
 import { blockEnd, classify, methodSpans, resolveConstant, rubyCode } from './ruby-source'
 import { joinStatements, linesOf, receiverOf, sqlWritesIn, writesIn, type WriteResolver } from './rails-writes'
 
-export type ListenerFindingKind = 'surface-drift' | 'unresolved-callback' | 'unresolved-job' | 'unknown-gem-macro' | 'cdc-unknown-table' | 'flow-listener-missing' | 'flow-listener-unsupported'
+type ListenerFindingKind = 'surface-drift' | 'unresolved-callback' | 'unresolved-job' | 'unknown-gem-macro' | 'cdc-unknown-table' | 'flow-listener-missing' | 'flow-listener-unsupported'
 export interface ListenerFinding { kind: ListenerFindingKind; subject: string; detail: string }
 export interface ListenerContext extends WriteResolver {
   read: Read
@@ -19,8 +19,8 @@ export interface ListenerContext extends WriteResolver {
 type EffectMode = ListenerEffect['mode']
 interface Callee { constant: string; method?: string; file: string | null; span: SpanAt | null; model: ModelEntry | null; async: boolean }
 
-export const JOB_ROOTS = ['app/jobs', 'app/workers', 'lib']
-export const SERVICE_ROOTS = ['app/services', 'app/models/concerns', 'app/models', 'lib']
+const JOB_ROOTS = ['app/jobs', 'app/workers', 'lib']
+const SERVICE_ROOTS = ['app/services', 'app/models/concerns', 'app/models', 'lib']
 const CONSTANT = '((?:[A-Z]\\w*::)*[A-Z]\\w*)'
 const ENQUEUE = new RegExp(`\\b${CONSTANT}(?:\\.set\\([^)]*\\))?\\.(perform_later|perform_async|perform_in|perform_at)\\b`, 'g')
 const DELAYED = new RegExp(`\\b${CONSTANT}\\.delay(?:\\([^)]*\\))?\\.(\\w+[!?]?)`, 'g')
@@ -192,7 +192,7 @@ function blockSpan(decl: DeclarationAt, ctx: ListenerContext): SpanAt {
   }
 }
 
-export const GEM_CALLBACK_METHODS: Record<string, string[]> = { geocoded_by: ['geocode'], reverse_geocoded_by: ['reverse_geocode'] }
+const GEM_CALLBACK_METHODS: Record<string, string[]> = { geocoded_by: ['geocode'], reverse_geocoded_by: ['reverse_geocode'] }
 const GEM_CALLBACK_MACRO = new RegExp(`^\\s*(${Object.keys(GEM_CALLBACK_METHODS).join('|')})\\b`)
 
 function gemProvidedMethods(entry: ModelEntry): Set<string> {
@@ -254,7 +254,7 @@ const RAILS_ASSOCIATIONS = new Set(['has_many', 'has_one', 'has_and_belongs_to_m
 interface GemEffect { table: string | null; events: WriteEvent[]; runs: Runs }
 interface GemListener { events: WriteEvent[]; phase: ListenerPhase; effects: GemEffect[] }
 
-export const KNOWN_GEM_LISTENERS: Record<string, GemListener | null> = {
+const KNOWN_GEM_LISTENERS: Record<string, GemListener | null> = {
   acts_as_list: { events: ['create', 'update', 'destroy'], phase: 'event', effects: [{ table: null, events: ['update'], runs: 'none' }] },
   has_ancestry: { events: ['update', 'destroy'], phase: 'event', effects: [{ table: null, events: ['update'], runs: 'all' }] },
   multisearchable: {
@@ -473,7 +473,7 @@ function firedSites(file: string, lines: ReturnType<typeof linesOf>, self: Model
   })
 }
 
-export function writeSites(files: SourceFile[], listeners: Listener[], entries: ModelEntry[], ctx: ListenerContext): WriteSite[] {
+function writeSites(files: SourceFile[], listeners: Listener[], entries: ModelEntry[], ctx: ListenerContext): WriteSite[] {
   const selfOf = selfByFile(entries)
   const helpers = helpersOf(entries, listeners)
   return files.flatMap(({ file, source }) => {

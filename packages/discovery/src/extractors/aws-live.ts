@@ -110,7 +110,7 @@ export function buildServiceResolver(serviceNames: string[]): (resourceName: str
 
 // ── Analysis ─────────────────────────────────────────────────────────────────
 
-export type LiveVerdict = 'match' | 'new' | 'pair-other-protocol'
+type LiveVerdict = 'match' | 'new' | 'pair-other-protocol'
 
 export interface AwsLiveFindings {
   /** Cross-service stream consumption derived from event source mappings (deduped). */

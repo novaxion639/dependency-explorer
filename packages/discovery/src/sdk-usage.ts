@@ -14,7 +14,7 @@ import type { SdkRegistry } from './extractors/sdk-registry'
  * generic names like findAll would otherwise false-positive across the codebase.
  */
 
-export interface CalledMethod {
+interface CalledMethod {
   method: string
   httpMethod: string
   path: string
@@ -22,7 +22,7 @@ export interface CalledMethod {
   files: string[]
 }
 
-export interface AmbiguousCall {
+interface AmbiguousCall {
   /** method name shared by several registry entries — which endpoint is hit can't be told statically */
   method: string
   candidateIds: string[]

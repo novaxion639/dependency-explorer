@@ -20,7 +20,7 @@ export const COVERAGE_ROOTS: Record<string, string[]> = {
 
 type Evidence = ExternalSystem['usedBy'][number]['evidence']
 
-export interface AreaCheckFinding {
+interface AreaCheckFinding {
   kind: 'dead-glob' | 'empty-reading-path' | 'missing-anchor' | 'anchor-symbol-absent' | 'missing-external-evidence'
   subject: string
   detail: string
@@ -36,7 +36,7 @@ export interface AreaCheckResult {
   skippedRepos: string[]
 }
 
-export function listRepoFiles(repoDir: string): string[] {
+function listRepoFiles(repoDir: string): string[] {
   const out: string[] = []
   const walk = (rel: string) => {
     for (const entry of fs.readdirSync(path.join(repoDir, rel), { withFileTypes: true })) {
@@ -53,7 +53,7 @@ export function listRepoFiles(repoDir: string): string[] {
 }
 
 
-export function symbolPattern(symbol: string): RegExp {
+function symbolPattern(symbol: string): RegExp {
   return new RegExp(`\\b(class|module|interface|type|enum|const|function)\\s+${escapeRegExp(symbol)}\\b`)
 }
 

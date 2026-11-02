@@ -24,6 +24,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Unused exports
+        run: pnpm check:exports
+
       - name: Data integrity tests
         run: pnpm test
 

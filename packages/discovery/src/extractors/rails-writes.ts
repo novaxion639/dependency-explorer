@@ -8,7 +8,7 @@ export interface WriteHit { table: string; call: string; kind: WriteKind; grade:
 
 const kind = (runs: Runs, ...events: WriteEvent[]): WriteKind => ({ runs, events })
 
-export const WRITE_KINDS: Record<string, WriteKind> = {
+const WRITE_KINDS: Record<string, WriteKind> = {
   save: kind('all', 'create', 'update'),
   'save!': kind('all', 'create', 'update'),
   create: kind('all', 'create'),
