@@ -1,5 +1,5 @@
-import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { latestSnapshotDir } from '../snapshot-dir'
 import { catalogEntryOf } from './catalog'
 import { isOpenBug } from './fields'
 import { readJiraSnapshot } from './snapshot'
@@ -14,18 +14,7 @@ Prints draft rows for packages/data/src/feature-areas.ts, one per Feature Area l
 export function snapshotDirOf(argv: string[], home: string): string | null {
   const flagAt = argv.indexOf('--snapshot')
   const given = flagAt >= 0 ? argv[flagAt + 1] : undefined
-  if (given) {
-    return path.resolve(given)
-  }
-  const latest = fs.existsSync(home)
-    ? fs
-        .readdirSync(home, { withFileTypes: true })
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name)
-        .sort()
-        .pop()
-    : undefined
-  return latest === undefined ? null : path.join(home, latest)
+  return given ? path.resolve(given) : latestSnapshotDir(home)
 }
 
 const quoted = (value: string): string => `'${value.replace(/[\\']/g, '\\$&')}'`

@@ -2,7 +2,7 @@ import * as fs from 'node:fs'
 
 const SUBJECT_FIELDS = ['flow', 'rule', 'subject', 'service', 'edge'] as const
 const EDGE_DRIFT_SECTIONS = ['candidates', 'unknownTargets', 'stale', 'unverifiable']
-const ADVISORY_SECTIONS = ['datadog']
+const ADVISORY_SECTIONS = ['datadog', 'jira']
 
 export function stableDetail(detail: string): string {
   return detail.replace(/\b[0-9a-f]{12,}\b/g, '#').replace(/\b(L?)\d+\b/g, '$1N')
