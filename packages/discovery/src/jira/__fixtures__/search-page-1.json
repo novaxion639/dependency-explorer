@@ -1,0 +1,27 @@
+{
+  "issues": [
+    {
+      "key": "BR-4",
+      "fields": {
+        "created": "2026-10-28T08:00:00.000+0100",
+        "status": { "name": "QA", "statusCategory": { "key": "done" } },
+        "priority": null,
+        "resolution": null,
+        "customfield_11070": null,
+        "customfield_10632": { "ongoingCycle": {}, "completedCycles": [] }
+      }
+    },
+    {
+      "key": "BR-5",
+      "fields": {
+        "created": "2026-10-02T08:00:00.000+0200",
+        "status": { "name": "Done", "statusCategory": { "key": "done" } },
+        "priority": { "name": "Medium" },
+        "resolution": { "name": "Won't Do" },
+        "customfield_11070": null,
+        "customfield_10632": null
+      }
+    }
+  ],
+  "isLast": true
+}

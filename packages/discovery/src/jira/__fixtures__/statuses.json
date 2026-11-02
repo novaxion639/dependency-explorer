@@ -1,0 +1,8 @@
+[
+  { "id": "1", "name": "To Do", "statusCategory": { "key": "new" } },
+  { "id": "2", "name": "In Progress", "statusCategory": { "key": "indeterminate" } },
+  { "id": "3", "name": "QA", "statusCategory": { "key": "done" } },
+  { "id": "4", "name": "Go for MEP", "statusCategory": { "key": "done" } },
+  { "id": "5", "name": "Done", "statusCategory": { "key": "done" } },
+  { "id": "6", "name": "To Do", "statusCategory": { "key": "new" } }
+]

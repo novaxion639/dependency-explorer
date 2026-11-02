@@ -10,6 +10,7 @@
     "discover:baseline": "tsx src/discover.ts --pinned --write-baseline",
     "discover:aws:fetch": "tsx src/aws-fetch.ts",
     "discover:datadog:fetch": "tsx src/datadog-fetch.ts",
+    "discover:jira:fetch": "tsx src/jira-fetch.ts",
     "discover:scaffold": "tsx src/scaffold.ts",
     "docs:gen": "tsx src/docs-gen-cli.ts",
     "typecheck": "tsc --noEmit",
