@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import type { DatadogOverlay } from '@dependency-explorer/data'
+import { isStaleSnapshot } from '../../utils/staleSnapshot'
+import { Sparkline } from '../Sparkline'
 import styles from './HealthSection.module.css'
 
 type ServiceHealth = DatadogOverlay['services'][string]
@@ -23,37 +25,7 @@ const VERDICT_LABEL: Record<ServiceHealth['releases'][number]['verdict'], string
   steady: 'Steady',
   tooRecent: 'Too recent',
 }
-const STALE_AFTER_MS = 7 * 24 * 60 * 60 * 1000
-const SPARK = { width: 140, height: 28 }
 const percent = new Intl.NumberFormat('en', { maximumFractionDigits: 2, roundingMode: 'trunc', useGrouping: false })
-
-function Sparkline({ label, values }: { label: string; values: Array<number | null> }) {
-  const known = values.filter(v => v !== null)
-  const max = Math.max(1, ...known)
-  const x = (i: number) => (i / Math.max(1, values.length - 1)) * SPARK.width
-  const y = (v: number) => SPARK.height - (v / max) * SPARK.height
-  const runs = values.slice(0, -1).reduce<string[][]>((acc, v, i) => {
-    if (v === null) {
-      acc.push([])
-    } else {
-      acc.at(-1)?.push(`${x(i)},${y(v)}`)
-    }
-    return acc
-  }, [[]]).filter(run => run.length > 0)
-  const snapshotDay = values.at(-1)
-  const name = known.length === 0
-    ? `${label}, no data`
-    : `${label}, max ${Math.round(Math.max(...known))}, last ${Math.round(known.at(-1) ?? 0)}; the last point is the snapshot day, partial`
-  return (
-    <figure className={styles.spark}>
-      <figcaption>{label}</figcaption>
-      <svg role="img" aria-label={name} width={SPARK.width} height={SPARK.height} viewBox={`0 0 ${SPARK.width} ${SPARK.height}`}>
-        {runs.map(run => <polyline key={run[0]} points={run.join(' ')} />)}
-        {typeof snapshotDay === 'number' && <circle cx={x(values.length - 1)} cy={y(snapshotDay)} r={2.5} />}
-      </svg>
-    </figure>
-  )
-}
 
 function List<T>({ title, items, children }: { title: string; items: T[]; children: (item: T) => ReactNode }) {
   if (items.length === 0) {
@@ -72,8 +44,7 @@ function DatadogLink({ href, children }: { href: string; children: ReactNode }) 
 }
 
 export function HealthSection({ health, snapshotDate, eventsCapped, now }: Props) {
-  const snapshotMs = Date.parse(snapshotDate)
-  const stale = Number.isNaN(snapshotMs) || now.getTime() - snapshotMs > STALE_AFTER_MS
+  const stale = isStaleSnapshot(snapshotDate, now)
   return (
     <section aria-label="Health" className={styles.health}>
       <h2>Health</h2>
@@ -84,9 +55,9 @@ export function HealthSection({ health, snapshotDate, eventsCapped, now }: Props
       {health.strip.length > 0 && (
         <>
           <div className={styles.strip}>
-            <Sparkline label="Requests" values={health.strip.map(d => d.requests)} />
-            <Sparkline label="5xx" values={health.strip.map(d => d.errors5xx)} />
-            <Sparkline label="p95 ms" values={health.strip.map(d => d.p95ms)} />
+            <Sparkline label="Requests" values={health.strip.map(d => d.requests)} partialLast />
+            <Sparkline label="5xx" values={health.strip.map(d => d.errors5xx)} partialLast />
+            <Sparkline label="p95 ms" values={health.strip.map(d => d.p95ms)} partialLast />
           </div>
           <p className={styles.note}>{health.strip[0]?.day} to {health.strip.at(-1)?.day}; the hollow last point is the snapshot day, partial</p>
         </>

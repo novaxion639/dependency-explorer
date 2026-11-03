@@ -11,10 +11,6 @@
 .noData { color: var(--ink-faint); }
 .reasons { font-weight: 400; color: var(--ink); }
 .strip { display: flex; flex-wrap: wrap; gap: var(--space-3); margin: 0; }
-.spark { margin: 0; font-size: var(--text-xs); color: var(--ink-muted); }
-.spark svg { display: block; overflow: visible; }
-.spark polyline { fill: none; stroke: var(--ink); stroke-width: 1.5; }
-.spark circle { fill: var(--card); stroke: var(--ink-faint); stroke-width: 1.5; }
 .note { font-size: var(--text-xs); color: var(--ink-faint); }
 .muted { color: var(--ink-muted); }
 .noisy { margin-left: var(--space-1); font-size: var(--text-xs); background: var(--highlight); padding: 0 3px; }
