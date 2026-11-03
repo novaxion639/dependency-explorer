@@ -1,4 +1,5 @@
 import type { JiraOverlay, Team } from '@dependency-explorer/data'
+import { jiraSearchUrl } from '../../utils/jiraSearchUrl'
 import { isStaleSnapshot } from '../../utils/staleSnapshot'
 import { Sparkline } from '../Sparkline'
 import styles from './BugsSection.module.css'
@@ -11,8 +12,6 @@ interface Props {
   teams: Team[]
 }
 
-export const jiraSearchUrl = (host: string, jql: string) => `https://${host}/issues/?jql=${encodeURIComponent(jql)}`
-
 export function BugsSection({ area, snapshotDate, host, now, teams }: Props) {
   const teamName = new Map(teams.map(t => [t.id, t.name]))
   const featureAreas = [...area.featureAreas].sort((a, b) => b.open - a.open || a.name.localeCompare(b.name))
@@ -20,7 +19,7 @@ export function BugsSection({ area, snapshotDate, host, now, teams }: Props) {
     <section aria-label="Bugs" className={styles.bugs}>
       <h2>Bugs</h2>
       <p className={styles.counts}>{area.open} open · {area.breached} past SLA · {area.opened90d} opened in 90 days</p>
-      <Sparkline label="BRs opened per week" values={area.weekly} partialLast={false} />
+      <Sparkline label="BRs opened per week" values={area.weekly} partialNote="the last point is the snapshot week, partial" />
       {featureAreas.length > 0 && (
         <section aria-label="Feature Areas">
           <h3>Feature Areas</h3>

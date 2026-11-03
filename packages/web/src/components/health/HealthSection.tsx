@@ -25,6 +25,7 @@ const VERDICT_LABEL: Record<ServiceHealth['releases'][number]['verdict'], string
   steady: 'Steady',
   tooRecent: 'Too recent',
 }
+const PARTIAL_DAY = 'the last point is the snapshot day, partial'
 const percent = new Intl.NumberFormat('en', { maximumFractionDigits: 2, roundingMode: 'trunc', useGrouping: false })
 
 function List<T>({ title, items, children }: { title: string; items: T[]; children: (item: T) => ReactNode }) {
@@ -55,9 +56,9 @@ export function HealthSection({ health, snapshotDate, eventsCapped, now }: Props
       {health.strip.length > 0 && (
         <>
           <div className={styles.strip}>
-            <Sparkline label="Requests" values={health.strip.map(d => d.requests)} partialLast />
-            <Sparkline label="5xx" values={health.strip.map(d => d.errors5xx)} partialLast />
-            <Sparkline label="p95 ms" values={health.strip.map(d => d.p95ms)} partialLast />
+            <Sparkline label="Requests" values={health.strip.map(d => d.requests)} partialNote={PARTIAL_DAY} />
+            <Sparkline label="5xx" values={health.strip.map(d => d.errors5xx)} partialNote={PARTIAL_DAY} />
+            <Sparkline label="p95 ms" values={health.strip.map(d => d.p95ms)} partialNote={PARTIAL_DAY} />
           </div>
           <p className={styles.note}>{health.strip[0]?.day} to {health.strip.at(-1)?.day}; the hollow last point is the snapshot day, partial</p>
         </>

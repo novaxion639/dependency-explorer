@@ -36,12 +36,12 @@ describe('BugsSection', () => {
     expect(byRole(host, 'heading', 'Bugs')).not.toBeNull()
     expect(host.textContent).toContain('12 open · 3 past SLA · 27 opened in 90 days')
   })
-  it('draws the weekly BRs opened as a full line', async () => {
+  it('draws the weekly BRs opened with the current week hollow and partial', async () => {
     const host = await render()
     const spark = byRole(host, 'img', /^BRs opened per week/)
-    expect(spark?.getAttribute('aria-label')).toBe('BRs opened per week, max 4, last 3')
+    expect(spark?.getAttribute('aria-label')).toBe('BRs opened per week, max 4, last 3; the last point is the snapshot week, partial')
     expect(spark?.querySelectorAll('polyline')).toHaveLength(1)
-    expect(spark?.querySelectorAll('circle')).toHaveLength(0)
+    expect(spark?.querySelectorAll('circle')).toHaveLength(1)
   })
   it('lists the Feature Areas most open first', async () => {
     const host = await render()

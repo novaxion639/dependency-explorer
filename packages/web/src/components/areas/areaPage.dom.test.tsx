@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { connectivityMap } from '@dependency-explorer/data'
-import { byRole } from '../../test/roles'
+import { allByRole, byRole } from '../../test/roles'
 import { AreaPage } from './AreaPage'
 import { areaBugs, jiraOverlayOf } from './jiraOverlayFixture'
 
@@ -34,8 +34,9 @@ describe('AreaPage with the Jira overlay', () => {
   })
   it('renders the Bugs section after the existing sections when the overlay names the area', async () => {
     const host = await render(jiraOverlayOf({ areas: { [areaId]: areaBugs() } }))
-    const headings = [...host.querySelectorAll('h2')].map(h => h.textContent)
-    expect(headings.at(-1)).toBe('Bugs')
+    const headings = allByRole(host, 'heading').map(h => h.textContent)
+    expect(headings.indexOf('External systems')).toBeGreaterThan(0)
+    expect(headings.indexOf('Bugs')).toBeGreaterThan(headings.indexOf('External systems'))
     expect(byRole(host, 'region', 'Bugs')?.textContent).toContain('12 open · 3 past SLA · 27 opened in 90 days')
   })
   it('renders no Bugs section when the overlay does not name the area', async () => {

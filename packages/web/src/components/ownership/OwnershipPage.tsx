@@ -133,6 +133,7 @@ function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }
   onSelectService: (name: string) => void
   onOpenArea: (id: string) => void
 }) {
+  const datadogTeams = team.datadogTeams ?? []
   return (
     <div className={styles.detail}>
       <button type="button" className={styles.back} onClick={onBack}>← All teams</button>
@@ -144,9 +145,9 @@ function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }
       </div>
       <OwnedAreas map={map} teamId={team.id} onOpenArea={onOpenArea} />
       <JiraBoards ids={team.jiraBoards ?? []} />
-      {(team.datadogTeams ?? []).length > 0 && (
+      {datadogTeams.length > 0 && (
         <section aria-label="Datadog teams" className={styles.areas}>
-          <span className={styles.muted}>Datadog teams:</span> {(team.datadogTeams ?? []).join(', ')}
+          <span className={styles.muted}>Datadog teams:</span> {datadogTeams.join(', ')}
         </section>
       )}
       {services.length === 0 ? (

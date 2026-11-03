@@ -1,7 +1,7 @@
 import type { ConnectivityMap, Platform, ProductArea } from '@dependency-explorer/data'
 import { areaFacts, getAreaFlows, getAreaServices, getSharedExternals, JiraOverlaySchema } from '@dependency-explorer/data'
 import { useOverlay } from '../../hooks/useOverlay'
-import { jiraSearchUrl } from './BugsSection'
+import { jiraSearchUrl } from '../../utils/jiraSearchUrl'
 import { plural } from '../../utils/plural'
 import styles from './AreasHome.module.css'
 
