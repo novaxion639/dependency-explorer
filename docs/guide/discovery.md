@@ -37,6 +37,7 @@
   - Snapshots are gitignored.
   - Sandbox account only, per the credentials story (`research/aws-live-verification-credentials.md` in the shared docs).
 - **Datadog state** (🐶 report section): a read-only snapshot of monitors, SLOs, teams, open incidents, request and error series, DLQ depth and monitor transitions, joined to the map by service name. It feeds the web app's [Health section](explorer.md#health) and is described in [Datadog snapshot and overlay](#datadog-snapshot-and-overlay).
+- **Jira bug reports** (🎫 report section): a read-only snapshot of the `BR` project's bugs, Feature Area values and boards, joined to the map through the authored [Feature Area map](data.md#feature-areas) and the teams' `jiraBoards`. It feeds the [Bugs section](explorer.md#bugs) and is described in [Jira snapshot and overlay](#jira-snapshot-and-overlay).
 
 ## Commands
 
@@ -54,6 +55,9 @@ pnpm discover -- --aws [dir]  # + 🛰 live AWS snapshot diff (defaults to the l
 pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (~215 calls, MFA'd session required)
 pnpm discover:datadog:fetch   # capture a read-only Datadog snapshot (needs DATADOG_API_KEY and DATADOG_APP_KEY)
 pnpm discover -- --datadog [dir]   # + 🐶 Datadog drift, and write the web overlay (defaults to the latest snapshot)
+pnpm discover:jira:fetch      # capture a read-only Jira snapshot (needs JIRA_EMAIL and JIRA_API_TOKEN)
+pnpm --filter @dependency-explorer/discovery discover:jira:draft   # print feature-areas.ts rows for every Feature Area of a snapshot
+pnpm discover -- --jira [dir] # + 🎫 Jira drift, and write the web overlay (defaults to the latest snapshot)
 pnpm discover -- --pinned --no-fetch   # pin against the local origin refs, with no `git fetch`
 pnpm --filter @dependency-explorer/discovery golden:update   # rewrite the golden files after an intended output change
 pnpm docs:gen                 # rewrite the generated sections of the inventory docs (CI fails on drift)
@@ -121,6 +125,53 @@ The bars come from skello-cockpit's code: a 5xx rise needs 3× the week before a
 Names match across spellings: `svc-alpha` and `svcalpha` fold into one map service.
 
 **Why advisory.** 🐶 findings never enter `baseline.json` and never trip `--fail-on-new`. They carry operational names, and nobody else can reproduce a run on your local snapshot, so the nightly job could not check them.
+
+## Jira snapshot and overlay
+
+The same path as Datadog turns Jira bug reports into the web app's Bugs section. Bug keys stay in the gitignored snapshot; the overlay holds counts, Feature Area labels, board names and Jira search links, and the built bundle never contains it ([ADR-0011](../adr/0011-jira-overlay-and-feature-area-map.md)). No bug title, description, comment or person is read.
+
+```mermaid
+flowchart LR
+  A[Jira API] -->|pnpm discover:jira:fetch| B[".jira-snapshots/DATE/"]
+  B -->|discover:jira:draft| F["feature-areas.ts rows"]
+  B -->|pnpm discover -- --jira| C["web/overlay/jira.json"]
+  B -->|pnpm discover -- --jira| D["🎫 drift report"]
+  C -->|dev and preview only| E[Bugs section, Ownership boards]
+```
+
+**Fetch.** `pnpm discover:jira:fetch [--out <dir>]` writes `packages/discovery/.jira-snapshots/<YYYY-MM-DD>/` (gitignored). `--help` prints the usage.
+
+| Setting | Value |
+|---|---|
+| `JIRA_EMAIL`, `JIRA_API_TOKEN` | Required, from the environment only; never written to a file or printed |
+| Token | A classic API token without scopes, created at id.atlassian.com → Security → API tokens; a scoped token only works through `api.atlassian.com` |
+| `JIRA_HOST` | Default `skello.atlassian.net` |
+
+- Jira is read-only, GET calls only: the account (`myself`), the site's statuses, every Feature Area value (`cf[11070]`, read by autocomplete prefix and kept raw), every board, the `BR` search, and the open BRs of each board listed in a team's `jiraBoards`.
+- Scope: `project = BR AND issuetype = Bug AND status != Deleted`, bugs open now or created in the last 90 days. Open means `statusCategory != Done` or a to-ship status (`QA`, `Go for MEP`) the site has. Bugs resolved as `Not a bug`, `Won't Do`, `Won't do`, `Duplicate` or `Cannot Reproduce` are dropped.
+- Each bug keeps its key, creation date, status and category, priority, first Feature Area value and SLA-breached flag.
+- At most 4 requests in flight; HTTP 429 is retried up to 5 attempts, honouring `Retry-After`.
+- Exit code 1: a variable is unset (each missing one is named), Jira refuses the credentials (`Jira refused the credentials (HTTP 401): use a classic API token without scopes`, with no folder written), a request fails, or the target folder holds files other than a Jira snapshot.
+- The folder is written whole or not at all, and re-running on the same day replaces that day's snapshot.
+
+**Draft.** `pnpm --filter @dependency-explorer/discovery discover:jira:draft [--snapshot <dir>]` prints one `feature-areas.ts` row per Feature Area of the latest snapshot: the raw label, its tribe from skello-cockpit's catalog (`null` when the catalog does not know it), `area: null`, and a trailing note with the catalog name and open BR count. Set each `area` before pasting the rows, and drop the notes.
+
+**Discover.** `pnpm discover -- --jira [dir]` reads a snapshot (the latest by default, `dir` resolved as for `--datadog`), prints the 🎫 section and writes `packages/web/overlay/jira.json`, validated by `JiraOverlaySchema` ([data.md](data.md#jira-overlay)). Without `--jira`, discovery reads no snapshot, prints no 🎫 section and writes no overlay.
+- A bug's area is its first Feature Area value through `feature-areas.ts`; no value, a value missing from the map, or one mapped to `null` counts as unmapped.
+- A bug's teams are those whose `jiraBoards` hold it; a bug on two teams' boards counts once in its area and once under each team.
+- `weekly` counts BRs opened per ISO week (Monday, UTC), the 13 weeks ending with the snapshot's week, oldest first; the last one is partial.
+
+**Drift (🎫).** The section lists where Jira and the map disagree, each finding with its fix:
+
+| Kind | Meaning |
+|---|---|
+| `unmapped-label` | a Feature Area value in Jira is missing from `feature-areas.ts` (with its open BR count) |
+| `gone-label` | a value in `feature-areas.ts` that Jira no longer offers |
+| `unknown-board` | a team's `jiraBoards` names a board Jira does not have |
+| `board-suggestion` | a board whose name contains a team's name (without "Team") is not in that team's `jiraBoards` |
+| `unlisted-label` | a value seen on BRs that Jira's Feature Area list no longer offers |
+
+🎫 findings are advisory for the same reasons as 🐶: they stay out of `baseline.json` and `--fail-on-new`.
 
 ## Gates
 

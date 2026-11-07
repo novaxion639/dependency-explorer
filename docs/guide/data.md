@@ -161,6 +161,34 @@ The join to the map is by service `name` and resource id, after folding spelling
 
 **`datadogTeams`.** An optional list on `TeamSchema`: the Datadog team handles that map to the team, as `githubTeams` does for CODEOWNERS. Discovery uses it to compare the team tagged on a service's monitors with its CODEOWNERS team (`team-mismatch`).
 
+## Feature areas
+
+`packages/data/src/feature-areas.ts` maps every value of Jira's Feature Area field to one product area. It is authored and reviewed like any dataset change ([ADR-0011](../adr/0011-jira-overlay-and-feature-area-map.md)) and holds no bug data. Each row is a `FeatureAreaSchema`:
+
+| Field | Content |
+|---|---|
+| `label` | the value exactly as Jira stores it (`Grille_hebdomadaire`: underscores and case kept), because the join and the Jira search links match it exactly |
+| `tribe` | the tribe skello-cockpit's catalog gives the value, `null` when the catalog does not know it |
+| `area` | a product area id, or `null` when the value fits no area (support widgets, sales tools); a value spanning two areas takes its main one |
+
+Integrity tests require unique labels and an existing area id for every non-null `area`. `pnpm --filter @dependency-explorer/discovery discover:jira:draft` drafts the rows from a snapshot; the 🎫 section reports values Jira adds or drops ([discovery.md](discovery.md#jira-snapshot-and-overlay)).
+
+**`jiraBoards`.** An optional list of Jira board ids on `TeamSchema`, beside `githubTeams` and `datadogTeams`. A bug counts under a team when one of its boards holds it. A board is linked when its name names the team unambiguously; the 🎫 `board-suggestion` finding proposes the rest.
+
+## Jira overlay
+
+Jira bug counts are a read-only overlay beside the dataset, on the Datadog overlay's terms: `packages/web/overlay/jira.json` is gitignored, derived by `pnpm discover -- --jira` and fetched by the web app at runtime. It holds no bug key, title or person.
+
+`JiraOverlaySchema` (`packages/schema`) is the contract:
+
+| Field | Content |
+|---|---|
+| `snapshotDate` | the day the snapshot was fetched (`YYYY-MM-DD`) |
+| `host` | the Jira host, for links |
+| `areas` | keyed by product area id: `open`, `breached` (open and past SLA), `opened90d`, `weekly` (13 ISO-week counts of BRs opened, oldest first), `featureAreas` (label, open, breached, opened90d), `teams` (`teamId`, `null` for no listed board, and open), `jql` (the area's open BRs) |
+| `unmapped` | open BRs with no Feature Area or one mapped to no area: `open`, `breached`, `jql` |
+| `boards` | keyed by board id: `name` |
+
 ## Contributing data
 
 - **Flows:** follow the [flow authoring guide](../flow-authoring-guide.md). Every claim is verified against deployed code, never against documentation, and the integrity tests enforce the node naming conventions.

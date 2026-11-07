@@ -26,6 +26,20 @@ There are 14 product areas (Planning, Time & attendance, Leave & requests…) pl
 
 Every flow carries a primary area. Its full area set is derived from its code-unit paths (`?page=areas&area=planning`). The areas home lists the external systems no single area claims (Stripe, Intercom, Segment, Metabase, Zelty) under "Shared by every area", with the repos that use them.
 
+### Bugs
+
+With a Jira overlay that names the area, the area page ends with a Bugs section, read from the local Jira snapshot ([discovery.md](discovery.md#jira-snapshot-and-overlay)):
+- "N open · N past SLA · N opened in 90 days";
+- a 13-week sparkline of bug reports opened per week, its last point hollow because the snapshot's week is partial;
+- the area's Feature Areas, most open first, with open and past-SLA counts;
+- the teams whose Jira boards hold its open bugs, and "No team" for bugs on no listed board;
+- "Open in Jira", the same list as a Jira search;
+- a footer naming the snapshot date, "stale" past 7 days.
+
+A bug counts in the area of its first Feature Area, so the Jira search can show a few more bugs than the count: those whose second Feature Area names the area. The areas home adds "Bugs with no product area: N open" under the area grid, linking to those bugs in Jira, when there are some.
+
+**No overlay.** Without `packages/web/overlay/jira.json`, or when it fails `JiraOverlaySchema`, the app shows no Bugs section and no unmapped line. The overlay is served like Datadog's: `pnpm dev` and `pnpm preview` only, never in the build.
+
 ## Microservices overview
 
 **Exploring**, the page is an area map:
@@ -129,7 +143,7 @@ Per-team service ownership is resolved from CODEOWNERS:
 - A service is assigned to a team when its wildcard (`*`) line names exactly one product team.
 - Path-rule frequency is not ownership, and process squads and the team-dev catch-all are excluded.
 
-**Team pages** are permalink-backed (`?page=ownership&team=team-salsa`) and searchable from ⌘K. Each owned service shows its CODEOWNERS evidence chips, its connection counts and a jump into the graph.
+**Team pages** are permalink-backed (`?page=ownership&team=team-salsa`) and searchable from ⌘K. Each owned service shows its CODEOWNERS evidence chips, its connection counts and a jump into the graph. A team page also lists the team's Jira boards (names from the Jira overlay, ids without it) and Datadog teams, each only when the team has some.
 
 **Unowned services** are listed as the adoption call-to-action. Coverage grows with zero code changes as teams add CODEOWNERS wildcards.
 
