@@ -95,7 +95,18 @@ describe('snapshotDirOf', () => {
   afterEach(() => fs.rmSync(home, { recursive: true, force: true }))
 
   it('takes --snapshot first', () => {
-    expect(snapshotDirOf(['--snapshot', 'some/dir'], home)).toBe(path.resolve('some/dir'))
+    const dir = path.join(home, 'given')
+    fs.mkdirSync(dir)
+    expect(snapshotDirOf(['--snapshot', dir], home)).toBe(dir)
+  })
+
+  it('resolves a relative --snapshot against the cwd, then the repo root', () => {
+    expect(snapshotDirOf(['--snapshot', 'package.json'], home)).toBe(path.resolve('package.json'))
+    expect(snapshotDirOf(['--snapshot', 'packages/discovery'], home)).toBe(path.resolve(process.cwd(), '../..', 'packages/discovery'))
+  })
+
+  it('fails on a --snapshot that exists nowhere', () => {
+    expect(() => snapshotDirOf(['--snapshot', 'no/such/dir'], home)).toThrow('--snapshot snapshot directory not found: no/such/dir')
   })
 
   it('takes the latest dated folder otherwise', () => {

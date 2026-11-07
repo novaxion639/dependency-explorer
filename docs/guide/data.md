@@ -187,7 +187,7 @@ Jira bug counts are a read-only overlay beside the dataset, on the Datadog overl
 | `host` | the Jira host, for links |
 | `areas` | keyed by product area id, for areas with an open or 90-day bug: `open`, `breached` (open and past SLA), `opened90d`, `weekly` (13 ISO-week counts of BRs opened, oldest first), `featureAreas` (label, open, breached, opened90d), `teams` (`teamId`, `null` for no listed board, and open), `jql` (the area's open BRs) |
 | `unmapped` | open BRs with no Feature Area, one absent from the map, or one mapped to no area: `open`, `breached`, `jql` |
-| `boards` | keyed by board id: `name` |
+| `boards` | the boards listed in a team's `jiraBoards`, keyed by board id: `name` |
 
 ## Contributing data
 

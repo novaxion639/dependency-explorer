@@ -14,17 +14,16 @@ interface Props {
 
 export function BugsSection({ area, snapshotDate, host, now, teams }: Props) {
   const teamName = new Map(teams.map(t => [t.id, t.name]))
-  const featureAreas = [...area.featureAreas].sort((a, b) => b.open - a.open || a.name.localeCompare(b.name))
   return (
     <section aria-label="Bugs" className={styles.bugs}>
       <h2>Bugs</h2>
       <p className={styles.counts}>{area.open} open · {area.breached} past SLA · {area.opened90d} opened in 90 days</p>
       <Sparkline label="BRs opened per week" values={area.weekly} partialNote="the last point is the snapshot week, partial" />
-      {featureAreas.length > 0 && (
+      {area.featureAreas.length > 0 && (
         <section aria-label="Feature Areas">
           <h3>Feature Areas</h3>
           <ul>
-            {featureAreas.map(f => (
+            {area.featureAreas.map(f => (
               <li key={f.name}>{f.name} <span className={styles.muted}>{f.open} open · {f.breached} past SLA</span></li>
             ))}
           </ul>

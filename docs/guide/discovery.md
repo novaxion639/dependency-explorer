@@ -56,7 +56,7 @@ pnpm discover:aws:fetch --profile skl-sandbox   # capture a read-only snapshot (
 pnpm discover:datadog:fetch   # capture a read-only Datadog snapshot (needs DATADOG_API_KEY and DATADOG_APP_KEY)
 pnpm discover -- --datadog [dir]   # + 🐶 Datadog drift, and write the web overlay (defaults to the latest snapshot)
 pnpm discover:jira:fetch      # capture a read-only Jira snapshot (needs JIRA_EMAIL and JIRA_API_TOKEN)
-pnpm --filter @dependency-explorer/discovery discover:jira:draft   # print feature-areas.ts rows for every Feature Area of a snapshot
+pnpm discover:jira:draft   # print feature-areas.ts rows for every Feature Area of a snapshot
 pnpm discover -- --jira [dir] # + 🎫 Jira drift, and write the web overlay (defaults to the latest snapshot)
 pnpm discover -- --pinned --no-fetch   # pin against the local origin refs, with no `git fetch`
 pnpm --filter @dependency-explorer/discovery golden:update   # rewrite the golden files after an intended output change
@@ -154,7 +154,7 @@ flowchart LR
 - Exit code 1: a variable is unset (each missing one is named), Jira refuses the credentials (`Jira refused the credentials (HTTP 401): use a classic API token without scopes`, with no folder written), a request fails, or the target folder holds files other than a Jira snapshot.
 - The folder is written whole or not at all, and re-running on the same day replaces that day's snapshot.
 
-**Draft.** `pnpm --filter @dependency-explorer/discovery discover:jira:draft [--snapshot <dir>]` prints one `feature-areas.ts` row per Feature Area of the latest snapshot, and per label seen only on its BRs: the raw label, its tribe from skello-cockpit's catalog (`null` when the catalog does not know it), `area: null`, and a trailing note with the catalog name and open BR count. Set each `area` before pasting the rows, and drop the notes.
+**Draft.** `pnpm discover:jira:draft [--snapshot <dir>]` prints one `feature-areas.ts` row per Feature Area of the latest snapshot, and per label seen only on its BRs: the raw label, its tribe from skello-cockpit's catalog (`null` when the catalog does not know it), `area: null`, and a trailing note with the catalog name and open BR count. Set each `area` before pasting the rows, and drop the notes.
 
 **Discover.** `pnpm discover -- --jira [dir]` reads a snapshot (the latest by default, `dir` resolved as for `--datadog`), prints the 🎫 section and writes `packages/web/overlay/jira.json`, validated by `JiraOverlaySchema` ([data.md](data.md#jira-overlay)). Without `--jira`, discovery reads no snapshot, prints no 🎫 section and writes no overlay.
 - A bug's area is its first Feature Area value through `feature-areas.ts`; no value, a value missing from the map, or one mapped to `null` counts as unmapped.

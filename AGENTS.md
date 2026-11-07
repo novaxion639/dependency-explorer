@@ -20,7 +20,7 @@ See [README.md](README.md) for the product and `docs/guide/` for the guides.
 | `pnpm discover:datadog:fetch` | Fetches the Datadog snapshot (`DATADOG_API_KEY`, `DATADOG_APP_KEY`) |
 | `pnpm discover -- --datadog` | Adds the 🐶 section and writes the web overlay from the latest snapshot |
 | `pnpm discover:jira:fetch` | Fetches the Jira snapshot (`JIRA_EMAIL`, `JIRA_API_TOKEN`) |
-| `pnpm --filter @dependency-explorer/discovery discover:jira:draft` | Drafts `feature-areas.ts` rows from the latest Jira snapshot |
+| `pnpm discover:jira:draft` | Drafts `feature-areas.ts` rows from the latest Jira snapshot |
 | `pnpm discover -- --jira` | Adds the 🎫 section and writes the Jira web overlay from the latest snapshot |
 | `pnpm --filter @dependency-explorer/discovery golden:update` | Rewrites the golden files after an intended output change |
 | `pnpm discover:scaffold` | Scaffolds a flow from a trace |
