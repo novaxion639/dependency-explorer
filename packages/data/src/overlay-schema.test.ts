@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { DatadogOverlaySchema, TeamSchema, type DatadogOverlay } from '@dependency-explorer/schema'
+import { DatadogOverlaySchema, JiraOverlaySchema, TeamSchema, type DatadogOverlay, type JiraOverlay } from '@dependency-explorer/schema'
 
 const service: DatadogOverlay['services'][string] = {
   state: 'problem',
@@ -32,5 +32,34 @@ describe('DatadogOverlaySchema', () => {
 describe('TeamSchema', () => {
   it('accepts Datadog team handles', () => {
     expect(TeamSchema.parse({ id: 'planning', name: 'Planning', datadogTeams: ['squad-planning'] }).datadogTeams).toEqual(['squad-planning'])
+  })
+})
+
+const jiraOverlay: JiraOverlay = {
+  snapshotDate: '2026-11-02',
+  host: 'skello.atlassian.net',
+  areas: {
+    planning: {
+      open: 12,
+      breached: 2,
+      opened90d: 30,
+      weekly: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+      featureAreas: [{ name: 'Shifts', open: 7, breached: 1, opened90d: 18 }],
+      teams: [{ teamId: 'planning', open: 9 }, { teamId: null, open: 3 }],
+      jql: 'project = BR AND cf[11070] in ("Shifts")',
+    },
+  },
+  unmapped: { open: 4, breached: 0, jql: 'project = BR AND cf[11070] is EMPTY' },
+  boards: { '42': { name: 'Planning board' } },
+}
+
+describe('JiraOverlaySchema', () => {
+  it('parses a valid Jira overlay', () => {
+    expect(JiraOverlaySchema.parse(jiraOverlay)).toEqual(jiraOverlay)
+  })
+
+  it('rejects a Jira overlay whose weekly has 12 weeks', () => {
+    const short = { ...jiraOverlay, areas: { planning: { ...jiraOverlay.areas.planning, weekly: Array.from({ length: 12 }, () => 0) } } }
+    expect(JiraOverlaySchema.safeParse(short).success).toBe(false)
   })
 })

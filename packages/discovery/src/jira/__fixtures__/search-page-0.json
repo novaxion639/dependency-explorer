@@ -1,0 +1,43 @@
+{
+  "nextPageToken": "tok-1",
+  "issues": [
+    {
+      "key": "BR-1",
+      "fields": {
+        "created": "2026-10-20T08:00:00.000+0200",
+        "summary": "SENTINEL-SUMMARY",
+        "description": "SENTINEL-DESCRIPTION",
+        "reporter": { "displayName": "SENTINEL-REPORTER" },
+        "assignee": { "displayName": "SENTINEL-ASSIGNEE" },
+        "status": { "name": "In Progress", "statusCategory": { "key": "indeterminate" } },
+        "priority": { "name": "High" },
+        "resolution": null,
+        "customfield_11070": { "value": "Grille_hebdomadaire" },
+        "customfield_10632": { "ongoingCycle": { "breached": true }, "completedCycles": [{ "breached": false }] }
+      }
+    },
+    {
+      "key": "BR-2",
+      "fields": {
+        "created": "2026-09-30T08:00:00.000+0200",
+        "status": { "name": "Done", "statusCategory": { "key": "done" } },
+        "priority": { "name": "Low" },
+        "resolution": { "name": "Fixed" },
+        "customfield_11070": [{ "value": "Planning" }, { "value": "Time off" }],
+        "customfield_10632": { "completedCycles": [{ "breached": true }, { "breached": false }] }
+      }
+    },
+    {
+      "key": "BR-3",
+      "fields": {
+        "created": "2026-10-01T08:00:00.000+0200",
+        "status": { "name": "Done", "statusCategory": { "key": "done" } },
+        "priority": { "name": "Low" },
+        "resolution": { "name": "Duplicate" },
+        "customfield_11070": { "value": "Planning" },
+        "customfield_10632": null
+      }
+    }
+  ],
+  "isLast": false
+}

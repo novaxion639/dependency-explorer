@@ -6,6 +6,7 @@ import teams from './teams'
 import rules from './rules'
 import externals from './externals'
 import areas from './areas'
+import featureAreas from './feature-areas'
 import discoveredJson from './generated/discovered.json'
 import monolithRoutesJson from './generated/monolith-routes.json'
 import resourcesJson from './generated/resources.json'
@@ -252,6 +253,7 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   rules,
   areas,
   externals,
+  featureAreas,
 })
 
 export const allResourceRelations = [...resourceSurface.relations, ...flowRelations(connectivityMap)]

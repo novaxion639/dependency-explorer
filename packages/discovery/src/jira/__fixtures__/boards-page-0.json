@@ -1,0 +1,1 @@
+{ "maxResults": 50, "startAt": 0, "isLast": false, "values": [{ "id": 11, "name": "Alpha board", "type": "scrum", "location": { "projectKey": "BR", "displayName": "SENTINEL-PERSON" } }] }

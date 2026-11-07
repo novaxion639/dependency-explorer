@@ -1,7 +1,7 @@
-import * as fs from 'node:fs'
-import * as path from 'node:path'
 import { z } from 'zod'
+import { list, num, obj, present, text, type Json } from '../json'
 import { readPages } from '../net/pages'
+import { snapshotFolder } from '../snapshot-dir'
 import type { DatadogClient } from './client'
 import { isProd, METRIC_KEYS, metricQueries, serviceOf, tagValues, type MetricKey } from './scope'
 
@@ -36,8 +36,6 @@ type MonitorTransition = z.infer<typeof TransitionSchema>
 
 export type DatadogSnapshot = z.infer<typeof SnapshotSchema>
 
-type Json = Record<string, unknown>
-
 const HOUR_S = 3600
 const DAY_S = 86_400
 const METRIC_DAYS = 21
@@ -49,11 +47,6 @@ const MAX_EVENT_PAGES = 4
 const CLOSED_INCIDENT_STATES = ['resolved', 'stable']
 const UNSCOPED_METRICS: MetricKey[] = ['dlq']
 
-const isJson = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v)
-const obj = (v: unknown): Json => (isJson(v) ? v : {})
-const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
-const text = (v: unknown): string | null => (typeof v === 'string' ? v : null)
-const num = (v: unknown): number | null => (typeof v === 'number' ? v : null)
 const strings = (v: unknown): string[] => list(v).filter((x): x is string => typeof x === 'string')
 
 function monitorOf(v: unknown): Monitor | null {
@@ -108,8 +101,6 @@ function transitionOf(v: unknown): MonitorTransition | null {
   const ms = num(a.timestamp)
   return id === null || ms === null ? null : { monitor_id: id, ts: Math.floor(ms / 1000), status: text(a.status) }
 }
-
-const present = <T>(v: T | null): v is T => v !== null
 
 const sortedUnique = (values: string[]): string[] => [...new Set(values)].sort()
 
@@ -218,49 +209,8 @@ export async function fetchDatadogSnapshot(client: DatadogClient, now: Date): Pr
   return { snapshot, failures: read.failures }
 }
 
-const SNAPSHOT_KEYS = ['meta', 'monitors', 'teams', 'slos', 'incidents', 'metrics', 'events'] as const
-const SNAPSHOT_FILES = new Set(SNAPSHOT_KEYS.map((key) => `${key}.json`))
+const folder = snapshotFolder({ schema: SnapshotSchema, label: 'Datadog', fetchScript: 'discover:datadog:fetch' })
 
-const holdsOnlySnapshotFiles = (dir: string): boolean =>
-  fs.readdirSync(dir, { withFileTypes: true }).every((entry) => entry.isFile() && SNAPSHOT_FILES.has(entry.name))
+export const writeDatadogSnapshot = (dir: string, s: DatadogSnapshot): void => folder.write(dir, s)
 
-export function writeDatadogSnapshot(dir: string, s: DatadogSnapshot): void {
-  if (fs.existsSync(dir) && !holdsOnlySnapshotFiles(dir)) {
-    throw new Error(`${dir} holds files other than a Datadog snapshot; nothing written`)
-  }
-  const parent = path.dirname(dir)
-  fs.mkdirSync(parent, { recursive: true })
-  const temp = fs.mkdtempSync(path.join(parent, `.${path.basename(dir)}-`))
-  try {
-    for (const key of SNAPSHOT_KEYS) {
-      fs.writeFileSync(path.join(temp, `${key}.json`), JSON.stringify(s[key], null, 1))
-    }
-    fs.rmSync(dir, { recursive: true, force: true })
-    fs.renameSync(temp, dir)
-  } catch (e) {
-    fs.rmSync(temp, { recursive: true, force: true })
-    throw e
-  }
-}
-
-export class SnapshotFormatError extends Error {}
-
-const RE_FETCH = 'Re-run `pnpm discover:datadog:fetch` for a fresh snapshot.'
-
-function readSnapshotFile(file: string): unknown {
-  try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'))
-  } catch (e) {
-    throw new SnapshotFormatError(`${file} cannot be read: ${causeOf(e)}\n${RE_FETCH}`)
-  }
-}
-
-export function readDatadogSnapshot(dir: string): DatadogSnapshot {
-  const files = Object.fromEntries(SNAPSHOT_KEYS.map((key) => [key, readSnapshotFile(path.join(dir, `${key}.json`))]))
-  const parsed = SnapshotSchema.safeParse(files)
-  if (!parsed.success) {
-    const file = path.join(dir, `${String(parsed.error.issues[0]?.path[0])}.json`)
-    throw new SnapshotFormatError(`${file} does not match the Datadog snapshot format: ${z.prettifyError(parsed.error)}\n${RE_FETCH}`)
-  }
-  return parsed.data
-}
+export const readDatadogSnapshot = (dir: string): DatadogSnapshot => folder.read(dir)

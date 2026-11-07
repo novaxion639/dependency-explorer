@@ -1,0 +1,376 @@
+[
+ {
+  "name": "Analytics API access",
+  "tribe": "Connect"
+ },
+ {
+  "name": "Clock-in API access",
+  "tribe": "Connect"
+ },
+ {
+  "name": "Employee data integration",
+  "tribe": "Connect"
+ },
+ {
+  "name": "HRIS integrations",
+  "tribe": "Connect"
+ },
+ {
+  "name": "POS tool connection",
+  "tribe": "Connect"
+ },
+ {
+  "name": "Payroll data integration",
+  "tribe": "Connect"
+ },
+ {
+  "name": "Public API shifts",
+  "tribe": "Connect"
+ },
+ {
+  "name": "Automated DPAE",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Birthdays",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Bulk contract import",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Bulk document generation",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Communication via email and app",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Customizable access permissions",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Document and contract templates and generation",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Electronic signature for documents",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Employee onboarding",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Employee records",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "HR record editing",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Join",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Multiple contracts and amendments management",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "New file creation",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Payslip distribution",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Single employee register",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Unlimited HR document storage",
+  "tribe": "HR Admin"
+ },
+ {
+  "name": "Analytics dashboard",
+  "tribe": "IA & analytics"
+ },
+ {
+  "name": "HR alerts and homepage",
+  "tribe": "IA & analytics"
+ },
+ {
+  "name": "Skello Assistant",
+  "tribe": "IA & analytics"
+ },
+ {
+  "name": "Dealroom",
+  "tribe": "PLG"
+ },
+ {
+  "name": "Intercom support bubble",
+  "tribe": "PLG"
+ },
+ {
+  "name": "Invoices",
+  "tribe": "PLG"
+ },
+ {
+  "name": "Login",
+  "tribe": "PLG"
+ },
+ {
+  "name": "Profile",
+  "tribe": "PLG"
+ },
+ {
+  "name": "SelfServe",
+  "tribe": "PLG"
+ },
+ {
+  "name": "Subscription and offers",
+  "tribe": "PLG"
+ },
+ {
+  "name": "Smart Planner",
+  "tribe": "Sans tribe"
+ },
+ {
+  "name": "Actual performance indicators tracking",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Automatic scheduling",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Automatic shift creation",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Availability management",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Daily view",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Filters",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Forecasted performance indicators tracking",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Frequent shifts",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Mission management",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Monthly view",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "POS data accuracy",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "POS system integration",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Position creation",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Print schedule",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Publish schedule",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Regulatory alerts",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Schedule communication",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Schedule duplication",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Schedule locking",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Schedule optimization",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Schedule templates",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Scheduling conflict",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Shift creation",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Shift replacement",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Shift swap and replacement requests",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Shift-attached documents",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Sorting",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Staff needs",
+  "tribe": "Scheduling",
+  "aliases": [
+   "Staffing requirements"
+  ]
+ },
+ {
+  "name": "Task management",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Team creation",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Weekly view",
+  "tribe": "Scheduling"
+ },
+ {
+  "name": "Multi organisation",
+  "tribe": "Staff"
+ },
+ {
+  "name": "Activity report",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Annualized hours management",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Bonuses and advances",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Calculation and export of variable payroll data",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Custom public holidays",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Electronic signature for timesheets",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Hours tracker",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Lateness and break management",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Leave and absence management",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Leave requests",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Meal allowances",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Mobile clock-in",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "PTO tracker",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Paid leave and RTT balance",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Payroll data preparation and accountant notes",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Payroll lock",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Payroll service",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Public holiday tracker",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "RCR tracker",
+  "tribe": "Time Management",
+  "aliases": [
+   "Compensatory rest (RCR) tracker"
+  ]
+ },
+ {
+  "name": "RTT tracker",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Tablet clock-in",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Time tracking validation",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Timesheet printing",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Worked hours balance",
+  "tribe": "Time Management"
+ },
+ {
+  "name": "Working time adjustment",
+  "tribe": "Time Management"
+ }
+]
