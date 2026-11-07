@@ -47,13 +47,13 @@ describe('BugsSection', () => {
     const host = await render()
     expect(items(host, 'Feature Areas')).toEqual(['Rounding 7 open · 2 past SLA', 'Badges 3 open · 1 past SLA', 'Exports 2 open · 0 past SLA'])
   })
-  it('orders Feature Areas with the same open count by name', async () => {
+  it('renders the Feature Areas in the order the overlay gives', async () => {
     const featureAreas = [
       { name: 'Zones', open: 1, breached: 0, opened90d: 1 },
-      { name: 'Alerts', open: 1, breached: 0, opened90d: 1 },
+      { name: 'Alerts', open: 5, breached: 0, opened90d: 1 },
     ]
     const host = await render({ area: areaBugs({ featureAreas }) })
-    expect(items(host, 'Feature Areas').map(i => i.split(' ')[0])).toEqual(['Alerts', 'Zones'])
+    expect(items(host, 'Feature Areas').map(i => i.split(' ')[0])).toEqual(['Zones', 'Alerts'])
   })
   it('names each team, No team for bugs on no board, and the id of an unknown team', async () => {
     const teams = [{ teamId: 'team-anchovy', open: 8 }, { teamId: 'team-ghost', open: 2 }, { teamId: null, open: 4 }]

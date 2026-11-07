@@ -78,6 +78,7 @@ export function buildJiraOverlay(snapshot: JiraSnapshot, join: JiraJoin, map: Co
   const areaOfLabel = new Map((map.featureAreas ?? []).map(f => [f.label, f.area]))
   const knownLabels = [...snapshot.featureAreaLabels, ...snapshot.bugs.flatMap(b => b.featureArea ?? [])]
   const unmappedLabels = [...new Set(knownLabels.filter(label => (areaOfLabel.get(label) ?? null) === null))].sort()
+  const linkedBoards = new Set((map.teams ?? []).flatMap(t => t.jiraBoards ?? []))
   const empty = `${FEATURE_AREA_JQL} is EMPTY`
   return {
     snapshotDate: snapshot.meta.fetchedAt.slice(0, 10),
@@ -88,6 +89,6 @@ export function buildJiraOverlay(snapshot: JiraSnapshot, join: JiraJoin, map: Co
       breached: unmapped.filter(b => b.breached).length,
       jql: `${BR_SCOPE} AND (${open}) AND ${unmappedLabels.length > 0 ? `(${empty} OR ${labelsIn(unmappedLabels)})` : empty}`,
     },
-    boards: Object.fromEntries(snapshot.boards.map(b => [String(b.id), { name: b.name.trim() }])),
+    boards: Object.fromEntries(snapshot.boards.filter(b => linkedBoards.has(b.id)).map(b => [String(b.id), { name: b.name.trim() }])),
   }
 }

@@ -1,5 +1,4 @@
-import * as path from 'node:path'
-import { latestSnapshotDir } from '../snapshot-dir'
+import { latestSnapshotDir, resolveSnapshotArg } from '../snapshot-dir'
 import { catalogEntryOf } from './catalog'
 import { isOpenBug } from './fields'
 import { readJiraSnapshot } from './snapshot'
@@ -14,7 +13,7 @@ Prints draft rows for packages/data/src/feature-areas.ts, one per Feature Area l
 export function snapshotDirOf(argv: string[], home: string): string | null {
   const flagAt = argv.indexOf('--snapshot')
   const given = flagAt >= 0 ? argv[flagAt + 1] : undefined
-  return given ? path.resolve(given) : latestSnapshotDir(home)
+  return given ? resolveSnapshotArg('--snapshot', given) : latestSnapshotDir(home)
 }
 
 const quoted = (value: string): string => `'${value.replace(/[\\']/g, '\\$&')}'`

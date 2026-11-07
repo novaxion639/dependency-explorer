@@ -131,9 +131,10 @@ describe('buildJiraOverlay', () => {
     expect(overlayOf(tied).areas.planning?.featureAreas.map(row => row.name)).toEqual(['Breaks', 'Shifts'])
   })
 
-  it('names every board and dates the snapshot', () => {
-    const overlay = overlayOf(snapshot({}))
-    expect(overlay).toMatchObject({ snapshotDate: '2026-11-04', host: 'skello.atlassian.net', boards: { 10: { name: 'Board Honey' }, 20: { name: 'Mozza' } } })
+  it('names only the boards a team lists and dates the snapshot', () => {
+    const overlay = overlayOf(snapshot({ boards: [...snapshot({}).boards, { id: 30, name: 'Unlinked', type: 'scrum', projectKey: null }] }))
+    expect(overlay).toMatchObject({ snapshotDate: '2026-11-04', host: 'skello.atlassian.net' })
+    expect(overlay.boards).toEqual({ 10: { name: 'Board Honey' }, 20: { name: 'Mozza' } })
     expect(JiraOverlaySchema.safeParse(overlay).success).toBe(true)
   })
 

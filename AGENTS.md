@@ -19,6 +19,9 @@ See [README.md](README.md) for the product and `docs/guide/` for the guides.
 | `pnpm discover:aws:fetch` | Fetches the AWS live-verification snapshot |
 | `pnpm discover:datadog:fetch` | Fetches the Datadog snapshot (`DATADOG_API_KEY`, `DATADOG_APP_KEY`) |
 | `pnpm discover -- --datadog` | Adds the 🐶 section and writes the web overlay from the latest snapshot |
+| `pnpm discover:jira:fetch` | Fetches the Jira snapshot (`JIRA_EMAIL`, `JIRA_API_TOKEN`) |
+| `pnpm discover:jira:draft` | Drafts `feature-areas.ts` rows from the latest Jira snapshot |
+| `pnpm discover -- --jira` | Adds the 🎫 section and writes the Jira web overlay from the latest snapshot |
 | `pnpm --filter @dependency-explorer/discovery golden:update` | Rewrites the golden files after an intended output change |
 | `pnpm discover:scaffold` | Scaffolds a flow from a trace |
 | `pnpm discover:trace` | Traces a call path |
@@ -44,7 +47,7 @@ Repository:
 
 - Dependencies carry exact versions, never `^` or `~`; a new dependency takes a version published at least two weeks earlier.
 - Discovery runs from the main clone, where the sibling repos are available.
-- Never commit `.aws-snapshots/`, `.datadog-snapshots/` or `packages/web/overlay/`.
+- Never commit `.aws-snapshots/`, `.datadog-snapshots/`, `.jira-snapshots/` or `packages/web/overlay/`.
 - `tasks/lessons.md` is the log these rules come from.
 
 ## Documentation sync
@@ -55,6 +58,8 @@ Repository:
 | `packages/discovery/src/extractors/*`, a report section of `discover.ts` | `docs/guide/discovery.md` |
 | `packages/web/src/shell/*`, a page, `packages/web/src/components/health/*` | `docs/guide/explorer.md` |
 | `packages/discovery/src/datadog/*`, `datadog-fetch.ts`, `golden.test.ts`, `test-support/*` | `docs/guide/discovery.md` |
+| `packages/discovery/src/jira/*`, `jira-fetch.ts`, `jira-draft.ts` | `docs/guide/discovery.md` |
+| `packages/data/src/feature-areas.ts`, `jiraBoards` in `teams.ts` | `docs/guide/data.md` |
 | `packages/data/src/flows/*`, flow rules | `docs/guide/flows.md`, `docs/flow-authoring-guide.md` |
 | A roadmap phase starting or ending | `docs/guide/roadmap.md` |
 | A decision that shapes the repo | a record in `docs/adr/` |

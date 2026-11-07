@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
 
 export class SnapshotFormatError extends Error {}
@@ -9,6 +10,17 @@ export function latestSnapshotDir(home: string): string | null {
     ? fs.readdirSync(home, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort().pop()
     : undefined
   return latest === undefined ? null : path.join(home, latest)
+}
+
+export function resolveSnapshotArg(flag: string, given: string): string {
+  const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+  for (const base of [process.cwd(), path.resolve(pkgRoot, '../..'), pkgRoot]) {
+    const candidate = path.resolve(base, given)
+    if (fs.existsSync(candidate)) {
+      return candidate
+    }
+  }
+  throw new Error(`${flag} snapshot directory not found: ${given}`)
 }
 
 const causeOf = (e: unknown): string => (e instanceof Error ? e.message : String(e))

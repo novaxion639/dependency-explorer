@@ -29,10 +29,10 @@ import { applyModeError } from './pinned'
 import { machineSection } from './state-machines-report'
 import { listenerSection } from './listeners-report'
 import { datadogSection } from './extractors/datadog'
+import { reportJson } from './report-json'
 import { jiraSection } from './extractors/jira'
-import { latestSnapshotDir } from './snapshot-dir'
 import { findingKeys, diffBaseline, readBaseline, readBaselineRepos, unscannedRepos, writeBaseline } from './baseline'
-import { SnapshotFormatError } from './snapshot-dir'
+import { latestSnapshotDir, resolveSnapshotArg, SnapshotFormatError } from './snapshot-dir'
 import { runDiscovery, writeOutputs, PinError, type Dataset, type DiscoveryOptions, type Report } from './discovery-run'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -59,13 +59,7 @@ function resolveSnapshotDir(flag: string, folder: string, fetchScript: string): 
   const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
   const given = process.argv[i + 1]
   if (given && !given.startsWith('--')) {
-    for (const base of [process.cwd(), path.resolve(pkgRoot, '../..'), pkgRoot]) {
-      const candidate = path.resolve(base, given)
-      if (fs.existsSync(candidate)) {
-        return candidate
-      }
-    }
-    throw new Error(`${flag} snapshot directory not found: ${given}`)
+    return resolveSnapshotArg(flag, given)
   }
   const home = path.join(pkgRoot, folder)
   const latest = latestSnapshotDir(home)
@@ -542,7 +536,7 @@ const report = discover()
 const pinnedRepos = report.pinned?.repos
 const unscanned = pinnedRepos ? unscannedRepos(readBaselineRepos(BASELINE_PATH), pinnedRepos.map(p => p.repo)) : []
 if (JSON_MODE) {
-  console.log(JSON.stringify(report, (_key, value: unknown) => (value instanceof Map ? Object.fromEntries(value) : value), 2))
+  console.log(reportJson(report))
 } else {
   printMarkdown(report, unscanned)
 }
