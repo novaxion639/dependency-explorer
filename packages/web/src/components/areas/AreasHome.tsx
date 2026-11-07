@@ -1,5 +1,7 @@
 import type { ConnectivityMap, Platform, ProductArea } from '@dependency-explorer/data'
-import { areaFacts, getAreaFlows, getAreaServices, getSharedExternals } from '@dependency-explorer/data'
+import { areaFacts, getAreaFlows, getAreaServices, getSharedExternals, JiraOverlaySchema } from '@dependency-explorer/data'
+import { useOverlay } from '../../hooks/useOverlay'
+import { jiraSearchUrl } from '../../utils/jiraSearchUrl'
 import { plural } from '../../utils/plural'
 import styles from './AreasHome.module.css'
 
@@ -21,6 +23,7 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
   const product = areas.filter(a => a.kind === 'product')
   const platform = areas.filter(a => a.kind === 'platform')
   const shared = getSharedExternals(areas, map.externals ?? [])
+  const jira = useOverlay('jira', JiraOverlaySchema)
   return (
     <section aria-label="Product areas" className={styles.page}>
       <header className={styles.head}>
@@ -54,6 +57,9 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
           )
         })}
       </ul>
+      {jira && jira.unmapped.open > 0 && (
+        <a className={styles.unmapped} href={jiraSearchUrl(jira.host, jira.unmapped.jql)} target="_blank" rel="noreferrer">Bugs with no product area: {jira.unmapped.open} open</a>
+      )}
       <h2 className={styles.section}>Platform capabilities</h2>
       <ul className={styles.platform}>
         {platform.map(area => (

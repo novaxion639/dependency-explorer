@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { ConnectivityMap, ConnectivityService, Team } from '@dependency-explorer/data'
-import { getServiceLane } from '@dependency-explorer/data'
+import { getServiceLane, JiraOverlaySchema } from '@dependency-explorer/data'
+import { useOverlay } from '../../hooks/useOverlay'
 import { AreaChip } from '../areas/AreaChip'
 import styles from './OwnershipPage.module.css'
 
@@ -112,6 +113,18 @@ function OwnedAreas({ map, teamId, onOpenArea }: { map: ConnectivityMap; teamId:
   )
 }
 
+function JiraBoards({ ids }: { ids: number[] }) {
+  const overlay = useOverlay('jira', JiraOverlaySchema)
+  if (ids.length === 0) {
+    return null
+  }
+  return (
+    <section aria-label="Jira boards" className={styles.areas}>
+      <span className={styles.muted}>Jira boards:</span> {ids.map(id => overlay?.boards[id]?.name ?? id).join(', ')}
+    </section>
+  )
+}
+
 function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }: {
   team: Team
   services: ConnectivityService[]
@@ -120,6 +133,7 @@ function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }
   onSelectService: (name: string) => void
   onOpenArea: (id: string) => void
 }) {
+  const datadogTeams = team.datadogTeams ?? []
   return (
     <div className={styles.detail}>
       <button type="button" className={styles.back} onClick={onBack}>← All teams</button>
@@ -130,6 +144,12 @@ function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }
         {team.onCallUrl && <a href={team.onCallUrl} target="_blank" rel="noreferrer">on-call ↗</a>}
       </div>
       <OwnedAreas map={map} teamId={team.id} onOpenArea={onOpenArea} />
+      <JiraBoards ids={team.jiraBoards ?? []} />
+      {datadogTeams.length > 0 && (
+        <section aria-label="Datadog teams" className={styles.areas}>
+          <span className={styles.muted}>Datadog teams:</span> {datadogTeams.join(', ')}
+        </section>
+      )}
       {services.length === 0 ? (
         <p className={styles.muted}>
           No service resolves to this team from CODEOWNERS. A repository's wildcard line naming{' '}

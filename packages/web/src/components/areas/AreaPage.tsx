@@ -2,8 +2,10 @@ import { useEffect, useMemo } from 'react'
 import { ReactFlow, Background, BackgroundVariant, type Edge, type Node, type NodeMouseHandler } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { ConnectivityMap, Platform } from '@dependency-explorer/data'
-import { areaFacts, getAreaExternals, getAreaFlows, getCrossAreaEdges } from '@dependency-explorer/data'
+import { areaFacts, getAreaExternals, getAreaFlows, getCrossAreaEdges, JiraOverlaySchema } from '@dependency-explorer/data'
+import { useOverlay } from '../../hooks/useOverlay'
 import { plural } from '../../utils/plural'
+import { BugsSection } from './BugsSection'
 import styles from './AreaPage.module.css'
 
 const PLATFORM_ORDER: Platform[] = ['monolith', 'web', 'mobile', 'tablet', 'superadmin', 'backend']
@@ -26,6 +28,7 @@ export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, on
   const repoUrl = new Map(map.services.map(s => [s.name, s.repoUrl]))
   const teamName = new Map((map.teams ?? []).map(t => [t.id, t.name]))
   const flowById = new Map(map.flows.map(f => [f.id, f]))
+  const jira = useOverlay('jira', JiraOverlaySchema)
 
   useEffect(() => {
     if (term) {
@@ -79,6 +82,7 @@ export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, on
   const externals = getAreaExternals(area, map.externals ?? [])
   const counts = areaFacts.files[area.id] ?? {}
   const owners = (area.owners ?? []).map(o => teamName.get(o) ?? o)
+  const bugs = jira?.areas[area.id]
 
   return (
     <section aria-label={area.name} className={styles.page}>
@@ -172,6 +176,8 @@ export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, on
           ))}
         </ul>
       </section>
+
+      {jira && bugs && <BugsSection area={bugs} snapshotDate={jira.snapshotDate} host={jira.host} now={new Date()} teams={map.teams ?? []} />}
     </section>
   )
 }
