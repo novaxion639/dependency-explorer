@@ -4,6 +4,13 @@ import { z } from 'zod'
 
 export class SnapshotFormatError extends Error {}
 
+export function latestSnapshotDir(home: string): string | null {
+  const latest = fs.existsSync(home)
+    ? fs.readdirSync(home, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort().pop()
+    : undefined
+  return latest === undefined ? null : path.join(home, latest)
+}
+
 const causeOf = (e: unknown): string => (e instanceof Error ? e.message : String(e))
 
 export function snapshotFolder<S extends z.ZodObject>(opts: { schema: S; label: string; fetchScript: string }) {

@@ -1,58 +1,67 @@
 import { useEffect, useState } from 'react'
-import { DatadogOverlaySchema, type DatadogOverlay } from '@dependency-explorer/data'
 
-interface Load {
-  value: DatadogOverlay | null
-  promise: Promise<DatadogOverlay | null>
+interface Schema<T> {
+  safeParse(input: unknown): { success: true; data: T } | { success: false; error: { issues: unknown[] } }
 }
 
-const loads = new WeakMap<typeof fetch, Load>()
+interface Load {
+  raw: unknown
+  promise: Promise<unknown>
+}
 
-async function readOverlay(fetchImpl: typeof fetch): Promise<DatadogOverlay | null> {
+const loads = new WeakMap<typeof fetch, Map<string, Load>>()
+
+async function readOverlay(name: string, fetchImpl: typeof fetch): Promise<unknown> {
   try {
-    const response = await fetchImpl(`${import.meta.env.BASE_URL}overlay/datadog.json`)
-    if (!response.ok) {
-      return null
-    }
-    const parsed = DatadogOverlaySchema.safeParse(await response.json())
-    if (!parsed.success) {
-      console.error('Datadog overlay ignored: it fails DatadogOverlaySchema', parsed.error.issues)
-      return null
-    }
-    return parsed.data
+    const response = await fetchImpl(`${import.meta.env.BASE_URL}overlay/${name}.json`)
+    return response.ok ? await response.json() : null
   } catch {
     return null
   }
 }
 
-function loadOnce(fetchImpl: typeof fetch): Load {
-  const known = loads.get(fetchImpl)
+function loadOnce(name: string, fetchImpl: typeof fetch): Load {
+  const byName = loads.get(fetchImpl) ?? new Map<string, Load>()
+  loads.set(fetchImpl, byName)
+  const known = byName.get(name)
   if (known) {
     return known
   }
   const load: Load = {
-    value: null,
-    promise: readOverlay(fetchImpl).then(value => {
-      load.value = value
-      return value
+    raw: null,
+    promise: readOverlay(name, fetchImpl).then(raw => {
+      load.raw = raw
+      return raw
     }),
   }
-  loads.set(fetchImpl, load)
+  byName.set(name, load)
   return load
 }
 
-export function useOverlay(fetchImpl: typeof fetch = fetch): DatadogOverlay | null {
-  const [overlay, setOverlay] = useState(() => loads.get(fetchImpl)?.value ?? null)
+function parseOverlay<T>(name: string, schema: Schema<T>, raw: unknown): T | null {
+  if (raw === null) {
+    return null
+  }
+  const parsed = schema.safeParse(raw)
+  if (!parsed.success) {
+    console.error(`${name} overlay ignored: it fails its schema`, parsed.error.issues)
+    return null
+  }
+  return parsed.data
+}
+
+export function useOverlay<T>(name: string, schema: Schema<T>, fetchImpl: typeof fetch = fetch): T | null {
+  const [overlay, setOverlay] = useState(() => parseOverlay(name, schema, loads.get(fetchImpl)?.get(name)?.raw ?? null))
   useEffect(() => {
     let live = true
-    void loadOnce(fetchImpl).promise.then(value => {
+    void loadOnce(name, fetchImpl).promise.then(raw => {
       if (live) {
-        setOverlay(value)
+        setOverlay(parseOverlay(name, schema, raw))
       }
     })
     return () => {
       live = false
     }
-  }, [fetchImpl])
+  }, [name, schema, fetchImpl])
   return overlay
 }

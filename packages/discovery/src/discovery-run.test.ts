@@ -4,6 +4,7 @@ import * as path from 'node:path'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { ConnectivityMapSchema, ResourceSurfaceSchema } from '@dependency-explorer/schema'
 import { writeDatadogSnapshot } from './datadog/snapshot'
+import { writeJiraSnapshot } from './jira/snapshot'
 import { OUTPUT_FILES, PinError, runDiscovery, writeOutputs, type Dataset } from './discovery-run'
 
 const NOW = new Date('2026-11-02T00:00:00Z')
@@ -59,4 +60,21 @@ it('joins a Datadog snapshot and builds its overlay', () => {
 
   expect(report.datadog?.overlay).toEqual({ snapshotDate: '2026-11-01', eventsCapped: false, services: {}, queues: {} })
   expect(report.datadog?.join.findings).toEqual([])
+})
+
+it('joins a Jira snapshot and builds its overlay', () => {
+  const dir = path.join(base, 'jira')
+  writeJiraSnapshot(dir, {
+    meta: { fetchedAt: '2026-11-01T08:00:00.000Z', host: 'skello.atlassian.net' },
+    featureAreaLabels: [], statuses: ['Done'], boards: [], bugs: [], boardBugs: {},
+  })
+
+  const report = runDiscovery({ sourceBase: base, dataset, now: NOW, jiraSnapshotDir: dir })
+
+  expect(report.jira?.overlay).toMatchObject({ snapshotDate: '2026-11-01', areas: {}, unmapped: { open: 0, breached: 0 }, boards: {} })
+  expect(report.jira?.join.findings).toEqual([])
+})
+
+it('reports no Jira section without a Jira snapshot', () => {
+  expect(runDiscovery({ sourceBase: base, dataset, now: NOW }).jira).toBeNull()
 })

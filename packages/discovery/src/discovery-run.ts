@@ -1,7 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { flowListenerDrift } from '@dependency-explorer/data'
-import type { ConnectivityMap, DatadogOverlay, DiscoveredOverlay, Listener, ListenerSurface, Resource, ResourceRelation, ResourceSurface, WriteSite } from '@dependency-explorer/schema'
+import type { ConnectivityMap, DatadogOverlay, JiraOverlay, DiscoveredOverlay, Listener, ListenerSurface, Resource, ResourceRelation, ResourceSurface, WriteSite } from '@dependency-explorer/schema'
 import { IGNORED_SDKS, MONGO_CONTRACT_SDKS, sdkToServiceName, isStructuralGithubTeam, FRONTEND_HOST_ALIASES, streamSourceService, tfRepoToService } from './mapping'
 import { normalizeEndpoint, normalizeEndpointVersionless, isBoilerplateEndpoint } from './endpoints'
 import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extractors/typescript'
@@ -12,6 +12,9 @@ import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extract
 import { joinDatadog, type DatadogJoin } from './extractors/datadog'
 import { readDatadogSnapshot } from './datadog/snapshot'
 import { overlayOf } from './datadog/overlay'
+import { joinJira, type JiraJoin } from './extractors/jira'
+import { buildJiraOverlay } from './jira/overlay'
+import { readJiraSnapshot } from './jira/snapshot'
 import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
@@ -126,6 +129,7 @@ export interface Report {
   /** Layer 4: read-only AWS snapshot diff (only with --aws <dir>) */
   awsLive: AwsLiveFindings | null
   datadog: { join: DatadogJoin; overlay: DatadogOverlay } | null
+  jira: { join: JiraJoin; overlay: JiraOverlay } | null
 }
 
 export interface Dataset {
@@ -143,6 +147,7 @@ export interface DiscoveryOptions {
   now?: Date
   awsSnapshotDir?: string
   datadogSnapshotDir?: string
+  jiraSnapshotDir?: string
 }
 
 export const OUTPUT_FILES = ['discovered.json', 'monolith-routes.json', 'resources.json', 'listeners.json'] as const
@@ -178,6 +183,12 @@ function datadogOf(dir: string, dataset: Dataset, repoBase: string, pinned: bool
   const snapshot = readDatadogSnapshot(dir)
   const join = joinDatadog(snapshot, dataset)
   return { join, overlay: overlayOf(snapshot, join, repoBase, pinned) }
+}
+
+function jiraOf(dir: string, map: ConnectivityMap): Report['jira'] {
+  const snapshot = readJiraSnapshot(dir)
+  const join = joinJira(snapshot, map)
+  return { join, overlay: buildJiraOverlay(snapshot, join, map, new Date(snapshot.meta.fetchedAt)) }
 }
 
 // ── Scan ──────────────────────────────────────────────────────────────────────
@@ -260,6 +271,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
     serviceFacts: {},
     awsLive: null,
     datadog: options.datadogSnapshotDir ? datadogOf(options.datadogSnapshotDir, dataset, repoBase, pin !== null) : null,
+    jira: options.jiraSnapshotDir ? jiraOf(options.jiraSnapshotDir, dataset.map) : null,
   }
 
   const allSlugs = new Set<string>()
