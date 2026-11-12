@@ -38,6 +38,12 @@ function history(dir: string, firstBranch: string) {
     promote: (from: string, into: string, n: number, title: string, ago: number): string =>
       merge(into, from, `Merge pull request #${n} from skelloapp/${from}`, title, ago),
     backMerge: (from: string, into: string, subject: string, ago: number): string => merge(into, from, subject, '', ago),
+    commit: (branch: string, message: string, ago: number): void => {
+      run(['checkout', '-q', branch])
+      fs.writeFileSync(path.join(dir, `${ago}.txt`), message)
+      run(['add', '.'])
+      run(['commit', '-q', '-m', message], daysAgo(ago))
+    },
     fastForward: (into: string, from: string): void => {
       run(['checkout', '-q', into])
       run(['merge', '-q', '--ff-only', from])
@@ -99,4 +105,12 @@ export function prodOnlyRepo(root: string, name: string, prod: 'master' | 'main'
     h.feature(prod, 'feat-z', 1, `chore(${prod}): release v2.0.0`, 3)
   }
   return { dir: h.clone(root, name) }
+}
+
+export function squashRepo(root: string) {
+  const h = history(path.join(root, 'origins', 'svc-squash'), 'master')
+  h.branch('staging', 'master')
+  h.feature('staging', 'feat-sq', 1, 'feat: squashed later', 10)
+  h.commit('master', 'Sandbox to prod (#2)', 5)
+  return { dir: h.clone(root, 'svc-squash') }
 }

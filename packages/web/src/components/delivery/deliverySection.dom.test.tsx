@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { allByRole, byRole } from '../../test/roles'
+import { allByRole, byRole, byText } from '../../test/roles'
 import { overlayOf, serviceHealth } from '../health/overlayFixture'
 import { parseUrl } from '../../hooks/useUrlState'
 import { MicroservicesPage } from '../../shell/MicroservicesPage'
@@ -69,11 +69,13 @@ describe('DeliverySection', () => {
     expect(region(host)?.textContent).toContain('in prod v1.31.0')
   })
 
-  it('flags a late service with its rule as tooltip', async () => {
+  it('flags a late service and states its rule to every reader', async () => {
     const host = await render({ delivery: deliveryService({ late: true }) })
-    const late = byRole(host, 'status', 'Late for prod')
+    const late = byText(host, /^Late for prod/)
+    expect(late?.textContent).toBe('Late for prod: oldest change waiting 3 working days or more')
     expect(late?.getAttribute('title')).toBe('Oldest change waiting 3 working days or more')
-    expect(byRole(await render(), 'status', 'Late for prod')).toBeNull()
+    expect(allByRole(host, 'status')).toEqual([])
+    expect(byText(await render(), /^Late for prod/)).toBeNull()
   })
 
   it('labels the last release with its Datadog verdict', async () => {

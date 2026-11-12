@@ -7,12 +7,17 @@ const DAY_MS = 86_400_000
 const SANDBOX_REACH_DAYS = 180
 const TRUNK_BRANCHES = ['staging', 'sandbox'] as const
 
+const isMissingRef = (e: unknown): boolean => e instanceof Error && 'status' in e && e.status === 1
+
 function hasOrigin(dir: string, branch: string, git: GitRunner): boolean {
   try {
     git(dir, ['rev-parse', '--verify', '--quiet', `refs/remotes/origin/${branch}`])
     return true
-  } catch {
-    return false
+  } catch (e) {
+    if (isMissingRef(e)) {
+      return false
+    }
+    throw e
   }
 }
 

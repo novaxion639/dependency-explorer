@@ -38,3 +38,15 @@ export function lastRelease(dir: string, trunk: Trunk, git: GitRunner = defaultG
   const { sha, title, mergedAt, subject } = latest
   return { sha, title, version: versionOf(title, Number(PR_NUMBER.exec(subject)?.[1] ?? 0)), mergedAt }
 }
+
+export function promotionsLookSquashed(dir: string, trunk: Trunk, now: Date, git: GitRunner = defaultGit): boolean {
+  const since = sinceDaysBefore(now, CHANGE_WINDOW_DAYS)
+  const tips = trunk.branches.map((branch) => `origin/${branch}`)
+  const merges = tips.length > 0 ? firstParentMerges(dir, [since, ...tips], git) : []
+  if (merges.length === 0) {
+    return false
+  }
+  const unreached = Number(git(dir, ['rev-list', '--count', '--first-parent', '--merges', since, ...tips, `^origin/${trunk.prod}`]))
+  const oldest = Math.min(...merges.map((merge) => Date.parse(merge.mergedAt)))
+  return unreached === merges.length && Date.parse(git(dir, ['log', '-1', '--format=%cI', `origin/${trunk.prod}`])) > oldest
+}

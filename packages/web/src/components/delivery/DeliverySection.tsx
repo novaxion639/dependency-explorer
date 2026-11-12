@@ -42,7 +42,11 @@ export function DeliverySection({ delivery, verdict }: Props) {
     <section aria-label="Delivery" className={styles.delivery}>
       <h2>
         Delivery
-        {delivery.late && <span role="status" className={styles.late} title="Oldest change waiting 3 working days or more">Late for prod</span>}
+        {delivery.late && (
+          <span className={styles.late} title="Oldest change waiting 3 working days or more">
+            Late for prod<span className={styles.hidden}>: oldest change waiting 3 working days or more</span>
+          </span>
+        )}
       </h2>
       <ol className={styles.line}>
         {delivery.steps.length === 0 && <li aria-label="Nothing on its way to prod" className={styles.dim}>Nothing on its way to prod</li>}

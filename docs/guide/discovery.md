@@ -185,7 +185,7 @@ A["sibling clone refs"] -->|git log, rev-list| B["web/overlay/delivery.json"]
 A --> C["🚚 report section"]
 ```
 
-- **Prod:** `origin/master`, else `origin/main`. A clone with neither has no entry.
+- **Prod:** `origin/master`, else `origin/main`. A clone with neither has no entry; a ref git cannot read skips the repo with a 🚚 line.
 - **Trunk:** `staging` and `sandbox`, each only when `origin/<name>` exists. Team sandboxes (`sandbox-<team>`) are never trunk; a team sandbox merged into `staging` is one change there. `sandbox` counts only when one of its first-parent merges of the last 180 days reached prod. A `sandbox` that only receives `staging` back-merges, as `skello-app`'s does, shows no step: back-merges are promotions.
 - **Changes:** the first-parent merges of the last 90 days on each trunk branch that prod does not contain, once each. Promotions are not changes: `Merge pull request #<n> from <org>/(sandbox|staging|master|main)`, `Merge branch '(sandbox|staging|master|main)'…` and `Merge remote-tracking branch 'origin/(sandbox|staging|master|main)'…`.
 - **Where a change waits:** `staging` when `origin/staging` contains it, else `sandbox`.
@@ -201,6 +201,7 @@ A --> C["🚚 report section"]
 
 - one line per late service, oldest first: `svc-reports: 8 on sandbox, oldest 5 working days (<title>)`;
 - each repo a git call failed on, with the error: `svc-x skipped: fatal: …`; the run goes on;
+- each repo whose prod moved since its oldest waiting merge yet holds none of its `sandbox` or `staging` merges of 90 days, the sign of squashed promotions: `svc-x: prod moved since its oldest waiting merge, yet holds none of its sandbox or staging merges of 90 days: are promotions squashed?`;
 - each clone fetched more than 3 days before the run: `svc-reports fetched 2026-11-09: run with --pinned to refresh`.
 
 ## Gates

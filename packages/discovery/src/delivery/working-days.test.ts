@@ -40,6 +40,11 @@ describe('working days', () => {
     expect(workingDaysBetween('2026-11-06', '2026-11-09')).toBe(1)
   })
 
+  it('a merge on a Saturday or on a holiday counts the working days after it', () => {
+    expect(workingDaysBetween('2026-11-07', '2026-11-09')).toBe(1)
+    expect(workingDaysBetween('2026-05-01', '2026-05-04')).toBe(1)
+  })
+
   it('11 November 2026 is not a working day', () => {
     expect(isWorkingDay('2026-11-11')).toBe(false)
   })

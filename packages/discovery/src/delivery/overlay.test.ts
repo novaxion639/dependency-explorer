@@ -4,7 +4,7 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import { DeliveryOverlaySchema } from '@dependency-explorer/schema'
 import { defaultGit, type GitRunner } from '../pinned'
-import { NOW, microserviceRepo, monolithRepo, prodOnlyRepo } from './__fixtures__/repos'
+import { NOW, microserviceRepo, monolithRepo, prodOnlyRepo, squashRepo } from './__fixtures__/repos'
 import { buildDeliveryOverlay, deliverySection, type DeliveryReport } from './overlay'
 
 const DAY_MS = 86_400_000
@@ -99,6 +99,22 @@ describe('buildDeliveryOverlay', () => {
     expect(Object.keys(result.overlay.services)).toEqual(['skello-app'])
   })
 
+  it('names a repo whose prod moved while none of its trunk merges reached it', () => {
+    const squash = squashRepo(root).dir
+    const result = buildDeliveryOverlay([{ service: 'svc-squash', dir: squash }, { service: 'svc-ms', dir: ms.dir }], NOW, false)
+    expect(result.unpromoted).toEqual(['svc-squash'])
+  })
+
+  it('skips a repo whose prod ref is corrupt instead of dropping it', () => {
+    const corrupt: GitRunner = (cwd, args) => {
+      if (args[0] === 'rev-parse' && cwd === ms.dir) {
+        throw Object.assign(new Error('fatal: bad object refs/remotes/origin/master'), { status: 128 })
+      }
+      return defaultGit(cwd, args)
+    }
+    expect(buildDeliveryOverlay([{ service: 'svc-ms', dir: ms.dir }], NOW, false, corrupt).skipped).toEqual([{ repo: 'svc-ms', reason: 'fatal: bad object refs/remotes/origin/master' }])
+  })
+
   it('lists a clone fetched 4 days ago as stale', () => {
     const fetchedAt = touchFetchHead(mono.dir, 4)
     const result = buildDeliveryOverlay([{ service: 'svc-ms', dir: ms.dir }, { service: 'skello-app', dir: mono.dir }], NOW, false)
@@ -126,6 +142,7 @@ describe('deliverySection', () => {
     const section = deliverySection({
       overlay: { generatedAt: NOW.toISOString(), services: { 'svc-a': late(3), 'svc-b': late(5), 'svc-c': late(1) } },
       skipped: [{ repo: 'svc-d', reason: 'fatal: bad object' }],
+      unpromoted: ['svc-squash'],
       stale: [{ repo: 'svc-reports', fetchedAt: '2026-11-09T08:00:00.000Z' }],
     })
     expect(section).toBe([
@@ -133,11 +150,12 @@ describe('deliverySection', () => {
       '- svc-b: 8 on sandbox, oldest 5 working days (change 5)',
       '- svc-a: 8 on sandbox, oldest 3 working days (change 3)',
       '- svc-d skipped: fatal: bad object',
+      '- svc-squash: prod moved since its oldest waiting merge, yet holds none of its sandbox or staging merges of 90 days: are promotions squashed?',
       '- svc-reports fetched 2026-11-09: run with --pinned to refresh',
     ].join('\n'))
   })
 
   it('says none when nothing is late', () => {
-    expect(deliverySection({ overlay: { generatedAt: NOW.toISOString(), services: {} }, skipped: [], stale: [] })).toBe('\n## 🚚 Delivery (advisory, not in the baseline)\n\n_none_')
+    expect(deliverySection({ overlay: { generatedAt: NOW.toISOString(), services: {} }, skipped: [], unpromoted: [], stale: [] })).toBe('\n## 🚚 Delivery (advisory, not in the baseline)\n\n_none_')
   })
 })

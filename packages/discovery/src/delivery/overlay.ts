@@ -2,7 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import type { DeliveryOverlay } from '@dependency-explorer/schema'
 import { defaultGit, errorText, type GitRunner } from '../pinned'
-import { lastRelease, waitingChanges, type Change } from './changes'
+import { lastRelease, promotionsLookSquashed, waitingChanges, type Change } from './changes'
 import { fetchTrunk, trunkOf } from './trunk'
 import { parisDay, workingDaysBetween } from './working-days'
 
@@ -11,6 +11,7 @@ type DeliveryService = DeliveryOverlay['services'][string]
 export interface DeliveryReport {
   overlay: DeliveryOverlay
   skipped: Array<{ repo: string; reason: string }>
+  unpromoted: string[]
   stale: Array<{ repo: string; fetchedAt: string }>
 }
 
@@ -27,7 +28,7 @@ function fetchedAtOf(dir: string): string | null {
 const oldestOf = (changes: Change[]): Change | undefined =>
   changes.reduce<Change | undefined>((oldest, c) => (oldest === undefined || Date.parse(c.mergedAt) < Date.parse(oldest.mergedAt) ? c : oldest), undefined)
 
-function serviceOf(dir: string, now: Date, fetch: boolean, git: GitRunner): DeliveryService | null {
+function serviceOf(dir: string, now: Date, fetch: boolean, git: GitRunner): { entry: DeliveryService; squashed: boolean } | null {
   if (fetch) {
     fetchTrunk(dir, git)
   }
@@ -46,22 +47,26 @@ function serviceOf(dir: string, now: Date, fetch: boolean, git: GitRunner): Deli
     const { sha, title, mergedAt } = oldest
     return [{ branch, count: waiting.length, oldest: { sha, title, mergedAt, workingDays: workingDaysBetween(parisDay(mergedAt), today) } }]
   })
-  return {
+  const entry = {
     prod: trunk.prod,
     fetchedAt: fetchedAtOf(dir),
     steps,
     late: steps.some((step) => step.oldest.workingDays >= LATE_WORKING_DAYS),
     lastRelease: lastRelease(dir, trunk, git),
   }
+  return { entry, squashed: promotionsLookSquashed(dir, trunk, now, git) }
 }
 
 export function buildDeliveryOverlay(repos: Array<{ service: string; dir: string }>, now: Date, fetch: boolean, git: GitRunner = defaultGit): DeliveryReport {
-  const report: DeliveryReport = { overlay: { generatedAt: now.toISOString(), services: {} }, skipped: [], stale: [] }
+  const report: DeliveryReport = { overlay: { generatedAt: now.toISOString(), services: {} }, skipped: [], unpromoted: [], stale: [] }
   for (const { service, dir } of repos) {
     try {
-      const entry = serviceOf(dir, now, fetch, git)
-      if (entry !== null) {
-        report.overlay.services[service] = entry
+      const read = serviceOf(dir, now, fetch, git)
+      if (read !== null) {
+        report.overlay.services[service] = read.entry
+      }
+      if (read?.squashed) {
+        report.unpromoted.push(service)
       }
     } catch (e) {
       report.skipped.push({ repo: service, reason: errorText(e) })
@@ -88,6 +93,7 @@ export function deliverySection(delivery: DeliveryReport | null): string | null 
   const lines = [
     ...late,
     ...delivery.skipped.map(({ repo, reason }) => `- ${repo} skipped: ${reason}`),
+    ...delivery.unpromoted.map((repo) => `- ${repo}: prod moved since its oldest waiting merge, yet holds none of its sandbox or staging merges of 90 days: are promotions squashed?`),
     ...delivery.stale.map(({ repo, fetchedAt }) => `- ${repo} fetched ${fetchedAt.slice(0, 10)}: run with --pinned to refresh`),
   ]
   return ['\n## 🚚 Delivery (advisory, not in the baseline)\n', ...(lines.length ? lines : ['_none_'])].join('\n')
