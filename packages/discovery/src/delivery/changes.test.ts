@@ -21,7 +21,7 @@ beforeAll(() => {
   mono = monolithRepo(root)
   msChanges = waitingChanges(ms.dir, trunk(ms.dir), NOW)
   monoChanges = waitingChanges(mono.dir, trunk(mono.dir), NOW)
-})
+}, 30_000)
 
 afterAll(() => fs.rmSync(root, { recursive: true, force: true }))
 

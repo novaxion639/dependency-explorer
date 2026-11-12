@@ -6,6 +6,8 @@ import { ConnectivityMapSchema, ResourceSurfaceSchema } from '@dependency-explor
 import { writeDatadogSnapshot } from './datadog/snapshot'
 import { writeJiraSnapshot } from './jira/snapshot'
 import { OUTPUT_FILES, PinError, runDiscovery, writeOutputs, type Dataset } from './discovery-run'
+import { findingKeys } from './baseline'
+import { microserviceRepo } from './delivery/__fixtures__/repos'
 
 const NOW = new Date('2026-11-02T00:00:00Z')
 const dataset: Dataset = {
@@ -78,3 +80,19 @@ it('joins a Jira snapshot and builds its overlay', () => {
 it('reports no Jira section without a Jira snapshot', () => {
   expect(runDiscovery({ sourceBase: base, dataset, now: NOW }).jira).toBeNull()
 })
+
+it('leaves Report.delivery null with delivery off', () => {
+  expect(runDiscovery({ sourceBase: base, dataset, now: NOW }).delivery).toBeNull()
+})
+
+it('reads delivery for the scanned repos that are map services', () => {
+  fs.renameSync(microserviceRepo(base).dir, path.join(base, 'svc-search'))
+  fs.mkdirSync(path.join(base, 'svc-unmapped'))
+  const mapped: Dataset = { ...dataset, map: ConnectivityMapSchema.parse({ services: [{ name: 'svc-search', type: 'typescript-microservice', description: 'd', endpoints: [] }], connections: [], flows: [] }) }
+
+  const report = runDiscovery({ sourceBase: base, dataset: mapped, now: NOW, delivery: true })
+
+  expect(Object.keys(report.delivery?.overlay.services ?? {})).toEqual(['svc-search'])
+  expect(report.delivery?.overlay.services['svc-search']?.lastRelease?.version).toBe('v1.31.0')
+  expect(findingKeys({ delivery: report.delivery })).toEqual([])
+}, 30_000)

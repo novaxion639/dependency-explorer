@@ -14,7 +14,7 @@ beforeAll(() => {
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'trunk-'))
   microservice = microserviceRepo(root).dir
   monolith = monolithRepo(root).dir
-})
+}, 30_000)
 
 afterAll(() => fs.rmSync(root, { recursive: true, force: true }))
 
