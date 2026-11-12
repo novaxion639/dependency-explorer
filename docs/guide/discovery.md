@@ -38,7 +38,7 @@
   - Sandbox account only, per the credentials story (`research/aws-live-verification-credentials.md` in the shared docs).
 - **Datadog state** (🐶 report section): a read-only snapshot of monitors, SLOs, teams, open incidents, request and error series, DLQ depth and monitor transitions, joined to the map by service name. It feeds the web app's [Health section](explorer.md#health) and is described in [Datadog snapshot and overlay](#datadog-snapshot-and-overlay).
 - **Jira bug reports** (🎫 report section): a read-only snapshot of the `BR` project's bugs, Feature Area values and boards, joined to the map through the authored [Feature Area map](data.md#feature-areas) and the teams' `jiraBoards`. It feeds the [Bugs section](explorer.md#bugs) and is described in [Jira snapshot and overlay](#jira-snapshot-and-overlay).
-- **Delivery** (🚚 report section): each mapped clone's prod, `staging` and `sandbox` branches, read with `git` alone. It feeds the [Delivery section](explorer.md#delivery) and is described in [Delivery line](#delivery-line).
+- **Delivery** (🚚 report section): each mapped clone's prod and `staging` branches, read with `git` alone. It feeds the [Delivery section](explorer.md#delivery) and is described in [Delivery line](#delivery-line).
 
 ## Commands
 
@@ -177,7 +177,7 @@ flowchart LR
 
 ## Delivery line
 
-`pnpm discover -- --delivery` reads, for each scanned repo named like a map service, what waits on its environment branches before prod. It reads the clones under the source base, never the pinned worktrees, and needs no token.
+`pnpm discover -- --delivery` reads, for each scanned repo named like a map service, what waits on its `staging` branch before prod. It reads the clones under the source base, never the pinned worktrees, and needs no token.
 
 ```mermaid
 flowchart LR
@@ -186,22 +186,21 @@ A --> C["🚚 report section"]
 ```
 
 - **Prod:** `origin/master`, else `origin/main`. A clone with neither has no entry; a ref git cannot read skips the repo with a 🚚 line.
-- **Trunk:** `staging` and `sandbox`, each only when `origin/<name>` exists. Team sandboxes (`sandbox-<team>`) are never trunk; a team sandbox merged into `staging` is one change there. `sandbox` counts only when one of its first-parent merges of the last 180 days reached prod. A `sandbox` that only receives `staging` back-merges, as `skello-app`'s does, shows no step: back-merges are promotions.
-- **Changes:** the first-parent merges of the last 90 days on each trunk branch that prod does not contain, once each. Promotions are not changes: `Merge pull request #<n> from <org>/(sandbox|staging|master|main)`, `Merge branch '(sandbox|staging|master|main)'…` and `Merge remote-tracking branch 'origin/(sandbox|staging|master|main)'…`.
-- **Where a change waits:** `staging` when `origin/staging` contains it, else `sandbox`.
+- **Staging:** the only branch read, when `origin/staging` exists. `sandbox` is never read: in `skello-app` and `skello-app-front` it holds work nobody validated, so a change counts once it reaches `staging`. A clone without `staging` shows its last release alone.
+- **Changes:** the merges of the last 90 days that `origin/staging` contains and prod does not, at any depth, so a feature promoted inside a `sandbox → staging` merge counts. Promotions are not changes: merges of `sandbox`, a team sandbox (`sandbox-<team>`), `staging`, `master` or `main`, as `Merge pull request #<n> from <org>/<branch>`, `Merge branch '<branch>'…` or `Merge remote-tracking branch 'origin/<branch>'…`. A team sandbox merged into `staging` counts as the PRs it carries.
 - **Age:** French working days from the merge day to the run day, both in Europe/Paris, weekends and public holidays (Easter Monday, Ascension and Whit Monday included) left out. A Friday merge read on Monday is 1.
 - **Late:** the oldest waiting change has waited 3 working days or more.
 - **Title:** the merge body's first non-empty line (the PR title), else the subject.
 - **Last release:** the latest first-parent merge into prod; its version is `release vX.Y.Z` in the title, else `#<PR number>`.
-- **Fetch:** a pinned run fetches `staging` and `sandbox` by name after the pin (`git fetch --quiet origin staging sandbox`, no wildcard, no `--prune`); `--no-fetch` skips it. `fetchedAt` is the mtime of the clone's `.git/FETCH_HEAD`.
+- **Fetch:** a pinned run fetches `staging` by name after the pin (`git fetch --quiet origin staging`, no wildcard, no `--prune`); `--no-fetch` skips it. `fetchedAt` is the mtime of the clone's `.git/FETCH_HEAD`.
 
 **Overlay.** `packages/web/overlay/delivery.json`, validated by `DeliveryOverlaySchema` ([data.md](data.md#delivery-overlay)), gitignored and never in `dist/`.
 
 **🚚 section** (advisory, out of `baseline.json` and `--fail-on-new`):
 
-- one line per late service, oldest first: `svc-reports: 8 on sandbox, oldest 5 working days (<title>)`;
+- one line per late service, oldest first: `svc-reports: 8 on staging, oldest 5 working days (<title>)`;
 - each repo a git call failed on, with the error: `svc-x skipped: fatal: …`; the run goes on;
-- each repo whose prod moved since its oldest waiting merge yet holds none of its `sandbox` or `staging` merges of 90 days, the sign of squashed promotions: `svc-x: prod moved since its oldest waiting merge, yet holds none of its sandbox or staging merges of 90 days: are promotions squashed?`;
+- each repo whose prod moved since its oldest waiting merge yet holds none of its first-parent `staging` merges of 90 days, the sign of squashed promotions: `svc-x: prod moved since its oldest waiting merge, yet holds none of its staging merges of 90 days: are promotions squashed?`;
 - each clone fetched more than 3 days before the run: `svc-reports fetched 2026-11-09: run with --pinned to refresh`.
 
 ## Gates
@@ -214,7 +213,7 @@ The test suite guards discovery's behaviour and keeps tests off the network.
 - **`AGENTS.md`:** the repo's agent guidance: commands, hard rules and a code → doc sync table. A change to a code path in that table updates its doc in the same change.
 - **Exact pins:** every dependency in every `package.json` carries an exact version, never `^` or `~`; a new dependency takes a version published at least two weeks earlier.
 - **Unused code:** `pnpm check:exports` (knip) fails on an unused file, export or type.
-- **`--no-fetch`:** a pinned run fetches each repo's origin first (prod for the pin, then `staging` and `sandbox` with `--delivery`); `--no-fetch` skips both, for offline runs and tests. `DE_FIXED_NOW` (an ISO date) fixes the run's clock for reproducible output.
+- **`--no-fetch`:** a pinned run fetches each repo's origin first (prod for the pin, then `staging` with `--delivery`); `--no-fetch` skips both, for offline runs and tests. `DE_FIXED_NOW` (an ISO date) fixes the run's clock for reproducible output.
 
 ## Listener drift (👂)
 

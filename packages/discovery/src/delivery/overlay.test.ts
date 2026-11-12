@@ -37,14 +37,13 @@ describe('buildDeliveryOverlay', () => {
     expect(report.overlay.generatedAt).toBe(NOW.toISOString())
     expect(report.overlay.services['skello-app']).toMatchObject({
       prod: 'master',
-      steps: [{ branch: 'staging', count: 2, oldest: { sha: mono.feature, title: 'feat: planning export', workingDays: 3 } }],
+      steps: [{ branch: 'staging', count: 3, oldest: { sha: mono.feature, title: 'feat: planning export', workingDays: 3 } }],
       lastRelease: { sha: mono.release, version: '#11' },
     })
   })
 
-  it('orders steps sandbox then staging', () => {
+  it('reads one staging step and leaves sandbox out', () => {
     expect(report.overlay.services['svc-ms']?.steps).toEqual([
-      { branch: 'sandbox', count: 2, oldest: { sha: ms.waitingOld, title: 'feat: waiting on sandbox', mergedAt: '2026-11-10T10:00:00Z', workingDays: 1 } },
       { branch: 'staging', count: 3, oldest: { sha: ms.both, title: 'feat: promoted by fast-forward', mergedAt: '2026-11-02T10:00:00Z', workingDays: 7 } },
     ])
   })
@@ -74,7 +73,7 @@ describe('buildDeliveryOverlay', () => {
     buildDeliveryOverlay([{ service: 'svc-ms', dir: ms.dir }], NOW, false, recording)
     expect(fetches).toEqual([])
     buildDeliveryOverlay([{ service: 'svc-ms', dir: ms.dir }], NOW, true, recording)
-    expect(fetches).toEqual([['fetch', '--quiet', 'origin', 'staging', 'sandbox']])
+    expect(fetches).toEqual([['fetch', '--quiet', 'origin', 'staging']])
   })
 
   it('leaves out a repo without prod and keeps a repo with prod only', () => {
@@ -135,7 +134,7 @@ describe('deliverySection', () => {
     const late = (workingDays: number) => ({
       prod: 'master' as const,
       fetchedAt: null,
-      steps: [{ branch: 'sandbox' as const, count: 8, oldest: { sha: 'a', title: `change ${workingDays}`, mergedAt: '2026-11-02T10:00:00Z', workingDays } }],
+      steps: [{ branch: 'staging' as const, count: 8, oldest: { sha: 'a', title: `change ${workingDays}`, mergedAt: '2026-11-02T10:00:00Z', workingDays } }],
       late: workingDays >= 3,
       lastRelease: null,
     })
@@ -147,10 +146,10 @@ describe('deliverySection', () => {
     })
     expect(section).toBe([
       '\n## 🚚 Delivery (advisory, not in the baseline)\n',
-      '- svc-b: 8 on sandbox, oldest 5 working days (change 5)',
-      '- svc-a: 8 on sandbox, oldest 3 working days (change 3)',
+      '- svc-b: 8 on staging, oldest 5 working days (change 5)',
+      '- svc-a: 8 on staging, oldest 3 working days (change 3)',
       '- svc-d skipped: fatal: bad object',
-      '- svc-squash: prod moved since its oldest waiting merge, yet holds none of its sandbox or staging merges of 90 days: are promotions squashed?',
+      '- svc-squash: prod moved since its oldest waiting merge, yet holds none of its staging merges of 90 days: are promotions squashed?',
       '- svc-reports fetched 2026-11-09: run with --pinned to refresh',
     ].join('\n'))
   })

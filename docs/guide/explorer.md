@@ -82,7 +82,7 @@ Discovered recurring tasks (⏰ EventBridge schedules) show with the endpoint li
 
 With a delivery overlay present, the Exploring view of a service shows a Delivery section under the diagram and above Health (Presenting hides it). It reads one line, upstream to prod:
 
-- one item per environment branch holding a waiting change, `sandbox` then `staging`: the count, the oldest change's title (cut with an ellipsis past 48 characters, whole in its tooltip and accessible name) and its age in working days, a 0 dimmed;
+- the changes waiting on `staging`: the count, the oldest change's title (cut with an ellipsis past 48 characters, whole in its tooltip and accessible name) and its age in working days, a 0 dimmed;
 - "Nothing on its way to prod" when no branch holds one;
 - the last release, `in prod v1.31.0 · 9 Nov`, with its verdict (Regressed, Steady, Too recent) when the Datadog overlay holds that release's sha; "No release in prod" without one.
 

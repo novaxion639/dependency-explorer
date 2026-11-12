@@ -18,7 +18,6 @@ export interface DeliveryReport {
 const DAY_MS = 86_400_000
 const LATE_WORKING_DAYS = 3
 const STALE_FETCH_DAYS = 3
-const STEP_ORDER = ['sandbox', 'staging'] as const
 
 function fetchedAtOf(dir: string): string | null {
   const file = path.join(dir, '.git', 'FETCH_HEAD')
@@ -32,21 +31,16 @@ function serviceOf(dir: string, now: Date, fetch: boolean, git: GitRunner): { en
   if (fetch) {
     fetchTrunk(dir, git)
   }
-  const trunk = trunkOf(dir, now, git)
+  const trunk = trunkOf(dir, git)
   if (trunk === null) {
     return null
   }
   const today = parisDay(now.toISOString())
   const changes = waitingChanges(dir, trunk, now, git)
-  const steps = STEP_ORDER.flatMap((branch) => {
-    const waiting = changes.filter((c) => c.branch === branch)
-    const oldest = oldestOf(waiting)
-    if (oldest === undefined) {
-      return []
-    }
-    const { sha, title, mergedAt } = oldest
-    return [{ branch, count: waiting.length, oldest: { sha, title, mergedAt, workingDays: workingDaysBetween(parisDay(mergedAt), today) } }]
-  })
+  const oldest = oldestOf(changes)
+  const steps = oldest === undefined
+    ? []
+    : [{ branch: 'staging' as const, count: changes.length, oldest: { sha: oldest.sha, title: oldest.title, mergedAt: oldest.mergedAt, workingDays: workingDaysBetween(parisDay(oldest.mergedAt), today) } }]
   const entry = {
     prod: trunk.prod,
     fetchedAt: fetchedAtOf(dir),
@@ -93,7 +87,7 @@ export function deliverySection(delivery: DeliveryReport | null): string | null 
   const lines = [
     ...late,
     ...delivery.skipped.map(({ repo, reason }) => `- ${repo} skipped: ${reason}`),
-    ...delivery.unpromoted.map((repo) => `- ${repo}: prod moved since its oldest waiting merge, yet holds none of its sandbox or staging merges of 90 days: are promotions squashed?`),
+    ...delivery.unpromoted.map((repo) => `- ${repo}: prod moved since its oldest waiting merge, yet holds none of its staging merges of 90 days: are promotions squashed?`),
     ...delivery.stale.map(({ repo, fetchedAt }) => `- ${repo} fetched ${fetchedAt.slice(0, 10)}: run with --pinned to refresh`),
   ]
   return ['\n## 🚚 Delivery (advisory, not in the baseline)\n', ...(lines.length ? lines : ['_none_'])].join('\n')

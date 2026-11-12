@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import { NOW, microserviceRepo, monolithRepo, pausedRepo, prodOnlyRepo } from './__fixtures__/repos'
+import { NOW, microserviceRepo, monolithRepo, prodOnlyRepo } from './__fixtures__/repos'
 import { isPromotion, lastRelease, waitingChanges, type Change } from './changes'
 import { trunkOf, type Trunk } from './trunk'
 
@@ -12,8 +12,8 @@ let mono: ReturnType<typeof monolithRepo>
 let msChanges: Change[] = []
 let monoChanges: Change[] = []
 
-const trunk = (dir: string): Trunk => trunkOf(dir, NOW) ?? { prod: 'master', branches: [] }
-const branchOf = (changes: Change[], sha: string) => changes.find((c) => c.sha === sha)?.branch
+const trunk = (dir: string): Trunk => trunkOf(dir) ?? { prod: 'master', staging: false }
+const waits = (changes: Change[], sha: string) => changes.some((c) => c.sha === sha)
 
 beforeAll(() => {
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'changes-'))
@@ -26,44 +26,38 @@ beforeAll(() => {
 afterAll(() => fs.rmSync(root, { recursive: true, force: true }))
 
 describe('waitingChanges', () => {
-  it('places an unpromoted feature on sandbox', () => {
-    expect(branchOf(msChanges, ms.waitingOld)).toBe('sandbox')
-    expect(branchOf(msChanges, ms.waitingNew)).toBe('sandbox')
+  it('ignores a feature merged only into sandbox', () => {
+    expect(waits(msChanges, ms.waitingOld)).toBe(false)
+    expect(waits(msChanges, ms.waitingNew)).toBe(false)
   })
 
-  it('places a promoted feature on staging', () => {
-    expect(branchOf(msChanges, ms.promoted)).toBe('staging')
+  it('counts a feature promoted to staging', () => {
+    expect(waits(msChanges, ms.promoted)).toBe(true)
   })
 
   it('skips a shipped feature', () => {
-    expect(branchOf(msChanges, ms.shipped)).toBeUndefined()
+    expect(waits(msChanges, ms.shipped)).toBe(false)
   })
 
   it('never counts the staging back-merge', () => {
-    expect(branchOf(msChanges, ms.backMerge)).toBeUndefined()
-    expect(branchOf(msChanges, ms.promotion)).toBeUndefined()
+    expect(waits(msChanges, ms.backMerge)).toBe(false)
+    expect(waits(msChanges, ms.promotion)).toBe(false)
   })
 
   it('counts a hotfix merged into staging', () => {
-    expect(branchOf(msChanges, ms.hotfix)).toBe('staging')
+    expect(waits(msChanges, ms.hotfix)).toBe(true)
   })
 
-  it('counts a sandbox-mozza merge as one change on staging', () => {
-    expect(monoChanges.map((c) => [c.sha, c.branch])).toEqual([[mono.mozza, 'staging'], [mono.feature, 'staging']])
+  it('counts each PR a team sandbox brings into staging', () => {
+    expect(monoChanges.map((c) => c.sha)).toEqual([mono.mozzaTwo, mono.mozzaOne, mono.feature])
   })
 
-  it('counts a change on both trunks once, on staging', () => {
-    expect(msChanges.filter((c) => c.sha === ms.both).map((c) => c.branch)).toEqual(['staging'])
-    expect(msChanges).toHaveLength(5)
+  it('counts a change fast-forwarded from sandbox to staging once', () => {
+    expect(msChanges.map((c) => c.sha)).toEqual([ms.promoted, ms.hotfix, ms.both])
   })
 
   it('reads the PR title from the merge body', () => {
     expect(msChanges.find((c) => c.sha === ms.hotfix)).toMatchObject({ title: 'fix: hotfix on staging', mergedAt: '2026-11-07T10:00:00Z' })
-  })
-
-  it('shows the sandbox change of a repo whose last promotion is 120 days old', () => {
-    const paused = pausedRepo(root, 'svc-paused', 120)
-    expect(waitingChanges(paused.dir, trunk(paused.dir), NOW)).toEqual([{ sha: paused.waiting, title: 'feat: waiting', mergedAt: '2026-11-07T10:00:00Z', branch: 'sandbox' }])
   })
 
   it('reads a repo with prod only', () => {
@@ -82,20 +76,21 @@ describe('lastRelease', () => {
   })
 
   it('reads the release of a main repo', () => {
-    expect(lastRelease(prodOnlyRepo(root, 'svc-release-main', 'main').dir, { prod: 'main', branches: [] })?.version).toBe('v2.0.0')
+    expect(lastRelease(prodOnlyRepo(root, 'svc-release-main', 'main').dir, { prod: 'main', staging: false })?.version).toBe('v2.0.0')
   })
 
   it('is null without a merge on prod', () => {
-    expect(lastRelease(prodOnlyRepo(root, 'svc-unreleased', 'master', false).dir, { prod: 'master', branches: [] })).toBeNull()
+    expect(lastRelease(prodOnlyRepo(root, 'svc-unreleased', 'master', false).dir, { prod: 'master', staging: false })).toBeNull()
   })
 })
 
 describe('isPromotion', () => {
-  it('isPromotion matches the three promotion subjects and not a feature merge', () => {
+  it('isPromotion matches trunk, prod and team sandbox merges, not a feature merge', () => {
     expect(isPromotion('Merge pull request #12 from skelloapp/sandbox')).toBe(true)
     expect(isPromotion("Merge branch 'staging' into sandbox")).toBe(true)
     expect(isPromotion("Merge remote-tracking branch 'origin/master' into staging")).toBe(true)
-    expect(isPromotion('Merge pull request #13 from skelloapp/sandbox-mozza')).toBe(false)
+    expect(isPromotion('Merge pull request #13 from skelloapp/sandbox-mozza')).toBe(true)
+    expect(isPromotion("Merge branch 'sandbox-mozza' into staging")).toBe(true)
     expect(isPromotion('Merge pull request #14 from skelloapp/feat-staging-export')).toBe(false)
   })
 })

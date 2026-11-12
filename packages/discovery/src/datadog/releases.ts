@@ -11,8 +11,8 @@ const firstLine = (text: string): string | undefined =>
 
 export interface Merge { sha: string; mergedAt: string; subject: string; title: string }
 
-export function firstParentMerges(repoDir: string, revisions: string[], git: GitRunner = defaultGit): Merge[] {
-  const log = git(repoDir, ['log', '-z', '--first-parent', '--merges', '--format=%H%x09%cI%x09%s%x09%b', ...revisions])
+export function mergesOf(repoDir: string, revisions: string[], git: GitRunner = defaultGit): Merge[] {
+  const log = git(repoDir, ['log', '-z', '--merges', '--format=%H%x09%cI%x09%s%x09%b', ...revisions])
   return log
     .split('\0')
     .filter((record) => record.trim() !== '')
@@ -23,7 +23,7 @@ export function firstParentMerges(repoDir: string, revisions: string[], git: Git
 }
 
 export function releasesOf(repoDir: string, repo: string, ref: string, since: Date, git: GitRunner = defaultGit): EngineInput['releases'] {
-  return firstParentMerges(repoDir, [`--since=${since.toISOString()}`, ref], git).map(({ sha, mergedAt, subject, title }) => ({
+  return mergesOf(repoDir, ['--first-parent', `--since=${since.toISOString()}`, ref], git).map(({ sha, mergedAt, subject, title }) => ({
     repo,
     number: Number(PR_NUMBER.exec(subject)?.[1] ?? 0),
     sha,

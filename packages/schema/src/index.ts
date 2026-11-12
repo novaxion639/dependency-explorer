@@ -718,7 +718,7 @@ export const DeliveryOverlaySchema = z.object({
     prod: z.enum(['master', 'main']),
     fetchedAt: z.string().nullable(),
     steps: z.array(z.object({
-      branch: z.enum(['sandbox', 'staging']),
+      branch: z.literal('staging'),
       count: z.number().int().positive(),
       oldest: DeliveryCommitSchema.extend({ workingDays: z.number().int() }),
     })),

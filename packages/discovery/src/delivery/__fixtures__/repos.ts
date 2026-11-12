@@ -83,11 +83,11 @@ export function monolithRepo(root: string) {
   h.backMerge('staging', 'sandbox', "Merge remote-tracking branch 'origin/staging' into sandbox", 38)
   const feature = h.feature('staging', 'feat-y', 12, 'feat: planning export', 6)
   h.branch('sandbox-mozza', 'staging')
-  h.feature('sandbox-mozza', 'mozza-1', 13, 'feat: mozza one', 4)
-  h.feature('sandbox-mozza', 'mozza-2', 14, 'feat: mozza two', 3)
-  const mozza = h.promote('sandbox-mozza', 'staging', 15, 'Mozza batch', 2)
+  const mozzaOne = h.feature('sandbox-mozza', 'mozza-1', 13, 'feat: mozza one', 4)
+  const mozzaTwo = h.feature('sandbox-mozza', 'mozza-2', 14, 'feat: mozza two', 3)
+  h.promote('sandbox-mozza', 'staging', 15, 'Mozza batch', 2)
   h.backMerge('staging', 'sandbox', "Merge remote-tracking branch 'origin/staging' into sandbox", 1)
-  return { dir: h.clone(root, 'skello-app'), release, feature, mozza }
+  return { dir: h.clone(root, 'skello-app'), release, feature, mozzaOne, mozzaTwo }
 }
 
 export function pausedRepo(root: string, name: string, promotedDaysAgo: number) {

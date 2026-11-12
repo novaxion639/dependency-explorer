@@ -36,28 +36,33 @@ afterEach(async () => {
 
 describe('DeliverySection', () => {
   it('reads upstream to prod: count, oldest title, age, then the release', async () => {
-    const host = await render({ delivery: deliveryService({ steps: deliveryService().steps.slice(0, 1) }) })
+    const host = await render()
     expect(byRole(host, 'heading', 'Delivery')).not.toBeNull()
     const text = region(host)?.textContent ?? ''
-    const positions = indexIn(text, ['2 on sandbox', 'feat: search by tag', '2 d', 'in prod v1.31.0', '9 Nov'])
+    const positions = indexIn(text, ['2 on staging', 'feat: search by tag', '2 d', 'in prod v1.31.0', '9 Nov'])
     expect(positions.every((p) => p >= 0)).toBe(true)
     expect([...positions].sort((a, b) => a - b)).toEqual(positions)
   })
 
-  it('lists the sandbox step before the staging step', async () => {
+  it('names the staging step and the release', async () => {
     const host = await render()
     expect(allByRole(host, 'listitem').map((li) => li.getAttribute('aria-label'))).toEqual([
-      '2 on sandbox, oldest feat: search by tag, 2 working days',
-      '1 on staging, oldest fix: index refresh, 0 working days',
+      '2 on staging, oldest feat: search by tag, 2 working days',
       'in prod v1.31.0, 9 Nov',
     ])
   })
 
+  it('dims an age of 0 working days', async () => {
+    const steps = [{ branch: 'staging' as const, count: 1, oldest: { sha: 'b2', title: 'fix: index refresh', mergedAt: '2026-11-09T10:00:00+01:00', workingDays: 0 } }]
+    const host = await render({ delivery: deliveryService({ steps }) })
+    expect(byText(host, /^0 d$/)?.className).not.toBe('')
+  })
+
   it('cuts a long title with an ellipsis and keeps it whole in the accessible name', async () => {
     const title = 'feat: rebuild the search index from the planning events with a backfill for every shop'
-    const steps = [{ branch: 'sandbox' as const, count: 1, oldest: { sha: 'c3', title, mergedAt: '2026-11-06T10:00:00+01:00', workingDays: 2 } }]
+    const steps = [{ branch: 'staging' as const, count: 1, oldest: { sha: 'c3', title, mergedAt: '2026-11-06T10:00:00+01:00', workingDays: 2 } }]
     const host = await render({ delivery: deliveryService({ steps }) })
-    const step = byRole(host, 'listitem', /^1 on sandbox/)
+    const step = byRole(host, 'listitem', /^1 on staging/)
     expect(step?.textContent).toContain('…')
     expect(step?.textContent).not.toContain(title)
     expect(step?.getAttribute('aria-label')).toContain(title)

@@ -201,7 +201,7 @@ What waits on each service's environment branches is a read-only overlay beside 
 | `services` | keyed by map service name (the repo name), for each clone with a prod branch |
 | `services[].prod` | `master` or `main` |
 | `services[].fetchedAt` | the clone's last fetch (mtime of `.git/FETCH_HEAD`), `null` when never fetched |
-| `services[].steps` | `sandbox` then `staging`, only those holding a waiting change: `branch`, `count`, `oldest` (`sha`, `title`, `mergedAt`, `workingDays`) |
+| `services[].steps` | one `staging` step when a change waits there, else empty: `branch`, `count`, `oldest` (`sha`, `title`, `mergedAt`, `workingDays`) |
 | `services[].late` | the oldest waiting change has waited 3 working days or more |
 | `services[].lastRelease` | the latest merge into prod: `sha`, `title`, `version` (`vX.Y.Z` or `#<PR number>`), `mergedAt`; `null` without one |
 
