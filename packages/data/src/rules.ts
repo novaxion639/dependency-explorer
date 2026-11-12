@@ -37,7 +37,7 @@ const rules: DomainRule[] = z.array(DomainRuleSchema).parse([
       {
         platform: 'tablet',
         behavior:
-          'Groups records by device-local midnight of the clock-IN day (not shop hours); the last-badging lookup is a rolling 24h window PREFERRING an open badging over the newest record (BR-15241) — a guard present in the offline path but ABSENT from the online-only path, and API badgings are never pulled back into SQLite, so a backend auto-close is invisible offline',
+          'Groups records by device-local midnight of the clock-IN day (not shop hours); the last-badging lookup is a rolling 24h window PREFERRING an open badging over the newest record — a guard present in the offline path but ABSENT from the online-only path, and API badgings are never pulled back into SQLite, so a backend auto-close is invisible offline',
         codeUnitRef: 'cu-eci-pinscreen',
       },
     ],

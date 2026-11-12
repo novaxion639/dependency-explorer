@@ -1583,7 +1583,7 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "communicationType": "sync",
     "protocol": "rest",
     "authType": "jwt",
-    "description": "Mobile clock in/out goes DIRECT to svc-punch — createClockInOut/partialUpdateClockInOut on clocks-in-out with badgedFrom: mobile_app, an inUuid idempotency key and best-effort GPS locations (never blocking the punch, BR-15285), plus settings/ and settings/mobile/ reads and the user clock-in list. The monolith is not in this request path. Traced 2026-07-18 (src/modules/punchClock/api.ts, src/plugins/clients/PunchClient).",
+    "description": "Mobile clock in/out goes DIRECT to svc-punch — createClockInOut/partialUpdateClockInOut on clocks-in-out with badgedFrom: mobile_app, an inUuid idempotency key and best-effort GPS locations (never blocking the punch), plus settings/ and settings/mobile/ reads and the user clock-in list. The monolith is not in this request path. Traced 2026-07-18 (src/modules/punchClock/api.ts, src/plugins/clients/PunchClient).",
     "usedEndpoints": []
   },
   {
