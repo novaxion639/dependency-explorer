@@ -285,7 +285,7 @@ const leave_request_approval: ServiceFlow = ServiceFlowSchema.parse({
     {
       "id": "lock-held",
       "at": "cu-lra-mono-shifts",
-      "when": "a concurrent delivery of the same leave request (same user, shop, start and end dates) holds the pg advisory lock (BR-15280)",
+      "when": "a concurrent delivery of the same leave request (same user, shop, start and end dates) holds the pg advisory lock",
       "outcome": "409 Conflict, no absence shifts written by this delivery; CreateShiftsJob does not catch it — SQS redelivers the message up to 3 times, then it lands in SqsCreateShiftsDlq, which has no consumer; the web front never sees it",
       "status": 409,
       "evidence": { "literal": "return render_conflict unless lock_acquired" }

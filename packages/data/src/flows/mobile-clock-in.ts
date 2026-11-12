@@ -10,7 +10,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const mobile_clock_in: ServiceFlow = ServiceFlowSchema.parse({
   "id": "mobile-clock-in",
   "name": "Mobile Clock-In (Employee Phone)",
-  "description": "An employee clocks in from the Skello mobile app. The phone calls svc-punch DIRECTLY (clocks-in-out, badgedFrom: mobile_app) — the monolith is not in the request path. GPS capture is best-effort and NEVER blocks the punch (BR-15285); a client-generated inUuid plus svc-punch's same-second dedup guard make retries idempotent. svc-punch precomputes the auto-close timestamp at write time (calculateOutAuto = shop closing time in the shop's timezone, rolled +1 day for overnight shops) — there is NO auto-close cron anywhere; 'closedByBackend' is derived as out === outAuto. Clock-out and pauses PATCH the same record from the in-progress screen. Mobile punching is gated per-user (settings.mobileClocksInOutActivatedUsers, maintained through the settings/mobile surface and recalculated via the SnsMobilePermissions topic when settings change). Each mobile badge also bumps lastMobileBadgeDate on the shop's SETTING row — svc-punch's own table stream picks that up and calls the monolith's lateness SMS job (the sixth service→monolith callback).",
+  "description": "An employee clocks in from the Skello mobile app. The phone calls svc-punch DIRECTLY (clocks-in-out, badgedFrom: mobile_app) — the monolith is not in the request path. GPS capture is best-effort and NEVER blocks the punch; a client-generated inUuid plus svc-punch's same-second dedup guard make retries idempotent. svc-punch precomputes the auto-close timestamp at write time (calculateOutAuto = shop closing time in the shop's timezone, rolled +1 day for overnight shops) — there is NO auto-close cron anywhere; 'closedByBackend' is derived as out === outAuto. Clock-out and pauses PATCH the same record from the in-progress screen. Mobile punching is gated per-user (settings.mobileClocksInOutActivatedUsers, maintained through the settings/mobile surface and recalculated via the SnsMobilePermissions topic when settings change). Each mobile badge also bumps lastMobileBadgeDate on the shop's SETTING row — svc-punch's own table stream picks that up and calls the monolith's lateness SMS job (the sixth service→monolith callback).",
   "trigger": {"actor": "employee", "role": "mobile badging permission (svc-punch replicated user)"},
   "primaryArea": "time-attendance",
   "chapters": [
@@ -42,7 +42,7 @@ const mobile_clock_in: ServiceFlow = ServiceFlowSchema.parse({
       "kind": "component",
       "label": "ClockInScreen / ClockInProgressScreen",
       "path": "src/screens/PunchClock/ClockInScreen/ClockInScreen.tsx",
-      "description": "Clock-in: shift picker (incl. NO_SHIFT), shop picker, swipe slider → createClockInOut; GPS acquired best-effort and never blocking (BR-15285). ClockInProgressScreen clocks out ({ out: NOW }) and manages pauses as [in, out] pairs"
+      "description": "Clock-in: shift picker (incl. NO_SHIFT), shop picker, swipe slider → createClockInOut; GPS acquired best-effort and never blocking. ClockInProgressScreen clocks out ({ out: NOW }) and manages pauses as [in, out] pairs"
     },
     {
       "id": "cu-mci-api",
