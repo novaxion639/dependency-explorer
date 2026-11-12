@@ -1,7 +1,7 @@
 import { defaultGit, type GitRunner } from '../pinned'
 import type { EngineInput } from './health/rules'
 
-const PR_NUMBER = /Merge pull request #(\d+)/
+export const PR_NUMBER = /Merge pull request #(\d+)/
 
 const firstLine = (text: string): string | undefined =>
   text
@@ -9,13 +9,26 @@ const firstLine = (text: string): string | undefined =>
     .map((line) => line.trim())
     .find((line) => line !== '')
 
-export function releasesOf(repoDir: string, repo: string, ref: string, since: Date, git: GitRunner = defaultGit): EngineInput['releases'] {
-  const log = git(repoDir, ['log', '-z', '--first-parent', '--merges', `--since=${since.toISOString()}`, '--format=%H%x09%cI%x09%s%x09%b', ref])
+export interface Merge { sha: string; mergedAt: string; subject: string; title: string }
+
+export function firstParentMerges(repoDir: string, revisions: string[], git: GitRunner = defaultGit): Merge[] {
+  const log = git(repoDir, ['log', '-z', '--first-parent', '--merges', '--format=%H%x09%cI%x09%s%x09%b', ...revisions])
   return log
     .split('\0')
     .filter((record) => record.trim() !== '')
     .map((record) => {
-      const [sha, merged, subject, ...body] = record.trim().split('\t')
-      return { repo, number: Number(PR_NUMBER.exec(subject)?.[1] ?? 0), sha, title: firstLine(body.join('\t')) ?? subject, merged, changes: [] }
+      const [sha, mergedAt, subject, ...body] = record.trim().split('\t')
+      return { sha, mergedAt, subject, title: firstLine(body.join('\t')) ?? subject }
     })
+}
+
+export function releasesOf(repoDir: string, repo: string, ref: string, since: Date, git: GitRunner = defaultGit): EngineInput['releases'] {
+  return firstParentMerges(repoDir, [`--since=${since.toISOString()}`, ref], git).map(({ sha, mergedAt, subject, title }) => ({
+    repo,
+    number: Number(PR_NUMBER.exec(subject)?.[1] ?? 0),
+    sha,
+    title,
+    merged: mergedAt,
+    changes: [],
+  }))
 }

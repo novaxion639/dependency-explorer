@@ -74,7 +74,7 @@ export function rise(s: Signals, w: Window, a: number, b: number, bar = NOW_BAR)
   return { why, e5, lerr, p95 }
 }
 
-const versionOf = (title: string, n: number) => {
+export const versionOf = (title: string, n: number) => {
   const m = /\brelease\s+(?:\S+\s+)?v?(\d+\.\d+\.\d+)/i.exec(title)
   return m ? `v${m[1]}` : `#${n}`
 }
