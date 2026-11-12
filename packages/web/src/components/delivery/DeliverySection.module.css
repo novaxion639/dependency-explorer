@@ -1,0 +1,11 @@
+.delivery { margin-top: var(--space-3); padding: var(--space-3); background: var(--card); border: var(--line); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
+.delivery h2 { display: flex; gap: var(--space-2); align-items: baseline; font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); }
+.late { text-transform: none; letter-spacing: 0; color: var(--starves); font-weight: 700; }
+.line { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); }
+.line li + li::before { content: '›'; margin-right: var(--space-2); color: var(--ink-faint); }
+.dim { color: var(--ink-faint); }
+.verdict { margin-left: var(--space-2); font-weight: 700; }
+.regressed { color: var(--fails); }
+.steady { color: var(--ok); }
+.tooRecent { color: var(--ink-faint); }
+.footer { font-size: var(--text-xs); color: var(--ink-faint); }

@@ -34,7 +34,7 @@ describe('Service view health', () => {
     const fetchImpl = vi.fn<typeof fetch>(async () => new Response(null, { status: 404 }))
     const host = await render('?page=microservices&s=svc-punch&renderer=svg', fetchImpl)
     expect(health(host)).toBeNull()
-    expect(fetchImpl).toHaveBeenCalledTimes(1)
+    expect(fetchImpl.mock.calls.map(([input]) => String(input).split('/').at(-1))).toEqual(['datadog.json', 'delivery.json'])
     expect(error).not.toHaveBeenCalled()
   })
   it('renders the Health section when the overlay names the service', async () => {
