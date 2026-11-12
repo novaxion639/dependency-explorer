@@ -22,6 +22,7 @@ See [README.md](README.md) for the product and `docs/guide/` for the guides.
 | `pnpm discover:jira:fetch` | Fetches the Jira snapshot (`JIRA_EMAIL`, `JIRA_API_TOKEN`) |
 | `pnpm discover:jira:draft` | Drafts `feature-areas.ts` rows from the latest Jira snapshot |
 | `pnpm discover -- --jira` | Adds the 🎫 section and writes the Jira web overlay from the latest snapshot |
+| `pnpm discover -- --delivery` | Adds the 🚚 section and writes the delivery web overlay from the clones' branches |
 | `pnpm --filter @dependency-explorer/discovery golden:update` | Rewrites the golden files after an intended output change |
 | `pnpm discover:scaffold` | Scaffolds a flow from a trace |
 | `pnpm discover:trace` | Traces a call path |
@@ -59,6 +60,8 @@ Repository:
 | `packages/web/src/shell/*`, a page, `packages/web/src/components/health/*` | `docs/guide/explorer.md` |
 | `packages/discovery/src/datadog/*`, `datadog-fetch.ts`, `golden.test.ts`, `test-support/*` | `docs/guide/discovery.md` |
 | `packages/discovery/src/jira/*`, `jira-fetch.ts`, `jira-draft.ts` | `docs/guide/discovery.md` |
+| `packages/discovery/src/delivery/*` | `docs/guide/discovery.md` |
+| `packages/web/src/components/delivery/*` | `docs/guide/explorer.md` |
 | `packages/data/src/feature-areas.ts`, `jiraBoards` in `teams.ts` | `docs/guide/data.md` |
 | `packages/data/src/flows/*`, flow rules | `docs/guide/flows.md`, `docs/flow-authoring-guide.md` |
 | A roadmap phase starting or ending | `docs/guide/roadmap.md` |

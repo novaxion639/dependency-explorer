@@ -189,6 +189,22 @@ Jira bug counts are a read-only overlay beside the dataset, on the Datadog overl
 | `unmapped` | open BRs with no Feature Area, one absent from the map, or one mapped to no area: `open`, `breached`, `jql` |
 | `boards` | the boards listed in a team's `jiraBoards`, keyed by board id: `name` |
 
+## Delivery overlay
+
+What waits on each service's environment branches is a read-only overlay beside the dataset, on the Datadog overlay's terms: `packages/web/overlay/delivery.json` is gitignored, derived from the sibling clones' git refs by `pnpm discover -- --delivery` ([discovery.md](discovery.md#delivery-line)) and fetched by the web app at runtime.
+
+`DeliveryOverlaySchema` (`packages/schema`) is the contract:
+
+| Field | Content |
+|---|---|
+| `generatedAt` | the run's time (ISO) |
+| `services` | keyed by map service name (the repo name), for each clone with a prod branch |
+| `services[].prod` | `master` or `main` |
+| `services[].fetchedAt` | the clone's last fetch (mtime of `.git/FETCH_HEAD`), `null` when never fetched |
+| `services[].steps` | `sandbox` then `staging`, only those holding a waiting change: `branch`, `count`, `oldest` (`sha`, `title`, `mergedAt`, `workingDays`) |
+| `services[].late` | the oldest waiting change has waited 3 working days or more |
+| `services[].lastRelease` | the latest merge into prod: `sha`, `title`, `version` (`vX.Y.Z` or `#<PR number>`), `mergedAt`; `null` without one |
+
 ## Contributing data
 
 - **Flows:** follow the [flow authoring guide](../flow-authoring-guide.md). Every claim is verified against deployed code, never against documentation, and the integrity tests enforce the node naming conventions.
