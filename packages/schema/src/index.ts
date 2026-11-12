@@ -706,6 +706,28 @@ export const JiraOverlaySchema = z.object({
 })
 export type JiraOverlay = z.infer<typeof JiraOverlaySchema>
 
+const DeliveryCommitSchema = z.object({
+  sha: z.string(),
+  title: z.string(),
+  mergedAt: z.string(),
+})
+
+export const DeliveryOverlaySchema = z.object({
+  generatedAt: z.string(),
+  services: z.record(z.string(), z.object({
+    prod: z.enum(['master', 'main']),
+    fetchedAt: z.string().nullable(),
+    steps: z.array(z.object({
+      branch: z.enum(['sandbox', 'staging']),
+      count: z.number().int().positive(),
+      oldest: DeliveryCommitSchema.extend({ workingDays: z.number().int() }),
+    })),
+    late: z.boolean(),
+    lastRelease: DeliveryCommitSchema.extend({ version: z.string() }).nullable(),
+  })),
+})
+export type DeliveryOverlay = z.infer<typeof DeliveryOverlaySchema>
+
 // ── Top-level map ─────────────────────────────────────────────────────────────
 
 export const ConnectivityMapSchema = z.object({
