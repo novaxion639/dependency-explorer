@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { kebab } from '@dependency-explorer/data'
 
 export type Alias = { prefix: string; dir: string; scope: string }
 export type Read = (repoPath: string) => string | null
@@ -254,9 +255,6 @@ export function usesVuexNamespace(code: string, ns: string): boolean {
 const HTML_COMMENT = /<!--[\s\S]*?-->/g
 const OPEN_TAG = /<([A-Za-z][\w-]*)\b((?:"[^"]*"|'[^']*'|[^>"'])*)>/g
 
-function kebab(name: string): string {
-  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
-}
 
 function bindingsOf(code: string, fromPath: string, target: string, aliases: Alias[]): string[] {
   const resolves = (spec: string) => {

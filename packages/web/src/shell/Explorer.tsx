@@ -26,6 +26,7 @@ import { areaSlice } from '../utils/areaSlice'
 import { connectionsFor, fileIndex, flagRegistry, map, resourceIds, searchIndex } from './dataIndexes'
 import { validateUrlState } from './validateUrlState'
 import { keyInfo, onPresentKey } from './presentMode'
+import { MONOLITH } from '../diagram/layouts/ids'
 
 
 export function Explorer() {
@@ -84,7 +85,7 @@ export function Explorer() {
     : url.page === 'flows' ? (selectedFlow
       ? <FlowPage flow={selectedFlow} url={url} patch={patch} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, unit: null, chapter: null }))} />
       : flagEntry ? <FlagPage entry={flagEntry} onSelectFlow={flow => patch({ flow: flow.id, flag: null })} />
-      : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, file: null, unit: (flow.codeUnits ?? []).find(u => u.service === fileEntry.service && u.path === fileEntry.path)?.id ?? null })} onOpenRoute={id => patch({ page: 'monolith', file: null, drawer: 'skello-app', ep: id })} onOpenResource={openResource} />
+      : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, file: null, unit: (flow.codeUnits ?? []).find(u => u.service === fileEntry.service && u.path === fileEntry.path)?.id ?? null })} onOpenRoute={id => patch({ page: 'monolith', file: null, drawer: MONOLITH, ep: id })} onOpenResource={openResource} />
       : <FlowsIndex service={url.flows} flows={map.flows} map={map} onSelectFlow={flow => patch({ flow: flow.id })} />)
     : url.page === 'resources' ? (url.resource
       ? <ResourcePage id={url.resource} onOpenResource={openResource} onOpenFile={key => patch({ page: 'flows', resource: null, file: key })} onOpenFlow={id => patch({ page: 'flows', flow: id })} onSelectService={selectService} onBlast={id => patch({ page: 'impact', blast: id })} listeners={url} onListeners={patch} />

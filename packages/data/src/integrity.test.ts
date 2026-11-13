@@ -6,6 +6,7 @@ import { resourceNotes } from './resource-notes'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { getFlowAreas } from './areas-derive'
 import { flowRefIds } from './flow-chapters'
+import { stepService } from './names'
 import { machineProblems } from './state-machines'
 import discoveredJson from './generated/discovered.json'
 
@@ -23,8 +24,7 @@ function isValidStepNode(name: string): boolean {
   if (serviceNames.has(name)) {
     return true
   }
-  const base = name.replace(/ \([^)]*\)$/, '')
-  return serviceNames.has(base)
+  return serviceNames.has(stepService(name))
 }
 
 describe('services', () => {

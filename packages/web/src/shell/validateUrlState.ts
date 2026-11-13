@@ -2,6 +2,8 @@ import { listenerSurface, resourceSurface } from '@dependency-explorer/data'
 import { EDGE_LIST_SEP, edgeKey, type UrlState } from '../hooks/useUrlState'
 import { areaById, fileIndex, flagRegistry, map, resourceIds } from './dataIndexes'
 import { panelIds } from '../components/flows/machineFacts'
+import { LISTENER_EVENTS, LISTENER_GRADES, LISTENER_KINDS } from '../components/resources/listenerView'
+import { MONOLITH } from '../diagram/layouts/ids'
 
 export function validateUrlState(st: UrlState): UrlState {
   const serviceNames = new Set(map.services.map(s => s.name))
@@ -43,13 +45,13 @@ export function validateUrlState(st: UrlState): UrlState {
   if (next.listener && !listenerSurface.listeners.some(l => l.id === next.listener && l.table === next.resource)) {
     next.listener = null
   }
-  if (next.lev && !['create', 'update', 'destroy'].includes(next.lev)) {
+  if (next.lev && !LISTENER_EVENTS.some(e => e === next.lev)) {
     next.lev = null
   }
-  if (next.lkind && !['callback', 'cascade', 'touch', 'gem'].includes(next.lkind)) {
+  if (next.lkind && !LISTENER_KINDS.some(k => k === next.lkind)) {
     next.lkind = null
   }
-  if (next.lgrade && !['verified', 'text'].includes(next.lgrade)) {
+  if (next.lgrade && !LISTENER_GRADES.includes(next.lgrade)) {
     next.lgrade = null
   }
   if (next.rkind && !resourceSurface.resources.some(r => r.kind === next.rkind)) {
@@ -92,10 +94,10 @@ export function validateUrlState(st: UrlState): UrlState {
     notFound = notFound ?? { param: 'blast', value: next.blast }
     next.blast = null
   }
-  if (next.page === 'microservices' && next.s === 'skello-app') {
+  if (next.page === 'microservices' && next.s === MONOLITH) {
     next.page = 'monolith'
   }
-  if (next.page === 'monolith' && next.s && next.s !== 'skello-app') {
+  if (next.page === 'monolith' && next.s && next.s !== MONOLITH) {
     next.page = 'microservices'
   }
   next.notFound = notFound

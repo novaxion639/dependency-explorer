@@ -1,6 +1,6 @@
 import type { ConnectivityMap, Listener, MonolithRoute, Resource } from '@dependency-explorer/data'
 import type { UrlState } from '../hooks/useUrlState'
-import { edgeKey, servicePage } from '../hooks/useUrlState'
+import { edgeKey, pagePatch, selectServicePatch } from '../hooks/useUrlState'
 import { buildFlagRegistry } from './flagRegistry'
 import { buildFileIndex } from './fileIndex'
 
@@ -22,9 +22,6 @@ const TYPE_ORDER: Record<SearchResultType, number> = {
   service: 0, endpoint: 1, connection: 2, flow: 3, area: 4, term: 5, external: 6, team: 7, resource: 8, listener: 9, flag: 10, file: 11,
 }
 
-// Choosing a result fully describes the target view: modal/popup params are
-// reset explicitly so the landing state never mixes with whatever was open.
-const CLOSE_OVERLAYS: Partial<UrlState> = { edge: null, drawer: null, ep: null, flows: null, flow: null, flag: null, file: null, resource: null, area: null, term: null, blast: null, unit: null, chapter: null, event: null, listener: null, lev: null, lkind: null, lgrade: null }
 
 export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] = [], resources: Resource[] = [], listeners: Listener[] = []): SearchEntry[] {
   const entries: SearchEntry[] = []
@@ -35,7 +32,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: svc.name,
       sublabel: svc.description,
       haystack: `${svc.type} ${(svc.tags ?? []).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, s: svc.name, page: servicePage(svc.name) },
+      patch: selectServicePatch(svc.name),
     })
     for (const ep of svc.endpoints) {
       entries.push({
@@ -43,7 +40,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
         label: `${ep.method} ${ep.path}`,
         sublabel: `${svc.name} · ${ep.description}`,
         haystack: `${ep.id} ${ep.useCase}`,
-        patch: { ...CLOSE_OVERLAYS, s: svc.name, page: servicePage(svc.name), drawer: svc.name, ep: ep.id },
+        patch: { ...selectServicePatch(svc.name), drawer: svc.name, ep: ep.id },
       })
     }
   }
@@ -54,17 +51,17 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: r.name,
       sublabel: `${r.kind} · ${r.store}${r.owner ? ` · ${r.owner}` : ''}`,
       haystack: r.id,
-      patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: r.id },
+      patch: { ...pagePatch('resources'), resource: r.id },
     })
   }
 
   for (const l of listeners) {
     const table = l.table.split('.').pop() ?? l.table
     if (l.method) {
-      entries.push({ type: 'listener', label: l.method, sublabel: `${table} · ${l.hook}`, haystack: l.id, patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: l.table, listener: l.id } })
+      entries.push({ type: 'listener', label: l.method, sublabel: `${table} · ${l.hook}`, haystack: l.id, patch: { ...pagePatch('resources'), resource: l.table, listener: l.id } })
     }
     for (const job of new Set(l.effects.filter(e => e.kind === 'enqueues').map(e => e.target))) {
-      entries.push({ type: 'listener', label: job, sublabel: `job · enqueued by ${l.id}`, haystack: `${job} ${l.id}`, patch: { ...CLOSE_OVERLAYS, page: 'resources', resource: l.table, listener: l.id } })
+      entries.push({ type: 'listener', label: job, sublabel: `job · enqueued by ${l.id}`, haystack: `${job} ${l.id}`, patch: { ...pagePatch('resources'), resource: l.table, listener: l.id } })
     }
   }
 
@@ -74,7 +71,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: `${conn.from} → ${conn.to}`,
       sublabel: `${conn.communicationType}/${conn.protocol} · ${conn.description}`,
       haystack: `${conn.sdkPackage} ${(conn.usedEndpoints ?? []).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, s: conn.from, page: servicePage(conn.from), edge: edgeKey(conn.from, conn.to, conn.protocol) },
+      patch: { ...selectServicePatch(conn.from), edge: edgeKey(conn.from, conn.to, conn.protocol) },
     })
   }
 
@@ -88,7 +85,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
         ...flow.steps.map(s => `${s.from} ${s.to} ${s.action}`),
         ...(flow.codeUnits ?? []).map(u => `${u.path ?? ''} ${u.label}`),
       ].join(' '),
-      patch: { ...CLOSE_OVERLAYS, page: 'flows', flow: flow.id },
+      patch: { ...pagePatch('flows'), flow: flow.id },
     })
   }
 
@@ -99,7 +96,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: entry.path,
       sublabel: `${entry.service} · touched by ${entry.flows.length} flow${entry.flows.length === 1 ? '' : 's'}${entry.routes.length ? ` · serves ${entry.routes.length} route${entry.routes.length === 1 ? '' : 's'}` : ''}`,
       haystack: [...entry.flows.map(f => `${f.id} ${f.name}`), ...entry.routes].join(' '),
-      patch: { ...CLOSE_OVERLAYS, page: 'flows', file: `${entry.service}/${entry.path}` },
+      patch: { ...pagePatch('flows'), file: `${entry.service}/${entry.path}` },
     })
   }
 
@@ -110,7 +107,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: team.name,
       sublabel: `team · owns ${ownedServices.length} service${ownedServices.length === 1 ? '' : 's'}`,
       haystack: `${(team.githubTeams ?? []).join(' ')} ${ownedServices.map(s => s.name).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, page: 'ownership', team: team.id, s: null },
+      patch: { ...pagePatch('ownership'), team: team.id },
     })
   }
 
@@ -120,7 +117,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: area.name,
       sublabel: `${area.kind === 'product' ? 'product area' : 'platform capability'} · ${area.description}`,
       haystack: `${area.id} ${area.codeLocations.map(l => `${l.repo} ${l.globs.join(' ')}`).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, page: 'areas', area: area.id, s: null },
+      patch: { ...pagePatch('areas'), area: area.id },
     })
     for (const g of area.glossary) {
       entries.push({
@@ -128,7 +125,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
         label: g.term,
         sublabel: `${area.name} · glossary`,
         haystack: `${g.definition} ${g.anchor?.symbol ?? ''}`,
-        patch: { ...CLOSE_OVERLAYS, page: 'areas', area: area.id, term: g.term, s: null },
+        patch: { ...pagePatch('areas'), area: area.id, term: g.term },
       })
     }
   }
@@ -139,7 +136,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: ext.name,
       sublabel: `external · ${ext.category}`,
       haystack: `${ext.description} ${ext.usedBy.map(u => u.service).join(' ')}`,
-      patch: { ...CLOSE_OVERLAYS, page: 'microservices', s: null },
+      patch: pagePatch('microservices'),
     })
   }
 
@@ -149,7 +146,7 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
       label: entry.name,
       sublabel: `${entry.kind} flag · gates ${entry.flows.length} flow${entry.flows.length === 1 ? '' : 's'}`,
       haystack: entry.flows.map(f => `${f.id} ${f.name}`).join(' '),
-      patch: { ...CLOSE_OVERLAYS, page: 'flows', flag: entry.name },
+      patch: { ...pagePatch('flows'), flag: entry.name },
     })
   }
 

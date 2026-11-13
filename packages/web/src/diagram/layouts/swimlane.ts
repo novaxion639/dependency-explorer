@@ -1,4 +1,4 @@
-import { allStates, type FlowCodeEdge, type FlowCodeUnit, type MachineState, type ServiceFlow, type StateMachine } from '@dependency-explorer/data'
+import { allStates, type FlowCodeEdge, type FlowCodeUnit, type MachineState, type ServiceFlow, type StateMachine, stepService } from '@dependency-explorer/data'
 import { EDGE_LABEL_FONT, EDGE_LABEL_LINE, fitLabel, linesHeight, overlaps, textWidth, wrapText } from '../geometry'
 import { catchTargets, machineFrames, machineLane, machineOrder, machineStores, machineTransitions, stateKey, stateNodeId } from './machines'
 import { ALL_RENDERERS, type Box, type DiagramEdge, type DiagramGroup, type DiagramModel, type DiagramNode, type EdgeMode, type RoutePoint } from '../model'
@@ -602,7 +602,7 @@ export function chapterFocus(model: DiagramModel, flow: ServiceFlow, refs: strin
       focus.add(infraNodeId(ref))
       continue
     }
-    const name = ref.replace(/ \([^)]*\)$/, '')
+    const name = stepService(ref)
     if (nodeIds.has(serviceNodeId(name))) {
       focus.add(serviceNodeId(name))
       continue

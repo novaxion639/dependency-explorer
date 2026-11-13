@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WriteEvent } from '@dependency-explorer/data'
+import { WRITE_EVENTS, type WriteEvent } from '@dependency-explorer/data'
+import { MONOLITH } from '../diagram/layouts/ids'
 import type { Renderer } from '../diagram/model'
 
 /**
@@ -32,8 +33,6 @@ export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | '
 
 const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
 const RENDERERS: readonly Renderer[] = ['react-flow', 'svg']
-const WRITE_EVENT_PARAMS: readonly WriteEvent[] = ['create', 'update', 'destroy']
-const MONOLITH = 'skello-app'
 const LEGACY_VIEW_PAGE: Record<string, Page> = { areas: 'areas', domains: 'areas', context: 'microservices', services: 'microservices', resources: 'resources', teams: 'ownership' }
 
 export interface UrlState {
@@ -78,7 +77,7 @@ export function edgeKey(from: string, to: string, protocol: string): string {
   return [from, to, protocol].join(EDGE_SEP)
 }
 
-export function servicePage(name: string): Page {
+function servicePage(name: string): Page {
   return name === MONOLITH ? 'monolith' : 'microservices'
 }
 
@@ -131,7 +130,7 @@ export function parseUrl(search: string): UrlState {
     flag: p.get('flag'),
     file: p.get('file'),
     resource: p.get('resource'),
-    event: WRITE_EVENT_PARAMS.find(e => e === p.get('event')) ?? null,
+    event: WRITE_EVENTS.find(e => e === p.get('event')) ?? null,
     listener: p.get('listener'),
     lev: p.get('lev'),
     lkind: p.get('lkind'),

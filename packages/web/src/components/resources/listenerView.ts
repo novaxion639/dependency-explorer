@@ -1,9 +1,9 @@
-import type { Listener, ListenerEffect, WriteEvent } from '@dependency-explorer/data'
+import { WRITE_EVENTS, type Listener, type ListenerEffect } from '@dependency-explorer/data'
 import type { UrlState } from '../../hooks/useUrlState'
 import { evidenceHref } from '../../utils/evidenceLink'
 
 export type ListenerUrl = Pick<UrlState, 'event' | 'listener' | 'lev' | 'lkind' | 'lgrade'>
-export const LISTENER_EVENTS: readonly WriteEvent[] = ['create', 'update', 'destroy']
+export const LISTENER_EVENTS = WRITE_EVENTS
 export const LISTENER_KINDS: ReadonlyArray<Listener['kind']> = ['callback', 'cascade', 'touch', 'gem']
 export const LISTENER_GRADES: readonly string[] = ['verified', 'text']
 
