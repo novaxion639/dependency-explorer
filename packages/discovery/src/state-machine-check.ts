@@ -2,7 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { allStates } from '@dependency-explorer/data'
 import type { ConnectivityMap, MachineState } from '@dependency-explorer/schema'
-import { escapeRegExp, loadWiring, readerFor, resolveSpecifier, type Alias, type Read } from './code-wiring'
+import { escapeRegExp, loadWiring, readerFor, resolveCandidates, resolveSpecifier, type Alias, type Read } from './code-wiring'
 import { closer, readMachine, textOf, type SourceState } from './state-machine-source'
 
 interface MachineFinding { flow: string; kind: 'state-machine-drift'; subject: string; detail: string }
@@ -11,7 +11,6 @@ const TYPES: Record<string, MachineState['type']> = { Task: 'task', Choice: 'cho
 const TERMINAL = new Set(['Succeed', 'Fail'])
 const HANDLER = /\bhandler\s*:\s*['"]([^'"]+)['"]/
 const CONTAINER = 'src/container.ts'
-const SUFFIXES = ['.ts', '.tsx', '/index.ts', '']
 
 function tsFiles(dir: string, rel: string): string[] {
   if (!fs.existsSync(dir)) {
@@ -36,7 +35,7 @@ function importSpec(source: string, cls: string): string | undefined {
 
 function resolveFile(spec: string, from: string, aliases: Alias[], read: Read): string | null {
   const base = resolveSpecifier(spec, from, aliases)
-  return base === null ? null : SUFFIXES.map(s => `${base}${s}`).find(f => read(f) !== null) ?? null
+  return base === null ? null : resolveCandidates(base).find(f => read(f) !== null) ?? null
 }
 
 function classFile(statement: string, from: string, aliases: Alias[], read: Read): string | null {
