@@ -241,7 +241,7 @@ At `3f6728f`, `cdc-unknown-table` reports `audits`, `organisation_monthly_stats`
 
 ## Nightly discovery
 
-`.github/workflows/discovery-nightly.yml` runs every night at 03:00 UTC, and on manual dispatch.
+`.github/workflows/discovery-nightly.yml` runs on manual dispatch only until the `DISCOVERY_READ_TOKEN` secret exists; with it, its schedule (every night at 03:00 UTC) returns.
 
 **What it runs:**
 1. It clones every repo that `pnpm --filter @dependency-explorer/discovery repo-list` prints: the baseline's scanned set, plus every dataset service and its `-tf` repo.

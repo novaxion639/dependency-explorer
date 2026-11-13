@@ -1,8 +1,7 @@
-name: Discovery (nightly, pinned)
+name: Discovery (pinned)
 
+# The schedule (cron '0 3 * * *') returns once the DISCOVERY_READ_TOKEN secret exists.
 on:
-  schedule:
-    - cron: '0 3 * * *'
   workflow_dispatch:
 
 jobs:
