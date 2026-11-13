@@ -4,6 +4,7 @@ export function checkUnitPaths(
   units: UnitRef[],
   pinOf: (service: string) => string | undefined,
   cloned: (service: string) => boolean,
+  hasCommit: (service: string, sha: string) => boolean,
   existsAt: (service: string, sha: string, file: string) => boolean,
 ): { missing: string[]; skipped: number } {
   const missing: string[] = []
@@ -13,7 +14,7 @@ export function checkUnitPaths(
       continue
     }
     const pin = pinOf(u.service)
-    if (!pin || !cloned(u.service)) {
+    if (!pin || !cloned(u.service) || !hasCommit(u.service, pin)) {
       skipped += 1
       continue
     }
