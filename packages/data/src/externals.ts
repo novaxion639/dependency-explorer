@@ -51,7 +51,6 @@ const externals: ExternalSystem[] = z.array(ExternalSystemSchema).parse([
     category: 'e-signature',
     description: 'Electronic signature of contracts, amendments and attendance sheets',
     usedBy: [
-      { service: 'svc-documents-esignature', evidence: { kind: 'env', literal: 'YOUSIGN_API_TOKEN' } },
       { service: 'svc-documents-v2', evidence: { kind: 'env', literal: 'YOUSIGN_API_TOKEN' } },
     ],
   },

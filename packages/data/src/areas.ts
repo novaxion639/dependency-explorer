@@ -286,7 +286,6 @@ const areas: ProductArea[] = z.array(ProductAreaSchema).parse([
       loc('skello-mobile', 'mobile',
         'src/screens/Documents/**', 'src/modules/documents/**', 'src/modules/folders/**', 'src/modules/signatures/**'),
       loc('svc-documents-v2', 'backend', '**'),
-      loc('svc-documents-esignature', 'backend', '**'),
       loc('skello-app', 'monolith',
         'app/services/microservices/generate_documents/**', 'app/controllers/private/svc_documents/**', 'app/controllers/attendance_sheets_controller.rb', 'app/controllers/concerns/text_document_templates_authorizations.rb', 'app/services/pdf_*.rb', 'app/services/created_pdf.rb', 'app/jobs/esignatures/**'),
       loc('skello-app-front', 'web',

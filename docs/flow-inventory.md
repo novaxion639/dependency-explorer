@@ -9,7 +9,7 @@ in [planning-actions-coverage.md](planning-actions-coverage.md).
 ## Current coverage (generated)
 
 <!-- GENERATED:flows-by-area BEGIN — run `pnpm docs:gen`, do not edit inside -->
-**49 modelled flows** across 37 services — every flow carries a code layer, a trigger and a primary area.
+**49 modelled flows** across 36 services — every flow carries a code layer, a trigger and a primary area.
 
 | Product area | Flows | Ids |
 |---|---|---|

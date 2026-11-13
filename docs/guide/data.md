@@ -16,7 +16,7 @@
 | `packages/web` | The static React + React Flow SPA: see [explorer.md](explorer.md) |
 
 The dataset is imported at build time and validated by Zod on load. It holds:
-- 37 services, 359 endpoints, and 150 connections (138 of them discovery-verified);
+- 36 services, 355 endpoints, and 146 connections (130 of them discovery-verified); `svc-documents-esignature` is retired and out of the map, while the resources its repo still declares stay in the registry with their owner shown as not in the map;
 - 48 flows;
 - 14 product areas plus 6 platform capabilities;
 - 19 external systems and 11 teams.

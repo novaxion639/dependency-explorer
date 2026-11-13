@@ -9,6 +9,8 @@ import type { ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
 import { WritePathsSection } from './WritePathsSection'
 
+const serviceNames = new Set(connectivityMap.services.map(s => s.name))
+
 const GRADE_BADGE: Record<ResourceRelation['grade'], { symbol: string; title: string }> = {
   code: { symbol: '✓', title: 'call site at the pinned commit' },
   config: { symbol: '✓', title: 'declared in serverless or Terraform config' },
@@ -50,7 +52,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
       <header className={styles.head}>
         <h1>{resource.name}</h1>
         <p className={styles.meta}>
-          {resource.kind} · {resource.store}{resource.owner ? <> · owned by <button type="button" className={styles.link} onClick={() => onSelectService(resource.owner ?? '')}>{resource.owner}</button></> : null} · evidence {resource.evidence.map((e, i) => {
+          {resource.kind} · {resource.store}{resource.owner ? <> · owned by {serviceNames.has(resource.owner) ? <button type="button" className={styles.link} onClick={() => onSelectService(resource.owner ?? '')}>{resource.owner}</button> : `${resource.owner} (not in the map)`}</> : null} · evidence {resource.evidence.map((e, i) => {
             const href = evidenceHref(e, resourceSurface.pins)
             return <span key={e}>{i > 0 && ', '}{href ? <a href={href} target="_blank" rel="noreferrer">{e}</a> : e}</span>
           })}

@@ -15,7 +15,7 @@ const assistant_chat: ServiceFlow = ServiceFlowSchema.parse({
     { "title": "A manager asks a question", "summary": "The chat panel sends the turn to svc-skello-assistant's chat endpoint.", "refs": ["skello-app-front", "svc-skello-assistant", "cu-chat-controller"] },
     { "title": "Credits are checked", "summary": "The session manager reads the organisation's credit balance from svc-billing-automation before running the turn.", "refs": ["cu-session-manager", "cu-billing-client", "svc-billing-automation"] },
     { "title": "The agent thinks", "summary": "A LangGraph agent runs on Bedrock and keeps the conversation in svc-intelligence's MongoDB for a week.", "refs": ["cu-agent-manager", "mongo-svc-int"] },
-    { "title": "Tools fetch real data", "summary": "The agent's tools ask svc-shifts about shifts, read documents and signature status, and read employees from svc-search.", "refs": ["cu-agent-tools", "cu-shifts-client", "svc-shifts", "cu-doc-repo", "svc-documents-v2", "cu-esign-repo", "svc-documents-esignature", "cu-employee-repo", "svc-search"] },
+    { "title": "Tools fetch real data", "summary": "The agent's tools ask svc-shifts about shifts, read documents, and read employees from svc-search.", "refs": ["cu-agent-tools", "cu-shifts-client", "svc-shifts", "cu-doc-repo", "svc-documents-v2", "cu-employee-repo", "svc-search"] },
     { "title": "A credit is spent", "summary": "After a successful turn, the session manager uses one credit.", "refs": ["cu-session-manager", "cu-billing-client", "svc-billing-automation"] }
   ],
   "steps": [
@@ -39,11 +39,6 @@ const assistant_chat: ServiceFlow = ServiceFlowSchema.parse({
       "to": "svc-documents-v2",
       "action": "Document tools read employee documents (svc-documents-v2-client)"
     },
-    {
-      "from": "svc-skello-assistant",
-      "to": "svc-documents-esignature",
-      "action": "Contract tools poll e-signature status (DocumentsStatusDto) — live caller on the decommission-watch service"
-    }
   ],
   "codeUnits": [
     {
@@ -92,14 +87,6 @@ const assistant_chat: ServiceFlow = ServiceFlowSchema.parse({
       "label": "tools DocumentRepository",
       "path": "serverless/src/tools/Repository/Http/DocumentRepository.ts",
       "description": "Reads employee documents through @skelloapp/svc-documents-v2-client"
-    },
-    {
-      "id": "cu-esign-repo",
-      "service": "svc-skello-assistant",
-      "kind": "service",
-      "label": "tools DocumentEsignaturesRepository",
-      "path": "serverless/src/tools/Repository/Http/DocumentEsignaturesRepository.ts",
-      "description": "Polls e-signature status through @skelloapp/svc-esignature-sdk"
     },
     {
       "id": "cu-employee-repo",
@@ -185,18 +172,6 @@ const assistant_chat: ServiceFlow = ServiceFlowSchema.parse({
       "from": "cu-doc-repo",
       "to": "svc-documents-v2",
       "label": "read employee documents",
-      "mode": "sync"
-    },
-    {
-      "from": "cu-agent-tools",
-      "to": "cu-esign-repo",
-      "label": "contract signature status",
-      "mode": "sync"
-    },
-    {
-      "from": "cu-esign-repo",
-      "to": "svc-documents-esignature",
-      "label": "poll signature status",
       "mode": "sync"
     },
     {

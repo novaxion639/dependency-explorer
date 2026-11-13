@@ -123,18 +123,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     ]
   },
   {
-    "from": "svc-documents-esignature",
-    "to": "svc-documents-v2",
-    "sdkPackage": "@skelloapp/svc-documents-v2-client",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Retrieves document file for e-signature provider and updates status after signing",
-    "usedEndpoints": [
-      "api-bulk-send-signature-reminders"
-    ]
-  },
-  {
     "from": "svc-bff",
     "to": "svc-documents-v2",
     "sdkPackage": "@skelloapp/svc-documents-v2-client",
@@ -356,18 +344,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     ]
   },
   {
-    "from": "svc-intelligence",
-    "to": "svc-documents-esignature",
-    "sdkPackage": "@skelloapp/svc-esignature-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Polls e-signature document status (SDK getDocumentsStatus) during document AI workflows",
-    "usedEndpoints": [
-      "api-documents-status"
-    ]
-  },
-  {
     "from": "superadmin",
     "to": "svc-billing-automation",
     "sdkPackage": "@skelloapp/svc-billing-automation-sdk",
@@ -586,19 +562,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "description": "Manage shop missions — fetch, purge and retrieve by ID",
     "usedEndpoints": [
       "api-get-organisations-config"
-    ]
-  },
-  {
-    "from": "skello-app",
-    "to": "svc-documents-esignature",
-    "sdkPackage": "Microservices::EsignatureService (HTTParty)",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "internal",
-    "description": "Trigger e-signature flows and query signature status for employee documents",
-    "usedEndpoints": [
-      "api-document-signable",
-      "api-document-signature-reminder"
     ]
   },
   {
@@ -1124,18 +1087,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "usedEndpoints": []
   },
   {
-    "from": "skello-app-front",
-    "to": "svc-documents-esignature",
-    "sdkPackage": "svcEsignatureApiUrl (axios)",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Employee documents e-signature follow-up — status polling from the employees store modules and FollowUpDocsEsignatureSidePanel",
-    "usedEndpoints": [
-      "api-documents-status"
-    ]
-  },
-  {
     "from": "svc-skello-assistant",
     "to": "svc-billing-automation",
     "sdkPackage": "@skelloapp/svc-billing-automation-sdk",
@@ -1156,16 +1107,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "rest",
     "authType": "jwt",
     "description": "Assistant document tools read employee documents through the docs-v2 client (tools/Repository/Http/DocumentRepository — ContractAgentManager consumes document content and mime types)",
-    "usedEndpoints": []
-  },
-  {
-    "from": "svc-skello-assistant",
-    "to": "svc-documents-esignature",
-    "sdkPackage": "@skelloapp/svc-esignature-sdk",
-    "communicationType": "sync",
-    "protocol": "rest",
-    "authType": "jwt",
-    "description": "Assistant contract tools poll e-signature status (tools/Repository/Http/DocumentEsignaturesRepository, DocumentsStatusDto). A LIVE caller on the decommission-watch service — any retirement plan must account for it.",
     "usedEndpoints": []
   },
   {
@@ -1404,16 +1345,6 @@ const connections: ServiceConnection[] = z.array(ServiceConnectionSchema).parse(
     "protocol": "cdc",
     "authType": "internal",
     "description": "Consumes the monolith's DMS CDC backbone (skelloapp-bus) plus a dedicated svcDocumentsV2-fullload Kinesis stream for initial table loads. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
-    "usedEndpoints": []
-  },
-  {
-    "from": "svc-documents-v2",
-    "to": "svc-documents-esignature",
-    "sdkPackage": "serverless stream event → svcDocumentsEsignature DYNAMO_DB_STREAM_ARN_V2 (DynamoDB stream)",
-    "communicationType": "async",
-    "protocol": "cdc",
-    "authType": "internal",
-    "description": "syncEsignatureToSignatureCdcJob consumes svc-documents-esignature's DynamoDB table stream (SSM svcDocumentsEsignature/DYNAMO_DB_STREAM_ARN_V2) to mirror e-signature state onto Signature records — no API call between the two documents services. Adopted from the AWS-bindings discovery pass, 2026-07-11.",
     "usedEndpoints": []
   },
   {

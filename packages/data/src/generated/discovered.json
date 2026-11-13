@@ -126,15 +126,6 @@
         "@skelloapp/team-reaper"
       ]
     },
-    "svc-documents-esignature": {
-      "repoUrl": "https://github.com/skelloapp/svc-documents-esignature",
-      "githubTeams": [
-        "@skelloapp/squad-infra",
-        "@skelloapp/squad-perf",
-        "@skelloapp/team-data",
-        "@skelloapp/team-dev"
-      ]
-    },
     "svc-documents-v2": {
       "repoUrl": "https://github.com/skelloapp/svc-documents-v2",
       "githubTeams": [
@@ -656,10 +647,6 @@
     "svc-communications-v2→svc-requests:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-requests-sdk (value import)"
-    },
-    "svc-documents-esignature→svc-documents-v2:rest": {
-      "lastVerified": "2026-10-30",
-      "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import)"
     },
     "svc-documents-v2→skello-app:cdc": {
       "lastVerified": "2026-10-30",
@@ -2143,22 +2130,6 @@
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: GET /chat/download/json"
     },
-    "svc-documents-esignature#api-attendance-sheet-signature-reminder": {
-      "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: POST /attendance_sheet_signature_reminder"
-    },
-    "svc-documents-esignature#api-document-signable": {
-      "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: GET /document_signable"
-    },
-    "svc-documents-esignature#api-document-signature-reminder": {
-      "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: POST /document_signature_reminder"
-    },
-    "svc-documents-esignature#api-documents-status": {
-      "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: POST /documents_status"
-    },
     "svc-workload-plan#api-get-workload-plans-v1": {
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: GET /v2/workload-plans (version-prefix tolerant match)"
@@ -2582,7 +2553,6 @@
       "skello-mobile:src/modules/folders/**": 7,
       "skello-mobile:src/modules/signatures/**": 1,
       "svc-documents-v2:**": 925,
-      "svc-documents-esignature:**": 174,
       "skello-app:app/services/microservices/generate_documents/**": 9,
       "skello-app:app/controllers/private/svc_documents/**": 2,
       "skello-app:app/controllers/attendance_sheets_controller.rb": 1,
