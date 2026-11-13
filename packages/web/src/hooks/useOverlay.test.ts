@@ -60,6 +60,20 @@ describe('useOverlay', () => {
     expect(error).toHaveBeenCalledTimes(1)
     expect(error.mock.calls[0]?.[0]).toBe('datadog overlay ignored: it fails its schema')
   })
+  it('logs a broken overlay once however many pages mount it', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const fetchImpl = respond({ snapshotDate: 3 })
+    await probe(fetchImpl, 3)
+    expect(await probe(fetchImpl)).toBeNull()
+    expect(error).toHaveBeenCalledTimes(1)
+  })
+  it('parses an overlay already loaded once per mount', async () => {
+    const fetchImpl = respond(overlayOf())
+    await probe(fetchImpl)
+    const parse = vi.spyOn(DatadogOverlaySchema, 'safeParse')
+    expect(await probe(fetchImpl)).toEqual(overlayOf())
+    expect(parse).toHaveBeenCalledTimes(1)
+  })
   it('loads the Datadog overlay when jira.json is absent', async () => {
     const fetchImpl = vi.fn<typeof fetch>(async input => new Response(String(input).endsWith('/datadog.json') ? JSON.stringify(overlayOf()) : '{}', { status: String(input).endsWith('/datadog.json') ? 200 : 404 }))
     const seen: Array<{ datadog: DatadogOverlay | null; jira: JiraOverlay | null }> = []
