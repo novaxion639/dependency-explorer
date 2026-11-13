@@ -59,16 +59,14 @@ function parseOverlay<T>(name: string, schema: Schema<T>, load: Load): T | null 
 }
 
 export function useOverlay<T>(name: string, schema: Schema<T>, fetchImpl: typeof fetch = fetch): T | null {
-  const settledAtMount = useRef(loads.get(fetchImpl)?.get(name)?.settled === true)
-  const [overlay, setOverlay] = useState(() => {
-    const known = loads.get(fetchImpl)?.get(name)
-    return known?.settled ? parseOverlay(name, schema, known) : null
-  })
+  const known = loads.get(fetchImpl)?.get(name)
+  const parsedAtMount = useRef(known?.settled ? known : null)
+  const [overlay, setOverlay] = useState(() => (known?.settled ? parseOverlay(name, schema, known) : null))
   useEffect(() => {
     let live = true
     const load = loadOnce(name, fetchImpl)
     void load.promise.then(() => {
-      if (live && !settledAtMount.current) {
+      if (live && load !== parsedAtMount.current) {
         setOverlay(parseOverlay(name, schema, load))
       }
     })

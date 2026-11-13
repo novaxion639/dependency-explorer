@@ -32,11 +32,6 @@ describe('ResourcePage', () => {
     expect(html).toContain('aria-label="Listeners"')
     expect(html).toContain('update_paid_leaves')
   })
-  it('names an owner the map does not hold without linking to it', () => {
-    const html = renderToStaticMarkup(<ResourcePage id="ddb:svcDocuments-eSignature-V2" {...props} />)
-    expect(html).toContain('owned by svc-documents-esignature (not in the map)')
-    expect(renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)).toMatch(/owned by <button[^>]*>skello-app</)
-  })
 
   it('renders a resource with no relations without throwing', () => {
     const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))

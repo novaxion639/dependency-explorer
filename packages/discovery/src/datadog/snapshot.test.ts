@@ -367,12 +367,21 @@ describe('runFetchCli', () => {
     expect(fs.readdirSync(root)).toEqual(['desktop'])
   })
 
+  it('exits 1 on an unknown flag without calling Datadog', async () => {
+    const calls: string[] = []
+    const fetch: typeof globalThis.fetch = async (input) => {
+      calls.push(String(input))
+      return new Response('{}')
+    }
+    expect(await runFetchCli(['--ot', path.join(root, 'snap')], ENV, fetch, NOW)).toBe(1)
+    expect(calls).toEqual([])
+  })
+
   it('never writes a key', async () => {
     const { fetch } = fakeDatadog()
     const out = path.join(root, 'snap')
 
     expect(await runFetchCli(['--out', out], ENV, fetch, NOW)).toBe(0)
-    expect(await runFetchCli(['--ot', out], ENV, fetch, NOW)).toBe(1)
     const written = fs.readdirSync(out).map((file) => fs.readFileSync(path.join(out, file), 'utf8')).join('\n')
     expect(written).not.toContain(API_KEY)
     expect(written).not.toContain(APP_KEY)

@@ -74,6 +74,21 @@ describe('useOverlay', () => {
     expect(await probe(fetchImpl)).toEqual(overlayOf())
     expect(parse).toHaveBeenCalledTimes(1)
   })
+  it('follows a change of overlay name after mount', async () => {
+    const fetchImpl = vi.fn<typeof fetch>(async input => new Response(JSON.stringify(String(input).endsWith('/jira.json') ? jiraOverlay : overlayOf())))
+    await probe(fetchImpl)
+    const seen: unknown[] = []
+    function Switch({ name }: { name: 'datadog' | 'jira' }) {
+      seen.push(name === 'datadog' ? useOverlay(name, DatadogOverlaySchema, fetchImpl) : useOverlay(name, JiraOverlaySchema, fetchImpl))
+      return null
+    }
+    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+    const root = createRoot(document.createElement('div'))
+    roots.push(root)
+    await act(async () => root.render(createElement(Switch, { name: 'datadog' })))
+    await act(async () => root.render(createElement(Switch, { name: 'jira' })))
+    expect(seen.at(-1)).toEqual(jiraOverlay)
+  })
   it('loads the Datadog overlay when jira.json is absent', async () => {
     const fetchImpl = vi.fn<typeof fetch>(async input => new Response(String(input).endsWith('/datadog.json') ? JSON.stringify(overlayOf()) : '{}', { status: String(input).endsWith('/datadog.json') ? 200 : 404 }))
     const seen: Array<{ datadog: DatadogOverlay | null; jira: JiraOverlay | null }> = []
