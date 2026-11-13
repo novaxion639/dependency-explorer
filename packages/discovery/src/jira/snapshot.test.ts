@@ -377,6 +377,12 @@ describe('runJiraFetchCli', () => {
     fs.rmSync(root, { recursive: true, force: true })
   })
 
+  it('exits 1 on an unknown flag without calling Jira', async () => {
+    const { fetch, calls } = fakeJira()
+    expect(await runJiraFetchCli(['--ot', path.join(root, 'snap')], ENV, fetch, NOW)).toBe(1)
+    expect(calls).toEqual([])
+  })
+
   it('exits 1 and leaves no folder on 401', async () => {
     const { fetch } = fakeJira({ overrides: { '/rest/api/3/myself': unauthorized } })
     const out = path.join(root, 'snap')
@@ -477,12 +483,19 @@ describe('runJiraFetchCli', () => {
       fs.rmSync(dated, { recursive: true, force: true })
     })
 
-    it.each([[[]], [['--out']]])('writes to .jira-snapshots/<date> in the package (%j)', async (argv) => {
+    it('writes to .jira-snapshots/<date> in the package', async () => {
       const { fetch } = fakeJira()
 
-      expect(await runJiraFetchCli(argv, ENV, fetch, LONG_AGO)).toBe(0)
+      expect(await runJiraFetchCli([], ENV, fetch, LONG_AGO)).toBe(0)
       expect(printed.join('\n')).toContain(`snapshot written to ${dated}`)
       expect(readJiraSnapshot(dated).meta.fetchedAt).toBe(LONG_AGO.toISOString())
+    })
+
+    it('exits 1 on --out without a folder', async () => {
+      const { fetch, calls } = fakeJira()
+
+      expect(await runJiraFetchCli(['--out'], ENV, fetch, LONG_AGO)).toBe(1)
+      expect(calls).toEqual([])
     })
   })
 })

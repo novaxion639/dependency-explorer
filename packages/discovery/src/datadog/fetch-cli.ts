@@ -1,4 +1,5 @@
 import * as path from 'node:path'
+import { parseArgs } from 'node:util'
 import { fileURLToPath } from 'node:url'
 import { datadogClient, Refused } from './client'
 import { METRIC_KEYS } from './scope'
@@ -20,7 +21,14 @@ const requestLine = (input: Parameters<typeof fetch>[0], init?: RequestInit): st
   `${init?.method ?? 'GET'} ${new URL(input instanceof Request ? input.url : input).pathname}`
 
 export async function runFetchCli(argv: string[], env: Record<string, string | undefined>, fetch: typeof globalThis.fetch, now = new Date()): Promise<number> {
-  if (argv.includes('--help')) {
+  let flags: { help?: boolean; out?: string }
+  try {
+    flags = parseArgs({ args: argv, options: { help: { type: 'boolean' }, out: { type: 'string' } } }).values
+  } catch (e) {
+    console.error(`${messageOf(e)}\n\n${HELP}`)
+    return 1
+  }
+  if (flags.help) {
     console.log(HELP)
     return 0
   }
@@ -30,8 +38,7 @@ export async function runFetchCli(argv: string[], env: Record<string, string | u
     console.error(`${apiKey ? 'DATADOG_APP_KEY' : 'DATADOG_API_KEY'} is not set`)
     return 1
   }
-  const outAt = argv.indexOf('--out')
-  const outDir = path.resolve((outAt >= 0 && argv[outAt + 1]) || path.join(PACKAGE_ROOT, '.datadog-snapshots', now.toISOString().slice(0, 10)))
+  const outDir = path.resolve(flags.out || path.join(PACKAGE_ROOT, '.datadog-snapshots', now.toISOString().slice(0, 10)))
   const site = env.DD_SITE || DEFAULT_SITE
 
   const logged: typeof globalThis.fetch = (input, init) => {

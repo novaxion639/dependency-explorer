@@ -372,6 +372,7 @@ describe('runFetchCli', () => {
     const out = path.join(root, 'snap')
 
     expect(await runFetchCli(['--out', out], ENV, fetch, NOW)).toBe(0)
+    expect(await runFetchCli(['--ot', out], ENV, fetch, NOW)).toBe(1)
     const written = fs.readdirSync(out).map((file) => fs.readFileSync(path.join(out, file), 'utf8')).join('\n')
     expect(written).not.toContain(API_KEY)
     expect(written).not.toContain(APP_KEY)
