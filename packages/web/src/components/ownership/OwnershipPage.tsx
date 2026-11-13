@@ -5,6 +5,8 @@ import { useOverlay } from '../../hooks/useOverlay'
 import { AreaChip } from '../areas/AreaChip'
 import styles from './OwnershipPage.module.css'
 
+const NO_TEAMS: Team[] = []
+
 // A service carries a teamId only when its CODEOWNERS wildcard names exactly one product team;
 // teams without services stay visible on purpose — the empty cards are the adoption argument.
 export function OwnershipPage({
@@ -20,7 +22,7 @@ export function OwnershipPage({
   onSelectService: (name: string) => void
   onOpenArea: (id: string) => void
 }) {
-  const teams = map.teams ?? []
+  const teams = map.teams ?? NO_TEAMS
 
   const { byTeam, owned, unowned } = useMemo(() => {
     const byTeam = new Map<string, ConnectivityService[]>()

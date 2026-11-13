@@ -9,8 +9,9 @@ See [README.md](README.md) for the product and `docs/guide/` for the guides.
 | Command | Does |
 |---|---|
 | `pnpm dev` | Serves the web app |
-| `pnpm check` | Typecheck, unused exports, tests, build; the gate before every push |
-| `pnpm typecheck`, `pnpm check:exports`, `pnpm test`, `pnpm build` | The four parts of `pnpm check` |
+| `pnpm check` | Typecheck, lint, unused exports, tests, build; the gate before every push |
+| `pnpm typecheck`, `pnpm lint`, `pnpm check:exports`, `pnpm test`, `pnpm build` | The five parts of `pnpm check` |
+| `pnpm lint` | ESLint on `web` and `schema`: no type assertion, no non-null assertion, braced bodies, hook rules, jsx-a11y |
 | `pnpm check:exports` | Fails on an unused file, export or type (knip) |
 | `pnpm preview` | Serves the built bundle |
 | `pnpm discover` | Runs discovery and prints the report |

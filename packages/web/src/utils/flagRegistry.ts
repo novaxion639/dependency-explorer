@@ -22,7 +22,9 @@ export function buildFlagRegistry(map: ConnectivityMap): Map<string, FlagRegistr
     for (const ref of refs) {
       const entry = registry.get(ref.name)
       if (entry) {
-        if (!entry.flows.some(f => f.id === flow.id)) entry.flows.push(flow)
+        if (!entry.flows.some(f => f.id === flow.id)) {
+          entry.flows.push(flow)
+        }
       } else {
         registry.set(ref.name, { name: ref.name, kind: ref.kind, scope: ref.scope, flows: [flow] })
       }

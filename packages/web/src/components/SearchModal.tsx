@@ -32,7 +32,7 @@ export function SearchModal({ index, onNavigate, onClose }: Props) {
 
   const choose = (entry: SearchEntry) => onNavigate(entry.patch)
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       setCursor(c => Math.min(c + 1, results.length - 1))
@@ -52,8 +52,8 @@ export function SearchModal({ index, onNavigate, onClose }: Props) {
 
   return (
     <>
-      <div className={styles.backdrop} onClick={onClose} />
-      <div className={styles.palette} role="dialog" aria-modal="true" aria-label="Search" onKeyDown={onKeyDown}>
+      <div className={styles.backdrop} aria-hidden="true" onClick={onClose} />
+      <div className={styles.palette} role="dialog" aria-modal="true" aria-label="Search">
         <input
           ref={inputRef}
           role="combobox"
@@ -64,6 +64,7 @@ export function SearchModal({ index, onNavigate, onClose }: Props) {
           className={styles.input}
           value={query}
           onChange={e => setQuery(e.target.value)}
+          onKeyDown={onKeyDown}
           placeholder="Search services, endpoints, connections, flows, queues…"
         />
         <div className={styles.results}>
@@ -74,8 +75,12 @@ export function SearchModal({ index, onNavigate, onClose }: Props) {
                 id={optionId(i)}
                 role="option"
                 aria-selected={i === cursor}
+                tabIndex={-1}
                 className={styles.row}
-                onClick={() => choose(r)}
+                onMouseDown={e => {
+                  e.preventDefault()
+                  choose(r)
+                }}
                 onMouseEnter={() => setCursor(i)}
               >
                 <span className={styles.type}>{r.type}</span>
