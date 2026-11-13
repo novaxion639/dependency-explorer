@@ -173,7 +173,8 @@ flowchart LR
 | Kind | Meaning |
 |---|---|
 | `unmapped-label` | a Feature Area value in Jira is missing from `feature-areas.ts` (with its open BR count) |
-| `gone-label` | a value in `feature-areas.ts` that Jira no longer offers |
+| `gone-label` | a value in `feature-areas.ts` that Jira no longer offers; not reported when the label walk was cut |
+| `labels-capped` | the Feature Area autocomplete walk ran out of calls (150) or still had full answers at two characters, so the label list may be incomplete |
 | `unknown-board` | a team's `jiraBoards` names a board Jira does not have |
 | `board-suggestion` | a board whose name contains a team's name (without "Team") is not in that team's `jiraBoards` |
 | `unlisted-label` | a value seen on BRs that Jira's Feature Area list no longer offers |

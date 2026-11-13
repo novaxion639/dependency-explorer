@@ -96,7 +96,7 @@ describe('fetchJiraSnapshot', () => {
     ])
     expect(calls.every((c) => c.host === 'jira.example.invalid' && c.signal instanceof AbortSignal)).toBe(true)
     expect(calls[0]?.headers.get('Authorization')).toBe(`Basic ${Buffer.from(`${EMAIL}:${TOKEN}`).toString('base64')}`)
-    expect(snapshot.meta).toEqual({ fetchedAt: NOW.toISOString(), host: 'jira.example.invalid' })
+    expect(snapshot.meta).toEqual({ fetchedAt: NOW.toISOString(), host: 'jira.example.invalid', labelsCapped: false })
     expect(snapshot.statuses).toEqual(['Done', 'Go for MEP', 'In Progress', 'QA', 'To Do'])
     expect(snapshot.boardBugs).toEqual({ '11': ['BR-1', 'BR-4'], '12': ['BR-1'] })
   })
@@ -124,6 +124,13 @@ describe('fetchJiraSnapshot', () => {
     expect(featureAreaLabels).toHaveLength(15)
   })
 
+  it('records that the label walk was cut when its budget ran out', async () => {
+    const { fetch } = fakeJira({ overrides: { '/rest/api/3/jql/autocompletedata/suggestions': fullSuggestions } })
+    const { meta } = await fetchJiraSnapshot(clientOf(fetch), [], NOW)
+
+    expect(meta.labelsCapped).toBe(true)
+  })
+
   it('stops the walk at a prefix whose answer is not full', async () => {
     let asked = 0
     const sometimesFull = (url: URL) => {
@@ -131,9 +138,10 @@ describe('fetchJiraSnapshot', () => {
       return url.searchParams.get('fieldValue') === null ? fullSuggestions() : answer({ results: [{ value: 'Area 0' }] })
     }
     const { fetch } = fakeJira({ overrides: { '/rest/api/3/jql/autocompletedata/suggestions': sometimesFull } })
-    await fetchJiraSnapshot(clientOf(fetch), [], NOW)
+    const { meta } = await fetchJiraSnapshot(clientOf(fetch), [], NOW)
 
     expect(asked).toBe(45)
+    expect(meta.labelsCapped).toBe(false)
   })
 
   it.each([

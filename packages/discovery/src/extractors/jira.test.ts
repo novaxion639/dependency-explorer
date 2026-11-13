@@ -68,6 +68,14 @@ describe('joinJira', () => {
     ])
   })
 
+  it('reports no gone label when the label walk was cut, and says so', () => {
+    const capped = snapshot({ featureAreaLabels: ['Shifts', 'Legacy'], meta: { fetchedAt: '2026-11-02T08:00:00.000Z', host: 'skello.atlassian.net', labelsCapped: true } })
+    expect(kinds(capped, 'gone-label')).toEqual([])
+    expect(kinds(capped, 'labels-capped')).toEqual([
+      { kind: 'labels-capped', fix: 'Raise LABEL_MAX_CALLS in packages/discovery/src/jira/snapshot.ts and fetch again; gone labels are not reported until the list is whole' },
+    ])
+  })
+
   it('reports an unknown board id', () => {
     expect(kinds(snapshot({ boards: [board(20, 'Team Mozza board')] }), 'unknown-board')).toEqual([
       { kind: 'unknown-board', teamId: 'team-honey', board: 10, fix: 'Remove board 10 from the jiraBoards of team-honey in packages/data/src/teams.ts' },
