@@ -1,4 +1,4 @@
-import { flowChapters, listenerSurface } from '@dependency-explorer/data'
+import { flowChapters, listenerSurface, resourceSurface } from '@dependency-explorer/data'
 import { EDGE_LIST_SEP, edgeKey, type UrlState } from '../hooks/useUrlState'
 import { areaById, fileIndex, flagRegistry, map, resourceIds } from './dataIndexes'
 import { panelIds } from '../components/flows/machineFacts'
@@ -51,6 +51,15 @@ export function validateUrlState(st: UrlState): UrlState {
   }
   if (next.lgrade && !['verified', 'text'].includes(next.lgrade)) {
     next.lgrade = null
+  }
+  if (next.rkind && !resourceSurface.resources.some(r => r.kind === next.rkind)) {
+    next.rkind = null
+  }
+  if (next.rowner && !resourceSurface.resources.some(r => r.owner === next.rowner)) {
+    next.rowner = null
+  }
+  if (next.rsort && !['listeners', 'alsoChanges', 'bypassing'].includes(next.rsort)) {
+    next.rsort = null
   }
   if (next.team && !(map.teams ?? []).some(t => t.id === next.team)) {
     next.team = null

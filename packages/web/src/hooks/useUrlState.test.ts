@@ -249,3 +249,16 @@ describe('listener params', () => {
     expect(parseUrl('?page=resources&event=bogus').event).toBeNull()
   })
 })
+
+describe('resource index params', () => {
+  it('round-trips the resource filters and keeps them when a resource opens', () => {
+    const st = parseUrl('?page=resources&rkind=table&rowner=svc-punch&rsort=listeners&orphans=1&cycles=1')
+    expect([st.rkind, st.rowner, st.rsort, st.orphans, st.cycles]).toEqual(['table', 'svc-punch', 'listeners', true, true])
+    expect(toQueryString(st)).toBe('page=resources&rkind=table&rowner=svc-punch&rsort=listeners&orphans=1&cycles=1')
+    expect(toQueryString({ ...st, resource: 'pg:skello_production.shifts' })).toContain('rkind=table')
+  })
+
+  it('drops the resource filters on another page', () => {
+    expect(toQueryString({ ...parseUrl('?page=resources&rkind=table&orphans=1'), ...pagePatch('flows') })).toBe('page=flows')
+  })
+})

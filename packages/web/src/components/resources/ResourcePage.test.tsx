@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { allResourceRelations, resourceSurface } from '@dependency-explorer/data'
 import { ResourcePage } from './ResourcePage'
+import { parseUrl } from '../../hooks/useUrlState'
 import { ResourcesIndex } from './ResourcesIndex'
 
 const noop = () => {}
@@ -53,7 +54,7 @@ describe('ResourcePage', () => {
 
 describe('ResourcesIndex', () => {
   it('groups every resource by store', () => {
-    const html = renderToStaticMarkup(<ResourcesIndex onOpenResource={noop} />)
+    const html = renderToStaticMarkup(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} onOpenResource={noop} />)
     for (const store of new Set(resourceSurface.resources.map(r => r.store))) {
       expect(html).toContain(`aria-label="${store}"`)
     }

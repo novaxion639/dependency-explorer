@@ -114,6 +114,8 @@ The Connections view (`&s=skello-app`) shows skello-app's service views. Clickin
 
 ## Resource pages
 
+The resources index keeps its filters in the URL: `&rkind`, `&rowner`, `&rsort`, `&orphans=1` (not in any flow) and `&cycles=1`, so Back from a resource restores them.
+
 `?page=resources&resource=<id>` answers the change-impact question for one table, queue, topic, stream, bucket or store. It opens with "N services · M files · K flows", then lists:
 - writers, readers, producers and consumers, grouped by service, each marked ✓ (code or config evidence) or ~ (authored flow edge only);
 - feeds: the CDC relations that copy the table out to a stream, each with its target stream as a link;
