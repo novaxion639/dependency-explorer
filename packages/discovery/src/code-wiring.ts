@@ -255,7 +255,6 @@ export function usesVuexNamespace(code: string, ns: string): boolean {
 const HTML_COMMENT = /<!--[\s\S]*?-->/g
 const OPEN_TAG = /<([A-Za-z][\w-]*)\b((?:"[^"]*"|'[^']*'|[^>"'])*)>/g
 
-
 function bindingsOf(code: string, fromPath: string, target: string, aliases: Alias[]): string[] {
   const resolves = (spec: string) => {
     const base = resolveSpecifier(spec, fromPath, aliases)

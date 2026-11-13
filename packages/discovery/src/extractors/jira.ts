@@ -32,7 +32,7 @@ function labelFindings(snapshot: JiraSnapshot, map: ConnectivityMap): JiraFindin
       kind: 'unmapped-label', label, open: openOf(label), fix: `Add ${label} to ${FEATURE_AREAS_FILE} with its area (\`pnpm discover:jira:draft\` drafts the row)`,
     })),
     ...(snapshot.meta.labelsCapped
-      ? [{ kind: 'labels-capped', fix: 'Raise LABEL_MAX_CALLS in packages/discovery/src/jira/snapshot.ts and fetch again; gone labels are not reported until the list is whole' } satisfies JiraFinding]
+      ? [{ kind: 'labels-capped', fix: 'Raise LABEL_MAX_CALLS (call budget) or LABEL_MAX_PREFIX (answers still full at the last prefix) in packages/discovery/src/jira/snapshot.ts and fetch again; gone labels are not reported until the list is whole' } satisfies JiraFinding]
       : [...mapped].filter(label => !listed.has(label)).sort().map((label): JiraFinding => ({
         kind: 'gone-label', label, fix: `Remove ${label} from ${FEATURE_AREAS_FILE}, or restore the option in Jira`,
       }))),

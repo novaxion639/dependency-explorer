@@ -4,6 +4,7 @@ import { areaById, fileIndex, flagRegistry, map, resourceIds } from './dataIndex
 import { panelIds } from '../components/flows/machineFacts'
 import { LISTENER_EVENTS, LISTENER_GRADES, LISTENER_KINDS } from '../components/resources/listenerView'
 import { MONOLITH } from '../diagram/layouts/ids'
+import { SORTS } from '../components/resources/ResourcesIndex'
 
 export function validateUrlState(st: UrlState): UrlState {
   const serviceNames = new Set(map.services.map(s => s.name))
@@ -60,7 +61,7 @@ export function validateUrlState(st: UrlState): UrlState {
   if (next.rowner && !resourceSurface.resources.some(r => r.owner === next.rowner)) {
     next.rowner = null
   }
-  if (next.rsort && !['listeners', 'alsoChanges', 'bypassing'].includes(next.rsort)) {
+  if (next.rsort && !SORTS.some(s => s === next.rsort)) {
     next.rsort = null
   }
   if (next.team && !(map.teams ?? []).some(t => t.id === next.team)) {

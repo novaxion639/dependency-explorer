@@ -6,7 +6,7 @@ import { filterResources, type ResourceSort } from './resourceFilter'
 import styles from './ResourcesIndex.module.css'
 
 const metrics = listenerMetrics(listenerSurface)
-const SORTS: readonly ResourceSort[] = ['name', 'listeners', 'alsoChanges', 'bypassing']
+export const SORTS: readonly ResourceSort[] = ['name', 'listeners', 'alsoChanges', 'bypassing']
 const SORT_LABEL: Record<ResourceSort, string> = { name: 'name', listeners: 'listeners', alsoChanges: 'also changes', bypassing: 'bypassing writes' }
 const NO_METRICS = { listeners: 0, alsoChanges: 0, bypassing: 0 }
 const isPgTable = (r: Resource) => r.kind === 'table' && r.id.startsWith('pg:')

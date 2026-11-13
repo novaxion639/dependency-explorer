@@ -22,7 +22,6 @@ const TYPE_ORDER: Record<SearchResultType, number> = {
   service: 0, endpoint: 1, connection: 2, flow: 3, area: 4, term: 5, external: 6, team: 7, resource: 8, listener: 9, flag: 10, file: 11,
 }
 
-
 export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] = [], resources: Resource[] = [], listeners: Listener[] = []): SearchEntry[] {
   const entries: SearchEntry[] = []
 

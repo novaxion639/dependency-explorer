@@ -9,6 +9,8 @@ import { ResourcesIndex } from './ResourcesIndex'
 const COUNTS = /^(\d+) listeners?( · \d+ also changes?)( · \d+ bypassing writes?)$/
 const pgTables = resourceSurface.resources.filter(r => r.kind === 'table' && r.id.startsWith('pg:'))
 
+Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+
 function mount(search = '?page=resources') {
   const host = document.createElement('div')
   act(() => {

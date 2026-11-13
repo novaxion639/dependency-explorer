@@ -72,7 +72,7 @@ describe('joinJira', () => {
     const capped = snapshot({ featureAreaLabels: ['Shifts', 'Legacy'], meta: { fetchedAt: '2026-11-02T08:00:00.000Z', host: 'skello.atlassian.net', labelsCapped: true } })
     expect(kinds(capped, 'gone-label')).toEqual([])
     expect(kinds(capped, 'labels-capped')).toEqual([
-      { kind: 'labels-capped', fix: 'Raise LABEL_MAX_CALLS in packages/discovery/src/jira/snapshot.ts and fetch again; gone labels are not reported until the list is whole' },
+      { kind: 'labels-capped', fix: 'Raise LABEL_MAX_CALLS (call budget) or LABEL_MAX_PREFIX (answers still full at the last prefix) in packages/discovery/src/jira/snapshot.ts and fetch again; gone labels are not reported until the list is whole' },
     ])
   })
 

@@ -10,6 +10,7 @@ const openRow = (host: HTMLElement) => host.querySelector('[aria-label="Endpoint
 describe('endpoint drawer', () => {
   it('opens the first endpoint of the new service when the drawer switches service', async () => {
     Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+    const scrollIntoView = Element.prototype.scrollIntoView
     Element.prototype.scrollIntoView = () => {}
     globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} }
     const [first, second] = map.services.filter(s => s.endpoints.length > 1 && s.name !== 'skello-app')
@@ -30,5 +31,6 @@ describe('endpoint drawer', () => {
 
     expect(openRow(host)).toContain(second.endpoints[0]?.path ?? '')
     await act(async () => root.unmount())
+    Element.prototype.scrollIntoView = scrollIntoView
   })
 })
