@@ -100,6 +100,29 @@ describe('flows', () => {
     }
   })
 
+  it('declare code units on known services', () => {
+    for (const flow of flows) {
+      for (const unit of flow.codeUnits ?? []) {
+        expect(serviceNames.has(unit.service), `${flow.id}: code unit ${unit.id} on unknown service "${unit.service}"`).toBe(true)
+      }
+    }
+  })
+
+  it('connect code edges to code units, services, infra nodes or state machines of the same flow', () => {
+    for (const flow of flows) {
+      const ends = new Set([
+        ...(flow.codeUnits ?? []).map(u => u.id),
+        ...(flow.infraNodes ?? []).map(n => n.id),
+        ...(flow.stateMachines ?? []).map(m => m.id),
+        ...serviceNames,
+      ])
+      for (const edge of flow.codeEdges ?? []) {
+        expect(ends.has(edge.from), `${flow.id}: code edge from unknown node "${edge.from}"`).toBe(true)
+        expect(ends.has(edge.to), `${flow.id}: code edge to unknown node "${edge.to}"`).toBe(true)
+      }
+    }
+  })
+
   it('connect infra edges to known step nodes or infra nodes of the same flow', () => {
     for (const flow of flows) {
       const stepNodes = new Set(flow.steps.flatMap(s => [s.from, s.to]))

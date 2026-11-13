@@ -44,7 +44,7 @@ const PATH_FRAGMENT_RE = /\b(GET|POST|PUT|PATCH|DELETE)\s+(\/[^\s,—()]+)/g
 
 interface CodeLayerFinding {
   flow: string
-  kind: 'missing-code-path' | 'unknown-code-edge-endpoint' | 'unknown-unit-service' | 'controller-without-route'
+  kind: 'missing-code-path' | 'unknown-unit-service' | 'controller-without-route'
   detail: string
 }
 
@@ -69,8 +69,6 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string, cont
     const units = flow.codeUnits ?? []
     if (!units.length) continue
     result.flowsWithCodeLayer++
-    const unitById = new Map(units.map(u => [u.id, u]))
-    const infraIds = new Set((flow.infraNodes ?? []).map(n => n.id))
 
     for (const unit of units) {
       if (!serviceNames.has(unit.service)) {
@@ -95,17 +93,6 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string, cont
           flow: flow.id, kind: 'missing-code-path',
           detail: `codeUnit ${unit.id} (${unit.label}): ${unit.service}/${unit.path} does not exist`,
         })
-      }
-    }
-
-    for (const edge of flow.codeEdges ?? []) {
-      for (const end of [edge.from, edge.to]) {
-        if (!unitById.has(end) && !serviceNames.has(end) && !infraIds.has(end)) {
-          result.findings.push({
-            flow: flow.id, kind: 'unknown-code-edge-endpoint',
-            detail: `codeEdge "${edge.from} → ${edge.to}": "${end}" is neither a code unit, a service, nor an infra node`,
-          })
-        }
       }
     }
   }
