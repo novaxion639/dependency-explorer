@@ -67,6 +67,8 @@ pnpm docs:gen                 # rewrite the generated sections of the inventory 
 
 `--pinned` runs fail when they pin no repo — run discovery from the main clone; a `.claude/worktrees` checkout finds no sibling repos.
 
+**Connection stamps.** A connection is stamped per channel, keyed `from→to:protocol` in `discovered.json`. Evidence stamps the channel whose protocol it proves: a stream consumer or a DMS task proves `cdc` (or `kinesis`), an SDK import or an HTTP client `rest`, a queue literal `sqs`, a bucket notification `s3`. A pair mapped under one protocol takes any evidence for it; a pair mapped under several leaves a channel without matching evidence unstamped, and the report lists it as stale or unverifiable.
+
 ## Datadog snapshot and overlay
 
 Two commands, run in order from the main clone, turn Datadog state into the web app's Health section. Nothing Datadog returns is committed or shipped: snapshots and the overlay are gitignored, and the built bundle never contains them ([ADR-0010](../adr/0010-datadog-overlay-from-a-local-snapshot.md)).

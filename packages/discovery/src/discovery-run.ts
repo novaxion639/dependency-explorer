@@ -8,6 +8,7 @@ import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extract
 import { extractRailsMonolith } from './extractors/rails'
 import { extractServerless, type ServerlessFacts } from './extractors/serverless'
 import { extractAwsClients, type AwsUsageFact, type AwsUsageKind } from './extractors/aws-clients'
+import { channelKey, stampKeyOf } from './connection-stamps'
 import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extractors/aws-live'
 import { joinDatadog, type DatadogJoin } from './extractors/datadog'
 import { readDatadogSnapshot } from './datadog/snapshot'
@@ -290,7 +291,10 @@ export function runDiscovery(options: DiscoveryOptions): Report {
   const addEvidence = (from: string, to: string, evidence: string, transport: string) => {
     const key = `${from}→${to}`
     if (connectionKeys.has(key)) {
-      ;(report.connectionEvidence[key] ??= []).push(evidence)
+      const stamp = stampKeyOf(connectivityMap.connections, from, to, transport)
+      if (stamp) {
+        ;(report.connectionEvidence[stamp] ??= []).push(evidence)
+      }
     } else {
       const existing = candidatesByKey.get(key)
       if (existing) {
@@ -642,8 +646,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
 
   // ── Reverse pass: every dataset connection needs evidence or an explanation ─
   for (const conn of connectivityMap.connections) {
-    const key = `${conn.from}→${conn.to}`
-    if (report.connectionEvidence[key]?.length) continue
+    if (report.connectionEvidence[channelKey(conn)]?.length) continue
 
     if (!fs.existsSync(path.join(repoBase, conn.from))) {
       report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'repo not checked out locally' })

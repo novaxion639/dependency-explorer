@@ -409,499 +409,527 @@
     }
   },
   "connections": {
-    "skello-app-front→skello-app": {
+    "skello-app-front→skello-app:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/skello-analytics-client (value import); package.json: @skelloapp/skello-app-sdk (value import)"
     },
-    "skello-app-front→svc-automatic-scheduling": {
+    "skello-app-front→svc-automatic-scheduling:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-automatic-scheduling-sdk (value import); frontend: service URL referenced in apps/base-app/src/clients/SvcAutomaticScheduling/SvcAutomaticSchedulingClientInstance.unit.test.ts, apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-bff": {
+    "skello-app-front→svc-bff:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-bff-sdk (value import); frontend: service URL referenced in apps/base-app/src/clients/SvcBff/SvcBffClientInstance.unit.test.ts, apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-billing-automation": {
+    "skello-app-front→svc-billing-automation:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-billing-automation-sdk (value import); frontend: service URL referenced in apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts, apps/vue-app/test/shared/utils/clients/svc_billing_automation_client.spec.js"
     },
-    "skello-app-front→svc-documents-v2": {
+    "skello-app-front→svc-documents-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import); frontend: service URL referenced in apps/base-app/src/clients/SvcDocumentsV2/SvcDocumentsV2ClientInstance.unit.test.ts, apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-employees": {
+    "skello-app-front→svc-employees:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-employees-client (value import); frontend: service URL referenced in apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-enrollment": {
+    "skello-app-front→svc-enrollment:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-enrollment-sdk (value import); frontend: service URL referenced in apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-events": {
+    "skello-app-front→svc-events:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-events-sdk (value import); frontend: service URL referenced in apps/base-app/src/clients/SvcEvents/SvcEventsClientInstance.unit.test.ts, apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-hiring": {
+    "skello-app-front→svc-hiring:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-hiring-sdk (value import); frontend: service URL referenced in apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-hris": {
+    "skello-app-front→svc-hris:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-hris-sdk (value import); frontend: service URL referenced in apps/base-app/src/clients/SvcHris/SvcHrisClientInstance.unit.test.ts, apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-intelligence": {
+    "skello-app-front→svc-intelligence:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-intelligence-sdk (value import)"
     },
-    "skello-app-front→svc-kpis": {
+    "skello-app-front→svc-kpis:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-kpis-sdk (value import); frontend: service URL referenced in apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-kpis-v2": {
+    "skello-app-front→svc-kpis-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-kpis-v2-sdk (value import); frontend: service URL referenced in apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-labour-laws": {
+    "skello-app-front→svc-labour-laws:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-labour-laws-sdk (value import)"
     },
-    "skello-app-front→svc-payroll": {
+    "skello-app-front→svc-payroll:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-payroll-sdk (value import); frontend: service URL referenced in apps/vue-app/src/shared/utils/clients/svc_payroll_client.http.spec.js, apps/vue-app/src/shared/utils/clients/svc_payroll_client.spec.js"
     },
-    "skello-app-front→svc-pos": {
+    "skello-app-front→svc-pos:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-pos-sdk (value import); frontend: service URL referenced in apps/vue-app/src/shared/store/modules/organisation_settings/partners-tools.spec.js, apps/vue-app/test/organisation_settings/pages/PartnersTools/PosPartners/index.spec.js"
     },
-    "skello-app-front→svc-punch": {
+    "skello-app-front→svc-punch:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-punch-sdk (value import)"
     },
-    "skello-app-front→svc-reports": {
+    "skello-app-front→svc-reports:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-reports-sdk (value import)"
     },
-    "skello-app-front→svc-requests": {
+    "skello-app-front→svc-requests:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-requests-sdk (value import); frontend: service URL referenced in apps/base-app/src/clients/SvcRequests/SvcRequestsClientInstance.unit.test.ts, apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-shops": {
+    "skello-app-front→svc-shops:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-shops-sdk (value import); frontend: service URL referenced in apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-skello-assistant": {
+    "skello-app-front→svc-skello-assistant:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-skello-assistant-sdk (value import); frontend: service URL referenced in apps/base-app/src/clients/SvcSkelloAssistant/SvcSkelloAssistantClientInstance.unit.test.ts, apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-trackers": {
+    "skello-app-front→svc-trackers:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-trackers-sdk (value import)"
     },
-    "skello-app-front→svc-users": {
+    "skello-app-front→svc-users:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-users-sdk (value import)"
     },
-    "skello-app-front→svc-websockets-v2": {
+    "skello-app-front→svc-websockets-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-websockets-v2-sdk (value import); frontend: service URL referenced in apps/base-app/vitest.unit.config.ts"
     },
-    "skello-app-front→svc-workload-plan": {
+    "skello-app-front→svc-workload-plan:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/workload-plan-sdk (value import); frontend: service URL referenced in apps/base-app/src/clients/SvcWorkloadPlan/SvcWorkloadPlanClientInstance.unit.test.ts, apps/base-app/test/setup.common.ts, apps/base-app/vitest.unit.config.ts"
     },
-    "skello-mobile→skello-app": {
+    "skello-mobile→skello-app:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
     },
-    "skello-mobile→svc-communications-v2": {
+    "skello-mobile→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "skello-mobile→svc-documents-v2": {
+    "skello-mobile→svc-documents-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import)"
     },
-    "skello-mobile→svc-employees": {
+    "skello-mobile→svc-employees:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-employees-client (value import)"
     },
-    "skello-mobile→svc-punch": {
+    "skello-mobile→svc-punch:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-punch-js (value import)"
     },
-    "skello-mobile→svc-requests": {
+    "skello-mobile→svc-requests:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-requests-sdk (value import)"
     },
-    "skello-mobile→svc-shops": {
+    "skello-mobile→svc-shops:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-shops-sdk (value import)"
     },
-    "skello-mobile→svc-users": {
+    "skello-mobile→svc-users:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-users-sdk (value import)"
     },
-    "skello-punchclock→skello-app": {
+    "skello-punchclock→skello-app:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
     },
-    "skello-punchclock→svc-punch": {
+    "skello-punchclock→svc-punch:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-punch-sdk (value import)"
     },
-    "skello-punchclock→svc-users": {
+    "skello-punchclock→svc-users:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-users-sdk (value import)"
     },
-    "superadmin→svc-billing-automation": {
+    "superadmin→svc-billing-automation:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-billing-automation-sdk (value import)"
     },
-    "superadmin→svc-communications-v2": {
+    "superadmin→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "superadmin→svc-employees": {
+    "superadmin→svc-employees:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-employees-client (value import)"
     },
-    "superadmin→svc-events": {
+    "superadmin→svc-events:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-events-sdk (value import)"
     },
-    "superadmin→svc-labour-laws": {
+    "superadmin→svc-labour-laws:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-labour-laws-sdk (value import)"
     },
-    "superadmin→svc-punch": {
+    "superadmin→svc-punch:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-punch-sdk (value import)"
     },
-    "superadmin→svc-reports": {
+    "superadmin→svc-reports:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-reports-sdk (value import)"
     },
-    "superadmin→svc-shops": {
+    "superadmin→svc-shops:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-shops-sdk (value import)"
     },
-    "superadmin→svc-trackers": {
+    "superadmin→svc-trackers:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-trackers-sdk (value import)"
     },
-    "svc-automatic-scheduling→skello-app": {
+    "svc-automatic-scheduling→skello-app:cdc": {
       "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (3 listeners); package.json: @skelloapp/skello-app-sdk (value import)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (3 listeners)"
     },
-    "svc-automatic-scheduling→svc-search": {
+    "svc-automatic-scheduling→skello-app:rest": {
+      "lastVerified": "2026-10-30",
+      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+    },
+    "svc-automatic-scheduling→svc-search:mongodb": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
     },
-    "svc-automatic-scheduling→svc-websockets-v2": {
+    "svc-automatic-scheduling→svc-websockets-v2:sqs": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-websockets-v2-sdk (value import)"
     },
-    "svc-automatic-scheduling→svc-workload-plan": {
+    "svc-automatic-scheduling→svc-workload-plan:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/workload-plan-sdk (value import)"
     },
-    "svc-bff→skello-app": {
+    "svc-bff→skello-app:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
     },
-    "svc-bff→svc-documents-v2": {
+    "svc-bff→svc-documents-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import)"
     },
-    "svc-bff→svc-employees": {
+    "svc-bff→svc-employees:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-employees-client (value import)"
     },
-    "svc-bff→svc-kpis-v2": {
+    "svc-bff→svc-kpis-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-kpis-v2-sdk (value import)"
     },
-    "svc-bff→svc-shifts": {
+    "svc-bff→svc-shifts:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-shifts-sdk (value import)"
     },
-    "svc-bff→svc-shops": {
+    "svc-bff→svc-shops:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-shops-sdk (value import)"
     },
-    "svc-billing-automation→svc-communications-v2": {
+    "svc-billing-automation→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "svc-billing-automation→svc-modularisation": {
+    "svc-billing-automation→svc-modularisation:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-modularisation-sdk (value import)"
     },
-    "svc-billing-automation→svc-users": {
+    "svc-billing-automation→svc-users:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-users-sdk (value import)"
     },
-    "svc-communications-v2→svc-documents-v2": {
+    "svc-communications-v2→svc-documents-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import)"
     },
-    "svc-communications-v2→svc-events": {
+    "svc-communications-v2→svc-events:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-events-sdk (value import)"
     },
-    "svc-communications-v2→svc-requests": {
+    "svc-communications-v2→svc-requests:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-requests-sdk (value import)"
     },
-    "svc-documents-esignature→svc-documents-v2": {
+    "svc-documents-esignature→svc-documents-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import)"
     },
-    "svc-documents-v2→skello-app": {
+    "svc-documents-v2→skello-app:cdc": {
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); package.json: @skelloapp/skello-app-sdk (value import); terraform svc-documents-v2-tf: DMS full-load task ${local.application}-fullload-${local.workspace} → kinesis endpoint lower(aws_kinesis_stream.templates_full_load[0].name)"
     },
-    "svc-documents-v2→svc-communications-v2": {
+    "svc-documents-v2→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "svc-documents-v2→svc-intelligence": {
+    "svc-documents-v2→svc-intelligence:sqs": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-intelligence-sdk (type-only import)"
     },
-    "svc-employees→skello-app": {
+    "svc-employees→skello-app:cdc": {
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
     },
-    "svc-employees→svc-communications-v2": {
+    "svc-employees→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "svc-employees→svc-events": {
+    "svc-employees→svc-events:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-events-sdk (value import)"
     },
-    "svc-employees→svc-search": {
+    "svc-employees→svc-search:mongodb": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
     },
-    "svc-employees→svc-users": {
+    "svc-employees→svc-users:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-users-sdk (value import)"
     },
-    "svc-enrollment→svc-employees": {
+    "svc-enrollment→svc-employees:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-employees-client (value import)"
     },
-    "svc-enrollment→svc-labour-laws": {
+    "svc-enrollment→svc-labour-laws:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-labour-laws-sdk (value import)"
     },
-    "svc-events→svc-communications-v2": {
+    "svc-events→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "svc-hiring→skello-app": {
+    "svc-hiring→skello-app:cdc": {
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
     },
-    "svc-hiring→svc-communications-v2": {
+    "svc-hiring→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "svc-hris→skello-app": {
+    "svc-hris→skello-app:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
     },
-    "svc-hris→svc-communications-v2": {
+    "svc-hris→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "svc-hris→svc-employees": {
+    "svc-hris→svc-employees:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-employees-client (value import)"
     },
-    "svc-hris→svc-shops": {
+    "svc-hris→svc-shops:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-shops-sdk (value import)"
     },
-    "svc-intelligence→svc-documents-v2": {
+    "svc-intelligence→svc-documents-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import)"
     },
-    "svc-kpis→skello-app": {
+    "svc-kpis→skello-app:cdc": {
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
     },
-    "svc-kpis-v2→skello-app": {
+    "svc-kpis-v2→skello-app:cdc": {
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (2 listeners); package.json: @skelloapp/skello-app-sdk (value import); terraform svc-kpis-v2-tf: DMS full-load task skelloapp-${lower(local.project)}-fullload-${local.workspace} → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
     },
-    "svc-kpis-v2→svc-employees": {
+    "svc-kpis-v2→svc-employees:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-employees-client (value import)"
     },
-    "svc-kpis-v2→svc-pos": {
+    "svc-kpis-v2→svc-pos:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-pos-sdk (value import)"
     },
-    "svc-kpis-v2→svc-search": {
+    "svc-kpis-v2→svc-search:mongodb": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
     },
-    "svc-payroll→svc-communications-v2": {
+    "svc-payroll→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "svc-payroll→svc-hris": {
+    "svc-payroll→svc-hris:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-hris-sdk (value import)"
     },
-    "svc-pos→skello-app": {
+    "svc-pos→skello-app:cdc": {
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
     },
-    "svc-punch→skello-app": {
+    "svc-punch→skello-app:cdc": {
       "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on skelloapp-svcpunch-fullload (1 listener); package.json: @skelloapp/skello-app-sdk (value import); terraform svc-punch-tf: DMS full-load task lower(\"skelloapp-${local.project}-fullload-${local.workspace}\") → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); serverless static-scan: kinesis stream event on skelloapp-svcpunch-fullload (1 listener); terraform svc-punch-tf: DMS full-load task lower(\"skelloapp-${local.project}-fullload-${local.workspace}\") → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
     },
-    "svc-reports→skello-app": {
+    "svc-punch→skello-app:rest": {
       "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-svcreports-fullload (1 listener); serverless static-scan: s3 bucket-notification trigger on skello-app.temporary-assets (SendAutomatedPAMReportToSFTPJob); terraform svc-reports-tf: DMS full-load task skelloapp-${local.application}-fullload-${local.workspace} → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
+      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
     },
-    "svc-requests→skello-app": {
+    "svc-reports→skello-app:cdc": {
       "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: kinesis stream event on svcRequests-fullload (1 listener); serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); package.json: @skelloapp/skello-app-sdk (value import); terraform svc-requests-tf: DMS cdc task lower(\"${local.project}-database-aurora-replication-task-${local.workspace}\") → kinesis endpoint lower(\"${local.project}-${local.workspace}\")"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-svcreports-fullload (1 listener); terraform svc-reports-tf: DMS full-load task skelloapp-${local.application}-fullload-${local.workspace} → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
     },
-    "svc-requests→svc-communications-v2": {
+    "svc-reports→skello-app:s3": {
+      "lastVerified": "2026-10-30",
+      "evidence": "serverless static-scan: s3 bucket-notification trigger on skello-app.temporary-assets (SendAutomatedPAMReportToSFTPJob)"
+    },
+    "svc-requests→skello-app:cdc": {
+      "lastVerified": "2026-10-30",
+      "evidence": "serverless static-scan: kinesis stream event on svcRequests-fullload (1 listener); serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); terraform svc-requests-tf: DMS cdc task lower(\"${local.project}-database-aurora-replication-task-${local.workspace}\") → kinesis endpoint lower(\"${local.project}-${local.workspace}\")"
+    },
+    "svc-requests→skello-app:rest": {
+      "lastVerified": "2026-10-30",
+      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+    },
+    "svc-requests→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "svc-requests→svc-events": {
+    "svc-requests→svc-events:sqs": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-events-sdk (type-only import)"
     },
-    "svc-search→skello-app": {
+    "svc-search→skello-app:cdc": {
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (2 listeners); serverless static-scan: kinesis stream event on skelloapp-svcsearch-fullload (1 listener); package.json: @skelloapp/skello-app-sdk (value import); terraform svc-search-tf: DMS full-load task skelloapp-${lower(local.project)}-fullload-${local.workspace} → kinesis endpoint skelloapp-${lower(local.project)}-fullload-${local.workspace}"
     },
-    "svc-search→svc-pos": {
+    "svc-search→svc-pos:cdc": {
       "lastVerified": "2026-10-30",
       "evidence": "serverless static-scan: dynamodb stream event on posDynamoDBStream (2 listeners)"
     },
-    "svc-shops→svc-employees": {
+    "svc-shops→svc-employees:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-employees-client (value import)"
     },
-    "svc-shops→svc-search": {
+    "svc-shops→svc-search:mongodb": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
     },
-    "svc-skello-assistant→svc-billing-automation": {
+    "svc-skello-assistant→svc-billing-automation:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-billing-automation-sdk (value import)"
     },
-    "svc-skello-assistant→svc-documents-v2": {
+    "svc-skello-assistant→svc-documents-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-documents-v2-client (value import)"
     },
-    "svc-skello-assistant→svc-search": {
+    "svc-skello-assistant→svc-search:mongodb": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
     },
-    "svc-skello-assistant→svc-shifts": {
+    "svc-skello-assistant→svc-shifts:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-shifts-sdk (value import)"
     },
-    "svc-trackers→skello-app": {
+    "svc-trackers→skello-app:cdc": {
       "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); package.json: @skelloapp/skello-app-sdk (value import)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener)"
     },
-    "svc-trackers→svc-search": {
+    "svc-trackers→skello-app:rest": {
+      "lastVerified": "2026-10-30",
+      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+    },
+    "svc-trackers→svc-search:mongodb": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
     },
-    "svc-users→skello-app": {
+    "svc-users→skello-app:cdc": {
       "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); package.json: @skelloapp/skello-app-sdk (declared-only import); terraform svc-users-tf: DMS full-load task ${lower(local.project)}-${local.workspace}-users-with-email → kinesis endpoint skelloapp-bus-${local.workspace}-svcusers"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (1 listener); terraform svc-users-tf: DMS full-load task ${lower(local.project)}-${local.workspace}-users-with-email → kinesis endpoint skelloapp-bus-${local.workspace}-svcusers"
     },
-    "svc-users→svc-communications-v2": {
+    "svc-users→skello-app:rest": {
+      "lastVerified": "2026-10-30",
+      "evidence": "package.json: @skelloapp/skello-app-sdk (declared-only import)"
+    },
+    "svc-users→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-communications-v2-sdk (value import)"
     },
-    "svc-users→svc-punch": {
+    "svc-users→svc-punch:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-punch-sdk (value import)"
     },
-    "svc-workload-plan→skello-app": {
+    "svc-workload-plan→skello-app:cdc": {
       "lastVerified": "2026-10-30",
-      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (4 listeners); package.json: @skelloapp/skello-app-sdk (value import)"
+      "evidence": "serverless static-scan: kinesis stream event on skelloapp-bus (4 listeners)"
     },
-    "svc-workload-plan→svc-kpis-v2": {
+    "svc-workload-plan→skello-app:rest": {
+      "lastVerified": "2026-10-30",
+      "evidence": "package.json: @skelloapp/skello-app-sdk (value import)"
+    },
+    "svc-workload-plan→svc-kpis-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-kpis-v2-sdk (value import)"
     },
-    "svc-workload-plan→svc-search": {
+    "svc-workload-plan→svc-search:mongodb": {
       "lastVerified": "2026-10-30",
       "evidence": "package.json: @skelloapp/svc-search-sdk (value import)"
     },
-    "skello-app→svc-billing-automation": {
+    "skello-app→svc-billing-automation:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/billing_automation_service.rb"
     },
-    "skello-app→svc-communications-v2": {
+    "skello-app→svc-communications-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/communications_v2/"
     },
-    "skello-app→svc-documents-v2": {
+    "skello-app→svc-documents-v2:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/documents_v2_service.rb"
     },
-    "skello-app→svc-employees": {
+    "skello-app→svc-employees:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/employee_service.rb"
     },
-    "skello-app→svc-events": {
+    "skello-app→svc-events:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/event_service.rb"
     },
-    "skello-app→svc-feature-flags": {
+    "skello-app→svc-feature-flags:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/feature_flag_service.rb"
     },
-    "skello-app→svc-hiring": {
+    "skello-app→svc-hiring:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/hiring_service.rb"
     },
-    "skello-app→svc-labour-laws": {
+    "skello-app→svc-labour-laws:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/labour_law_service.rb"
     },
-    "skello-app→svc-modularisation": {
+    "skello-app→svc-modularisation:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/modularisation_service.rb"
     },
-    "skello-app→svc-punch": {
+    "skello-app→svc-punch:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/punch/"
     },
-    "skello-app→svc-reports": {
+    "skello-app→svc-reports:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/report_service.rb"
     },
-    "skello-app→svc-requests": {
+    "skello-app→svc-requests:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/request_service.rb"
     },
-    "skello-app→svc-shops": {
+    "skello-app→svc-shops:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/shops_service.rb"
     },
-    "skello-app→svc-trackers": {
+    "skello-app→svc-trackers:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/trackers_service.rb"
     },
-    "skello-app→svc-users": {
+    "skello-app→svc-users:rest": {
       "lastVerified": "2026-10-30",
       "evidence": "app/services/microservices/user_service.rb"
     }

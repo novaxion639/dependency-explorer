@@ -376,7 +376,7 @@ describe('discovered overlay', () => {
   })
 
   it('only stamps connections that exist in the manual layer', () => {
-    const keys = new Set(connections.map(c => `${c.from}→${c.to}`))
+    const keys = new Set(connections.map(c => `${c.from}→${c.to}:${c.protocol}`))
     for (const key of Object.keys(overlay.connections)) {
       expect(keys.has(key), `overlay stamps unknown connection ${key}`).toBe(true)
     }
