@@ -163,17 +163,16 @@ Per-team service ownership is resolved from CODEOWNERS:
 
 ## Renderers and export
 
-Every architecture and flow diagram is one model, drawn by a choice of three renderers. The choice is switched from the diagram toolbar and kept in the URL (`&renderer=svg|mermaid`):
+Every architecture and flow diagram is one model, drawn by a choice of two renderers. The choice is switched from the diagram toolbar and kept in the URL (`&renderer=svg`; an old `&renderer=mermaid` link opens React Flow):
 - **React Flow** (default): pan, zoom, drag;
-- **plain SVG**;
-- **Mermaid**: lazy-loaded, with its own layout.
+- **plain SVG**.
 
 **Export:**
-- PNG works from all three; React Flow keeps dragged nodes. Flow swimlanes export too.
+- PNG from both; React Flow keeps dragged nodes. Flow swimlanes export too.
 - SVG from the SVG renderer: a standalone file with the Paper colours resolved.
-- Copy Mermaid from the Mermaid renderer.
+- Copy Mermaid from either renderer: the diagram's Mermaid source, checked in tests against the `mermaid` parser.
 
-A view a renderer cannot draw hides that option; the monolith treemap, for example, has no Mermaid form.
+A view a renderer cannot draw hides that option.
 
 ## Global search (⌘K)
 

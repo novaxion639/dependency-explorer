@@ -31,7 +31,7 @@ import type { Renderer } from '../diagram/model'
 export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | 'resources' | 'impact' | 'ownership'
 
 const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
-const RENDERERS: readonly Renderer[] = ['react-flow', 'svg', 'mermaid']
+const RENDERERS: readonly Renderer[] = ['react-flow', 'svg']
 const WRITE_EVENT_PARAMS: readonly WriteEvent[] = ['create', 'update', 'destroy']
 const MONOLITH = 'skello-app'
 const LEGACY_VIEW_PAGE: Record<string, Page> = { areas: 'areas', domains: 'areas', context: 'microservices', services: 'microservices', resources: 'resources', teams: 'ownership' }

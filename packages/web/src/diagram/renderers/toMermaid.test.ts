@@ -12,7 +12,7 @@ function node(id: string, label: string): DiagramNode {
 }
 
 const model: DiagramModel = {
-  id: 'm', title: 'm', width: 10, height: 10, renderers: ['mermaid'],
+  id: 'm', title: 'm', width: 10, height: 10, renderers: ['svg'],
   groups: [
     { id: 'band', kind: 'band', label: 'Platform', members: ['area'], fontSize: 12, x: 0, y: 0, w: 10, h: 10 },
     { id: 'area', kind: 'group', label: 'Documents & e-signature', members: ['a'], fontSize: 12, x: 0, y: 0, w: 10, h: 10 },
@@ -77,7 +77,7 @@ describe('toMermaid with nested groups of equal members', () => {
   it('keeps a lane and a frame that hold the same nodes, the frame inside the lane', () => {
     const node = (id: string, x: number): DiagramNode => ({ id, kind: 'unit', label: id, detail: [], stores: [], fontSize: 12, x, y: 40, w: 80, h: 30 })
     const model: DiagramModel = {
-      id: 'eq', title: 'eq', width: 400, height: 200, renderers: ['mermaid'],
+      id: 'eq', title: 'eq', width: 400, height: 200, renderers: ['svg'],
       groups: [
         { id: 'lane', kind: 'machine', label: 'Machine', members: ['a'], fontSize: 12, x: 0, y: 0, w: 200, h: 200 },
         { id: 'frame', kind: 'frame', label: 'map ×2', members: ['a'], fontSize: 12, x: 5, y: 20, w: 190, h: 60 },

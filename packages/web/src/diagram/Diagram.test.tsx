@@ -15,25 +15,21 @@ const render = (renderers: Renderer[], renderer: Renderer) => renderToStaticMark
 
 describe('Diagram', () => {
   it('offers every renderer the model supports and checks the active one', () => {
-    const html = render(['react-flow', 'svg', 'mermaid'], 'svg')
+    const html = render(['react-flow', 'svg'], 'svg')
     expect(html).toContain('role="radiogroup" aria-label="Renderer"')
     expect(html).toMatch(/role="radio" aria-checked="true"[^>]*>SVG</)
-    expect(html).toContain('>Mermaid<')
+    expect(html).not.toContain('>Mermaid<')
     expect(html).toContain('Export PNG')
     expect(html).toContain('Export SVG')
-    expect(html).not.toContain('Copy Mermaid')
     expect(html).toContain('aria-label="A diagram"')
   })
   it('falls back to React Flow when the model does not support the renderer', () => {
-    const html = render(['react-flow', 'svg'], 'mermaid')
-    expect(html).not.toContain('>Mermaid<')
+    const html = render(['react-flow'], 'svg')
     expect(html).toMatch(/role="radio" aria-checked="true"[^>]*>React Flow</)
-    expect(html).not.toContain('Copy Mermaid')
   })
-  it('offers the Mermaid source on the Mermaid renderer', () => {
-    const html = render(['react-flow', 'svg', 'mermaid'], 'mermaid')
-    expect(html).toContain('Copy Mermaid')
-    expect(html).toContain('Rendering…')
+  it('offers the Mermaid source on every renderer', () => {
+    expect(render(['react-flow', 'svg'], 'react-flow')).toContain('Copy Mermaid')
+    expect(render(['react-flow', 'svg'], 'svg')).toContain('Copy Mermaid')
   })
   it('explains line styles and extra notes in a legend', () => {
     const html = render(['svg'], 'svg')

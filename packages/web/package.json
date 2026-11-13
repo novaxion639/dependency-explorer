@@ -15,7 +15,6 @@
     "@dependency-explorer/data": "workspace:*",
     "@xyflow/react": "12.10.2",
     "d3-hierarchy": "3.1.2",
-    "mermaid": "12.1.0",
     "react": "19.2.5",
     "react-dom": "19.2.5"
   },
@@ -26,6 +25,7 @@
     "@vitejs/plugin-react": "4.7.0",
     "@vitest/coverage-v8": "3.2.6",
     "jsdom": "26.1.0",
+    "mermaid": "12.1.0",
     "typescript": "5.7.3",
     "vite": "6.4.2",
     "vitest": "3.2.6"
