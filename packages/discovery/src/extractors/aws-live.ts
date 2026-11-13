@@ -37,7 +37,6 @@ export interface AwsSnapshot {
   }>
 }
 
-/** Reads a snapshot directory; a missing or unreadable file throws SnapshotFormatError. */
 export function loadAwsSnapshot(dir: string): AwsSnapshot {
   const raw: Record<string, any> = awsSnapshotFolder.read(dir)
   return {
