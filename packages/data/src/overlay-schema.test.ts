@@ -87,4 +87,15 @@ describe('DeliveryOverlaySchema', () => {
     const sandbox = { ...deliveryOverlay, services: { 'svc-search': { ...service, steps: service.steps.map((step) => ({ ...step, branch: 'sandbox' })) } } }
     expect(DeliveryOverlaySchema.safeParse(sandbox).success).toBe(false)
   })
+
+  it('rejects a merge date that is not an ISO instant', () => {
+    const service = deliveryOverlay.services['svc-search']
+    const blank = { ...deliveryOverlay, services: { 'svc-search': { ...service, steps: service.steps.map((step) => ({ ...step, oldest: { ...step.oldest, mergedAt: '' } })) } } }
+    expect(DeliveryOverlaySchema.safeParse(blank).success).toBe(false)
+  })
+
+  it('rejects a fetch time that is not an ISO instant', () => {
+    const service = deliveryOverlay.services['svc-search']
+    expect(DeliveryOverlaySchema.safeParse({ ...deliveryOverlay, services: { 'svc-search': { ...service, fetchedAt: 'yesterday' } } }).success).toBe(false)
+  })
 })

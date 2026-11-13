@@ -706,17 +706,19 @@ export const JiraOverlaySchema = z.object({
 })
 export type JiraOverlay = z.infer<typeof JiraOverlaySchema>
 
+const Instant = z.iso.datetime({ offset: true })
+
 const DeliveryCommitSchema = z.object({
   sha: z.string(),
   title: z.string(),
-  mergedAt: z.string(),
+  mergedAt: Instant,
 })
 
 export const DeliveryOverlaySchema = z.object({
-  generatedAt: z.string(),
+  generatedAt: Instant,
   services: z.record(z.string(), z.object({
     prod: z.enum(['master', 'main']),
-    fetchedAt: z.string().nullable(),
+    fetchedAt: Instant.nullable(),
     steps: z.array(z.object({
       branch: z.literal('staging'),
       count: z.number().int().positive(),
