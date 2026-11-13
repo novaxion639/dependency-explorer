@@ -16,8 +16,7 @@ import { z } from 'zod'
 //
 // slackChannel / onCallUrl are unknown — left unset rather than invented.
 const teams: Team[] = z.array(TeamSchema).parse([
-  { id: 'team-branza', name: 'Team Branza', githubTeams: ['@skelloapp/team-branza'] },
-  { id: 'team-cheesebuzzer', name: 'Team CheeseBuzzer', githubTeams: ['@skelloapp/team-cheesebuzzer'] },
+  { id: 'team-cheesebuzzer', name: 'Team CheeseBuzzer', githubTeams: ['@skelloapp/team-cheesebuzzer'], jiraBoards: [20] },
   { id: 'team-gouda', name: 'Team Gouda', githubTeams: ['@skelloapp/team-gouda'], jiraBoards: [307] },
   { id: 'team-harissa', name: 'Team Harissa', githubTeams: ['@skelloapp/team-harissa'], jiraBoards: [48] },
   { id: 'team-honey', name: 'Team Honey', githubTeams: ['@skelloapp/team-honey'], jiraBoards: [109] },

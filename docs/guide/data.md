@@ -19,7 +19,7 @@ The dataset is imported at build time and validated by Zod on load. It holds:
 - 37 services, 359 endpoints, and 150 connections (138 of them discovery-verified);
 - 48 flows;
 - 14 product areas plus 6 platform capabilities;
-- 19 external systems and 12 teams.
+- 19 external systems and 11 teams.
 
 ## Monolith endpoint surface
 
@@ -173,7 +173,7 @@ The join to the map is by service `name` and resource id, after folding spelling
 
 Integrity tests require unique labels and an existing area id for every non-null `area`. `pnpm --filter @dependency-explorer/discovery discover:jira:draft` drafts the rows from a snapshot; the 🎫 section reports values Jira adds or drops ([discovery.md](discovery.md#jira-snapshot-and-overlay)).
 
-**`jiraBoards`.** An optional list of Jira board ids on `TeamSchema`, beside `githubTeams` and `datadogTeams`. A bug counts under a team when one of its boards holds it. A board is linked when its name names the team unambiguously; the 🎫 `board-suggestion` finding proposes the rest.
+**`jiraBoards`.** An optional list of Jira board ids on `TeamSchema`, beside `githubTeams` and `datadogTeams`. A bug counts under a team when one of its boards holds it. A board is linked when its name names the team unambiguously, or by hand when the board uses a short name (Board Cheese, board 20, is team-cheesebuzzer's); the 🎫 `board-suggestion` finding proposes the rest.
 
 ## Jira overlay
 
