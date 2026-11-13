@@ -505,12 +505,11 @@ export const ServiceFlowSchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
-  /** Who can trigger this flow — enforced present by the integrity suite */
-  trigger: FlowTriggerSchema.optional(),
+  trigger: FlowTriggerSchema,
   /** Typed relationships to other flows — reverse direction derived at render */
   links: z.array(FlowLinkSchema).optional(),
   /** Product area owning this flow — must be among its derived areas (integrity) */
-  primaryArea: z.string().optional(),
+  primaryArea: z.string(),
   steps: z.array(ServiceFlowStepSchema),
   infraNodes: z.array(FlowInfraNodeSchema).optional(),
   infraEdges: z.array(FlowInfraEdgeSchema).optional(),
@@ -518,7 +517,7 @@ export const ServiceFlowSchema = z.object({
   codeEdges: z.array(FlowCodeEdgeSchema).optional(),
   stateMachines: z.array(StateMachineSchema).optional(),
   branches: z.array(FlowBranchSchema).optional(),
-  chapters: z.array(FlowChapterSchema).min(1).optional(),
+  chapters: z.array(FlowChapterSchema).min(1),
 })
 
 // ── Team ─────────────────────────────────────────────────────────────────────

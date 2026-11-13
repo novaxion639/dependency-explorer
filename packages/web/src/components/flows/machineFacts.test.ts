@@ -34,7 +34,7 @@ describe('machineFacts', () => {
   it('names only the states that fall to the machine error handler, and leaves the row out when none does', () => {
     expect(machineFacts(dpaeFlow, 'sm-dpae')?.lines.map(l => l.label)).not.toContain('Falls to the error handler')
     const flow = ServiceFlowSchema.parse({
-      id: 'own', name: 'Own', description: 'd', steps: [], codeUnits: [{ id: 'u-a', service: 'svc', kind: 'job', label: 'A' }, { id: 'u-e', service: 'svc', kind: 'job', label: 'E' }],
+      id: 'own', name: 'Own', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [], codeUnits: [{ id: 'u-a', service: 'svc', kind: 'job', label: 'A' }, { id: 'u-e', service: 'svc', kind: 'job', label: 'E' }],
       stateMachines: [{ id: 'sm', service: 'svc', machine: 'M', label: 'M', file: 'f.ts', start: 'a', errorHandler: 'e', states: [
         { id: 'a', name: 'A', type: 'task', label: 'a', unit: 'u-a', catches: true, catchTo: 'own', next: 'b' },
         { id: 'b', name: 'B', type: 'task', label: 'b', catches: true },

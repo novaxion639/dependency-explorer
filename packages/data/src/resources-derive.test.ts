@@ -7,7 +7,7 @@ const map = ConnectivityMapSchema.parse({
   services: [{ name: 'svc-a', type: 'typescript-microservice', description: 'd', endpoints: [] }],
   connections: [],
   flows: [{
-    id: 'f', name: 'F', description: 'd', steps: [],
+    id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
     codeUnits: [{ id: 'm', service: 'svc-a', kind: 'manager', label: 'M', path: 'src/m.ts' }],
     infraNodes: [
       { id: 'pg', type: 'postgresql', label: 'shifts', resources: ['pg:skello_production.shifts'] },
@@ -70,7 +70,7 @@ describe('flowRelations infra-to-infra edges', () => {
       services: [{ name: 'svc-a', type: 'typescript-microservice', description: 'd', endpoints: [] }],
       connections: [],
       flows: [{
-        id: 'c', name: 'C', description: 'd', steps: [],
+        id: 'c', name: 'C', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
         infraNodes: [
           { id: 'pg-a', type: 'postgresql', label: 'svc-a db', resources: ['pg:svc_a'] },
           { id: 'cdc-a', type: 'kinesis', label: 'cdc', resources: ['kinesis:svcA'] },

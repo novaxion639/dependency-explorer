@@ -3,7 +3,7 @@ import { ServiceFlowSchema } from '@dependency-explorer/schema'
 import { allStates, machineProblems } from './state-machines'
 
 const flow = (machine: unknown) => ServiceFlowSchema.parse({
-  id: 'f', name: 'F', description: 'd', steps: [],
+  id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
   codeUnits: [
     { id: 'h-fetch', service: 'svc', kind: 'job', label: 'Fetch', path: 'src/Fetch.ts' },
     { id: 'h-err', service: 'svc', kind: 'job', label: 'Err', path: 'src/Err.ts' },

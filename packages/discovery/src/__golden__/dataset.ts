@@ -21,6 +21,9 @@ export const goldenDataset: Dataset = {
         id: 'alpha-jobs',
         name: 'Alpha jobs',
         description: 'Alpha hands a job to beta',
+        trigger: { actor: 'manager' },
+        primaryArea: 'scheduling',
+        chapters: [{ title: 'Alpha hands a job to beta', summary: 'svc-alpha creates a job that svc-beta runs.', refs: ['svc-alpha', 'svc-beta'] }],
         steps: [{ from: 'svc-alpha', to: 'svc-beta', action: 'creates a job' }],
         codeUnits: [
           { id: 'alpha-config', service: 'svc-alpha', kind: 'service', label: 'svc-alpha serverless config', path: 'serverless.ts', flags: [{ name: 'ALPHA_JOBS_ENABLED', kind: 'dev' }] },

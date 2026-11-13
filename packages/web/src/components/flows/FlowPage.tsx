@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { flowChapters, type ServiceFlow } from '@dependency-explorer/data'
+import type { ServiceFlow } from '@dependency-explorer/data'
 import { pagePatch, type UrlState } from '../../hooks/useUrlState'
 import { Diagram } from '../../diagram/Diagram'
 import type { FocusState } from '../../diagram/focus'
@@ -21,7 +21,7 @@ const NOTES = ['if = condition or feature flag', '⎇ = alternative outcome', 'd
 
 export function FlowPage({ flow, url, patch, onBack }: Props) {
   const model = useMemo(() => swimlanes(flow), [flow])
-  const { chapters, authored } = useMemo(() => flowChapters(flow), [flow])
+  const chapters = flow.chapters
   const current = url.chapter ? chapters[url.chapter - 1] : undefined
   const focus = useMemo<FocusState>(
     () => ({ spotlight: null, impact: null, chapter: url.present && current ? chapterFocus(model, flow, current.refs) : null }),
@@ -63,7 +63,7 @@ export function FlowPage({ flow, url, patch, onBack }: Props) {
     <article aria-label={flow.name} className={styles.page}>
       <FlowHeader flow={flow} onBack={onBack} onOpenFlow={id => patch({ ...pagePatch('flows'), flow: id })} onOpenArea={id => patch({ ...pagePatch('areas'), area: id })} />
       {url.present
-        ? <FlowStory chapters={chapters} authored={authored} current={url.chapter} onSelect={chapter => patch({ chapter })}>{diagram}</FlowStory>
+        ? <FlowStory chapters={chapters} current={url.chapter} onSelect={chapter => patch({ chapter })}>{diagram}</FlowStory>
         : diagram}
     </article>
   )

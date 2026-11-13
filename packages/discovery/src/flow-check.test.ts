@@ -7,7 +7,7 @@ const map = ConnectivityMapSchema.parse({
   services: [{ name: 'skello-app', type: 'rails-monolith', description: 'd', endpoints: [] }],
   connections: [],
   flows: [{
-    id: 'f', name: 'F', description: 'd', steps: [],
+    id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
     codeUnits: [
       { id: 'ok', service: 'skello-app', kind: 'controller', label: 'A', path: 'app/controllers/a_controller.rb' },
       { id: 'orphan', service: 'skello-app', kind: 'controller', label: 'B', path: 'app/controllers/b_controller.rb' },

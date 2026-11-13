@@ -36,15 +36,15 @@ describe('FlowPage', () => {
 })
 
 describe('FlowStory', () => {
-  it('numbers the chapters and says when they are derived', () => {
+  it('numbers the chapters', () => {
     const html = renderToStaticMarkup(
-      <FlowStory chapters={[{ title: 'Step 1', summary: 'GET /x', refs: ['a'] }, { title: 'Step 2', summary: 'POST /y', refs: ['b'] }]} authored={false} current={null} onSelect={noop}>
+      <FlowStory chapters={[{ title: 'Step 1', summary: 'GET /x', refs: ['a'] }, { title: 'Step 2', summary: 'POST /y', refs: ['b'] }]} current={null} onSelect={noop}>
         <p>diagram</p>
       </FlowStory>,
     )
     expect(html).toContain('>1</span>')
     expect(html).toContain('Step 2')
-    expect(html).toContain('Chapters derived from the steps')
+    expect(html).not.toContain('Chapters derived from the steps')
   })
 })
 

@@ -24,7 +24,7 @@ const autoMachine = {
 }
 
 const autoBase = {
-  id: 'auto', name: 'Auto', description: 'd', steps: [],
+  id: 'auto', name: 'Auto', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
   codeUnits: [
     job('u-fetch', 'svc', 'Fetch'), job('u-filter', 'svc', 'Filter'), job('u-elig', 'svc', 'Eligibility'), job('u-agg', 'svc', 'Aggregate'),
     job('u-solve', 'svc', 'Solve'), job('u-assign', 'svc', 'Assign'), job('u-finish', 'svc', 'Finish'), job('u-err', 'svc', 'ErrorHandler'),
@@ -44,7 +44,7 @@ export const autoFlowWithJob = ServiceFlowSchema.parse({
 })
 
 export const dpaeFlow = ServiceFlowSchema.parse({
-  id: 'dpae', name: 'DPAE', description: 'd', steps: [],
+  id: 'dpae', name: 'DPAE', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
   codeUnits: [job('u-check', 'emp', 'Check'), job('u-update', 'emp', 'Update')],
   codeEdges: [{ from: 'emp', to: 'sm-dpae', label: 'start follow-up', mode: 'async-job' }],
   stateMachines: [{

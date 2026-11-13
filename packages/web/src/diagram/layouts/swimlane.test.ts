@@ -52,7 +52,7 @@ describe('swimlanes', () => {
   })
   it('lays out a cycle and an isolated unit', () => {
     const odd = ServiceFlowSchema.parse({
-      id: 'odd', name: 'Odd', description: 'd', steps: [],
+      id: 'odd', name: 'Odd', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [{ id: 'a', service: 'x', kind: 'service', label: 'A' }, { id: 'b', service: 'x', kind: 'service', label: 'B' }, { id: 'c', service: 'x', kind: 'service', label: 'C' }],
       codeEdges: [{ from: 'a', to: 'b' }, { from: 'b', to: 'a' }],
     })
@@ -69,7 +69,7 @@ describe('swimlanes', () => {
   })
   it('opens a store without resources in the panel', () => {
     const odd = ServiceFlowSchema.parse({
-      id: 'odd', name: 'Odd', description: 'd', steps: [],
+      id: 'odd', name: 'Odd', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [{ id: 'a', service: 'x', kind: 'service', label: 'A' }],
       infraNodes: [{ id: 'db', type: 'redis', label: 'cache' }],
       codeEdges: [{ from: 'a', to: 'db' }],
@@ -204,7 +204,7 @@ describe('swimlane routes', () => {
   it('widens a gutter past its track capacity instead of sharing tracks', () => {
     const n = 40
     const wide = ServiceFlowSchema.parse({
-      id: 'wide', name: 'Wide', description: 'd', steps: [],
+      id: 'wide', name: 'Wide', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [...Array.from({ length: n }, (_, i) => ({ id: `a${i}`, service: 'x', kind: 'service', label: `A${i}` })), ...Array.from({ length: n }, (_, i) => ({ id: `b${i}`, service: 'y', kind: 'service', label: `B${i}` }))],
       codeEdges: Array.from({ length: n }, (_, i) => ({ from: `a${i}`, to: `b${i}` })),
     })
@@ -215,7 +215,7 @@ describe('swimlane routes', () => {
   it('opens the gap above a row past its channel capacity instead of crossing the row above', () => {
     const n = 8
     const deep = ServiceFlowSchema.parse({
-      id: 'deep', name: 'Deep', description: 'd', steps: [],
+      id: 'deep', name: 'Deep', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [...Array.from({ length: n }, (_, i) => ({ id: `a${i}`, service: 'x', kind: 'service', label: `A${i}` })), { id: 'mid', service: 'y', kind: 'service', label: 'Mid' }, { id: 'b', service: 'z', kind: 'service', label: 'B' }],
       codeEdges: [{ from: 'a0', to: 'mid' }, ...Array.from({ length: n }, (_, i) => ({ from: `a${i}`, to: 'b' }))],
     })
@@ -228,7 +228,7 @@ describe('swimlane routes', () => {
   })
   it('stacks the labels of two straight-down edges between the same pair', () => {
     const twice = ServiceFlowSchema.parse({
-      id: 'twice', name: 'Twice', description: 'd', steps: [],
+      id: 'twice', name: 'Twice', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [{ id: 'a', service: 'x', kind: 'service', label: 'A' }, { id: 'b', service: 'x', kind: 'service', label: 'B' }],
       codeEdges: [{ from: 'a', to: 'b', label: 'creates' }, { from: 'a', to: 'b', label: 'updates', condition: 'when dirty' }],
     })
@@ -244,7 +244,7 @@ describe('swimlane routes', () => {
     const n = 25
     const label = 'a long label that needs a wide box in the gutter'
     const crowded = ServiceFlowSchema.parse({
-      id: 'crowded', name: 'Crowded', description: 'd', steps: [],
+      id: 'crowded', name: 'Crowded', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: Array.from({ length: n }, (_, i) => ({ id: `a${i}`, service: 'x', kind: 'service', label: `A${i}` })),
       codeEdges: [
         ...Array.from({ length: n - 1 }, (_, i) => ({ from: `a${i}`, to: `a${i + 1}` })),
@@ -275,7 +275,7 @@ describe('swimlane routes', () => {
   })
   it('marks a catching task without a handler unit', () => {
     const flow = ServiceFlowSchema.parse({
-      id: 'unitless', name: 'Unitless', description: 'd', steps: [], codeUnits: [{ id: 'u-e', service: 'svc', kind: 'job', label: 'E' }],
+      id: 'unitless', name: 'Unitless', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [], codeUnits: [{ id: 'u-e', service: 'svc', kind: 'job', label: 'E' }],
       stateMachines: [{ id: 'sm', service: 'svc', machine: 'M', label: 'M', file: 'f.ts', start: 'x', errorHandler: 'e', states: [
         { id: 'x', name: 'X', type: 'task', label: 'notify', catches: true },
         { id: 'e', name: 'E', type: 'task', label: 'error handler', unit: 'u-e' },

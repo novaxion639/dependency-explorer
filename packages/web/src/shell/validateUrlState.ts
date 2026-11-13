@@ -1,4 +1,4 @@
-import { flowChapters, listenerSurface, resourceSurface } from '@dependency-explorer/data'
+import { listenerSurface, resourceSurface } from '@dependency-explorer/data'
 import { EDGE_LIST_SEP, edgeKey, type UrlState } from '../hooks/useUrlState'
 import { areaById, fileIndex, flagRegistry, map, resourceIds } from './dataIndexes'
 import { panelIds } from '../components/flows/machineFacts'
@@ -32,7 +32,7 @@ export function validateUrlState(st: UrlState): UrlState {
     if (next.unit && !ids.has(next.unit)) {
       next.unit = null
     }
-    if (next.chapter && next.chapter > flowChapters(openFlow).chapters.length) {
+    if (next.chapter && next.chapter > openFlow.chapters.length) {
       next.chapter = null
     }
   }
