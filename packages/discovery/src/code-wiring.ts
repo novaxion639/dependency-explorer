@@ -144,7 +144,10 @@ const VITE_ALIAS = /['"](@[\w-]+)['"]\s*:\s*fileURLToPath\(\s*new URL\(\s*['"]\.
 const IMPORT_FROM = /(?:\bfrom|\bimport|\brequire\()\s*['"]([^'"]+)['"]/g
 const NAMED_IMPORT = /import\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
 const NAMED_REEXPORT = /export\s*\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
-export const RESOLVE_SUFFIXES = ['', '.js', '.ts', '.tsx', '.vue', '.mjs', '/index.js', '/index.ts', '/index.vue']
+const RESOLVE_SUFFIXES = ['', '.js', '.ts', '.tsx', '.vue', '.mjs', '/index.js', '/index.ts', '/index.vue']
+
+export const resolveCandidates = (base: string): string[] =>
+  [base, ...(base.endsWith('.js') ? [base.slice(0, -'.js'.length)] : [])].flatMap(b => RESOLVE_SUFFIXES.map(s => `${b}${s}`))
 
 const STRING_OR_COMMENT = /((?<=^|[\s(,=[])\?'(?=[\s),\]]|$)(?!.')|(?<=^|[\s(,=[])\?"(?=[\s),\]]|$)(?!.")|"(?:\\[\s\S]|[^"\\\n])*"|'(?:\\[\s\S]|[^'\\\n])*'|`(?:\\[\s\S]|[^`\\])*`)|\/\*[\s\S]*?\*\/|(^|[^:\\])\/\/.*$|(^|\s)#(?![{!]).*$/gm
 
@@ -180,13 +183,13 @@ export function resolveSpecifier(spec: string, fromPath: string, aliases: Alias[
 }
 
 function resolvesTo(base: string, file: string): boolean {
-  return RESOLVE_SUFFIXES.some(s => `${base}${s}` === file)
+  return resolveCandidates(base).includes(file)
 }
 
 export function importedFiles(code: string, fromPath: string, aliases: Alias[], read: Read): string[] {
   const found = [...code.matchAll(IMPORT_FROM)].flatMap(m => {
     const base = resolveSpecifier(m[1] ?? '', fromPath, aliases)
-    const file = base === null ? undefined : RESOLVE_SUFFIXES.map(s => `${base}${s}`).find(p => read(p) !== null)
+    const file = base === null ? undefined : resolveCandidates(base).find(p => read(p) !== null)
     return file === undefined ? [] : [file]
   })
   return [...new Set(found)]
@@ -337,7 +340,7 @@ function containerFileOf(source: string, aliases: Alias[], read: Read): (cls: st
   return cls => {
     const spec = specOf.get(cls)
     const base = spec === undefined ? null : resolveSpecifier(spec, CONTAINER, aliases)
-    return base === null ? null : RESOLVE_SUFFIXES.map(suffix => `${base}${suffix}`).find(p => read(p) !== null) ?? null
+    return base === null ? null : resolveCandidates(base).find(p => read(p) !== null) ?? null
   }
 }
 
