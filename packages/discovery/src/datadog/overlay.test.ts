@@ -245,7 +245,7 @@ describe('overlayOf', () => {
     expect(seen).toEqual([])
   })
 
-  it('reads HEAD of the pinned worktree, the production branch otherwise', () => {
+  it('reads HEAD of the pinned worktree, origin\'s production branch otherwise', () => {
     const refs = (pinned: boolean) => {
       const seen: string[] = []
       overlayOf(snapshot, join, REPOS, pinned, (cwd, args) => {
@@ -255,7 +255,7 @@ describe('overlayOf', () => {
       return seen
     }
     expect(refs(true)).toContain(`${path.join(REPOS, 'svc-planning')} HEAD`)
-    expect(refs(false)).toContain(`${path.join(REPOS, 'svc-planning')} master`)
+    expect(refs(false)).toContain(`${path.join(REPOS, 'svc-planning')} origin/master`)
   })
 
   it('judges a release once when Datadog spells its service two ways', () => {

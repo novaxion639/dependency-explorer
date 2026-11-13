@@ -218,7 +218,7 @@ export function overlayOf(snapshot: DatadogSnapshot, join: DatadogJoin, repoBase
       return []
     }
     try {
-      return releasesOf(repoDir, repo, pinned ? 'HEAD' : productionBranch(repo), since, git)
+      return releasesOf(repoDir, repo, pinned ? 'HEAD' : `origin/${productionBranch(repo)}`, since, git)
     } catch (e) {
       console.error(`  releases of ${repo} skipped: ${errorText(e)}`)
       return []
