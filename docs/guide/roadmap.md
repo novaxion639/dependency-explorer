@@ -12,4 +12,15 @@
 | 4 | Live operational overlays through a read-only API. Datadog first, on skello-cockpit's endpoints and rules, from a gitignored snapshot joined by service id: monitors, SLOs and noisy monitors, Health states, release verdicts and incidents on service pages, DLQ depth on resource pages ([discovery](discovery.md#datadog-snapshot-and-overlay), [explorer](explorer.md#health), [ADR-0010](../adr/0010-datadog-overlay-from-a-local-snapshot.md)). Deploys read as merges into prod: the Delivery line shows what waits on `staging`, its age in working days and the last release, from the clones' git refs ([discovery](discovery.md#delivery-line), [explorer](explorer.md#delivery)). Open: open PRs, on-call, and a hosted read-only API in place of the local snapshot | Datadog ✅ done; deploys ✅ as merges into prod; the rest planned |
 | 5 | Desktop app: an independent macOS app around the static bundle, shipped to other users as a DMG on GitHub releases with an update check, on skello-cockpit's distribution (electron-vite, electron-builder, `gh release download`). A distribution channel next to hosting ([ADR-0005](../adr/0005-local-poc-first.md)), recorded in its own ADR when started | later |
 
+## Table listeners — open items
+
+The listener surface ([data](data.md#table-listener-surface), [drift](discovery.md#listener-drift-), [explorer](explorer.md#table-listeners)) ships with these known gaps:
+
+- A receiver assigned to a local (`x = @contract.amendments.build`) is not tied to its model, so its writes read as unsupported (contract-amendment's 3 rows).
+- A `filterPatterns` prefix built from a constant (svc-users) yields no per-table consumer and no finding.
+- A `--pinned` run that pins 0 repos while offline names the worktree as the cause instead of each pin's skip reason.
+- A Fires row matched by table event only seeds its cascade with create, update and destroy, so cycles show one hop early.
+- `runs: all` counts validation listeners on `update_attribute`, which skips validations; touch and commit clauses ignore the write's own events.
+- Parser edges no table at the pin hits yet: singularizing -sses and -uses plurals; brackets inside strings counted by `joinStatements`, `expressionAttr` and `ruleObjects`; `.set(wait: (n).minutes)` and a `perform_later` on a continuation line; associations declared in concerns; `before_save(:x)` and `after_commit on: :create do`; two models sharing a class name in different namespaces; `discover:listeners` printing a fixed "0 CDC feed(s)"; write-path flow chips matched by file only.
+
 Architecture decisions are recorded in [docs/adr/](../adr/).
