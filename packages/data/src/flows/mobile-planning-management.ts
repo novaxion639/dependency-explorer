@@ -13,9 +13,9 @@ const mobile_planning_management: ServiceFlow = ServiceFlowSchema.parse({
   "primaryArea": "planning",
   "chapters": [
     { "title": "An employee checks their planning", "summary": "The phone reads the employee's own shifts, or the team planning for managers, from skello-app's usual endpoints.", "refs": ["skello-mobile", "cu-mpm-screen", "cu-mpm-api", "skello-app"] },
-    { "title": "Overnight shifts stay visible", "summary": "Every fetch window is padded by two days, and a day runs from opening time to the next opening time.", "refs": ["cu-mpm-adapter"] },
-    { "title": "Managers edit shifts on the phone", "summary": "Managers create, update and delete shifts, tasks and comments on the same skello-app endpoints as the web.", "refs": ["cu-mpm-form", "cu-mpm-api", "skello-app"] },
-    { "title": "Managers lock a period", "summary": "Managers validate a period from the phone, setting the same day lock the badging review checks.", "refs": ["cu-mpm-form", "skello-app"] }
+    { "title": "Overnight shifts stay visible", "summary": "Every fetch window is padded by two days, and a day runs from opening time to the next opening time.", "refs": ["cu-mpm-connector", "cu-mpm-adapter"] },
+    { "title": "Managers edit shifts on the phone", "summary": "Managers create, update and delete shifts, tasks and comments on the same skello-app endpoints as the web.", "refs": ["cu-mpm-form", "cu-mpm-connector", "cu-mpm-api", "skello-app"] },
+    { "title": "Managers lock a period", "summary": "Managers validate a period from the phone, setting the same day lock the badging review checks.", "refs": ["cu-mpm-lock", "cu-mpm-api", "skello-app"] }
   ],
   "links": [{"to": "shift-creation", "kind": "same-journey", "note": "same v3 plannings surface \u2014 the server-side code layer lives in shift-creation"}, {"to": "shift-update", "kind": "same-journey", "note": "same v3 plannings surface \u2014 the server-side code layer lives in shift-update"}],
   "steps": [
@@ -43,12 +43,28 @@ const mobile_planning_management: ServiceFlow = ServiceFlowSchema.parse({
       "description": "Manager shift mutations from the phone — create/update/delete plus task-status and comment patches"
     },
     {
+      "id": "cu-mpm-connector",
+      "service": "skello-mobile",
+      "kind": "service",
+      "label": "shifts connector (requests through the range adapter)",
+      "path": "src/modules/shifts/connector.ts",
+      "description": "getMyShiftsFromAPI / getShopShiftsFromAPI / createShifts / updateShift / deleteShift — builds each request's params through the range adapter, then calls the shifts api"
+    },
+    {
       "id": "cu-mpm-api",
       "service": "skello-mobile",
       "kind": "service",
       "label": "shifts api (reads, mutations, weekly options)",
       "path": "src/modules/shifts/api.ts",
       "description": "fetchMyShifts / fetchShopShifts / createShift / updateShifts / deleteShift / fetchWeeklyOptions / validatePeriod — all monolith v3"
+    },
+    {
+      "id": "cu-mpm-lock",
+      "service": "skello-mobile",
+      "kind": "service",
+      "label": "weekly options hook (lock a day)",
+      "path": "src/modules/shifts/hooks/useWeeklyOptions.ts",
+      "description": "doValidatePeriod, called by the planning's lock-day button — toggles the day's validated lock (validation_level validated_days) through the shifts api, then repaints the day's lock colour"
     },
     {
       "id": "cu-mpm-adapter",
@@ -68,14 +84,26 @@ const mobile_planning_management: ServiceFlow = ServiceFlowSchema.parse({
     },
     {
       "from": "cu-mpm-form",
-      "to": "cu-mpm-api",
-      "label": "shift mutations + period validation",
+      "to": "cu-mpm-connector",
+      "label": "shift mutations",
       "mode": "sync"
     },
     {
-      "from": "cu-mpm-api",
+      "from": "cu-mpm-connector",
+      "to": "cu-mpm-api",
+      "label": "shift reads + mutations",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-mpm-connector",
       "to": "cu-mpm-adapter",
       "label": "window padding + params",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-mpm-lock",
+      "to": "cu-mpm-api",
+      "label": "period validation",
       "mode": "sync"
     },
     {

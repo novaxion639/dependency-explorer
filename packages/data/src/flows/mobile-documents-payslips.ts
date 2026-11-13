@@ -11,7 +11,7 @@ const mobile_documents_payslips: ServiceFlow = ServiceFlowSchema.parse({
   "trigger": {"actor": "employee"},
   "primaryArea": "documents-esignature",
   "chapters": [
-    { "title": "An employee opens documents", "summary": "The phone lists folders, payslips among them, and the documents inside.", "refs": ["skello-mobile", "cu-mdp-screen", "cu-mdp-folders"] },
+    { "title": "An employee opens documents", "summary": "The phone lists folders, payslips among them, and the documents inside.", "refs": ["skello-mobile", "cu-mdp-screen", "cu-mdp-list", "cu-mdp-folders"] },
     { "title": "Documents come from svc-documents-v2", "summary": "Reads, downloads and deletes go straight to svc-documents-v2, just as on the web.", "refs": ["cu-mdp-api", "cu-mdp-client", "svc-documents-v2"] },
     { "title": "Uploads go straight to S3", "summary": "The phone creates the document, then sends the file, from storage or the camera, directly to S3.", "refs": ["cu-mdp-api", "s3-docs-v2-mobile"] },
     { "title": "Names and signatures fill in", "summary": "skello-app supplies creator names; pending attendance-sheet signatures feed the home screen.", "refs": ["cu-mdp-client", "svc-documents-v2"] }
@@ -36,6 +36,14 @@ const mobile_documents_payslips: ServiceFlow = ServiceFlowSchema.parse({
       "label": "Documents screen",
       "path": "src/screens/Documents/Documents.tsx",
       "description": "Folder browser (pay_slips among the folder types) with camera upload entry"
+    },
+    {
+      "id": "cu-mdp-list",
+      "service": "skello-mobile",
+      "kind": "component",
+      "label": "FolderDocumentsList",
+      "path": "src/screens/Documents/Folder/FolderDocumentsList/FolderDocumentsList.tsx",
+      "description": "Lists the open folder's documents and sub-folders through useFolderDocuments, refreshing through useUserDocuments"
     },
     {
       "id": "cu-mdp-folders",
@@ -65,8 +73,14 @@ const mobile_documents_payslips: ServiceFlow = ServiceFlowSchema.parse({
   "codeEdges": [
     {
       "from": "cu-mdp-screen",
-      "to": "cu-mdp-folders",
+      "to": "cu-mdp-list",
       "label": "folder contents",
+      "mode": "sync"
+    },
+    {
+      "from": "cu-mdp-list",
+      "to": "cu-mdp-folders",
+      "label": "folder-scoped listing",
       "mode": "sync"
     },
     {

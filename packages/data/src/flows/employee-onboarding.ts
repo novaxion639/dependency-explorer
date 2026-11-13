@@ -11,7 +11,7 @@ import type { ServiceFlow } from '@dependency-explorer/schema'
 const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
   "id": "employee-onboarding",
   "name": "Employee Onboarding",
-  "description": "A manager creates a new employee. One transactional service builds the whole record — User, Contract, schedule amendments, planning config, extended info, team memberships — then invitation emails go out through comms-v2 and the internal Skello-team mailer. The legal leg runs through svc-employees: the DPAE (pre-hiring declaration to URSSAF, via the Fortify cluster per the GLOBAL board) is tracked as DpaeDeposit rows in the monolith, submitted and followed up by svc-employees' DPAE step function, which writes the resulting status BACK into the monolith's dpae_deposits#update — an endpoint the code marks 'called only by svc-employee'.",
+  "description": "A manager creates a new employee. One transactional service builds the whole record — User, Contract, schedule amendments, planning config, extended info, team memberships — then the Skello-team mailer emails the account owner through comms-v2. The legal leg runs through svc-employees: the DPAE (pre-hiring declaration to URSSAF, via the Fortify cluster per the GLOBAL board) is tracked as DpaeDeposit rows in the monolith, submitted and followed up by svc-employees' DPAE step function, which writes the resulting status BACK into the monolith's dpae_deposits#update — an endpoint the code marks 'called only by svc-employee'.",
   "trigger": {
     "actor": "manager",
     "role": "HR"
@@ -36,8 +36,8 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       ]
     },
     {
-      "title": "Invitations are sent",
-      "summary": "A background job sends the invitation and onboarding emails through svc-communications-v2.",
+      "title": "The account owner is notified",
+      "summary": "A background job emails the organisation's account owner through svc-communications-v2 that a new employee exists.",
       "refs": [
         "cu-eo-mailer",
         "svc-communications-v2"
@@ -81,7 +81,7 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "skello-app",
       "to": "svc-communications-v2",
-      "action": "Invitation / onboarding emails (OnboardingMailerJob)"
+      "action": "Account-owner notification (SkelloTeamMailerJob)"
     },
     {
       "from": "svc-employees",
@@ -118,9 +118,9 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
       "id": "cu-eo-mailer",
       "service": "skello-app",
       "kind": "job",
-      "label": "Microservices::OnboardingMailerJob",
-      "path": "app/jobs/microservices/onboarding_mailer_job.rb",
-      "description": "Invitation and onboarding emails via CommunicationsV2 Builder/ClientService"
+      "label": "Microservices::SkelloTeamMailerJob",
+      "path": "app/jobs/microservices/skello_team_mailer_job.rb",
+      "description": "new_hr_created_notification — emails the organisation's account owner that a new employee exists, via CommunicationsV2 Builder"
     },
     {
       "id": "cu-eo-dpae-controller",
@@ -189,13 +189,13 @@ const employee_onboarding: ServiceFlow = ServiceFlowSchema.parse({
     {
       "from": "cu-eo-create-service",
       "to": "cu-eo-mailer",
-      "label": "invitation + internal-team emails",
+      "label": "account-owner notification",
       "mode": "async-job"
     },
     {
       "from": "cu-eo-mailer",
       "to": "svc-communications-v2",
-      "label": "onboarding emails",
+      "label": "account-owner email",
       "mode": "sync"
     },
     {
