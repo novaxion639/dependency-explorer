@@ -3000,7 +3000,6 @@
     "leave-request-lifecycle#cu-lrl-notif→cu-lrl-notif-mgr": "graph",
     "document-generation-esignature#cu-des-esign-controller→cu-des-workflow-job": "graph",
     "document-generation-esignature#cu-des-workflow-job→cu-des-generate": "none",
-    "document-generation-esignature#cu-des-workflow-job→cu-des-yousign": "none",
     "auto-planning-generation#cu-as-assign-job→cu-as-assign-manager": "graph",
     "auto-planning-generation#cu-as-assign-manager→cu-as-skello-repo": "graph",
     "auto-planning-generation#cu-as-skello-repo→cu-as-controller": "import",
