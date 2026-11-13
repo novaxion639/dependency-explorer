@@ -364,6 +364,7 @@
     {
       "from": "svc-beta",
       "to": "svc-alpha",
+      "protocol": "rest",
       "sdkPackage": "@skelloapp/svc-alpha-client"
     }
   ],

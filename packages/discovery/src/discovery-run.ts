@@ -53,8 +53,8 @@ function scanTargets(base: string): string[] {
 
 interface Candidate { from: string; to: string; evidence: string; transport: string }
 interface UnknownTarget { from: string; evidence: string; normalizedTarget: string }
-interface Stale { from: string; to: string; sdkPackage: string }
-interface Unverifiable { from: string; to: string; reason: string }
+interface Stale { from: string; to: string; protocol: string; sdkPackage: string }
+interface Unverifiable { from: string; to: string; protocol: string; reason: string }
 interface EndpointCheck {
   service: string
   source: ServerlessFacts['source']
@@ -649,22 +649,22 @@ export function runDiscovery(options: DiscoveryOptions): Report {
     if (report.connectionEvidence[channelKey(conn)]?.length) continue
 
     if (!fs.existsSync(path.join(repoBase, conn.from))) {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'repo not checked out locally' })
+      report.unverifiable.push({ from: conn.from, to: conn.to, protocol: conn.protocol, reason: 'repo not checked out locally' })
       continue
     }
     if (conn.from === 'skello-app') {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'no mapped Rails client or queue literal found (heuristic scan)' })
+      report.unverifiable.push({ from: conn.from, to: conn.to, protocol: conn.protocol, reason: 'no mapped Rails client or queue literal found (heuristic scan)' })
       continue
     }
     if (conn.from === 'skello-app-front') {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'no env URL or usage evidence found (frontend heuristic)' })
+      report.unverifiable.push({ from: conn.from, to: conn.to, protocol: conn.protocol, reason: 'no env URL or usage evidence found (frontend heuristic)' })
       continue
     }
     if (!conn.sdkPackage.startsWith('@skelloapp/')) {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: `non-npm declaration (${conn.sdkPackage}), no queue evidence` })
+      report.unverifiable.push({ from: conn.from, to: conn.to, protocol: conn.protocol, reason: `non-npm declaration (${conn.sdkPackage}), no queue evidence` })
       continue
     }
-    report.stale.push({ from: conn.from, to: conn.to, sdkPackage: conn.sdkPackage })
+    report.stale.push({ from: conn.from, to: conn.to, protocol: conn.protocol, sdkPackage: conn.sdkPackage })
   }
 
   report.candidates = [...candidatesByKey.values()]
