@@ -68,6 +68,8 @@ pnpm docs:gen                 # rewrite the generated sections of the inventory 
 
 `--pinned` runs fail when they pin no repo — run discovery from the main clone; a `.claude/worktrees` checkout finds no sibling repos.
 
+Pinning touches only `.pinned/<repo>` in each clone: it adds or re-checks-out that detached worktree, and a failed pin removes it again. It never prunes the clone's other worktrees.
+
 **Connection stamps.** A connection is stamped per channel, keyed `from→to:protocol` in `discovered.json`. Evidence stamps the channel whose protocol it proves: a stream consumer or a DMS task proves `cdc` (or `kinesis`), an SDK import or an HTTP client `rest`, a queue literal `sqs`, a bucket notification `s3`. A pair mapped under one protocol takes any evidence for it; a pair mapped under several leaves a channel without matching evidence unstamped, and the report lists it as stale or unverifiable.
 
 ## Datadog snapshot and overlay

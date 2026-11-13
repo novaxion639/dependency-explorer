@@ -28,7 +28,6 @@ function removeWorktree(source: string, dir: string, git: GitRunner): void {
     git(source, ['worktree', 'remove', '--force', dir])
   } catch {
     fs.rmSync(dir, { recursive: true, force: true })
-    git(source, ['worktree', 'prune'])
   }
 }
 
@@ -52,7 +51,7 @@ export function pinRepos(repos: string[], sourceBase: string, pinnedBase: string
       if (fs.existsSync(dir)) {
         git(dir, ['checkout', '--quiet', '--detach', sha])
       } else {
-        git(source, ['worktree', 'add', '--quiet', '--detach', dir, sha])
+        git(source, ['worktree', 'add', '--quiet', '--force', '--detach', dir, sha])
       }
       pinned.push({ repo, branch, sha, dir })
     } catch (e) {
