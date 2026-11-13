@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { walkTree } from '../walk'
 
 export interface QueueSenderEvidence {
   from: string
@@ -17,21 +18,8 @@ const MAX_FILE_SIZE = 400 * 1024
 const MIN_QUEUE_NAME_LENGTH = 8
 const SAMPLE_CAP = 3
 
-export function walkFiles(dir: string, out: string[] = []): string[] {
-  let entries: fs.Dirent[]
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const e of entries) {
-    if (SKIP_DIRS.has(e.name) || e.name.startsWith('.')) continue
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) walkFiles(full, out)
-    else if (SOURCE_EXTS.has(path.extname(e.name)) && !/\.(test|spec)\./.test(e.name) && fs.statSync(full).size <= MAX_FILE_SIZE) out.push(full)
-  }
-  return out
-}
+export const walkFiles = (dir: string): string[] =>
+  walkTree(dir, e => SKIP_DIRS.has(e.name) || e.name.startsWith('.'), (e, full) => SOURCE_EXTS.has(path.extname(e.name)) && !/\.(test|spec)\./.test(e.name) && fs.statSync(full).size <= MAX_FILE_SIZE)
 
 /**
  * Cross-reference queue names against every repo's source: a repo containing

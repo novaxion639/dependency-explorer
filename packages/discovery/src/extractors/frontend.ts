@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { walkTree } from '../walk'
 
 interface FrontendServiceEvidence {
   /** env var names whose value points at this service host (values are never recorded) */
@@ -34,21 +35,8 @@ export function parseEnvServiceUrls(content: string): Array<{ varName: string; s
   return out
 }
 
-function walkSourceFiles(dir: string, out: string[] = []): string[] {
-  let entries: fs.Dirent[]
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const e of entries) {
-    if (e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) continue
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) walkSourceFiles(full, out)
-    else if (SOURCE_EXTS.has(path.extname(e.name))) out.push(full)
-  }
-  return out
-}
+const walkSourceFiles = (dir: string): string[] =>
+  walkTree(dir, e => e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.'), e => SOURCE_EXTS.has(path.extname(e.name)))
 
 /**
  * Find which svc-* services the frontend references: env vars holding service
