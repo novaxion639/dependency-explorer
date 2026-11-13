@@ -69,7 +69,7 @@ export function Explorer() {
     : firstEdge
       ? <EdgeDetail connection={firstEdge} map={map} onSeeEndpoints={name => patch({ drawer: name, ep: null, edge: null })} onClose={() => patch({ edge: null })} />
       : drawerService
-        ? <EndpointList serviceName={drawerService.name} endpoints={drawerService.endpoints} recurringTasks={drawerService.recurringTasks} highlightId={url.ep} onClose={() => patch({ drawer: null, ep: null })} onOpenService={() => selectService(drawerService.name)} />
+        ? <EndpointList key={drawerService.name} serviceName={drawerService.name} endpoints={drawerService.endpoints} recurringTasks={drawerService.recurringTasks} highlightId={url.ep} onClose={() => patch({ drawer: null, ep: null })} onOpenService={() => selectService(drawerService.name)} />
         : slice
           ? <AreaSlice slice={slice} onOpenArea={id => patch({ ...pagePatch('areas'), area: id })} onOpenResource={openResource} onSelectService={selectService} onOpenFlow={id => patch({ ...pagePatch('flows'), flow: id })} onClose={() => patch({ area: null })} />
           : null)
