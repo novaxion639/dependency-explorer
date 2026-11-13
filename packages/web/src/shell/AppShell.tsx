@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { pagePatch, type UrlState } from '../hooks/useUrlState'
 import { breadcrumb } from './crumbs'
 import { Breadcrumb } from './Breadcrumb'
+import { NavLink } from './NavLink'
 import { Rail } from './Rail'
 import styles from './AppShell.module.css'
 
@@ -24,7 +25,7 @@ export function AppShell({ url, onNavigate, onSearch, onTogglePresent, panel, ch
         {framed && (
           <button type="button" className={styles.menu} aria-expanded={railOpen} onClick={() => setRailOpen(open => !open)}>Menu</button>
         )}
-        <button type="button" className={styles.title} onClick={() => onNavigate(pagePatch('home'))}>Skello · Dependency Explorer</button>
+        <NavLink url={url} patch={pagePatch('home')} onNavigate={onNavigate} className={styles.title}>Skello · Dependency Explorer</NavLink>
         <div className={styles.actions}>
           {!url.present && <button type="button" onClick={onSearch}>Search <kbd>⌘K</kbd></button>}
           <button type="button" onClick={onTogglePresent}>{url.present ? 'Exit present' : 'Present'}</button>
@@ -33,12 +34,12 @@ export function AppShell({ url, onNavigate, onSearch, onTogglePresent, panel, ch
       <div className={styles.body}>
         {framed && (
           <div className={styles.railSlot} data-open={railOpen ? 'true' : 'false'}>
-            <Rail page={url.page} onNavigate={patch => { setRailOpen(false); onNavigate(patch) }} />
+            <Rail url={url} onNavigate={patch => { setRailOpen(false); onNavigate(patch) }} />
           </div>
         )}
         <div className={styles.content}>
           <main className={styles.main}>
-            {inner && <Breadcrumb crumbs={breadcrumb(url)} onNavigate={onNavigate} />}
+            {inner && <Breadcrumb url={url} crumbs={breadcrumb(url)} onNavigate={onNavigate} />}
             {children}
           </main>
           {framed && panel && <aside aria-label="Details" className={styles.panel}>{panel}</aside>}

@@ -1,6 +1,6 @@
 .shell { display: flex; flex-direction: column; height: 100dvh; background: var(--paper); color: var(--ink); font-size: var(--text-md); }
 .bar { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-4); border-bottom: var(--line); }
-.title { background: none; border: none; cursor: pointer; font-weight: 700; font-size: var(--text-md); letter-spacing: -.01em; }
+.title { color: inherit; text-decoration: none; font-weight: 700; font-size: var(--text-md); letter-spacing: -.01em; }
 .actions { margin-left: auto; display: flex; gap: var(--space-2); }
 .actions button, .menu { border: var(--line); border-radius: var(--radius-md); background: var(--card); padding: var(--space-1) var(--space-3); cursor: pointer; font-size: var(--text-sm); }
 .actions kbd { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--ink-muted); margin-left: var(--space-1); }
