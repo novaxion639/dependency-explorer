@@ -151,7 +151,7 @@ function enrichServices(services: unknown[]): unknown[] {
 
 function enrichConnections(conns: typeof connections): typeof connections {
   return conns.map(conn => {
-    const stamp = overlay.connections[`${conn.from}→${conn.to}`]
+    const stamp = overlay.connections[`${conn.from}→${conn.to}:${conn.protocol}`]
     if (!stamp) return conn
     return { ...conn, provenance: { source: 'discovered' as const, ...stamp } }
   })

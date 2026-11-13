@@ -339,7 +339,7 @@
     "svc-beta"
   ],
   "connectionEvidence": {
-    "svc-alpha→svc-beta": [
+    "svc-alpha→svc-beta:rest": [
       "package.json: @skelloapp/svc-beta-client (value import)",
       "package.json: @skelloapp/svc-beta-sdk (declared-only import)",
       "queue literal svcBetaJobs in src/queues/beta.ts"
@@ -364,6 +364,7 @@
     {
       "from": "svc-beta",
       "to": "svc-alpha",
+      "protocol": "rest",
       "sdkPackage": "@skelloapp/svc-alpha-client"
     }
   ],

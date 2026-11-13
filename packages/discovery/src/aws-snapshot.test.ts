@@ -3,6 +3,8 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { fetchAwsSnapshot } from './aws-snapshot'
+import { loadAwsSnapshot } from './extractors/aws-live'
+import { SnapshotFormatError } from './snapshot-dir'
 
 const EXPECTED_FILES = [
   'event-source-mappings.json',
@@ -109,6 +111,32 @@ describe('fetchAwsSnapshot', () => {
       { rule: 'nightly', schedule: 'cron(0 1 * * ? *)', state: 'ENABLED', targets: [], error: 'unreadable' },
     ])
     expect(JSON.parse(fs.readFileSync(path.join(outDir, 's3-notifications.json'), 'utf8'))).toEqual({})
+  })
+
+  it('leaves no folder behind when a call fails midway', () => {
+    const target = path.join(outDir, 'snapshot')
+    const expired = (args: string[]): unknown => {
+      if (args[1] === 'list-streams') {
+        throw new Error('ExpiredToken')
+      }
+      return run(args)
+    }
+
+    expect(() => fetchAwsSnapshot(expired, target)).toThrow('ExpiredToken')
+    expect(fs.existsSync(target)).toBe(false)
+  })
+
+  it('refuses to read a snapshot missing one of its files', () => {
+    fetchAwsSnapshot(run, outDir)
+    fs.rmSync(path.join(outDir, 'dms-tasks.json'))
+
+    expect(() => loadAwsSnapshot(outDir)).toThrow(SnapshotFormatError)
+  })
+
+  it('reads back the snapshot it wrote', () => {
+    fetchAwsSnapshot(run, outDir)
+
+    expect(loadAwsSnapshot(outDir).s3Notifications).toEqual({ 'bucket-b': { QueueConfigurations: [{ QueueArn: 'arn:aws:sqs:eu-west-3:1:q' }] } })
   })
 
   it('reports each step through onStep', () => {

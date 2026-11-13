@@ -197,7 +197,7 @@ What waits on each service's environment branches is a read-only overlay beside 
 
 | Field | Content |
 |---|---|
-| `generatedAt` | the run's time (ISO) |
+| `generatedAt` | the run's time, an ISO 8601 instant with its offset (every date of the file is one; another value fails the schema and the overlay is ignored) |
 | `services` | keyed by map service name (the repo name), for each clone with a prod branch |
 | `services[].prod` | `master` or `main` |
 | `services[].fetchedAt` | the clone's last fetch (mtime of `.git/FETCH_HEAD`), `null` when never fetched |

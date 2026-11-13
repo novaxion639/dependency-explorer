@@ -108,10 +108,10 @@ function printMarkdown(r: Report, unscanned: string[]) {
     r.candidates.map(c => `- **${c.from} → ${c.to}** (${c.transport}) — ${c.evidence}`))
 
   section('⚠️ Possibly stale — in map, no evidence in checked-out repo',
-    r.stale.map(s => `- ${s.from} → ${s.to} (\`${s.sdkPackage}\` not in package.json, no queue literal)`))
+    r.stale.map(s => `- ${s.from} → ${s.to} (${s.protocol}): \`${s.sdkPackage}\` not in package.json, no queue literal`))
 
   section('⏭ Unverifiable — in map, cannot be checked by current extractors',
-    r.unverifiable.map(u => `- ${u.from} → ${u.to} — ${u.reason}`))
+    r.unverifiable.map(u => `- ${u.from} → ${u.to} (${u.protocol}) — ${u.reason}`))
 
   section('🔌 Endpoint verification (dataset vs serverless config)',
     r.endpointChecks.map(c => {

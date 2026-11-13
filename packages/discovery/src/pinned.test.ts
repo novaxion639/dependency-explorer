@@ -67,6 +67,27 @@ describe('pinRepos', () => {
     expect(fs.existsSync(path.join(root, 'pinned', 'svc-a'))).toBe(false)
   })
 
+  it('keeps the user\'s other worktrees registered when a cleanup deletes the pinned folder by hand, and pins there again', () => {
+    const source = path.join(root, 'src', 'svc-a')
+    const elsewhere = path.join(root, 'elsewhere')
+    fs.mkdirSync(elsewhere)
+    const mine = path.join(fs.realpathSync(elsewhere), 'mine')
+    git(source, 'worktree', 'add', '-q', '--detach', mine)
+    fs.rmSync(mine, { recursive: true, force: true })
+    const stuck = (cwd: string, args: string[]) => {
+      if (args[0] === 'fetch' || (args[0] === 'worktree' && args[1] === 'remove')) {
+        throw new Error('fatal: cannot proceed')
+      }
+      return defaultGit(cwd, args)
+    }
+    pinRepos(['svc-a'], path.join(root, 'src'), path.join(root, 'pinned-stuck'))
+    pinRepos(['svc-a'], path.join(root, 'src'), path.join(root, 'pinned-stuck'), stuck)
+
+    expect(fs.existsSync(path.join(root, 'pinned-stuck', 'svc-a'))).toBe(false)
+    expect(git(source, 'worktree', 'list', '--porcelain')).toContain(mine)
+    expect(pinRepos(['svc-a'], path.join(root, 'src'), path.join(root, 'pinned-stuck')).skipped).toEqual([])
+  })
+
   it('pins to the local branch without fetching when fetchOrigin is false', () => {
     git(path.join(root, 'src', 'svc-a'), 'branch', '-f', 'master', 'origin/master')
     const calls: string[][] = []

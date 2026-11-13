@@ -33,6 +33,14 @@ it('keys connection-level drift by its edge', () => {
   expect(keys).toEqual(['stale||svc-a→svc-b|', 'unknownTargets||svc-a→svc-z|'])
 })
 
+it('keys stale and unverifiable drift by channel, so two channels of one pair stay apart', () => {
+  const keys = findingKeys({
+    stale: [{ from: 'svc-a', to: 'svc-b', protocol: 'rest', sdkPackage: '@skelloapp/b' }],
+    unverifiable: [{ from: 'svc-a', to: 'svc-b', protocol: 'cdc', reason: 'repo not checked out locally' }],
+  })
+  expect(keys).toEqual(['stale||svc-a→svc-b:rest|', 'unverifiable||svc-a→svc-b:cdc|'])
+})
+
 it('takes the first non-empty subject field', () => {
   const keys = findingKeys({ codeGrades: { findings: [{ flow: '', subject: 'svc-punch', kind: 'stale-graph', detail: 'graph stale' }] } })
   expect(keys).toEqual(['codeGrades|stale-graph|svc-punch|graph stale'])

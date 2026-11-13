@@ -31,7 +31,7 @@
     }
   },
   "connections": {
-    "svc-alpha→svc-beta": {
+    "svc-alpha→svc-beta:rest": {
       "lastVerified": "2026-11-02",
       "evidence": "package.json: @skelloapp/svc-beta-client (value import); package.json: @skelloapp/svc-beta-sdk (declared-only import); queue literal svcBetaJobs in src/queues/beta.ts"
     }

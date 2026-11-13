@@ -17,7 +17,8 @@ export function findingKeys(report: Record<string, unknown>): string[] {
   for (const [section, value] of Object.entries(report)) {
     if (EDGE_DRIFT_SECTIONS.includes(section) && Array.isArray(value)) {
       for (const e of value.filter(isRecord)) {
-        keys.add(`${section}||${String(e.from)}→${String(e.to ?? e.normalizedTarget)}|`)
+        const channel = typeof e.protocol === 'string' ? `:${e.protocol}` : ''
+        keys.add(`${section}||${String(e.from)}→${String(e.to ?? e.normalizedTarget)}${channel}|`)
       }
       continue
     }

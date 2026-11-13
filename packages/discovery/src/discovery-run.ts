@@ -8,6 +8,7 @@ import { extractTsRepo, extractRepoOwnership, type TsRepoFacts } from './extract
 import { extractRailsMonolith } from './extractors/rails'
 import { extractServerless, type ServerlessFacts } from './extractors/serverless'
 import { extractAwsClients, type AwsUsageFact, type AwsUsageKind } from './extractors/aws-clients'
+import { channelKey, stampKeyOf } from './connection-stamps'
 import { loadAwsSnapshot, analyzeAwsLive, type AwsLiveFindings } from './extractors/aws-live'
 import { joinDatadog, type DatadogJoin } from './extractors/datadog'
 import { readDatadogSnapshot } from './datadog/snapshot'
@@ -52,8 +53,8 @@ function scanTargets(base: string): string[] {
 
 interface Candidate { from: string; to: string; evidence: string; transport: string }
 interface UnknownTarget { from: string; evidence: string; normalizedTarget: string }
-interface Stale { from: string; to: string; sdkPackage: string }
-interface Unverifiable { from: string; to: string; reason: string }
+interface Stale { from: string; to: string; protocol: string; sdkPackage: string }
+interface Unverifiable { from: string; to: string; protocol: string; reason: string }
 interface EndpointCheck {
   service: string
   source: ServerlessFacts['source']
@@ -290,7 +291,10 @@ export function runDiscovery(options: DiscoveryOptions): Report {
   const addEvidence = (from: string, to: string, evidence: string, transport: string) => {
     const key = `${from}→${to}`
     if (connectionKeys.has(key)) {
-      ;(report.connectionEvidence[key] ??= []).push(evidence)
+      const stamp = stampKeyOf(connectivityMap.connections, from, to, transport)
+      if (stamp) {
+        ;(report.connectionEvidence[stamp] ??= []).push(evidence)
+      }
     } else {
       const existing = candidatesByKey.get(key)
       if (existing) {
@@ -642,26 +646,25 @@ export function runDiscovery(options: DiscoveryOptions): Report {
 
   // ── Reverse pass: every dataset connection needs evidence or an explanation ─
   for (const conn of connectivityMap.connections) {
-    const key = `${conn.from}→${conn.to}`
-    if (report.connectionEvidence[key]?.length) continue
+    if (report.connectionEvidence[channelKey(conn)]?.length) continue
 
     if (!fs.existsSync(path.join(repoBase, conn.from))) {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'repo not checked out locally' })
+      report.unverifiable.push({ from: conn.from, to: conn.to, protocol: conn.protocol, reason: 'repo not checked out locally' })
       continue
     }
     if (conn.from === 'skello-app') {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'no mapped Rails client or queue literal found (heuristic scan)' })
+      report.unverifiable.push({ from: conn.from, to: conn.to, protocol: conn.protocol, reason: 'no mapped Rails client or queue literal found (heuristic scan)' })
       continue
     }
     if (conn.from === 'skello-app-front') {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: 'no env URL or usage evidence found (frontend heuristic)' })
+      report.unverifiable.push({ from: conn.from, to: conn.to, protocol: conn.protocol, reason: 'no env URL or usage evidence found (frontend heuristic)' })
       continue
     }
     if (!conn.sdkPackage.startsWith('@skelloapp/')) {
-      report.unverifiable.push({ from: conn.from, to: conn.to, reason: `non-npm declaration (${conn.sdkPackage}), no queue evidence` })
+      report.unverifiable.push({ from: conn.from, to: conn.to, protocol: conn.protocol, reason: `non-npm declaration (${conn.sdkPackage}), no queue evidence` })
       continue
     }
-    report.stale.push({ from: conn.from, to: conn.to, sdkPackage: conn.sdkPackage })
+    report.stale.push({ from: conn.from, to: conn.to, protocol: conn.protocol, sdkPackage: conn.sdkPackage })
   }
 
   report.candidates = [...candidatesByKey.values()]

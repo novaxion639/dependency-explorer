@@ -246,6 +246,16 @@ describe('imported files', () => {
     const store = "import {\n  ENDPOINT_NAMESPACE,\n} from './api/shift';"
     expect(importedFiles(store, 'apps/vue-app/src/shared/store/modules/plannings/shifts.js', [], readRepo)).toEqual(['apps/vue-app/src/shared/store/modules/plannings/api/shift.js'])
   })
+
+  it('follows an ESM import written with .js to its .ts file', () => {
+    const esm = "import {SkelloRepository} from '../Repository/Skello/SkelloRepository.js';"
+    expect(importedFiles(esm, 'src/Manager/SkelloManager.ts', [], readRepo)).toEqual(['src/Repository/Skello/SkelloRepository.ts'])
+  })
+
+  it('still prefers a real .js file when one exists', () => {
+    const store = "import { ENDPOINT_NAMESPACE } from './api/shift.js';"
+    expect(importedFiles(store, 'apps/vue-app/src/shared/store/modules/plannings/shifts.js', [], readRepo)).toEqual(['apps/vue-app/src/shared/store/modules/plannings/api/shift.js'])
+  })
 })
 
 describe('parseInjections precision', () => {

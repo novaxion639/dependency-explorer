@@ -1,5 +1,22 @@
-import * as fs from 'node:fs'
-import * as path from 'node:path'
+import { z } from 'zod'
+import { snapshotFolder } from './snapshot-dir'
+
+export const awsSnapshotFolder = snapshotFolder({
+  schema: z.object({
+    'event-source-mappings': z.unknown(),
+    'sqs-queues': z.unknown(),
+    'sns-topics': z.unknown(),
+    'dms-tasks': z.unknown(),
+    'dynamo-tables': z.unknown(),
+    'kinesis-streams': z.unknown(),
+    's3-buckets': z.unknown(),
+    'sns-sub-attributes': z.unknown(),
+    'eventbridge-targets': z.unknown(),
+    's3-notifications': z.unknown(),
+  }),
+  label: 'AWS',
+  fetchScript: 'discover:aws:fetch --profile <profile>',
+})
 
 export type AwsRunner = (args: string[]) => unknown
 
@@ -17,10 +34,10 @@ const asList = (value: unknown): unknown[] => (Array.isArray(value) ? value : []
 const lastSegment = (arn: unknown): string => String(arn).split(':').pop() ?? ''
 
 export function fetchAwsSnapshot(run: AwsRunner, outDir: string, onStep: (label: string) => void = () => {}): { files: string[] } {
-  fs.mkdirSync(outDir, { recursive: true })
   const files: string[] = []
+  const snapshot: Record<string, unknown> = {}
   const write = (file: string, data: unknown): void => {
-    fs.writeFileSync(path.join(outDir, file), JSON.stringify(data, null, 1))
+    snapshot[file.replace(/\.json$/, '')] = data
     files.push(file)
   }
   const step = (label: string, fn: () => void): void => {
@@ -71,7 +88,7 @@ export function fetchAwsSnapshot(run: AwsRunner, outDir: string, onStep: (label:
   })
 
   step('s3 bucket notifications', () => {
-    const buckets = asList(JSON.parse(fs.readFileSync(path.join(outDir, 's3-buckets.json'), 'utf8')))
+    const buckets = asList(snapshot['s3-buckets'])
     const out: Json = {}
     for (const bucket of buckets) {
       try {
@@ -86,5 +103,6 @@ export function fetchAwsSnapshot(run: AwsRunner, outDir: string, onStep: (label:
     write('s3-notifications.json', out)
   })
 
+  awsSnapshotFolder.write(outDir, snapshot)
   return { files }
 }

@@ -35,6 +35,7 @@
   - ⚙ state machines: each authored machine against its Step Functions definition — states, types, transitions, catches, concurrency, task handler files, and states in code the flow does not declare (see [flows.md](flows.md#state-machines)).
 - **Live AWS state** (Layer 4), compared with the map: a read-only account snapshot of event source mappings, subscriptions and filter policies, DMS tasks, bucket notifications and schedules.
   - Snapshots are gitignored.
+  - A snapshot is written whole or not at all: a fetch that fails midway leaves no folder, and a folder missing a file stops the run with a `SnapshotFormatError` instead of reading as an empty account.
   - Sandbox account only, per the credentials story (`research/aws-live-verification-credentials.md` in the shared docs).
 - **Datadog state** (🐶 report section): a read-only snapshot of monitors, SLOs, teams, open incidents, request and error series, DLQ depth and monitor transitions, joined to the map by service name. It feeds the web app's [Health section](explorer.md#health) and is described in [Datadog snapshot and overlay](#datadog-snapshot-and-overlay).
 - **Jira bug reports** (🎫 report section): a read-only snapshot of the `BR` project's bugs, Feature Area values and boards, joined to the map through the authored [Feature Area map](data.md#feature-areas) and the teams' `jiraBoards`. It feeds the [Bugs section](explorer.md#bugs) and is described in [Jira snapshot and overlay](#jira-snapshot-and-overlay).
@@ -67,6 +68,10 @@ pnpm docs:gen                 # rewrite the generated sections of the inventory 
 
 `--pinned` runs fail when they pin no repo — run discovery from the main clone; a `.claude/worktrees` checkout finds no sibling repos.
 
+Pinning touches only `.pinned/<repo>` in each clone: it adds or re-checks-out that detached worktree, and a failed pin removes it again. It never prunes the clone's other worktrees.
+
+**Connection stamps.** A connection is stamped per channel, keyed `from→to:protocol` in `discovered.json`. Evidence stamps the channel whose protocol it proves: a stream consumer or a DMS task proves `cdc` (or `kinesis`), an SDK import or an HTTP client `rest`, a queue literal `sqs`, a bucket notification `s3`. A pair mapped under one protocol takes any evidence for it; a pair mapped under several leaves a channel without matching evidence unstamped, and the report lists it as stale or unverifiable with its protocol. The baseline keys that drift by channel too (`stale||svc-hiring→skello-app:rest|`), so losing one channel's evidence never hides behind the other's.
+
 ## Datadog snapshot and overlay
 
 Two commands, run in order from the main clone, turn Datadog state into the web app's Health section. Nothing Datadog returns is committed or shipped: snapshots and the overlay are gitignored, and the built bundle never contains them ([ADR-0010](../adr/0010-datadog-overlay-from-a-local-snapshot.md)).
@@ -97,7 +102,7 @@ flowchart LR
 - A snapshot file that is missing, unreadable or off the current snapshot format stops the run with exit code 1 before any report prints, naming the file; re-run `pnpm discover:datadog:fetch`.
 - Incident links open the incident by its public number in Datadog.
 
-**Release verdicts.** Releases come from the local clones: merge commits on each service's production branch over the last 14 days, or on `HEAD` of the pinned worktree when the run is `--pinned`. A service with no checkout under the repo base is skipped with `releases of <service> skipped: no checkout`. Each merge is judged against the 72 hours after it, compared with the same hours a week earlier:
+**Release verdicts.** Releases come from the local clones: merge commits on each service's production branch as `origin` holds it (`origin/master`, the ref the Delivery line reads) over the last 14 days, or on `HEAD` of the pinned worktree when the run is `--pinned`. A service with no checkout under the repo base is skipped with `releases of <service> skipped: no checkout`. Each merge is judged against the 72 hours after it, compared with the same hours a week earlier:
 - `Regressed`: 5xx, Lambda errors or p95 latency rose past the bars below, and the merge has a full week of baseline inside the snapshot window (an earlier merge is never `Regressed`);
 - `Steady`: no rise;
 - `Too recent`: the merge is under 72 hours old.
