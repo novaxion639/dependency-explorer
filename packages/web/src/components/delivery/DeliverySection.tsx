@@ -1,4 +1,5 @@
 import type { DatadogOverlay, DeliveryOverlay } from '@dependency-explorer/data'
+import { shortDay } from '../../utils/shortDay'
 import styles from './DeliverySection.module.css'
 
 type Verdict = DatadogOverlay['services'][string]['releases'][number]['verdict']
@@ -11,8 +12,6 @@ interface Props {
 
 const MAX_TITLE = 48
 const VERDICT_LABEL: Record<Verdict, string> = { regressed: 'Regressed', steady: 'Steady', tooRecent: 'Too recent' }
-const dayMonth = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'Europe/Paris' })
-const shortDay = (iso: string) => dayMonth.format(new Date(iso))
 const cut = (title: string) => (title.length > MAX_TITLE ? `${title.slice(0, MAX_TITLE - 1)}…` : title)
 
 function StepItem({ step }: { step: Step }) {
