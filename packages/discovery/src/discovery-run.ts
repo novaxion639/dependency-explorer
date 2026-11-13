@@ -15,6 +15,7 @@ import { overlayOf } from './datadog/overlay'
 import { joinJira, type JiraJoin } from './extractors/jira'
 import { buildJiraOverlay } from './jira/overlay'
 import { readJiraSnapshot } from './jira/snapshot'
+import { buildDeliveryOverlay, type DeliveryReport } from './delivery/overlay'
 import { extractTerraform, type TerraformFacts } from './extractors/terraform'
 import { extractRailsRoutes, type RailsRoute } from './extractors/rails-routes'
 import { extractFrontend } from './extractors/frontend'
@@ -130,6 +131,7 @@ export interface Report {
   awsLive: AwsLiveFindings | null
   datadog: { join: DatadogJoin; overlay: DatadogOverlay } | null
   jira: { join: JiraJoin; overlay: JiraOverlay } | null
+  delivery: DeliveryReport | null
 }
 
 export interface Dataset {
@@ -148,6 +150,7 @@ export interface DiscoveryOptions {
   awsSnapshotDir?: string
   datadogSnapshotDir?: string
   jiraSnapshotDir?: string
+  delivery?: boolean
 }
 
 export const OUTPUT_FILES = ['discovered.json', 'monolith-routes.json', 'resources.json', 'listeners.json'] as const
@@ -272,6 +275,13 @@ export function runDiscovery(options: DiscoveryOptions): Report {
     awsLive: null,
     datadog: options.datadogSnapshotDir ? datadogOf(options.datadogSnapshotDir, dataset, repoBase, pin !== null) : null,
     jira: options.jiraSnapshotDir ? jiraOf(options.jiraSnapshotDir, dataset.map) : null,
+    delivery: options.delivery
+      ? buildDeliveryOverlay(
+        repos.filter(repo => serviceNames.has(repo)).map(repo => ({ service: repo, dir: path.join(sourceBase, repo) })),
+        options.now ?? new Date(),
+        pin !== null && options.fetchOrigin !== false,
+      )
+      : null,
   }
 
   const allSlugs = new Set<string>()

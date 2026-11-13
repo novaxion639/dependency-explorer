@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { DatadogOverlaySchema, JiraOverlaySchema, TeamSchema, type DatadogOverlay, type JiraOverlay } from '@dependency-explorer/schema'
+import { DatadogOverlaySchema, DeliveryOverlaySchema, JiraOverlaySchema, TeamSchema, type DatadogOverlay, type DeliveryOverlay, type JiraOverlay } from '@dependency-explorer/schema'
 
 const service: DatadogOverlay['services'][string] = {
   state: 'problem',
@@ -61,5 +61,30 @@ describe('JiraOverlaySchema', () => {
   it('rejects a Jira overlay whose weekly has 12 weeks', () => {
     const short = { ...jiraOverlay, areas: { planning: { ...jiraOverlay.areas.planning, weekly: Array.from({ length: 12 }, () => 0) } } }
     expect(JiraOverlaySchema.safeParse(short).success).toBe(false)
+  })
+})
+
+const deliveryOverlay: DeliveryOverlay = {
+  generatedAt: '2026-11-12T09:00:00Z',
+  services: {
+    'svc-search': {
+      prod: 'master',
+      fetchedAt: '2026-11-12T08:59:00Z',
+      steps: [{ branch: 'staging', count: 2, oldest: { sha: 'a1b2c3d', title: 'feat: search by tag', mergedAt: '2026-11-10T10:00:00+01:00', workingDays: 2 } }],
+      late: false,
+      lastRelease: { sha: 'e4f5a6b', title: 'chore(master): release v1.31.0', version: 'v1.31.0', mergedAt: '2026-11-09T15:00:00+01:00' },
+    },
+  },
+}
+
+describe('DeliveryOverlaySchema', () => {
+  it('parses a valid delivery overlay', () => {
+    expect(DeliveryOverlaySchema.parse(deliveryOverlay)).toEqual(deliveryOverlay)
+  })
+
+  it('rejects a step on sandbox', () => {
+    const service = deliveryOverlay.services['svc-search']
+    const sandbox = { ...deliveryOverlay, services: { 'svc-search': { ...service, steps: service.steps.map((step) => ({ ...step, branch: 'sandbox' })) } } }
+    expect(DeliveryOverlaySchema.safeParse(sandbox).success).toBe(false)
   })
 })

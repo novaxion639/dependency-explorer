@@ -19,6 +19,7 @@ const NOT_COVERED: Partial<Record<keyof Report, string>> = {
   machineCheck: 'needs a Step Functions definition, its handlers and a src/container.ts wiring in a service repo',
   datadog: 'runs only with datadogSnapshotDir',
   jira: 'runs only with jiraSnapshotDir',
+  delivery: 'runs only with delivery: true',
 }
 
 const isBlank = (value: unknown): boolean =>

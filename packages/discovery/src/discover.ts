@@ -23,7 +23,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
-import { DatadogOverlaySchema, JiraOverlaySchema, ListenerSurfaceSchema } from '@dependency-explorer/schema'
+import { DatadogOverlaySchema, DeliveryOverlaySchema, JiraOverlaySchema, ListenerSurfaceSchema } from '@dependency-explorer/schema'
 import { IGNORED_SDKS } from './mapping'
 import { applyModeError } from './pinned'
 import { machineSection } from './state-machines-report'
@@ -31,6 +31,7 @@ import { listenerSection } from './listeners-report'
 import { datadogSection } from './extractors/datadog'
 import { reportJson } from './report-json'
 import { jiraSection } from './extractors/jira'
+import { deliverySection } from './delivery/overlay'
 import { findingKeys, diffBaseline, readBaseline, readBaselineRepos, unscannedRepos, writeBaseline } from './baseline'
 import { latestSnapshotDir, resolveSnapshotArg, SnapshotFormatError } from './snapshot-dir'
 import { runDiscovery, writeOutputs, PinError, type Dataset, type DiscoveryOptions, type Report } from './discovery-run'
@@ -74,6 +75,7 @@ const JIRA_SNAPSHOT_DIR = resolveSnapshotDir('--jira', '.jira-snapshots', 'disco
 const OUT_DIR = path.resolve(__dirname, '../../data/src/generated')
 const OVERLAY_PATH = path.resolve(__dirname, '../../web/overlay/datadog.json')
 const JIRA_OVERLAY_PATH = path.resolve(__dirname, '../../web/overlay/jira.json')
+const DELIVERY_OVERLAY_PATH = path.resolve(__dirname, '../../web/overlay/delivery.json')
 const LISTENERS_PATH = path.join(OUT_DIR, 'listeners.json')
 const REPO_BASE = PINNED_MODE ? PINNED_BASE : SOURCE_BASE
 const NOW = process.env.DE_FIXED_NOW ? new Date(process.env.DE_FIXED_NOW) : new Date()
@@ -244,6 +246,10 @@ function printMarkdown(r: Report, unscanned: string[]) {
   const jira = jiraSection(r.jira?.join ?? null)
   if (jira) {
     console.log(jira)
+  }
+  const delivery = deliverySection(r.delivery)
+  if (delivery) {
+    console.log(delivery)
   }
 
   section('🖥 Frontend service usage',
@@ -514,6 +520,7 @@ const options: DiscoveryOptions = {
   awsSnapshotDir: AWS_SNAPSHOT_DIR ?? undefined,
   datadogSnapshotDir: DATADOG_SNAPSHOT_DIR ?? undefined,
   jiraSnapshotDir: JIRA_SNAPSHOT_DIR ?? undefined,
+  delivery: process.argv.includes('--delivery'),
 }
 
 function discover(): Report {
@@ -549,6 +556,11 @@ if (report.jira) {
   fs.mkdirSync(path.dirname(JIRA_OVERLAY_PATH), { recursive: true })
   fs.writeFileSync(JIRA_OVERLAY_PATH, JSON.stringify(JiraOverlaySchema.parse(report.jira.overlay), null, 1))
   console.error(`Jira overlay written: ${path.relative(process.cwd(), JIRA_OVERLAY_PATH)}`)
+}
+if (report.delivery) {
+  fs.mkdirSync(path.dirname(DELIVERY_OVERLAY_PATH), { recursive: true })
+  fs.writeFileSync(DELIVERY_OVERLAY_PATH, JSON.stringify(DeliveryOverlaySchema.parse(report.delivery.overlay), null, 1))
+  console.error(`Delivery overlay written: ${path.relative(process.cwd(), DELIVERY_OVERLAY_PATH)}`)
 }
 if (APPLY_MODE) {
   writeOutputs(report, { outDir: OUT_DIR, repoBase: REPO_BASE, now: NOW })

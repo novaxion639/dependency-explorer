@@ -21,6 +21,7 @@ const render = async (qs: string, fetchImpl: typeof fetch) => {
 }
 
 const health = (host: HTMLElement) => byRole(host, 'region', 'Health')
+const datadogOnly = () => vi.fn<typeof fetch>(async (input) => (String(input).endsWith('/datadog.json') ? new Response(JSON.stringify(overlayOf())) : new Response(null, { status: 404 })))
 
 afterEach(async () => {
   await act(async () => roots.splice(0).forEach(r => r.unmount()))
@@ -34,16 +35,16 @@ describe('Service view health', () => {
     const fetchImpl = vi.fn<typeof fetch>(async () => new Response(null, { status: 404 }))
     const host = await render('?page=microservices&s=svc-punch&renderer=svg', fetchImpl)
     expect(health(host)).toBeNull()
-    expect(fetchImpl).toHaveBeenCalledTimes(1)
+    expect(fetchImpl.mock.calls.map(([input]) => String(input).split('/').at(-1))).toEqual(['datadog.json', 'delivery.json'])
     expect(error).not.toHaveBeenCalled()
   })
   it('renders the Health section when the overlay names the service', async () => {
-    const host = await render('?page=microservices&s=svc-punch&renderer=svg', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(overlayOf()))))
+    const host = await render('?page=microservices&s=svc-punch&renderer=svg', datadogOnly())
     expect(health(host)?.textContent).toContain('Problem now')
     expect(health(host)?.textContent).toContain('Datadog snapshot of 2026-11-02')
   })
   it('renders no Health section for a service the overlay does not name', async () => {
-    const host = await render('?page=microservices&s=svc-users&renderer=svg', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(overlayOf()))))
+    const host = await render('?page=microservices&s=svc-users&renderer=svg', datadogOnly())
     expect(health(host)).toBeNull()
   })
 })

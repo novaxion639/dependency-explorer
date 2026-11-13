@@ -78,6 +78,18 @@ Any of the 37 services, including the three client apps: the Vue web front, skel
 
 Discovered recurring tasks (⏰ EventBridge schedules) show with the endpoint list.
 
+### Delivery
+
+With a delivery overlay present, the Exploring view of a service shows a Delivery section under the diagram and above Health (Presenting hides it). It reads one line, upstream to prod:
+
+- the changes waiting on `staging`: the count, the oldest change's title (cut with an ellipsis past 48 characters, whole in its tooltip and accessible name) and its age in working days, a 0 dimmed;
+- "Nothing on its way to prod" when no branch holds one;
+- the last release, `in prod v1.31.0 · 9 Nov`, with its verdict (Regressed, Steady, Too recent) when the Datadog overlay holds that release's sha; "No release in prod" without one.
+
+A "Late for prod" chip follows the heading when the oldest waiting change has waited 3 working days or more; its rule is in its tooltip and, for screen readers, in its text. The footer reads "Branches as of <day>" from the clone's last fetch, or "Branches never fetched by discovery". The rules are in [discovery.md](discovery.md#delivery-line).
+
+**No overlay.** Without `packages/web/overlay/delivery.json`, when it fails `DeliveryOverlaySchema`, or for a service it does not name, the view shows no Delivery section.
+
 ### Health
 
 With a Datadog overlay present, the Exploring view of a service shows a Health section under the diagram (Presenting hides it). It reads, from top to bottom:
