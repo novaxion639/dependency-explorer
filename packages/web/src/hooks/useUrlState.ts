@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { WriteEvent } from '@dependency-explorer/data'
+import { WRITE_EVENTS, type WriteEvent } from '@dependency-explorer/data'
+import { MONOLITH } from '../diagram/layouts/ids'
 import type { Renderer } from '../diagram/model'
 
 /**
@@ -31,9 +32,7 @@ import type { Renderer } from '../diagram/model'
 export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | 'resources' | 'impact' | 'ownership'
 
 const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
-const RENDERERS: readonly Renderer[] = ['react-flow', 'svg', 'mermaid']
-const WRITE_EVENT_PARAMS: readonly WriteEvent[] = ['create', 'update', 'destroy']
-const MONOLITH = 'skello-app'
+const RENDERERS: readonly Renderer[] = ['react-flow', 'svg']
 const LEGACY_VIEW_PAGE: Record<string, Page> = { areas: 'areas', domains: 'areas', context: 'microservices', services: 'microservices', resources: 'resources', teams: 'ownership' }
 
 export interface UrlState {
@@ -60,6 +59,11 @@ export interface UrlState {
   lev: string | null
   lkind: string | null
   lgrade: string | null
+  rkind: string | null
+  rowner: string | null
+  rsort: string | null
+  orphans: boolean
+  cycles: boolean
   /** A permalink param that did not resolve — rendered as a banner, never serialized */
   notFound: { param: 'area' | 'term' | 'flow' | 's' | 'resource' | 'blast'; value: string } | null
 }
@@ -73,7 +77,7 @@ export function edgeKey(from: string, to: string, protocol: string): string {
   return [from, to, protocol].join(EDGE_SEP)
 }
 
-export function servicePage(name: string): Page {
+function servicePage(name: string): Page {
   return name === MONOLITH ? 'monolith' : 'microservices'
 }
 
@@ -126,18 +130,23 @@ export function parseUrl(search: string): UrlState {
     flag: p.get('flag'),
     file: p.get('file'),
     resource: p.get('resource'),
-    event: WRITE_EVENT_PARAMS.find(e => e === p.get('event')) ?? null,
+    event: WRITE_EVENTS.find(e => e === p.get('event')) ?? null,
     listener: p.get('listener'),
     lev: p.get('lev'),
     lkind: p.get('lkind'),
     lgrade: p.get('lgrade'),
+    rkind: p.get('rkind'),
+    rowner: p.get('rowner'),
+    rsort: p.get('rsort'),
+    orphans: p.get('orphans') === '1',
+    cycles: p.get('cycles') === '1',
     notFound: null,
   }
 }
 
-type PageKey = 's' | 'area' | 'term' | 'team' | 'blast' | 'flows' | 'flow' | 'unit' | 'chapter' | 'edge' | 'drawer' | 'ep' | 'flag' | 'file' | 'resource' | 'event' | 'listener' | 'lev' | 'lkind' | 'lgrade'
+type PageKey = 's' | 'area' | 'term' | 'team' | 'blast' | 'flows' | 'flow' | 'unit' | 'chapter' | 'edge' | 'drawer' | 'ep' | 'flag' | 'file' | 'resource' | 'event' | 'listener' | 'lev' | 'lkind' | 'lgrade' | 'rkind' | 'rowner' | 'rsort' | 'orphans' | 'cycles'
 
-const KEY_ORDER: readonly PageKey[] = ['s', 'area', 'term', 'team', 'blast', 'flows', 'flow', 'unit', 'chapter', 'edge', 'drawer', 'ep', 'flag', 'file', 'resource', 'event', 'listener', 'lev', 'lkind', 'lgrade']
+const KEY_ORDER: readonly PageKey[] = ['s', 'area', 'term', 'team', 'blast', 'flows', 'flow', 'unit', 'chapter', 'edge', 'drawer', 'ep', 'flag', 'file', 'resource', 'event', 'listener', 'lev', 'lkind', 'lgrade', 'rkind', 'rowner', 'rsort', 'orphans', 'cycles']
 const ARCHITECTURE_KEYS: readonly PageKey[] = ['s', 'area', 'edge', 'drawer', 'ep']
 const PAGE_KEYS: Record<Page, readonly PageKey[]> = {
   home: [],
@@ -145,7 +154,7 @@ const PAGE_KEYS: Record<Page, readonly PageKey[]> = {
   microservices: ARCHITECTURE_KEYS,
   monolith: ARCHITECTURE_KEYS,
   flows: ['flows', 'flow', 'unit', 'chapter', 'flag', 'file', 'drawer', 'ep'],
-  resources: ['resource', 'event', 'listener', 'lev', 'lkind', 'lgrade'],
+  resources: ['resource', 'event', 'listener', 'lev', 'lkind', 'lgrade', 'rkind', 'rowner', 'rsort', 'orphans', 'cycles'],
   impact: ['blast'],
   ownership: ['team'],
 }
@@ -160,8 +169,8 @@ export function toQueryString(state: UrlState): string {
   for (const key of KEY_ORDER) {
     const value = state[key]
     const parent = PARENT_KEY[key]
-    if (value !== null && allowed.has(key) && (!parent || state[parent] !== null)) {
-      p.set(key, String(value))
+    if (value !== null && value !== false && allowed.has(key) && (!parent || state[parent] !== null)) {
+      p.set(key, value === true ? '1' : String(value))
     }
   }
   if (state.renderer !== 'react-flow') {
@@ -174,7 +183,7 @@ export function toQueryString(state: UrlState): string {
 }
 
 export function pagePatch(page: Page): Partial<UrlState> {
-  return { page, s: null, area: null, term: null, team: null, blast: null, flows: null, flow: null, unit: null, chapter: null, edge: null, drawer: null, ep: null, flag: null, file: null, resource: null, event: null, listener: null, lev: null, lkind: null, lgrade: null }
+  return { page, s: null, area: null, term: null, team: null, blast: null, flows: null, flow: null, unit: null, chapter: null, edge: null, drawer: null, ep: null, flag: null, file: null, resource: null, event: null, listener: null, lev: null, lkind: null, lgrade: null, rkind: null, rowner: null, rsort: null, orphans: false, cycles: false }
 }
 
 export function selectServicePatch(name: string): Partial<UrlState> {
@@ -191,7 +200,8 @@ export function isNavigation(prev: UrlState, p: Partial<UrlState>): boolean {
 
 function forgetOtherPages(next: UrlState): UrlState {
   const kept = new Set(PAGE_KEYS[next.page])
-  return KEY_ORDER.reduce<UrlState>((st, key) => (kept.has(key) ? st : { ...st, [key]: null }), next)
+  const blank = pagePatch(next.page)
+  return KEY_ORDER.reduce<UrlState>((st, key) => (kept.has(key) ? st : { ...st, [key]: blank[key] ?? null }), next)
 }
 
 type HistoryWriter = Pick<History, 'pushState' | 'replaceState'> & { state?: unknown }

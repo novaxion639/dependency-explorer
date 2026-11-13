@@ -17,11 +17,11 @@ describe('Diagram renderer radios', () => {
     const root = createRoot(host)
     await act(async () => root.render(<Diagram model={model} focus={NO_FOCUS} renderer="svg" onRenderer={r => picked.push(r)} onSelect={() => {}} filename="m" />))
     const radios = [...host.querySelectorAll('[role="radio"]')]
-    expect(radios.map(r => r.getAttribute('tabindex'))).toEqual(['-1', '0', '-1'])
+    expect(radios.map(r => r.getAttribute('tabindex'))).toEqual(['-1', '0'])
     const group = host.querySelector('[role="radiogroup"]')
     await act(async () => group?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })))
     await act(async () => group?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })))
-    expect(picked).toEqual(['mermaid', 'react-flow'])
+    expect(picked).toEqual(['react-flow', 'react-flow'])
     root.unmount()
   })
 })

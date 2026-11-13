@@ -1,7 +1,10 @@
 {
+  "includeEntryExports": true,
   "workspaces": {
     "packages/*": {
-      "project": ["src/**/*.{ts,tsx}"]
+      "project": [
+        "src/**/*.{ts,tsx}"
+      ]
     }
   }
 }

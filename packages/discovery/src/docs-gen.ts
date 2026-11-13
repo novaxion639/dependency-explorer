@@ -21,7 +21,7 @@ export function renderFlowInventorySection(map: ConnectivityMap): string {
   const byArea = new Map<string, string[]>(productAreas.map(a => [a.id, []]))
   const platformOwned: string[] = []
   for (const flow of map.flows) {
-    const bucket = byArea.get(flow.primaryArea ?? '')
+    const bucket = byArea.get(flow.primaryArea)
     if (bucket) {
       bucket.push(flow.id)
     } else {

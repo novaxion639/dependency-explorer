@@ -3,6 +3,7 @@ import { escapeRegExp } from './code-wiring'
 import * as path from 'node:path'
 import type { ExternalSystem, ProductArea } from '@dependency-explorer/schema'
 import { areasForFile, globToRegExp } from '@dependency-explorer/data'
+import { walkTree } from './walk'
 
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', 'tmp', 'coverage', 'graphify-out', 'vendor', '.serverless', 'ios', 'android', 'log', 'public', '.venv', 'venv', 'site-packages', '__pycache__'])
 const CODE_FILE = /\.(rb|ts|tsx|js|jsx|mjs|vue|py)$/
@@ -36,21 +37,8 @@ export interface AreaCheckResult {
   skippedRepos: string[]
 }
 
-function listRepoFiles(repoDir: string): string[] {
-  const out: string[] = []
-  const walk = (rel: string) => {
-    for (const entry of fs.readdirSync(path.join(repoDir, rel), { withFileTypes: true })) {
-      const p = rel ? `${rel}/${entry.name}` : entry.name
-      if (entry.isDirectory() && !SKIP_DIRS.has(entry.name)) {
-        walk(p)
-      } else if (entry.isFile()) {
-        out.push(p)
-      }
-    }
-  }
-  walk('')
-  return out
-}
+const listRepoFiles = (repoDir: string): string[] =>
+  walkTree(repoDir, e => e.isDirectory() && SKIP_DIRS.has(e.name), e => e.isFile()).map(f => path.relative(repoDir, f))
 
 
 function symbolPattern(symbol: string): RegExp {

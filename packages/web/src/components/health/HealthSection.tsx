@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { DatadogOverlay } from '@dependency-explorer/data'
+import { shortDay } from '../../utils/shortDay'
 import { isStaleSnapshot } from '../../utils/staleSnapshot'
 import { Sparkline } from '../Sparkline'
 import styles from './HealthSection.module.css'
@@ -88,7 +89,7 @@ export function HealthSection({ health, snapshotDate, eventsCapped, now }: Props
       <List title="Releases" items={health.releases}>
         {r => (
           <li key={r.sha}>
-            <span className={`${styles.verdict} ${styles[r.verdict]}`}>{VERDICT_LABEL[r.verdict]}</span> {r.title} <span className={styles.muted}>{r.mergedAt.slice(0, 10)} · {r.sha.slice(0, 7)}</span>
+            <span className={`${styles.verdict} ${styles[r.verdict]}`}>{VERDICT_LABEL[r.verdict]}</span> {r.title} <span className={styles.muted}>{shortDay(r.mergedAt)} · {r.sha.slice(0, 7)}</span>
           </li>
         )}
       </List>

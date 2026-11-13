@@ -112,7 +112,7 @@ describe('checkCodeGrades', () => {
     ],
     connections: [],
     flows: [{
-      id: 'f', name: 'F', description: 'd', steps: [],
+      id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [
         { id: 'c', service: 'skello-app', kind: 'controller', label: 'ShiftsController', path: 'app/controllers/shifts_controller.rb' },
         { id: 'm', service: 'skello-app', kind: 'model-callback', label: 'Shift', path: 'app/models/shift.rb' },
@@ -178,7 +178,7 @@ describe('checkCodeGrades with container wiring', () => {
     services: [{ name: 'svc-x', type: 'typescript-microservice', description: 'd', endpoints: [] }],
     connections: [],
     flows: [{
-      id: 'f', name: 'F', description: 'd', steps: [],
+      id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [
         { id: 'd', service: 'svc-x', kind: 'manager', label: 'DocumentManager', path: 'src/Manager/DocumentManager.ts' },
         { id: 'b', service: 'svc-x', kind: 'service', label: 'BedrockLlmProvider', path: 'src/Client/Llm/BedrockLlmProvider.ts' },
@@ -214,7 +214,7 @@ describe('checkCodeGrades across repos through monolith routes', () => {
     ],
     connections: [],
     flows: [{
-      id: 'f', name: 'F', description: 'd', steps: [],
+      id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [
         { id: 'store', service: 'front', kind: 'service', label: 'shifts store', path: 'src/store/shifts.js' },
         { id: 'shifts', service: 'skello-app', kind: 'controller', label: 'ShiftsController', path: SHIFTS },
@@ -265,7 +265,7 @@ describe('checkCodeGrades through Vue-router route names', () => {
     services: [{ name: 'front', type: 'vue-frontend', description: 'd', endpoints: [] }],
     connections: [],
     flows: [{
-      id: 'f', name: 'F', description: 'd', steps: [],
+      id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [
         { id: 'app', service: 'front', kind: 'component', label: 'App', path: 'apps/vue-app/src/App.vue' },
         { id: 'onb', service: 'front', kind: 'component', label: 'AdminOnboarding', path: 'apps/vue-app/src/admin_onboarding/AdminOnboarding.vue' },

@@ -4,13 +4,12 @@ import styles from './flows.module.css'
 
 interface Props {
   chapters: FlowChapter[]
-  authored: boolean
   current: number | null
   onSelect: (chapter: number) => void
   children: ReactNode
 }
 
-export function FlowStory({ chapters, authored, current, onSelect, children }: Props) {
+export function FlowStory({ chapters, current, onSelect, children }: Props) {
   const list = useRef<HTMLOListElement>(null)
   useEffect(() => {
     list.current?.querySelector('[aria-current="step"]')?.scrollIntoView({ block: 'nearest' })
@@ -29,7 +28,6 @@ export function FlowStory({ chapters, authored, current, onSelect, children }: P
             </li>
           ))}
         </ol>
-        {!authored && <p className={styles.note}>Chapters derived from the steps — none authored for this flow yet.</p>}
         <p className={styles.note}>← → step through the chapters</p>
       </div>
       <div className={styles.storyDiagram}>{children}</div>

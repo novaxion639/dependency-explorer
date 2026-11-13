@@ -13,7 +13,7 @@ function regexFor(glob: string): RegExp {
   return re
 }
 
-export function locationMatches(loc: CodeLocation, repo: string, filePath: string): boolean {
+function locationMatches(loc: CodeLocation, repo: string, filePath: string): boolean {
   return loc.repo === repo && loc.globs.some(g => regexFor(g).test(filePath))
 }
 

@@ -8,7 +8,7 @@ const svc = (name: string) => ({ name, type: 'typescript-microservice', descript
 const map = ConnectivityMapSchema.parse({
   services: ['front', 'api', 'worker', 'mailer', 'db-owner'].map(svc),
   connections: [conn('front', 'api', 'sync'), conn('api', 'worker', 'async'), conn('worker', 'mailer', 'async'), conn('api', 'db-owner', 'sync')],
-  flows: [{ id: 'f', name: 'F', description: 'd', steps: [{ from: 'front', to: 'api', action: 'POST /x' }, { from: 'api', to: 'worker', action: 'enqueue' }] }],
+  flows: [{ id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [{ from: 'front', to: 'api', action: 'POST /x' }, { from: 'api', to: 'worker', action: 'enqueue' }] }],
 })
 
 describe('computeImpact', () => {

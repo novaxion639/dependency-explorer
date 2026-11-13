@@ -2,9 +2,8 @@ import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy'
 import { areasForFile, type ConnectivityMap, type MonolithRoute, type Resource } from '@dependency-explorer/data'
 import { fitLabel, LINE_HEIGHT, PAD_Y } from '../geometry'
 import type { DiagramModel, DiagramNode, DiagramRef, NodeKind } from '../model'
-import { areaId } from './ids'
+import { areaId, MONOLITH } from './ids'
 
-export const MONOLITH = 'skello-app'
 const WIDTH = 1280
 const HEIGHT = 760
 const FONT = 14

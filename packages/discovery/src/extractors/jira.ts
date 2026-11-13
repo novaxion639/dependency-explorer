@@ -8,6 +8,7 @@ type JiraFinding =
   | { kind: 'unknown-board'; teamId: string; board: number; fix: string }
   | { kind: 'board-suggestion'; teamId: string; board: number; boardName: string; fix: string }
   | { kind: 'unlisted-label'; label: string; fix: string }
+  | { kind: 'labels-capped'; fix: string }
 
 export interface JiraJoin {
   areaOfBug: Map<string, string | null>
@@ -30,9 +31,11 @@ function labelFindings(snapshot: JiraSnapshot, map: ConnectivityMap): JiraFindin
     ...sortedUnique([...listed, ...onBugs]).filter(label => !mapped.has(label)).map((label): JiraFinding => ({
       kind: 'unmapped-label', label, open: openOf(label), fix: `Add ${label} to ${FEATURE_AREAS_FILE} with its area (\`pnpm discover:jira:draft\` drafts the row)`,
     })),
-    ...[...mapped].filter(label => !listed.has(label)).sort().map((label): JiraFinding => ({
-      kind: 'gone-label', label, fix: `Remove ${label} from ${FEATURE_AREAS_FILE}, or restore the option in Jira`,
-    })),
+    ...(snapshot.meta.labelsCapped
+      ? [{ kind: 'labels-capped', fix: 'Raise LABEL_MAX_CALLS (call budget) or LABEL_MAX_PREFIX (answers still full at the last prefix) in packages/discovery/src/jira/snapshot.ts and fetch again; gone labels are not reported until the list is whole' } satisfies JiraFinding]
+      : [...mapped].filter(label => !listed.has(label)).sort().map((label): JiraFinding => ({
+        kind: 'gone-label', label, fix: `Remove ${label} from ${FEATURE_AREAS_FILE}, or restore the option in Jira`,
+      }))),
     ...onBugs.filter(label => !listed.has(label)).map((label): JiraFinding => ({
       kind: 'unlisted-label', label, fix: `Re-enable the ${label} option in Jira, or move its BRs to a listed Feature Area`,
     })),
@@ -84,6 +87,8 @@ function findingLine(f: JiraFinding): string {
       return `**${f.teamId}** may own board ${f.board} (${f.boardName})`
     case 'unlisted-label':
       return `**${f.label}** is on BRs but absent from the Feature Area autocomplete`
+    case 'labels-capped':
+      return 'The Feature Area list was cut short by its call budget'
   }
 }
 

@@ -19,6 +19,7 @@ import * as path from 'node:path'
 import { createHash } from 'node:crypto'
 import type { ConnectivityMap } from '@dependency-explorer/schema'
 import { normalizeEndpoint, normalizeEndpointVersionless } from './endpoints'
+import { stepService } from '@dependency-explorer/data'
 
 interface FlowFinding {
   flow: string
@@ -544,7 +545,7 @@ export function checkDomainRules(map: ConnectivityMap, repoBase: string): RuleCh
 
 function stepBase(name: string, serviceNames: Set<string>): string | null {
   if (serviceNames.has(name)) return name
-  const base = name.replace(/ \([^)]*\)$/, '')
+  const base = stepService(name)
   if (serviceNames.has(base)) return base
   return null
 }

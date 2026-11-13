@@ -92,6 +92,12 @@ describe('HealthSection', () => {
     expect(releases[1]).toContain('Steady')
     expect(releases[2]).toContain('Too recent')
   })
+
+  it('dates a release by its Paris day, as the Delivery section does', async () => {
+    const lateNight = serviceHealth({ releases: [{ sha: 'abcdef1234567', title: 'feat: late merge', mergedAt: '2026-11-09T23:30:00Z', verdict: 'steady' }] })
+    const host = await render({ health: lateNight })
+    expect(items(host, 'Releases')[0]).toContain('10 Nov')
+  })
   it('names each sparkline with its figures and the partial snapshot day', async () => {
     const host = await render()
     const names = allByRole(host, 'img').map(svg => svg.getAttribute('aria-label'))

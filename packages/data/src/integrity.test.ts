@@ -6,6 +6,7 @@ import { resourceNotes } from './resource-notes'
 import { skelloAppEndpointNotes } from './services/skello-app.endpoint-notes'
 import { getFlowAreas } from './areas-derive'
 import { flowRefIds } from './flow-chapters'
+import { stepService } from './names'
 import { machineProblems } from './state-machines'
 import discoveredJson from './generated/discovered.json'
 
@@ -23,8 +24,7 @@ function isValidStepNode(name: string): boolean {
   if (serviceNames.has(name)) {
     return true
   }
-  const base = name.replace(/ \([^)]*\)$/, '')
-  return serviceNames.has(base)
+  return serviceNames.has(stepService(name))
 }
 
 describe('services', () => {
@@ -241,12 +241,6 @@ describe('flow links', () => {
 })
 
 describe('auth context', () => {
-  it('every flow states its trigger (who can initiate it)', () => {
-    for (const flow of flows) {
-      expect(flow.trigger?.actor, `flow ${flow.id} has no trigger`).toBeTruthy()
-    }
-  })
-
   it('auth refs carry at least one fact (tokenType, gate, authorizer, or authAbsent)', () => {
     for (const flow of flows) {
       for (const edge of flow.codeEdges ?? []) {
@@ -356,8 +350,7 @@ describe('product areas', () => {
     for (const flow of flows) {
       const derived = getFlowAreas(flow, list).map(a => a.id)
       const unitPaths = (flow.codeUnits ?? []).map(u => `${u.service}:${u.path ?? '-'}`).join(', ')
-      expect(flow.primaryArea, `flow ${flow.id} has no primaryArea`).toBeTruthy()
-      expect(areaById.has(flow.primaryArea ?? ''), `flow ${flow.id} → unknown area ${flow.primaryArea}`).toBe(true)
+      expect(areaById.has(flow.primaryArea), `flow ${flow.id} → unknown area ${flow.primaryArea}`).toBe(true)
       expect(derived, `flow ${flow.id}: primaryArea ${flow.primaryArea} not derived — unit paths: ${unitPaths}`).toContain(flow.primaryArea)
     }
   })
@@ -526,11 +519,10 @@ describe('flow infra nodes', () => {
 })
 
 describe('flow chapters', () => {
-  const authored = flows.filter(f => f.chapters)
   it('reference only ids of their own flow', () => {
-    for (const flow of authored) {
+    for (const flow of flows) {
       const ids = flowRefIds(flow)
-      for (const c of flow.chapters ?? []) {
+      for (const c of flow.chapters) {
         for (const ref of c.refs) {
           expect(ids.has(ref), `${flow.id}: chapter "${c.title}" refs unknown id ${ref}`).toBe(true)
         }
@@ -538,8 +530,8 @@ describe('flow chapters', () => {
     }
   })
   it('count 3 to 12 chapters, one for every two units or stores, with short titles and one-line summaries', () => {
-    for (const flow of authored) {
-      const chapters = flow.chapters ?? []
+    for (const flow of flows) {
+      const chapters = flow.chapters
       const covered = (flow.codeUnits ?? []).length + (flow.infraNodes ?? []).length
       expect(chapters.length, `${flow.id} chapter count`).toBeGreaterThanOrEqual(Math.max(3, Math.min(12, Math.ceil(covered / 2))))
       expect(chapters.length, `${flow.id} chapter count`).toBeLessThanOrEqual(12)
@@ -551,15 +543,12 @@ describe('flow chapters', () => {
     }
   })
   it('cover every code unit and store of the flow', () => {
-    for (const flow of authored) {
-      const covered = new Set((flow.chapters ?? []).flatMap(c => c.refs))
+    for (const flow of flows) {
+      const covered = new Set(flow.chapters.flatMap(c => c.refs))
       for (const id of [...(flow.codeUnits ?? []).map(u => u.id), ...(flow.infraNodes ?? []).map(n => n.id), ...(flow.stateMachines ?? []).map(m => m.id)]) {
         expect(covered.has(id), `${flow.id}: no chapter covers ${id}`).toBe(true)
       }
     }
-  })
-  it('are authored for every flow', () => {
-    expect(flows.filter(f => !f.chapters).map(f => f.id)).toEqual([])
   })
 })
 

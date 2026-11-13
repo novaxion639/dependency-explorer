@@ -94,7 +94,7 @@ const mapWith = (machine: unknown) => ConnectivityMapSchema.parse({
   services: [{ name: 'svc', type: 'typescript-microservice', description: 'd', endpoints: [] }],
   connections: [],
   flows: [{
-    id: 'f', name: 'F', description: 'd', steps: [],
+    id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
     codeUnits: [
       { id: 'u-fetch', service: 'svc', kind: 'job', label: 'Fetch', path: 'src/Handler/FetchHandler.ts' },
       { id: 'u-lazy', service: 'svc', kind: 'job', label: 'Lazy', path: 'src/Handler/Lazy/LazyHandler.ts' },

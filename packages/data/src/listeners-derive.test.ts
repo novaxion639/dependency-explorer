@@ -122,7 +122,7 @@ describe('alsoChanges', () => {
 })
 
 const flow = ServiceFlowSchema.parse({
-  id: 'shift-update', name: 'Shift update', description: 'd', steps: [],
+  id: 'shift-update', name: 'Shift update', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
   codeUnits: [
     { id: 'cu-svc', service: 'skello-app', kind: 'service', label: 'UpdateService', path: 'app/services/update_service.rb' },
     { id: 'cu-cb', service: 'skello-app', kind: 'model-callback', label: 'Shift callbacks', path: 'app/models/concerns/shifts/callbacks_concern.rb' },
@@ -166,7 +166,7 @@ describe('flowListenerDrift branches', () => {
   const callbacks = { id: 'cu-cb', service: 'skello-app', kind: 'model-callback', label: 'Shift callbacks', path: 'app/models/concerns/shifts/callbacks_concern.rb' }
   const job = { id: 'cu-job', service: 'skello-app', kind: 'job', label: 'ShiftCallbackJob', path: 'app/jobs/shift_callback_job.rb' }
   const other = { id: 'cu-other', service: 'skello-app', kind: 'service', label: 'Other', path: 'app/services/other.rb' }
-  const build = (extra: Record<string, unknown>) => ServiceFlowSchema.parse({ id: 'f', name: 'F', description: 'd', steps: [], ...extra })
+  const build = (extra: Record<string, unknown>) => ServiceFlowSchema.parse({ id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [], ...extra })
   const details = (f: ReturnType<typeof build>, kind: string) => flowListenerDrift(f, SURFACE).filter(d => d.kind === kind).map(d => d.detail)
 
   it('reports an enqueued job no model-callback unit draws', () => {

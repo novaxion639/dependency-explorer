@@ -49,7 +49,7 @@ pnpm discover -- --pinned     # same, against each repo's production branch (mas
 pnpm discover:apply           # pinned run + regenerate the discovered overlay (provenance stamps, call-edge grades), the monolith routes and listeners.json; refuses to run unpinned
 pnpm discover:baseline        # pinned run + rewrite packages/discovery/baseline.json (accepted findings and scanned repo set)
 pnpm discover -- --pinned --fail-on-new   # exit 1 when a finding is not in the baseline, or a baseline repo was not scanned
-pnpm --filter @dependency-explorer/discovery discover:unit-paths   # exit 1 when a flow unit's file is missing at its pinned commit; counts units it skips (repo not cloned or not pinned)
+pnpm --filter @dependency-explorer/discovery discover:unit-paths   # exit 1 when a flow unit's file is missing at its pinned commit; counts units it skips (repo not cloned, not pinned, or its pinned commit not fetched)
 pnpm --filter @dependency-explorer/discovery discover:grades       # replay call-edge grades against the existing pinned worktrees, no re-pin
 pnpm --filter @dependency-explorer/discovery discover:machines     # check flow state machines against the pinned definitions (⚙), no re-pin
 pnpm --filter @dependency-explorer/discovery discover:listeners   # listeners at the pinned skello-app: extraction findings (unresolved-callback, unresolved-job, unknown-gem-macro) and listener counts for the busiest tables
@@ -173,7 +173,8 @@ flowchart LR
 | Kind | Meaning |
 |---|---|
 | `unmapped-label` | a Feature Area value in Jira is missing from `feature-areas.ts` (with its open BR count) |
-| `gone-label` | a value in `feature-areas.ts` that Jira no longer offers |
+| `gone-label` | a value in `feature-areas.ts` that Jira no longer offers; not reported when the label walk was cut |
+| `labels-capped` | the Feature Area autocomplete walk ran out of calls (150) or still had full answers at two characters, so the label list may be incomplete |
 | `unknown-board` | a team's `jiraBoards` names a board Jira does not have |
 | `board-suggestion` | a board whose name contains a team's name (without "Team") is not in that team's `jiraBoards` |
 | `unlisted-label` | a value seen on BRs that Jira's Feature Area list no longer offers |

@@ -202,7 +202,7 @@ describe('renderer', () => {
   it('parses an unknown renderer as React Flow', () => {
     expect(parseUrl('?page=microservices&renderer=bogus').renderer).toBe('react-flow')
     expect(parseUrl('?page=microservices&renderer=svg').renderer).toBe('svg')
-    expect(parseUrl('?renderer=mermaid').renderer).toBe('mermaid')
+    expect(parseUrl('?renderer=mermaid').renderer).toBe('react-flow')
   })
   it('writes the renderer only when it is not the default, and keeps it across pages', () => {
     expect(toQueryString(parseUrl('?page=microservices'))).toBe('page=microservices')
@@ -247,5 +247,18 @@ describe('listener params', () => {
     expect(toQueryString(st)).toBe('page=resources&resource=pg%3Askello_production.shifts&event=destroy&listener=shifts.after_commit.x&lev=update&lkind=callback&lgrade=text')
     expect(toQueryString({ ...st, resource: null })).toBe('page=resources')
     expect(parseUrl('?page=resources&event=bogus').event).toBeNull()
+  })
+})
+
+describe('resource index params', () => {
+  it('round-trips the resource filters and keeps them when a resource opens', () => {
+    const st = parseUrl('?page=resources&rkind=table&rowner=svc-punch&rsort=listeners&orphans=1&cycles=1')
+    expect([st.rkind, st.rowner, st.rsort, st.orphans, st.cycles]).toEqual(['table', 'svc-punch', 'listeners', true, true])
+    expect(toQueryString(st)).toBe('page=resources&rkind=table&rowner=svc-punch&rsort=listeners&orphans=1&cycles=1')
+    expect(toQueryString({ ...st, resource: 'pg:skello_production.shifts' })).toContain('rkind=table')
+  })
+
+  it('drops the resource filters on another page', () => {
+    expect(toQueryString({ ...parseUrl('?page=resources&rkind=table&orphans=1'), ...pagePatch('flows') })).toBe('page=flows')
   })
 })

@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { walkTree } from '../walk'
 
 /**
  * SDK registry — parses skello-libs-ts (the central Nx monorepo hosting every
@@ -59,21 +60,8 @@ export function parseSdkSource(content: string): SdkMethod[] {
   return methods
 }
 
-function walkTs(dir: string, out: string[] = []): string[] {
-  let entries: fs.Dirent[]
-  try {
-    entries = fs.readdirSync(dir, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const e of entries) {
-    if (e.name === 'node_modules' || e.name.startsWith('.')) continue
-    const full = path.join(dir, e.name)
-    if (e.isDirectory()) walkTs(full, out)
-    else if (e.name.endsWith('.ts') && !/\.(test|spec|d)\.ts$/.test(e.name)) out.push(full)
-  }
-  return out
-}
+const walkTs = (dir: string): string[] =>
+  walkTree(dir, e => e.name === 'node_modules' || e.name.startsWith('.'), e => e.name.endsWith('.ts') && !/\.(test|spec|d)\.ts$/.test(e.name))
 
 /** Build the registry from skello-libs-ts/packages. Returns null when the repo is absent. */
 export function extractSdkRegistry(repoBase: string): SdkRegistry | null {

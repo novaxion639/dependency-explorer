@@ -42,9 +42,12 @@ import { cdcRelations } from './cdc'
 import { surfaceDrift, type ListenerCheck } from './listener-check'
 import { readerFor } from './code-wiring'
 
+const APP_REPOS = ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock']
+const isAppRepo = (name: string): boolean => name.startsWith('svc-') || APP_REPOS.includes(name)
+
 function scanTargets(base: string): string[] {
   return fs.readdirSync(base, { withFileTypes: true })
-    .filter(e => e.isDirectory() && (e.name.startsWith('svc-') || e.name.endsWith('-tf') || ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock', 'skello-libs-ts'].includes(e.name)))
+    .filter(e => e.isDirectory() && (isAppRepo(e.name) || e.name.endsWith('-tf') || e.name === 'skello-libs-ts'))
     .map(e => e.name)
     .sort()
 }
@@ -161,9 +164,7 @@ export class PinError extends Error {}
 function findRepos(repoBase: string): string[] {
   try {
     return fs.readdirSync(repoBase, { withFileTypes: true })
-      .filter(e => e.isDirectory()
-        && !e.name.endsWith('-tf') // terraform checkouts have their own pass
-        && (e.name.startsWith('svc-') || ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock'].includes(e.name)))
+      .filter(e => e.isDirectory() && !e.name.endsWith('-tf') && isAppRepo(e.name))
       .map(e => e.name)
       .sort()
   } catch {

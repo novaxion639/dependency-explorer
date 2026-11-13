@@ -29,7 +29,7 @@ describe('machines', () => {
 describe('machines with a choice inside a map', () => {
   it('leaves the map only from its ending states, never from a choice', () => {
     const flow = ServiceFlowSchema.parse({
-      id: 'inner', name: 'Inner', description: 'd', steps: [],
+      id: 'inner', name: 'Inner', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: ['u-a', 'u-b', 'u-z'].map(id => ({ id, service: 'svc', kind: 'job', label: id })),
       stateMachines: [{ id: 'sm', service: 'svc', machine: 'M', label: 'M', file: 'f.ts', start: 'map', states: [
         { id: 'map', name: 'Map', type: 'map', label: 'map', next: 'z', states: [

@@ -12,7 +12,7 @@ describe('checkBranches', () => {
   const map = ConnectivityMapSchema.parse({
     services: [], connections: [],
     flows: [{
-      id: 'f', name: 'F', description: 'd', steps: [],
+      id: 'f', name: 'F', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
       codeUnits: [
         { id: 'x', service: 'skello-app', kind: 'service', label: 'X', path: 'app/services/x.rb' },
         { id: 'y', service: 'svc-absent', kind: 'manager', label: 'Y', path: 'src/y.ts' },

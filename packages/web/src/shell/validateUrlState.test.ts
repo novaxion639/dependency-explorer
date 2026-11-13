@@ -61,3 +61,10 @@ describe('listener params', () => {
     expect([st.listener, st.lkind, st.lgrade]).toEqual([null, null, 'text'])
   })
 })
+
+describe('resource index params', () => {
+  it('drops a filter value no resource has', () => {
+    const st = validateUrlState(parseUrl('?page=resources&rkind=table&rowner=nobody&rsort=bogus'))
+    expect([st.rkind, st.rowner, st.rsort]).toEqual(['table', null, null])
+  })
+})

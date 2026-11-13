@@ -34,7 +34,7 @@ const search = ProductAreaSchema.parse({
 const areas = [planning, timeAttendance, search]
 
 const flow = ServiceFlowSchema.parse({
-  id: 'shift-creation', name: 'Shift creation', description: 'd', steps: [],
+  id: 'shift-creation', name: 'Shift creation', description: 'd', trigger: { actor: 'manager' }, primaryArea: 'planning', chapters: [{ title: 'Chapter', summary: 'Summary', refs: ['ref'] }], steps: [],
   codeUnits: [
     { id: 'u1', service: 'skello-app', kind: 'service', label: 'CreateService', path: 'app/services/v3/shifts/create_service.rb' },
     { id: 'u2', service: 'skello-app', kind: 'model-callback', label: 'Shift callbacks' },

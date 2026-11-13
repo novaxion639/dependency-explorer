@@ -1,6 +1,4 @@
-function kebab(camel: string): string {
-  return camel.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
-}
+import { kebab } from './names'
 
 const OWNER_PREFIXED_STORES = new Set(['sqs', 'sns', 'kinesis'])
 

@@ -3,15 +3,18 @@ import { describe, it, expect } from 'vitest'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { listenerMetrics, listenerSurface, resourceSurface } from '@dependency-explorer/data'
+import { parseUrl } from '../../hooks/useUrlState'
 import { ResourcesIndex } from './ResourcesIndex'
 
 const COUNTS = /^(\d+) listeners?( · \d+ also changes?)( · \d+ bypassing writes?)$/
 const pgTables = resourceSurface.resources.filter(r => r.kind === 'table' && r.id.startsWith('pg:'))
 
-function mount() {
+Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+
+function mount(search = '?page=resources') {
   const host = document.createElement('div')
   act(() => {
-    createRoot(host).render(<ResourcesIndex onOpenResource={() => {}} />)
+    createRoot(host).render(<ResourcesIndex url={parseUrl(search)} patch={() => {}} onOpenResource={() => {}} />)
   })
   return host
 }
@@ -30,5 +33,24 @@ describe('ResourcesIndex cards', () => {
   it('pluralises each count', () => {
     expect(counts(mount()).every(t => COUNTS.test(t))).toBe(true)
     expect(counts(mount()).some(t => t.startsWith('1 listener ·'))).toBe(true)
+  })
+})
+
+describe('ResourcesIndex filters', () => {
+  it('reads its filters from the URL, so Back restores them', () => {
+    const host = mount('?page=resources&rkind=queue')
+    expect(host.querySelector<HTMLSelectElement>('select[aria-label="Kind"]')?.value).toBe('queue')
+    expect(counts(host)).toHaveLength(0)
+  })
+
+  it('writes a changed filter to the URL', () => {
+    const patches: unknown[] = []
+    const host = document.createElement('div')
+    act(() => {
+      createRoot(host).render(<ResourcesIndex url={parseUrl('?page=resources')} patch={p => patches.push(p)} onOpenResource={() => {}} />)
+    })
+    const cycles = [...host.querySelectorAll('label')].find(l => l.textContent?.includes('Cycles only'))?.querySelector('input')
+    act(() => cycles?.click())
+    expect(patches).toEqual([{ cycles: true }])
   })
 })
