@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface Schema<T> {
   safeParse(input: unknown): { success: true; data: T } | { success: false; error: { issues: unknown[] } }
@@ -6,6 +6,8 @@ interface Schema<T> {
 
 interface Load {
   raw: unknown
+  settled: boolean
+  warned: boolean
   promise: Promise<unknown>
 }
 
@@ -29,8 +31,11 @@ function loadOnce(name: string, fetchImpl: typeof fetch): Load {
   }
   const load: Load = {
     raw: null,
+    settled: false,
+    warned: false,
     promise: readOverlay(name, fetchImpl).then(raw => {
       load.raw = raw
+      load.settled = true
       return raw
     }),
   }
@@ -38,25 +43,31 @@ function loadOnce(name: string, fetchImpl: typeof fetch): Load {
   return load
 }
 
-function parseOverlay<T>(name: string, schema: Schema<T>, raw: unknown): T | null {
-  if (raw === null) {
+function parseOverlay<T>(name: string, schema: Schema<T>, load: Load): T | null {
+  if (load.raw === null) {
     return null
   }
-  const parsed = schema.safeParse(raw)
+  const parsed = schema.safeParse(load.raw)
   if (!parsed.success) {
-    console.error(`${name} overlay ignored: it fails its schema`, parsed.error.issues)
+    if (!load.warned) {
+      load.warned = true
+      console.error(`${name} overlay ignored: it fails its schema`, parsed.error.issues)
+    }
     return null
   }
   return parsed.data
 }
 
 export function useOverlay<T>(name: string, schema: Schema<T>, fetchImpl: typeof fetch = fetch): T | null {
-  const [overlay, setOverlay] = useState(() => parseOverlay(name, schema, loads.get(fetchImpl)?.get(name)?.raw ?? null))
+  const known = loads.get(fetchImpl)?.get(name)
+  const parsedAtMount = useRef(known?.settled ? known : null)
+  const [overlay, setOverlay] = useState(() => (known?.settled ? parseOverlay(name, schema, known) : null))
   useEffect(() => {
     let live = true
-    void loadOnce(name, fetchImpl).promise.then(raw => {
-      if (live) {
-        setOverlay(parseOverlay(name, schema, raw))
+    const load = loadOnce(name, fetchImpl)
+    void load.promise.then(() => {
+      if (live && load !== parsedAtMount.current) {
+        setOverlay(parseOverlay(name, schema, load))
       }
     })
     return () => {

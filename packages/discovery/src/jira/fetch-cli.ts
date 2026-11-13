@@ -1,4 +1,5 @@
 import * as path from 'node:path'
+import { parseArgs } from 'node:util'
 import { fileURLToPath } from 'node:url'
 import { jiraClient, Refused } from './client'
 import { fetchJiraSnapshot, writeJiraSnapshot } from './snapshot'
@@ -23,7 +24,14 @@ export async function runJiraFetchCli(
   now = new Date(),
   boardIds: number[] = [],
 ): Promise<number> {
-  if (argv.includes('--help')) {
+  let flags: { help?: boolean; out?: string }
+  try {
+    flags = parseArgs({ args: argv, options: { help: { type: 'boolean' }, out: { type: 'string' } } }).values
+  } catch (e) {
+    console.error(`${messageOf(e)}\n\n${HELP}`)
+    return 1
+  }
+  if (flags.help) {
     console.log(HELP)
     return 0
   }
@@ -35,8 +43,7 @@ export async function runJiraFetchCli(
     }
     return 1
   }
-  const outAt = argv.indexOf('--out')
-  const outDir = path.resolve((outAt >= 0 && argv[outAt + 1]) || path.join(PACKAGE_ROOT, '.jira-snapshots', now.toISOString().slice(0, 10)))
+  const outDir = path.resolve(flags.out || path.join(PACKAGE_ROOT, '.jira-snapshots', now.toISOString().slice(0, 10)))
 
   const logged: typeof globalThis.fetch = (input, init) => {
     console.error(`  ${requestLine(input)}`)

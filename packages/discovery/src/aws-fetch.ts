@@ -13,23 +13,26 @@
 
 import * as path from 'node:path'
 import { execFileSync } from 'node:child_process'
+import { parseArgs } from 'node:util'
 import { fileURLToPath } from 'node:url'
 import { fetchAwsSnapshot } from './aws-snapshot'
 
-const argv = process.argv
-const arg = (flag: string): string | null => {
-  const value = argv[argv.indexOf(flag) + 1]
-  return argv.includes(flag) && value ? value : null
+const USAGE = 'usage: pnpm discover:aws:fetch --profile <aws-profile> [--out <dir>]'
+let values: { profile?: string; out?: string } = {}
+try {
+  values = parseArgs({ options: { profile: { type: 'string' }, out: { type: 'string' } } }).values
+} catch (e) {
+  console.error(`${e instanceof Error ? e.message : String(e)}\n${USAGE}`)
+  process.exit(1)
 }
-
-const profile = arg('--profile')
+const profile = values.profile
 if (!profile) {
-  console.error('usage: pnpm discover:aws:fetch --profile <aws-profile> [--out <dir>]')
+  console.error(USAGE)
   process.exit(1)
 }
 
 const pkgRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const outDir = arg('--out') ?? path.join(pkgRoot, '.aws-snapshots', new Date().toISOString().slice(0, 10))
+const outDir = values.out ?? path.join(pkgRoot, '.aws-snapshots', new Date().toISOString().slice(0, 10))
 
 let calls = 0
 const aws = (args: string[]): unknown => {

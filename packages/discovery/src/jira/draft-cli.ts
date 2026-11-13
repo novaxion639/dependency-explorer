@@ -1,3 +1,4 @@
+import { parseArgs } from 'node:util'
 import { latestSnapshotDir, resolveSnapshotArg } from '../snapshot-dir'
 import { catalogEntryOf } from './catalog'
 import { isOpenBug } from './fields'
@@ -10,10 +11,11 @@ const HELP = `usage: pnpm discover:jira:draft [--snapshot <dir>]
 Prints draft rows for packages/data/src/feature-areas.ts, one per Feature Area label of a Jira snapshot
 (the latest under packages/discovery/.jira-snapshots/, or --snapshot). Fill in each \`area\`, then paste the rows.`
 
+const OPTIONS = { help: { type: 'boolean' }, snapshot: { type: 'string' } } as const
+
 export function snapshotDirOf(argv: string[], home: string): string | null {
-  const flagAt = argv.indexOf('--snapshot')
-  const given = flagAt >= 0 ? argv[flagAt + 1] : undefined
-  return given ? resolveSnapshotArg('--snapshot', given) : latestSnapshotDir(home)
+  const given = parseArgs({ args: argv, options: OPTIONS, strict: false }).values.snapshot
+  return typeof given === 'string' ? resolveSnapshotArg('--snapshot', given) : latestSnapshotDir(home)
 }
 
 const quoted = (value: string): string => `'${value.replace(/[\\']/g, '\\$&')}'`
@@ -28,7 +30,14 @@ const byTribeThenLabel = (a: { tribe: string | null; label: string }, b: { tribe
 }
 
 export async function runDraftCli(argv: string[], snapshotDir: string | null): Promise<number> {
-  if (argv.includes('--help')) {
+  let help: boolean | undefined
+  try {
+    help = parseArgs({ args: argv, options: OPTIONS }).values.help
+  } catch (e) {
+    console.error(`${e instanceof Error ? e.message : String(e)}\n\n${HELP}`)
+    return 1
+  }
+  if (help) {
     console.log(HELP)
     return 0
   }

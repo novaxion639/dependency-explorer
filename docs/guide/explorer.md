@@ -57,7 +57,7 @@ Selecting an area (`?page=microservices&area=planning`) draws its connections to
 
 ## Service view
 
-Any of the 37 services, including the three client apps: the Vue web front, skello-mobile and the SkelloPunchClock tablet (both React Native).
+Any of the 36 services, including the three client apps: the Vue web front, skello-mobile and the SkelloPunchClock tablet (both React Native).
 
 **Exploring**, the service's neighbours sit in groups by how they talk: the clients and services that call it, what it calls, what it notifies over SNS, and who copies its data over CDC.
 - Each group and mode gets one labelled edge: solid for sync, dashed for async, dotted for a data feed; thickness is the connection count.

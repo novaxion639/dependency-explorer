@@ -81,6 +81,14 @@ describe('runDraftCli', () => {
     expect(err.join('\n')).toContain('pnpm discover:jira:fetch')
   })
 
+  it('exits 1 on an unknown flag, before reading any snapshot', async () => {
+    const dir = path.join(root, '2026-11-02')
+    writeJiraSnapshot(dir, snapshot)
+    expect(await runDraftCli(['--snapshott', dir], dir)).toBe(1)
+    expect(out).toEqual([])
+    expect(err.join('\n')).toContain('--snapshott')
+  })
+
   it('prints usage on --help', async () => {
     expect(await runDraftCli(['--help'], null)).toBe(0)
     expect(out.join('\n')).toContain('discover:jira:draft')

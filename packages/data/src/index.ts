@@ -41,7 +41,6 @@ import svc_users from './services/svc-users'
 import svc_labour_laws from './services/svc-labour-laws'
 import svc_pos from './services/svc-pos'
 import svc_skello_assistant from './services/svc-skello-assistant'
-import svc_documents_esignature from './services/svc-documents-esignature'
 import svc_workload_plan from './services/svc-workload-plan'
 import svc_feature_flags from './services/svc-feature-flags'
 import svc_payroll from './services/svc-payroll'
@@ -185,7 +184,6 @@ export const connectivityMap: ConnectivityMap = ConnectivityMapSchema.parse({
   svc_labour_laws,
   svc_pos,
   svc_skello_assistant,
-  svc_documents_esignature,
   svc_workload_plan,
   svc_feature_flags,
   svc_payroll,

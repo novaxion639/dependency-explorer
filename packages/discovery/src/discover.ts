@@ -35,11 +35,19 @@ import { deliverySection } from './delivery/overlay'
 import { findingKeys, diffBaseline, readBaseline, readBaselineRepos, unscannedRepos, writeBaseline } from './baseline'
 import { latestSnapshotDir, resolveSnapshotArg, SnapshotFormatError } from './snapshot-dir'
 import { runDiscovery, writeOutputs, PinError, type Dataset, type DiscoveryOptions, type Report } from './discovery-run'
+import { unknownFlags } from './cli-args'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const SOURCE_BASE = path.resolve(__dirname, '../../../../')
 const PINNED_MODE = process.argv.includes('--pinned')
 const PINNED_BASE = path.resolve(__dirname, '../../../.pinned')
+
+const FLAGS = ['--pinned', '--json', '--write-baseline', '--fail-on-new', '--apply', '--no-fetch', '--delivery', '--aws', '--datadog', '--jira'] as const
+const UNKNOWN = unknownFlags(process.argv.slice(2), FLAGS)
+if (UNKNOWN.length) {
+  console.error(`unknown flag ${UNKNOWN.join(', ')}; known: ${FLAGS.join(' ')}`)
+  process.exit(2)
+}
 
 const MODE_ERROR = applyModeError(process.argv)
 if (MODE_ERROR) {
@@ -547,20 +555,19 @@ if (JSON_MODE) {
 } else {
   printMarkdown(report, unscanned)
 }
+function writeOverlay(label: string, file: string, overlay: unknown): void {
+  fs.mkdirSync(path.dirname(file), { recursive: true })
+  fs.writeFileSync(file, JSON.stringify(overlay, null, 1))
+  console.error(`${label} overlay written: ${path.relative(process.cwd(), file)}`)
+}
 if (report.datadog) {
-  fs.mkdirSync(path.dirname(OVERLAY_PATH), { recursive: true })
-  fs.writeFileSync(OVERLAY_PATH, JSON.stringify(DatadogOverlaySchema.parse(report.datadog.overlay), null, 1))
-  console.error(`Datadog overlay written: ${path.relative(process.cwd(), OVERLAY_PATH)}`)
+  writeOverlay('Datadog', OVERLAY_PATH, DatadogOverlaySchema.parse(report.datadog.overlay))
 }
 if (report.jira) {
-  fs.mkdirSync(path.dirname(JIRA_OVERLAY_PATH), { recursive: true })
-  fs.writeFileSync(JIRA_OVERLAY_PATH, JSON.stringify(JiraOverlaySchema.parse(report.jira.overlay), null, 1))
-  console.error(`Jira overlay written: ${path.relative(process.cwd(), JIRA_OVERLAY_PATH)}`)
+  writeOverlay('Jira', JIRA_OVERLAY_PATH, JiraOverlaySchema.parse(report.jira.overlay))
 }
 if (report.delivery) {
-  fs.mkdirSync(path.dirname(DELIVERY_OVERLAY_PATH), { recursive: true })
-  fs.writeFileSync(DELIVERY_OVERLAY_PATH, JSON.stringify(DeliveryOverlaySchema.parse(report.delivery.overlay), null, 1))
-  console.error(`Delivery overlay written: ${path.relative(process.cwd(), DELIVERY_OVERLAY_PATH)}`)
+  writeOverlay('Delivery', DELIVERY_OVERLAY_PATH, DeliveryOverlaySchema.parse(report.delivery.overlay))
 }
 if (APPLY_MODE) {
   writeOutputs(report, { outDir: OUT_DIR, repoBase: REPO_BASE, now: NOW })

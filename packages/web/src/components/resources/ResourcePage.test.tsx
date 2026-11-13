@@ -32,6 +32,7 @@ describe('ResourcePage', () => {
     expect(html).toContain('aria-label="Listeners"')
     expect(html).toContain('update_paid_leaves')
   })
+
   it('renders a resource with no relations without throwing', () => {
     const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))
     expect(quiet, 'the registry holds at least one untouched resource (dataset-only stores)').toBeDefined()

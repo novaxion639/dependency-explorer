@@ -66,6 +66,8 @@ pnpm --filter @dependency-explorer/discovery golden:update   # rewrite the golde
 pnpm docs:gen                 # rewrite the generated sections of the inventory docs (CI fails on drift)
 ```
 
+Every discovery command stops with its usage on a flag it does not know, instead of ignoring it.
+
 `--pinned` runs fail when they pin no repo — run discovery from the main clone; a `.claude/worktrees` checkout finds no sibling repos.
 
 Pinning touches only `.pinned/<repo>` in each clone: it adds or re-checks-out that detached worktree, and a failed pin removes it again. It never prunes the clone's other worktrees.
