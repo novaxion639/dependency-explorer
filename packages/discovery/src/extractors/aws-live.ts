@@ -17,8 +17,7 @@
  * inverted pair.
  */
 
-import * as fs from 'node:fs'
-import * as path from 'node:path'
+import { awsSnapshotFolder } from '../aws-snapshot'
 import { streamSourceService } from '../mapping'
 
 // ── Snapshot shape (file names match the `aws` CLI dump layout) ─────────────
@@ -38,35 +37,18 @@ export interface AwsSnapshot {
   }>
 }
 
-const SNAPSHOT_FILES: Record<string, string> = {
-  eventSourceMappings: 'event-source-mappings.json',
-  sqsQueues: 'sqs-queues.json',
-  snsSubAttributes: 'sns-sub-attributes.json',
-  dmsTasks: 'dms-tasks.json',
-  eventBridgeTargets: 'eventbridge-targets.json',
-  dynamoTables: 'dynamo-tables.json',
-  kinesisStreams: 'kinesis-streams.json',
-  s3Notifications: 's3-notifications.json',
-}
-
-/** Reads a snapshot directory; missing files degrade to empty sections. */
+/** Reads a snapshot directory; a missing or unreadable file throws SnapshotFormatError. */
 export function loadAwsSnapshot(dir: string): AwsSnapshot {
-  const read = (file: string): any => {
-    try {
-      return JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'))
-    } catch {
-      return null
-    }
-  }
+  const raw: Record<string, any> = awsSnapshotFolder.read(dir)
   return {
-    eventSourceMappings: read(SNAPSHOT_FILES.eventSourceMappings)?.EventSourceMappings ?? [],
-    sqsQueueUrls: read(SNAPSHOT_FILES.sqsQueues)?.QueueUrls ?? [],
-    snsSubscriptionAttributes: read(SNAPSHOT_FILES.snsSubAttributes) ?? [],
-    dmsTasks: read(SNAPSHOT_FILES.dmsTasks)?.ReplicationTasks ?? [],
-    eventBridgeTargets: read(SNAPSHOT_FILES.eventBridgeTargets) ?? [],
-    dynamoTableNames: read(SNAPSHOT_FILES.dynamoTables)?.TableNames ?? [],
-    kinesisStreamNames: read(SNAPSHOT_FILES.kinesisStreams)?.StreamNames ?? [],
-    s3Notifications: read(SNAPSHOT_FILES.s3Notifications) ?? {},
+    eventSourceMappings: raw['event-source-mappings']?.EventSourceMappings ?? [],
+    sqsQueueUrls: raw['sqs-queues']?.QueueUrls ?? [],
+    snsSubscriptionAttributes: raw['sns-sub-attributes'] ?? [],
+    dmsTasks: raw['dms-tasks']?.ReplicationTasks ?? [],
+    eventBridgeTargets: raw['eventbridge-targets'] ?? [],
+    dynamoTableNames: raw['dynamo-tables']?.TableNames ?? [],
+    kinesisStreamNames: raw['kinesis-streams']?.StreamNames ?? [],
+    s3Notifications: raw['s3-notifications'] ?? {},
   }
 }
 
