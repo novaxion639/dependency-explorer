@@ -11,4 +11,7 @@ describe('Diagram layout', () => {
   it('lets a container lower the canvas minimum through --canvas-min', () => {
     expect(css).toMatch(/\.canvas\s*\{[^}]*min-height:\s*var\(--canvas-min, max\(420px, 62vh\)\)/)
   })
+  it('fills the canvas with React Flow even when only the canvas minimum sets its height', () => {
+    expect(css).toMatch(/\.canvas\s*\{[^}]*display:\s*grid/)
+  })
 })

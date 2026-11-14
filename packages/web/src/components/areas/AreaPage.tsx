@@ -1,8 +1,10 @@
 import { useEffect, useMemo } from 'react'
-import { ReactFlow, Background, BackgroundVariant, type Edge, type Node, type NodeMouseHandler } from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
 import type { ConnectivityMap, Platform, ProductArea } from '@dependency-explorer/data'
-import { areaFacts, getAreaExternals, getAreaFlows, getCrossAreaEdges, JiraOverlaySchema } from '@dependency-explorer/data'
+import { areaFacts, getAreaExternals, getAreaFlows, JiraOverlaySchema } from '@dependency-explorer/data'
+import { Diagram } from '../../diagram/Diagram'
+import { NO_FOCUS } from '../../diagram/focus'
+import { areaCrossing } from '../../diagram/layouts/areaCrossing'
+import type { DiagramRef, Renderer } from '../../diagram/model'
 import { useOverlay } from '../../hooks/useOverlay'
 import { plural } from '../../utils/plural'
 import { BugsSection } from './BugsSection'
@@ -20,12 +22,14 @@ interface Props {
   map: ConnectivityMap
   areaId: string
   term: string | null
+  renderer: Renderer
+  onRenderer: (renderer: Renderer) => void
   onBack: () => void
   onOpenArea: (id: string) => void
   onSelectService: (name: string) => void
 }
 
-export function AreaPage({ map, areaId, term, onBack, onOpenArea, onSelectService }: Props) {
+export function AreaPage({ map, areaId, term, renderer, onRenderer, onBack, onOpenArea, onSelectService }: Props) {
   const areas = map.areas ?? NO_AREAS
   const area = areas.find(a => a.id === areaId)
   const repoUrl = new Map(map.services.map(s => [s.name, s.repoUrl]))
@@ -39,45 +43,18 @@ export function AreaPage({ map, areaId, term, onBack, onOpenArea, onSelectServic
     }
   }, [term, areaId])
 
-  const graph = useMemo(() => {
-    if (!area) {
-      return { nodes: [], edges: [] }
-    }
-    const crossing = getCrossAreaEdges(area, map)
-    const services = [...new Set(crossing.map(e => e.service))]
-    const others = [...new Set(crossing.map(e => e.otherArea))]
-    const nodes: Node[] = [
-      ...services.map((s, i) => ({
-        id: `svc:${s}`, position: { x: 0, y: i * 56 }, data: { label: s },
-        style: { border: `1.5px solid ${area.color}`, background: 'var(--card)', color: 'var(--ink)', fontSize: 'var(--text-xs)' },
-      })),
-      ...others.map((o, i) => {
-        const other = areas.find(a => a.id === o)
-        return {
-          id: `area:${o}`, position: { x: 320, y: i * 56 }, data: { label: other?.name ?? o },
-          style: { border: `1.5px solid ${other?.color ?? 'var(--rule-strong)'}`, background: 'var(--paper-2)', color: 'var(--ink)', fontSize: 'var(--text-xs)' },
-        }
-      }),
-    ]
-    const edges: Edge[] = crossing.map(e => ({
-      id: `${e.service}|${e.otherArea}|${e.direction}`,
-      source: e.direction === 'out' ? `svc:${e.service}` : `area:${e.otherArea}`,
-      target: e.direction === 'out' ? `area:${e.otherArea}` : `svc:${e.service}`,
-      label: String(e.count),
-      style: { stroke: 'var(--ink-muted)' },
-    }))
-    return { nodes, edges }
-  }, [area, areas, map])
+  const model = useMemo(() => (area ? areaCrossing(map, area) : null), [area, map])
 
   if (!area) {
     return null
   }
 
-  const onNodeClick: NodeMouseHandler = (_, node) => {
-    if (node.id.startsWith('area:')) {
-      onOpenArea(node.id.slice('area:'.length))
-    } else {
-      onSelectService(node.id.slice('svc:'.length))
+  const onSelect = (ref: DiagramRef) => {
+    if (ref.type === 'area') {
+      onOpenArea(ref.id)
+    }
+    if (ref.type === 'service') {
+      onSelectService(ref.name)
     }
   }
 
@@ -163,17 +140,11 @@ export function AreaPage({ map, areaId, term, onBack, onOpenArea, onSelectServic
         <p className={styles.muted}>{plural(flows.length, 'flow')} traverse this area's code.</p>
       </section>
 
-      <section className={styles.section} aria-labelledby="area-map">
+      <section className={`${styles.section} ${styles.map}`} aria-labelledby="area-map">
         <h2 id="area-map">Map</h2>
-        {graph.nodes.length === 0
+        {!model || model.edges.length === 0
           ? <p className={styles.muted}>No connection crosses into another area.</p>
-          : (
-            <div className={styles.map} style={{ height: Math.max(180, graph.nodes.length * 30) }}>
-              <ReactFlow nodes={graph.nodes} edges={graph.edges} fitView onNodeClick={onNodeClick} nodesConnectable={false} proOptions={{ hideAttribution: true }}>
-                <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--rule)" />
-              </ReactFlow>
-            </div>
-          )}
+          : <Diagram model={model} focus={NO_FOCUS} renderer={renderer} onRenderer={onRenderer} onSelect={onSelect} filename={`area_${area.id}`} />}
       </section>
 
       <section className={styles.section} aria-labelledby="area-ext">
