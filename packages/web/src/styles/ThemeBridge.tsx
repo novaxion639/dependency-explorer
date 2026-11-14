@@ -19,7 +19,7 @@ const TYPE_SCALE = [
 ] as const
 
 function themeVars(theme: Theme): Record<string, string> {
-  const { palette, typography, shape, spacing } = theme
+  const { palette, typography, shape, spacing, zIndex } = theme
   return {
     '--paper': palette.background.default,
     '--paper-2': palette.skGrey[50],
@@ -35,6 +35,8 @@ function themeVars(theme: Theme): Record<string, string> {
     '--degrades': palette.warning.dark,
     '--ok': palette.success.main,
     '--font-sans': typography.fontFamily ?? 'sans-serif',
+    '--weight-regular': String(typography.fontWeightRegular),
+    '--weight-semibold': String(typography.fontWeightSemiBold),
     ...Object.fromEntries(TYPE_SCALE.map(([variant, token]) => [token, `${px(typography[variant].fontSize, 'font size')}px`])),
     '--space-1': spacing(0.5),
     '--space-2': spacing(1),
@@ -45,6 +47,7 @@ function themeVars(theme: Theme): Record<string, string> {
     '--radius-sm': `${shape.borderRadiusXs}px`,
     '--radius-md': `${shape.borderRadiusXs}px`,
     '--radius-lg': `${shape.borderRadius}px`,
+    '--z-drawer': String(zIndex.drawer),
   }
 }
 

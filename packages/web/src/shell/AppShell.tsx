@@ -5,7 +5,7 @@ import { Breadcrumb } from './Breadcrumb'
 import { NavLink } from './NavLink'
 import { Rail } from './Rail'
 import styles from './AppShell.module.css'
-import { SkButton, SkKeyboardShortcut } from '@skelloapp/skello-ds-web'
+import { SkAppBar, SkButton, SkKeyboardShortcut, SkToolbar } from '@skelloapp/skello-ds-web'
 
 interface Props {
   url: UrlState
@@ -21,16 +21,18 @@ export function AppShell({ url, onSearch, onTogglePresent, panel, children }: Pr
   const framed = inner && !url.present
   return (
     <div className={styles.shell} data-present={url.present ? 'true' : 'false'}>
-      <header className={styles.bar}>
-        {framed && (
-          <SkButton variant="outlined" size="small" className={styles.menu} aria-expanded={railOpen} onClick={() => setRailOpen(open => !open)}>Menu</SkButton>
-        )}
-        <NavLink patch={pagePatch('home')} className={styles.title} color="inherit" underline="none">Skello · Dependency Explorer</NavLink>
-        <div className={styles.actions}>
-          {!url.present && <SkButton variant="outlined" size="small" onClick={onSearch}>Search <SkKeyboardShortcut>⌘K</SkKeyboardShortcut></SkButton>}
-          <SkButton variant="outlined" size="small" onClick={onTogglePresent}>{url.present ? 'Exit present' : 'Present'}</SkButton>
-        </div>
-      </header>
+      <SkAppBar position="static" className={styles.bar}>
+        <SkToolbar variant="dense" disableGutters className={styles.toolbar}>
+          {framed && (
+            <SkButton variant="outlined" size="small" className={styles.menu} aria-expanded={railOpen} onClick={() => setRailOpen(open => !open)}>Menu</SkButton>
+          )}
+          <NavLink patch={pagePatch('home')} className={styles.title} color="inherit" underline="none">Skello · Dependency Explorer</NavLink>
+          <div className={styles.actions}>
+            {!url.present && <SkButton variant="outlined" size="small" onClick={onSearch}>Search <SkKeyboardShortcut>⌘K</SkKeyboardShortcut></SkButton>}
+            <SkButton variant="outlined" size="small" onClick={onTogglePresent}>{url.present ? 'Exit present' : 'Present'}</SkButton>
+          </div>
+        </SkToolbar>
+      </SkAppBar>
       <div className={styles.body}>
         {framed && (
           <div className={styles.railSlot} data-open={railOpen ? 'true' : 'false'}>

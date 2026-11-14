@@ -1,6 +1,7 @@
 .shell { display: flex; flex-direction: column; height: 100dvh; background: var(--paper); color: var(--ink); font-size: var(--text-md); }
-.bar { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-4); border-bottom: var(--line); }
-.title { color: inherit; text-decoration: none; font-weight: 700; font-size: var(--text-md); letter-spacing: -.01em; }
+.bar { border-bottom: 1px solid var(--rule); }
+.toolbar { gap: var(--space-3); }
+.title { color: inherit; text-decoration: none; font-weight: var(--weight-semibold); font-size: var(--text-md); }
 .actions { margin-left: auto; display: flex; gap: var(--space-2); }
 .menu { display: none; }
 .body { flex: 1; display: flex; min-height: 0; position: relative; }
@@ -10,7 +11,7 @@
 
 @media (max-width: 767px) {
   .menu { display: inline-flex; }
-  .railSlot { display: none; position: absolute; inset: 0; background: var(--paper); z-index: 30; overflow-y: auto; }
+  .railSlot { display: none; position: absolute; inset: 0; background: var(--paper); z-index: var(--z-drawer); overflow-y: auto; }
   .railSlot[data-open='true'] { display: block; }
   .content { flex-direction: column; overflow-y: auto; }
   .main { overflow: visible; }
