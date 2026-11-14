@@ -68,3 +68,11 @@ describe('Ownership team detail', () => {
     expect(screen.queryByRole('region', { name: 'Datadog teams' })).toBeNull()
   })
 })
+
+describe('Ownership team cards', () => {
+  it.each((connectivityMap.teams ?? []).slice(0, 1).map(t => [t.name, t.id]))('link %s to its team view', async (name, id) => {
+    await renderPage(connectivityMap, null, {}, 404)
+
+    expect(screen.getAllByRole('link', { name: new RegExp(`^${name}`) }).map(link => link.getAttribute('href'))).toContain(`/?page=ownership&team=${id}`)
+  })
+})

@@ -83,13 +83,13 @@ describe('ResourcePage', () => {
 
 describe('ResourcesIndex', () => {
   it.each([...new Set(resourceSurface.resources.map(r => r.store))])('groups the resources of the %s store', store => {
-    renderInApp(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} onOpenResource={noop} />)
+    renderInApp(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} />)
 
     expect(screen.getByRole('region', { name: store })).toBeTruthy()
   })
 
   it('filters the index by owner', () => {
-    renderInApp(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} onOpenResource={noop} />)
+    renderInApp(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} />)
 
     expect(screen.getByRole('combobox', { name: 'Owner' })).toBeTruthy()
   })

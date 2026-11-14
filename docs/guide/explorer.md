@@ -195,4 +195,4 @@ Older links still open the equivalent page: `?view=…`, a bare `?s=…`, `?flow
 
 **History:** picks (a new page, area, service, flow, connection or impact origin) push a history entry, so Back undoes them; closing a panel replaces the entry. A URL keeps only the keys its page uses.
 
-**Links:** the title, the rail, the breadcrumb, the home tiles, the home search results, the inline service, resource, flow, file and route names on pages and panels, and the area, resource, flow and service chips are links to their permalink (`NavLink` on the DS `SkLink`, `NavChip` on `SkChip`), so a modified click or the context menu opens them in a new tab or copies the address.
+**Links:** the title, the rail, the breadcrumb, the home tiles, the home search results, the inline service, resource, flow, file and route names on pages and panels, the area, resource, flow and service chips, and the area, flow, resource and team cards are links to their permalink (`NavLink` on the DS `SkLink`, `NavChip` on `SkChip`, `NavCard` on `SkCard`), so a modified click or the context menu opens them in a new tab or copies the address.

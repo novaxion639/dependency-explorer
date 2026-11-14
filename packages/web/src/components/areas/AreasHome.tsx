@@ -5,14 +5,13 @@ import { jiraSearchUrl } from '../../utils/jiraSearchUrl'
 import { plural } from '../../utils/plural'
 import styles from './AreasHome.module.css'
 import { ArrowRightIcon, SkButton } from '@skelloapp/skello-ds-web'
-import { NavChip } from '../../shell/NavLink'
+import { NavCard, NavChip } from '../../shell/NavLink'
 import { areaPatch } from '../../hooks/useUrlState'
 
 const PLATFORM_ICONS: Partial<Record<Platform, string>> = { web: '🖥', mobile: '📱', tablet: '⏱', superadmin: '🛠' }
 
 interface Props {
   map: ConnectivityMap
-  onOpenArea: (id: string) => void
   onOpenContext: () => void
 }
 
@@ -20,7 +19,7 @@ function mappedFiles(area: ProductArea): number {
   return Object.values(areaFacts.files[area.id] ?? {}).reduce((n, c) => n + c, 0)
 }
 
-export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
+export function AreasHome({ map, onOpenContext }: Props) {
   const areas = map.areas ?? []
   const teamName = new Map((map.teams ?? []).map(t => [t.id, t.name]))
   const product = areas.filter(a => a.kind === 'product')
@@ -43,7 +42,7 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
           const owners = (area.owners ?? []).map(o => teamName.get(o) ?? o)
           return (
             <li key={area.id}>
-              <button type="button" className={styles.card} style={{ borderLeftColor: area.color }} onClick={() => onOpenArea(area.id)}>
+              <NavCard patch={areaPatch(area.id)} className={styles.card} frameStyle={{ height: '100%', borderLeft: `5px solid ${area.color}` }}>
                 <span className={styles.cardHead}>
                   <strong>{area.name}</strong>
                   <span aria-hidden="true">{icons.join(' ')}</span>
@@ -55,7 +54,7 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
                   <span>{plural(mappedFiles(area), 'file')}</span>
                   <span>{owners.length ? owners.join(', ') : 'owner unassigned'}</span>
                 </span>
-              </button>
+              </NavCard>
             </li>
           )
         })}
