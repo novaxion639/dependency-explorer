@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { monolithRoutes, resourceSurface } from '@dependency-explorer/data'
-import { canGoBack, edgeKey, pagePatch, selectServicePatch, useUrlState } from '../hooks/useUrlState'
+import { canGoBack, edgeKey, pagePatch, selectServicePatch, toQueryString, useUrlState } from '../hooks/useUrlState'
 import { SearchModal } from '../components/SearchModal'
 import { NotFoundBanner } from '../components/areas/NotFoundBanner'
 import { AreasHome } from '../components/areas/AreasHome'
@@ -20,6 +20,7 @@ import { FlowPage } from '../components/flows/FlowPage'
 import { UnitDetail } from '../components/flows/UnitDetail'
 import { AppShell } from './AppShell'
 import { NavContext } from './NavLink'
+import { PageErrorBoundary } from './PageErrorBoundary'
 import { HomePage } from './HomePage'
 import { MicroservicesPage } from './MicroservicesPage'
 import { MonolithPage } from './MonolithPage'
@@ -93,11 +94,15 @@ export function Explorer() {
     : url.page === 'impact' ? <ImpactPage origin={url.blast} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onPick={id => patch({ blast: id })} onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))} />
     : <OwnershipPage map={map} focusedTeam={url.team} onFocusTeam={team => patch({ team })} onSelectService={selectService} />
 
+  const resetKey = toQueryString(url)
+  const goHome = () => patch(pagePatch('home'))
+  const guardedPanel = panel && <PageErrorBoundary resetKey={resetKey} onHome={goHome}>{panel}</PageErrorBoundary>
+
   return (
     <NavContext value={{ url, onNavigate: patch }}>
-      <AppShell url={url} onSearch={() => setSearchOpen(true)} onTogglePresent={() => patch({ present: !url.present })} panel={panel}>
+      <AppShell url={url} onSearch={() => setSearchOpen(true)} onTogglePresent={() => patch({ present: !url.present })} panel={guardedPanel}>
         {url.notFound && <NotFoundBanner notFound={url.notFound} onDismiss={() => patch({ notFound: null })} />}
-        {content}
+        <PageErrorBoundary resetKey={resetKey} onHome={goHome}>{content}</PageErrorBoundary>
       </AppShell>
       {searchOpen && (
         <SearchModal
