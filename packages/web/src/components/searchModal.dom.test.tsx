@@ -1,50 +1,95 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
-import { act } from 'react'
-import { createRoot } from 'react-dom/client'
+import { beforeAll, describe, it, expect, vi } from 'vitest'
+import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { searchIndex } from '../shell/dataIndexes'
+import { searchEntries } from '../utils/searchIndex'
+import { renderInApp } from '../test/renderInApp'
 import { SearchModal } from './SearchModal'
 
-function type(input: HTMLInputElement, value: string) {
-  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value)
-  input.dispatchEvent(new Event('input', { bubbles: true }))
+beforeAll(() => {
+  Element.prototype.scrollIntoView = () => {}
+})
+
+const open = () => {
+  const onNavigate = vi.fn()
+  const onClose = vi.fn()
+  const view = renderInApp(<SearchModal index={searchIndex} onNavigate={onNavigate} onClose={onClose} />)
+  return { ...view, onNavigate, onClose }
 }
 
+const combobox = () => screen.getByRole('combobox', { name: 'Search' })
+
 describe('SearchModal', () => {
-  it('is a modal combobox over a listbox, and gives focus back on close', async () => {
-    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
-    Element.prototype.scrollIntoView = () => {}
+  it('is a modal dialog named Search', () => {
+    open()
+
+    expect(screen.getByRole('dialog', { name: 'Search' }).getAttribute('aria-modal')).toBe('true')
+  })
+
+  it('focuses the search box on open', () => {
+    open()
+
+    expect(document.activeElement).toBe(combobox())
+  })
+
+  it('points the combobox at its listbox and first option', async () => {
+    open()
+
+    await userEvent.type(combobox(), 'svc-punch')
+
+    const [first] = within(screen.getByRole('listbox', { name: 'Results' })).getAllByRole('option')
+    expect(combobox().getAttribute('aria-controls')).toBe(screen.getByRole('listbox', { name: 'Results' }).id)
+    expect(combobox().getAttribute('aria-activedescendant')).toBe(first?.id)
+  })
+
+  it('moves the active option with ArrowDown', async () => {
+    open()
+
+    await userEvent.type(combobox(), 'svc-punch{ArrowDown}')
+
+    const [, second] = screen.getAllByRole('option')
+    expect(combobox().getAttribute('aria-activedescendant')).toBe(second?.id)
+  })
+
+  it('opens the active result on Enter', async () => {
+    const { onNavigate } = open()
+
+    await userEvent.type(combobox(), 'svc-punch{Enter}')
+
+    expect(onNavigate).toHaveBeenCalledWith(searchEntries(searchIndex, 'svc-punch')[0]?.patch)
+  })
+
+  it('closes on Escape', async () => {
+    const { onClose } = open()
+
+    await userEvent.keyboard('{Escape}')
+
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('keeps Tab on the search box, so the arrow keys keep working', async () => {
+    open()
+
+    await userEvent.tab()
+
+    expect(document.activeElement).toBe(combobox())
+  })
+
+  it('gives focus back to the opener when it closes', () => {
     const opener = document.createElement('button')
     document.body.append(opener)
     opener.focus()
-    const host = document.createElement('div')
-    document.body.append(host)
-    const root = createRoot(host)
-    await act(async () => root.render(<SearchModal index={searchIndex} onNavigate={() => {}} onClose={() => {}} />))
-    expect(host.querySelector('[role="dialog"]')?.getAttribute('aria-modal')).toBe('true')
-    const input = host.querySelector<HTMLInputElement>('[role="combobox"]')
-    if (!input) {
-      throw new Error('no combobox')
-    }
-    expect(document.activeElement).toBe(input)
-    await act(async () => type(input, 'svc-punch'))
-    const listbox = host.querySelector('[role="listbox"]')
-    expect(input.getAttribute('aria-controls')).toBe(listbox?.id)
-    const first = listbox?.querySelector('[role="option"]')
-    expect(input.getAttribute('aria-activedescendant')).toBe(first?.id)
-    const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
-    await act(async () => input.dispatchEvent(tab))
-    expect(tab.defaultPrevented).toBe(true)
-    await act(async () => root.unmount())
+    const { unmount } = open()
+
+    unmount()
+
     expect(document.activeElement).toBe(opener)
   })
-  it('names listeners and jobs among the kinds it searches', async () => {
-    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
-    const host = document.createElement('div')
-    document.body.append(host)
-    const root = createRoot(host)
-    await act(async () => root.render(<SearchModal index={searchIndex} onNavigate={() => {}} onClose={() => {}} />))
-    expect(host.textContent).toMatch(/listeners and jobs/)
-    await act(async () => root.unmount())
+
+  it('names listeners and jobs among the kinds it searches', () => {
+    open()
+
+    expect(screen.getByText(/listeners and jobs/)).toBeTruthy()
   })
 })
