@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import type { ServiceFlow } from '@dependency-explorer/data'
-import { pagePatch, type UrlState } from '../../hooks/useUrlState'
+import type { UrlState } from '../../hooks/useUrlState'
 import { Diagram } from '../../diagram/Diagram'
 import type { FocusState } from '../../diagram/focus'
 import { chapterFocus, swimlanes } from '../../diagram/layouts/swimlane'
@@ -61,7 +61,7 @@ export function FlowPage({ flow, url, patch, onBack }: Props) {
   )
   return (
     <article aria-label={flow.name} className={styles.page}>
-      <FlowHeader flow={flow} onBack={onBack} onOpenArea={id => patch({ ...pagePatch('areas'), area: id })} />
+      <FlowHeader flow={flow} onBack={onBack} />
       {url.present
         ? <FlowStory chapters={chapters} current={url.chapter} onSelect={chapter => patch({ chapter })}>{diagram}</FlowStory>
         : diagram}

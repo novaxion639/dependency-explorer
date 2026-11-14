@@ -1,18 +1,13 @@
 import type { ProductArea } from '@dependency-explorer/data'
+import { SkChip } from '@skelloapp/skello-ds-web'
+import { areaPatch } from '../../hooks/useUrlState'
+import { NavChip } from '../../shell/NavLink'
 
-export function AreaChip({ area, primary, onClick }: { area: ProductArea; primary?: boolean; onClick?: () => void }) {
-  const style = {
-    fontSize: 10, fontWeight: 600, padding: '1px 7px', borderRadius: 4,
-    border: `1px solid ${area.color}${primary ? 'aa' : '44'}`,
-    background: `${area.color}${primary ? '33' : '18'}`, color: area.color,
-  }
+export function AreaChip({ area, primary, linked }: { area: ProductArea; primary?: boolean; linked?: boolean }) {
   const label = `${primary ? '★ ' : ''}${area.name}`
-  if (!onClick) {
-    return <span title={primary ? 'primary area' : undefined} style={style}>{label}</span>
-  }
-  return (
-    <button type="button" onClick={onClick} title={primary ? 'primary area' : undefined} style={{ ...style, cursor: 'pointer' }}>
-      {label}
-    </button>
-  )
+  const title = primary ? 'primary area' : undefined
+  const sx = { color: area.color, borderColor: area.color }
+  return linked
+    ? <NavChip patch={areaPatch(area.id)} label={label} title={title} sx={sx} />
+    : <SkChip size="small" variant="outlined" label={label} title={title} sx={sx} />
 }

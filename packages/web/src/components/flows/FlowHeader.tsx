@@ -15,7 +15,6 @@ const LINK_LABEL: Record<FlowLinkKind, string> = {
 interface Props {
   flow: ServiceFlow
   onBack: () => void
-  onOpenArea: (id: string) => void
 }
 
 function splitSummary(text: string): { summary: string; rest: string } {
@@ -23,7 +22,7 @@ function splitSummary(text: string): { summary: string; rest: string } {
   return end === -1 ? { summary: text, rest: '' } : { summary: text.slice(0, end + 1), rest: text.slice(end + 2) }
 }
 
-export function FlowHeader({ flow, onBack, onOpenArea }: Props) {
+export function FlowHeader({ flow, onBack }: Props) {
   const { summary, rest } = splitSummary(flow.description)
   const names = new Map(connectivityMap.flows.map(f => [f.id, f.name]))
   const links = [
@@ -39,7 +38,7 @@ export function FlowHeader({ flow, onBack, onOpenArea }: Props) {
       <h1>{flow.name}</h1>
       <div className={styles.meta}>
         {flow.trigger && <span className={styles.trigger}>{`👤 ${flow.trigger.actor}${flow.trigger.role ? ` · ${flow.trigger.role}` : ''}`}</span>}
-        {getFlowAreas(flow, connectivityMap.areas ?? []).map(a => <AreaChip key={a.id} area={a} primary={a.id === flow.primaryArea} onClick={() => onOpenArea(a.id)} />)}
+        {getFlowAreas(flow, connectivityMap.areas ?? []).map(a => <AreaChip key={a.id} area={a} primary={a.id === flow.primaryArea} linked />)}
       </div>
       <p className={styles.summary}>{summary}</p>
       {rest && <details className={styles.more}><summary>more</summary><p>{rest}</p></details>}

@@ -8,7 +8,7 @@ import { ServiceSidebar } from '../components/connectivity/ServiceSidebar'
 import { FlowsPanel } from '../components/connectivity/FlowsPanel'
 import { Diagram } from '../diagram/Diagram'
 import { NO_FOCUS, type FocusState } from '../diagram/focus'
-import { refPatch, selectPatch } from '../diagram/refPatch'
+import { selectPatch } from '../diagram/refPatch'
 import { areaEdges, areaGraph, areaSteps, defaultMinWeight } from '../diagram/layouts/areaGraph'
 import { areaId } from '../diagram/layouts/ids'
 import { overviewMap } from '../diagram/layouts/overview'
@@ -82,7 +82,7 @@ function ServiceView({ service, url, patch, onSelectService }: Props & { service
   const verdict = health?.releases.find(r => r.sha === delivery?.lastRelease?.sha)?.verdict ?? null
   return (
     <>
-      <ServiceHeader service={service} onBlast={() => patch({ page: 'impact', blast: service.name })} onOpenResource={id => patch(refPatch({ type: 'resource', id }))} />
+      <ServiceHeader service={service} onBlast={() => patch({ page: 'impact', blast: service.name })} />
       <Diagram
         model={model}
         focus={NO_FOCUS}

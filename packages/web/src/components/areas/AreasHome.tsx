@@ -5,6 +5,8 @@ import { jiraSearchUrl } from '../../utils/jiraSearchUrl'
 import { plural } from '../../utils/plural'
 import styles from './AreasHome.module.css'
 import { ArrowRightIcon, SkButton } from '@skelloapp/skello-ds-web'
+import { NavChip } from '../../shell/NavLink'
+import { areaPatch } from '../../hooks/useUrlState'
 
 const PLATFORM_ICONS: Partial<Record<Platform, string>> = { web: '🖥', mobile: '📱', tablet: '⏱', superadmin: '🛠' }
 
@@ -65,7 +67,7 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
       <ul className={styles.platform}>
         {platform.map(area => (
           <li key={area.id}>
-            <button type="button" title={area.description} onClick={() => onOpenArea(area.id)}>{area.name}</button>
+            <NavChip patch={areaPatch(area.id)} label={area.name} title={area.description} />
           </li>
         ))}
       </ul>

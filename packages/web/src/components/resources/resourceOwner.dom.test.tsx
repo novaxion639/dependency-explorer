@@ -6,7 +6,7 @@ import { ResourcePage } from './ResourcePage'
 
 const noop = () => {}
 const NO_LISTENERS = { event: null, listener: null, lev: null, lkind: null, lgrade: null }
-const mount = (id: string) => renderInApp(<ResourcePage id={id} onOpenResource={noop} onOpenFlow={noop} onBlast={noop} listeners={NO_LISTENERS} onListeners={noop} />)
+const mount = (id: string) => renderInApp(<ResourcePage id={id} onBlast={noop} listeners={NO_LISTENERS} onListeners={noop} />)
 
 describe('ResourcePage owner', () => {
   it('links an owner the map holds', () => {

@@ -5,6 +5,8 @@ import { useOverlay } from '../../hooks/useOverlay'
 import { AreaChip } from '../areas/AreaChip'
 import styles from './OwnershipPage.module.css'
 import { ArrowLeftIcon, SkButton } from '@skelloapp/skello-ds-web'
+import { NavChip } from '../../shell/NavLink'
+import { selectServicePatch } from '../../hooks/useUrlState'
 
 const NO_TEAMS: Team[] = []
 
@@ -15,13 +17,11 @@ export function OwnershipPage({
   focusedTeam,
   onFocusTeam,
   onSelectService,
-  onOpenArea,
 }: {
   map: ConnectivityMap
   focusedTeam: string | null
   onFocusTeam: (id: string | null) => void
   onSelectService: (name: string) => void
-  onOpenArea: (id: string) => void
 }) {
   const teams = map.teams ?? NO_TEAMS
 
@@ -62,7 +62,7 @@ export function OwnershipPage({
       </p>
       <CoverageBar owned={owned.length} total={map.services.length} />
       {focused ? (
-        <TeamDetail team={focused} services={byTeam.get(focused.id) ?? []} map={map} onBack={() => onFocusTeam(null)} onSelectService={onSelectService} onOpenArea={onOpenArea} />
+        <TeamDetail team={focused} services={byTeam.get(focused.id) ?? []} map={map} onBack={() => onFocusTeam(null)} onSelectService={onSelectService} />
       ) : (
         <>
           <ul className={styles.teams}>
@@ -70,7 +70,7 @@ export function OwnershipPage({
               <li key={team.id}><TeamCard team={team} services={byTeam.get(team.id) ?? []} onClick={() => onFocusTeam(team.id)} /></li>
             ))}
           </ul>
-          <UnownedSection services={unowned} onSelectService={onSelectService} />
+          <UnownedSection services={unowned} />
         </>
       )}
     </section>
@@ -106,12 +106,12 @@ function TeamCard({ team, services, onClick }: { team: Team; services: Connectiv
   )
 }
 
-function OwnedAreas({ map, teamId, onOpenArea }: { map: ConnectivityMap; teamId: string; onOpenArea: (id: string) => void }) {
+function OwnedAreas({ map, teamId }: { map: ConnectivityMap; teamId: string }) {
   const owned = (map.areas ?? []).filter(a => (a.owners ?? []).includes(teamId))
   return (
     <section aria-label="Owned areas" className={styles.areas}>
       <span className={styles.muted}>Areas:</span>
-      {owned.length ? owned.map(a => <AreaChip key={a.id} area={a} onClick={() => onOpenArea(a.id)} />) : <span className={styles.muted}>none assigned yet</span>}
+      {owned.length ? owned.map(a => <AreaChip key={a.id} area={a} linked />) : <span className={styles.muted}>none assigned yet</span>}
     </section>
   )
 }
@@ -128,13 +128,12 @@ function JiraBoards({ ids }: { ids: number[] }) {
   )
 }
 
-function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }: {
+function TeamDetail({ team, services, map, onBack, onSelectService }: {
   team: Team
   services: ConnectivityService[]
   map: ConnectivityMap
   onBack: () => void
   onSelectService: (name: string) => void
-  onOpenArea: (id: string) => void
 }) {
   const datadogTeams = team.datadogTeams ?? []
   return (
@@ -146,7 +145,7 @@ function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }
         {team.slackChannel && <span className={styles.muted}>{team.slackChannel}</span>}
         {team.onCallUrl && <a href={team.onCallUrl} target="_blank" rel="noreferrer">on-call ↗</a>}
       </div>
-      <OwnedAreas map={map} teamId={team.id} onOpenArea={onOpenArea} />
+      <OwnedAreas map={map} teamId={team.id} />
       <JiraBoards ids={team.jiraBoards ?? []} />
       {datadogTeams.length > 0 && (
         <section aria-label="Datadog teams" className={styles.areas}>
@@ -200,7 +199,7 @@ function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }
   )
 }
 
-function UnownedSection({ services, onSelectService }: { services: ConnectivityService[]; onSelectService: (name: string) => void }) {
+function UnownedSection({ services }: { services: ConnectivityService[] }) {
   if (services.length === 0) {
     return null
   }
@@ -213,7 +212,7 @@ function UnownedSection({ services, onSelectService }: { services: ConnectivityS
       </p>
       <div className={styles.pills}>
         {[...services].sort((a, b) => a.name.localeCompare(b.name)).map(svc => (
-          <button key={svc.name} type="button" title={svc.description} onClick={() => onSelectService(svc.name)}>{svc.name}</button>
+          <NavChip key={svc.name} patch={selectServicePatch(svc.name)} label={svc.name} title={svc.description} />
         ))}
       </div>
     </section>
