@@ -5,12 +5,15 @@ import type { Renderer } from '../../diagram/model'
 import { ImpactMap } from './ImpactMap'
 import styles from './ImpactPage.module.css'
 import { SkButton } from '@skelloapp/skello-ds-web'
+import { NavLink } from '../../shell/NavLink'
+import { flowPatch, resourcePatch, selectServicePatch } from '../../hooks/useUrlState'
+
+const RESOURCE_IDS = new Set(resourceSurface.resources.map(r => r.id))
 
 interface Props {
   origin: string | null
   onPick: (id: string) => void
   onSelect: (node: string) => void
-  onOpenFlow: (id: string) => void
   renderer?: Renderer
   onRenderer?: (renderer: Renderer) => void
 }
@@ -39,7 +42,7 @@ function Picker({ onPick }: { onPick: (id: string) => void }) {
   )
 }
 
-export function ImpactPage({ origin, onPick, onSelect, onOpenFlow, renderer = 'react-flow', onRenderer = () => {} }: Props) {
+export function ImpactPage({ origin, onPick, onSelect, renderer = 'react-flow', onRenderer = () => {} }: Props) {
   const [filter, setFilter] = useState<'all' | 'sync'>('all')
   const [showMap, setShowMap] = useState(false)
   if (!origin) {
@@ -69,7 +72,7 @@ export function ImpactPage({ origin, onPick, onSelect, onOpenFlow, renderer = 'r
           <ul className={styles.entries}>
             {entries.filter(e => e.hop === hop).map(e => (
               <li key={e.node}>
-                <button type="button" onClick={() => onSelect(e.node)}>{e.node}</button>
+                <NavLink patch={RESOURCE_IDS.has(e.node) ? resourcePatch(e.node) : selectServicePatch(e.node)}>{e.node}</NavLink>
                 <span className={styles.effect} data-effect={e.effect}>{e.effect === 'fails' && e.hop > 1 ? 'may fail' : e.effect}</span>
                 <span className={styles.muted}>via {e.via} ({e.mode})</span>
               </li>
@@ -82,7 +85,7 @@ export function ImpactPage({ origin, onPick, onSelect, onOpenFlow, renderer = 'r
           <h2 className={styles.hop}>Affected flows</h2>
           <ul className={styles.entries}>
             {impact.flows.map(f => (
-              <li key={f.flowId}><button type="button" onClick={() => onOpenFlow(f.flowId)}>{f.name} — breaks at step {f.step}: {f.from} → {f.to}</button></li>
+              <li key={f.flowId}><NavLink patch={flowPatch(f.flowId)}>{f.name} — breaks at step {f.step}: {f.from} → {f.to}</NavLink></li>
             ))}
           </ul>
         </section>

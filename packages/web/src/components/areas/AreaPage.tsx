@@ -8,6 +8,8 @@ import { plural } from '../../utils/plural'
 import { BugsSection } from './BugsSection'
 import styles from './AreaPage.module.css'
 import { ArrowLeftIcon, SkButton } from '@skelloapp/skello-ds-web'
+import { NavLink } from '../../shell/NavLink'
+import { flowPatch, selectServicePatch } from '../../hooks/useUrlState'
 
 const PLATFORM_ORDER: Platform[] = ['monolith', 'web', 'mobile', 'tablet', 'superadmin', 'backend']
 const PLATFORM_LABEL: Record<Platform, string> = { monolith: 'Monolith', web: 'Web', mobile: 'Mobile', tablet: 'Tablet', superadmin: 'Superadmin', backend: 'Services' }
@@ -19,12 +21,11 @@ interface Props {
   areaId: string
   term: string | null
   onBack: () => void
-  onOpenFlow: (flowId: string) => void
   onOpenArea: (id: string) => void
   onSelectService: (name: string) => void
 }
 
-export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, onSelectService }: Props) {
+export function AreaPage({ map, areaId, term, onBack, onOpenArea, onSelectService }: Props) {
   const areas = map.areas ?? NO_AREAS
   const area = areas.find(a => a.id === areaId)
   const repoUrl = new Map(map.services.map(s => [s.name, s.repoUrl]))
@@ -129,7 +130,7 @@ export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, on
               <ul>
                 {globs.map(g => (
                   <li key={`${g.repo}:${g.glob}`}>
-                    <button type="button" className={styles.link} onClick={() => onSelectService(g.repo)}>{g.repo}</button>
+                    <NavLink patch={selectServicePatch(g.repo)} className={styles.link}>{g.repo}</NavLink>
                     <code>{g.glob}</code>
                     <span className={styles.muted}>{g.files === undefined ? 'not scanned' : plural(g.files, 'file')}</span>
                   </li>
@@ -148,7 +149,7 @@ export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, on
         <ol className={styles.path}>
           {area.readingPath.map(r => (
             <li key={r.flowId}>
-              <button type="button" className={styles.flow} onClick={() => onOpenFlow(r.flowId)}>{flowById.get(r.flowId)?.name ?? r.flowId}</button>
+              <NavLink patch={flowPatch(r.flowId)} className={styles.flow}>{flowById.get(r.flowId)?.name ?? r.flowId}</NavLink>
               <span className={styles.muted}> — {r.why}</span>
             </li>
           ))}

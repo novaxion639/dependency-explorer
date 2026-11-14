@@ -61,7 +61,7 @@ export function FlowPage({ flow, url, patch, onBack }: Props) {
   )
   return (
     <article aria-label={flow.name} className={styles.page}>
-      <FlowHeader flow={flow} onBack={onBack} onOpenFlow={id => patch({ ...pagePatch('flows'), flow: id })} onOpenArea={id => patch({ ...pagePatch('areas'), area: id })} />
+      <FlowHeader flow={flow} onBack={onBack} onOpenArea={id => patch({ ...pagePatch('areas'), area: id })} />
       {url.present
         ? <FlowStory chapters={chapters} current={url.chapter} onSelect={chapter => patch({ chapter })}>{diagram}</FlowStory>
         : diagram}

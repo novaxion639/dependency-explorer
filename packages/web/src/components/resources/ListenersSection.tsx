@@ -3,6 +3,8 @@ import type { Listener } from '@dependency-explorer/data'
 import { listenerSurface } from '@dependency-explorer/data'
 import { LISTENER_EVENTS, LISTENER_GRADES, LISTENER_KINDS, effectText, filterListeners, gradeGlyph, gradeLabel, hasText, listenerHeading, sourceHref, type ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
+import { NavLink } from '../../shell/NavLink'
+import { resourcePatch } from '../../hooks/useUrlState'
 
 type Filters = Pick<ListenerUrl, 'lev' | 'lkind' | 'lgrade'>
 
@@ -12,7 +14,6 @@ interface Props {
   open: string | null
   onFilters: (p: Partial<Filters>) => void
   onToggle: (id: string | null) => void
-  onOpenResource: (id: string) => void
 }
 
 const known = (value: string | null, options: readonly string[]) => (value !== null && options.includes(value) ? value : null)
@@ -38,7 +39,7 @@ function FilterSelect({ label, value, options, onChange }: { label: string; valu
   )
 }
 
-export function ListenersSection({ listeners, filters, open, onFilters, onToggle, onOpenResource }: Props) {
+export function ListenersSection({ listeners, filters, open, onFilters, onToggle }: Props) {
   useEffect(() => {
     if (open) {
       document.getElementById(`listener-${open}`)?.scrollIntoView({ block: 'center' })
@@ -75,7 +76,7 @@ export function ListenersSection({ listeners, filters, open, onFilters, onToggle
                   {l.effects.map(e => (
                     <li key={`${e.kind}:${e.target}:${e.at.file}:${e.at.line}:${e.via ?? ''}`}>
                       <GradeGlyph unverified={e.grade === 'text'} title={e.grade === 'text' ? 'receiver named after the model — review' : `${e.grade} evidence at the pinned commit`} />
-                      {e.kind === 'writes' ? <button type="button" className={styles.link} onClick={() => onOpenResource(e.target)}>{effectText(e)}</button> : effectText(e)}
+                      {e.kind === 'writes' ? <NavLink patch={resourcePatch(e.target)}>{effectText(e)}</NavLink> : effectText(e)}
                     </li>
                   ))}
                 </ul>

@@ -1,85 +1,110 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
-import { act } from 'react'
-import { createRoot } from 'react-dom/client'
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { resourcePatch } from '../../hooks/useUrlState'
+import { renderWithNav } from '../../test/renderWithNav'
 import { CascadeSection } from './CascadeSection'
 import { WritePathsSection } from './WritePathsSection'
 
-function mount(table: string, event: 'create' | 'update' | 'destroy' | null, calls: string[]) {
-  const host = document.createElement('div')
-  act(() => {
-    createRoot(host).render(<CascadeSection table={table} event={event} onEvent={e => calls.push(`event:${e}`)} onOpenResource={id => calls.push(`open:${id}`)} />)
-  })
-  return host
-}
+const SHIFTS = 'pg:skello_production.shifts'
+const noop = () => {}
+const alsoChanges = () => screen.getByRole('region', { name: 'Also changes' })
 
 describe('CascadeSection', () => {
   it('draws the shifts update cascade with weekly_options reached asynchronously', () => {
-    const host = mount('pg:skello_production.shifts', null, [])
-    expect(host.querySelector('section[aria-label="Also changes"]')).not.toBeNull()
-    expect([...host.querySelectorAll('button')].map(b => b.textContent)).toContain('weekly_options')
-    expect(host.querySelector('button[aria-pressed="true"]')?.textContent).toBe('update')
+    renderWithNav(<CascadeSection table={SHIFTS} event={null} onEvent={noop} />)
+
+    expect(within(alsoChanges()).getByRole('link', { name: 'weekly_options' })).toBeTruthy()
   })
-  it('switches the event', () => {
-    const calls: string[] = []
-    const host = mount('pg:skello_production.shifts', null, calls)
-    act(() => [...host.querySelectorAll('button')].find(b => b.textContent === 'destroy')?.click())
-    expect(calls).toEqual(['event:destroy'])
+
+  it('selects the update event by default', () => {
+    renderWithNav(<CascadeSection table={SHIFTS} event={null} onEvent={noop} />)
+
+    expect(screen.getByRole('button', { pressed: true }).textContent).toBe('update')
   })
+
+  it('switches the event', async () => {
+    const onEvent = vi.fn()
+    renderWithNav(<CascadeSection table={SHIFTS} event={null} onEvent={onEvent} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'destroy' }))
+
+    expect(onEvent).toHaveBeenCalledWith('destroy')
+  })
+
   it('labels the cascade event group', () => {
-    const host = mount('pg:skello_production.shifts', null, [])
-    expect(host.querySelector('[role="group"][aria-label="Cascade event"] button[aria-pressed="true"]')?.textContent).toBe('update')
+    renderWithNav(<CascadeSection table={SHIFTS} event={null} onEvent={noop} />)
+
+    expect(within(screen.getByRole('group', { name: 'Cascade event' })).getByRole('button', { pressed: true }).textContent).toBe('update')
   })
+
   it('counts the reached tables across all events in the heading', () => {
-    const host = mount('pg:skello_production.shifts', null, [])
-    expect(host.querySelector('section[aria-label="Also changes"] h2')?.textContent).toMatch(/^Also changes · \d+ tables across all events$/)
+    renderWithNav(<CascadeSection table={SHIFTS} event={null} onEvent={noop} />)
+
+    expect(within(alsoChanges()).getByRole('heading', { name: /^Also changes · \d+ tables across all events$/ })).toBeTruthy()
   })
+
   it('names the events each hop writes', () => {
-    const host = mount('pg:skello_production.shifts', null, [])
-    const hops = [...host.querySelectorAll('section[aria-label="Also changes"] li')]
-    expect(hops.length).toBeGreaterThan(0)
-    expect(hops.every(h => /← \S+ · (sync|async) · (create|update|destroy)( (create|update|destroy))*/.test(h.textContent ?? ''))).toBe(true)
+    renderWithNav(<CascadeSection table={SHIFTS} event={null} onEvent={noop} />)
+    const hops = within(alsoChanges()).getAllByRole('listitem').map(h => h.textContent)
+
+    expect(hops).not.toContainEqual(expect.not.stringMatching(/← \S+ · (sync|async) · (create|update|destroy)( (create|update|destroy))*/))
   })
+
   it('says so when the selected event reaches no table', () => {
-    const host = mount('pg:skello_production.billing_infos', 'create', [])
-    expect(host.textContent).toContain('No table changes on create.')
-    expect(host.querySelector('ul')).toBeNull()
+    renderWithNav(<CascadeSection table="pg:skello_production.billing_infos" event="create" onEvent={noop} />)
+
+    expect(screen.getByText('No table changes on create.')).toBeTruthy()
+    expect(screen.queryByRole('list')).toBeNull()
   })
+
   it('gives every hop an accessible grade glyph', () => {
-    const host = mount('pg:skello_production.shifts', null, [])
-    const glyphs = [...host.querySelectorAll('section[aria-label="Also changes"] [role="img"]')]
-    expect(glyphs.length).toBeGreaterThan(0)
-    expect(glyphs.every(g => (g.getAttribute('aria-label') ?? '') !== '')).toBe(true)
+    renderWithNav(<CascadeSection table={SHIFTS} event={null} onEvent={noop} />)
+    const glyphs = within(alsoChanges()).getAllByRole('img')
+
+    expect(within(alsoChanges()).getAllByRole('img', { name: /.+/ })).toHaveLength(glyphs.length)
   })
-  it('opens the reached table', () => {
-    const calls: string[] = []
-    const host = mount('pg:skello_production.shifts', null, calls)
-    act(() => [...host.querySelectorAll('button')].find(b => b.textContent === 'weekly_options')?.click())
-    expect(calls).toEqual(['open:pg:skello_production.weekly_options'])
+
+  it('opens the reached table', async () => {
+    const { onNavigate } = renderWithNav(<CascadeSection table={SHIFTS} event={null} onEvent={noop} />)
+
+    await userEvent.click(screen.getByRole('link', { name: 'weekly_options' }))
+
+    expect(onNavigate).toHaveBeenCalledWith(resourcePatch('pg:skello_production.weekly_options'), undefined)
   })
+
   it('renders nothing for a table that reaches no other table', () => {
-    expect(mount('pg:skello_production.no_such_table', null, []).querySelector('section')).toBeNull()
+    renderWithNav(<CascadeSection table="pg:skello_production.no_such_table" event={null} onEvent={noop} />)
+
+    expect(screen.queryByRole('region')).toBeNull()
   })
 })
 
 describe('WritePathsSection', () => {
-  it('groups shift write paths by what they run, each with an accessible grade and source', () => {
-    const host = document.createElement('div')
-    act(() => {
-      createRoot(host).render(<WritePathsSection table="pg:skello_production.shifts" onOpenFlow={() => {}} />)
-    })
-    expect(host.querySelector('section[aria-label="Write paths"]')).not.toBeNull()
-    expect(host.textContent).toContain('Runs no listener')
-    expect(host.textContent).toContain('written at ')
-    const headings = [...host.querySelectorAll('section[aria-label="Write paths"] h3')].map(h => h.textContent)
-    expect(headings.some(h => h?.startsWith('Runs no listener '))).toBe(true)
-    expect(host.querySelector('section[aria-label="Write paths"] [role="img"]')?.getAttribute('aria-label')).not.toBeNull()
+  const writePaths = () => screen.getByRole('region', { name: 'Write paths' })
+
+  it('groups shift write paths by what they run', () => {
+    render(<WritePathsSection table={SHIFTS} onOpenFlow={noop} />)
+
+    expect(within(writePaths()).getAllByRole('heading', { name: /^Runs no listener \d+$/ }).length).toBeGreaterThan(0)
   })
+
+  it('gives each write path its source', () => {
+    render(<WritePathsSection table={SHIFTS} onOpenFlow={noop} />)
+
+    expect(within(writePaths()).getAllByText('written at').length).toBeGreaterThan(0)
+  })
+
+  it('grades each write path with an accessible glyph', () => {
+    render(<WritePathsSection table={SHIFTS} onOpenFlow={noop} />)
+
+    expect(within(writePaths()).getAllByRole('img', { name: /.+/ }).length).toBeGreaterThan(0)
+  })
+
   it('renders nothing for a table with no write site', () => {
-    const host = document.createElement('div')
-    act(() => {
-      createRoot(host).render(<WritePathsSection table="pg:skello_production.no_such_table" onOpenFlow={() => {}} />)
-    })
-    expect(host.querySelector('section')).toBeNull()
+    render(<WritePathsSection table="pg:skello_production.no_such_table" onOpenFlow={noop} />)
+
+    expect(screen.queryByRole('region')).toBeNull()
   })
 })

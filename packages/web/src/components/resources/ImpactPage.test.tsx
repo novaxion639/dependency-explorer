@@ -1,29 +1,52 @@
+// @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
-import { renderToStaticMarkup } from 'react-dom/server'
+import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { selectServicePatch } from '../../hooks/useUrlState'
+import { renderWithNav } from '../../test/renderWithNav'
 import { ImpactPage } from './ImpactPage'
 
 const noop = () => {}
 
 describe('ImpactPage', () => {
   it('lists the directed impact of a service by hop with effects and affected flows', () => {
-    const html = renderToStaticMarkup(<ImpactPage origin="svc-requests" onSelect={noop} onOpenFlow={noop} onPick={noop} />)
-    expect(html).toContain('aria-label="Impact of svc-requests"')
-    expect(html).toContain('Hop 1')
-    expect(html).toContain('>fails<')
-    expect(html).toContain('aria-label="Affected flows"')
+    renderWithNav(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+
+    expect(screen.getByRole('region', { name: 'Impact of svc-requests' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Hop 1' })).toBeTruthy()
+    expect(screen.getAllByText('fails').length).toBeGreaterThan(0)
+    expect(screen.getByRole('region', { name: 'Affected flows' })).toBeTruthy()
   })
+
   it('labels the page once, without a redundant region role', () => {
-    expect(renderToStaticMarkup(<ImpactPage origin="svc-requests" onSelect={noop} onOpenFlow={noop} onPick={noop} />)).not.toContain('role="region"')
+    renderWithNav(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+
+    expect(screen.getByRole('region', { name: 'Impact of svc-requests' }).outerHTML).not.toContain('role="region"')
   })
+
   it('impacts a resource through its relations', () => {
-    expect(renderToStaticMarkup(<ImpactPage origin="sqs:createActivityLogJob" onSelect={noop} onOpenFlow={noop} onPick={noop} />)).toContain('svc-requests')
+    renderWithNav(<ImpactPage origin="sqs:createActivityLogJob" onSelect={noop} onPick={noop} />)
+
+    expect(screen.getByRole('link', { name: 'svc-requests' })).toBeTruthy()
   })
+
+  it('opens an impacted service from its link', async () => {
+    const { onNavigate } = renderWithNav(<ImpactPage origin="sqs:createActivityLogJob" onSelect={noop} onPick={noop} />)
+
+    await userEvent.click(screen.getByRole('link', { name: 'svc-requests' }))
+
+    expect(onNavigate).toHaveBeenCalledWith(selectServicePatch('svc-requests'), undefined)
+  })
+
   it('marks failures beyond the first hop as possible', () => {
-    const html = renderToStaticMarkup(<ImpactPage origin="svc-requests" onSelect={noop} onOpenFlow={noop} onPick={noop} />)
-    expect(html).toContain('>may fail<')
+    renderWithNav(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+
+    expect(screen.getAllByText('may fail').length).toBeGreaterThan(0)
   })
+
   it('keeps the map folded until asked', () => {
-    const html = renderToStaticMarkup(<ImpactPage origin="svc-requests" onSelect={noop} onOpenFlow={noop} onPick={noop} />)
-    expect(html).toMatch(/aria-expanded="false"[^>]*>Show on the map</)
+    renderWithNav(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+
+    expect(screen.getByRole('button', { name: 'Show on the map' }).getAttribute('aria-expanded')).toBe('false')
   })
 })

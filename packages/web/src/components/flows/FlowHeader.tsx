@@ -2,6 +2,8 @@ import { connectivityMap, getFlowAreas, type FlowLinkKind, type ServiceFlow } fr
 import { AreaChip } from '../areas/AreaChip'
 import styles from './flows.module.css'
 import { ArrowLeftIcon, SkButton } from '@skelloapp/skello-ds-web'
+import { NavLink } from '../../shell/NavLink'
+import { flowPatch } from '../../hooks/useUrlState'
 
 const LINK_LABEL: Record<FlowLinkKind, string> = {
   continuation: 'continues in',
@@ -13,7 +15,6 @@ const LINK_LABEL: Record<FlowLinkKind, string> = {
 interface Props {
   flow: ServiceFlow
   onBack: () => void
-  onOpenFlow: (id: string) => void
   onOpenArea: (id: string) => void
 }
 
@@ -22,7 +23,7 @@ function splitSummary(text: string): { summary: string; rest: string } {
   return end === -1 ? { summary: text, rest: '' } : { summary: text.slice(0, end + 1), rest: text.slice(end + 2) }
 }
 
-export function FlowHeader({ flow, onBack, onOpenFlow, onOpenArea }: Props) {
+export function FlowHeader({ flow, onBack, onOpenArea }: Props) {
   const { summary, rest } = splitSummary(flow.description)
   const names = new Map(connectivityMap.flows.map(f => [f.id, f.name]))
   const links = [
@@ -44,7 +45,7 @@ export function FlowHeader({ flow, onBack, onOpenFlow, onOpenArea }: Props) {
       {rest && <details className={styles.more}><summary>more</summary><p>{rest}</p></details>}
       {links.length > 0 && (
         <ul aria-label="Related flows" className={styles.links}>
-          {links.map(l => <li key={l.text}><button type="button" onClick={() => onOpenFlow(l.id)}>{l.text}</button></li>)}
+          {links.map(l => <li key={l.text}><NavLink patch={flowPatch(l.id)}>{l.text}</NavLink></li>)}
         </ul>
       )}
       {flags.length > 0 && <p className={styles.flags}>{flags.map(f => <code key={f}>{`🚩 ${f}`}</code>)}</p>}

@@ -5,5 +5,4 @@
 .open { align-self: flex-start; }
 .section h3 { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); margin: var(--space-2) 0 var(--space-1); }
 .section ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
-.section button { background: none; border: none; padding: 0; text-align: left; cursor: pointer; text-decoration: underline; }
 .section code { font-size: var(--text-xs); }

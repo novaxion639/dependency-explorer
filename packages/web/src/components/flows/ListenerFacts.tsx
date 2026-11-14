@@ -3,12 +3,14 @@ import { CascadeHops } from '../resources/CascadeSection'
 import { GradeGlyph, Source } from '../resources/ListenersSection'
 import { listenerHeading, listenerLabel, tableName } from '../resources/listenerView'
 import styles from './flows.module.css'
+import { NavLink } from '../../shell/NavLink'
+import { resourcePatch } from '../../hooks/useUrlState'
 
 const TABLE_EVENT_REASON = 'unverified, matched by table event'
 
-interface Props { flow: ServiceFlow; unit: FlowCodeUnit; onOpenResource: (id: string) => void }
+interface Props { flow: ServiceFlow; unit: FlowCodeUnit }
 
-export function ListenerFacts({ flow, unit, onOpenResource }: Props) {
+export function ListenerFacts({ flow, unit }: Props) {
   const links = flowListeners(flow, listenerSurface).filter(l => l.unit === unit.id)
   const isCallbacks = unit.kind === 'model-callback'
   const derived = isCallbacks ? firedListeners(flow, listenerSurface) : []
@@ -25,11 +27,11 @@ export function ListenerFacts({ flow, unit, onOpenResource }: Props) {
               return (
                 <li key={`${link.table}:${link.site?.line ?? 'event'}`}>
                   <GradeGlyph unverified={link.grade === 'text'} reason={link.site ? undefined : TABLE_EVENT_REASON} />
-                  <button type="button" onClick={() => onOpenResource(link.table)}>{tableName(link.table)}</button>
+                  <NavLink patch={resourcePatch(link.table)}>{tableName(link.table)}</NavLink>
                   <span className={styles.muted}>{link.site ? (runsNone ? '' : ` ${link.site.call} · runs ${link.site.runs}`) : ' by table event — unverified'}</span>
                   {link.site && <span className={styles.muted}> <Source at={link.site} /></span>}
                   {runsNone && link.site ? ` runs none (${link.site.call})` : ` → ${link.listeners.length ? link.listeners.map(listenerLabel).join(', ') : 'no listener'}`}
-                  <CascadeHops nodes={cascadeOf(listenerSurface, link.listeners, origin, link.grade)} onOpenResource={onOpenResource} />
+                  <CascadeHops nodes={cascadeOf(listenerSurface, link.listeners, origin, link.grade)} />
                 </li>
               )
             })}

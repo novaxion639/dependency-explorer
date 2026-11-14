@@ -5,6 +5,8 @@ import styles from './flows.module.css'
 import { ListenerFacts } from './ListenerFacts'
 import { machineFacts } from './machineFacts'
 import { CloseButton } from '../CloseButton'
+import { NavLink } from '../../shell/NavLink'
+import { flowPatch, resourcePatch } from '../../hooks/useUrlState'
 
 const KIND_LABEL: Record<FlowCodeUnit['kind'], string> = {
   controller: 'Controller', service: 'Service', manager: 'Manager', job: 'Background job',
@@ -14,12 +16,10 @@ const KIND_LABEL: Record<FlowCodeUnit['kind'], string> = {
 interface Props {
   flow: ServiceFlow
   id: string
-  onOpenFlow: (id: string) => void
-  onOpenResource: (id: string) => void
   onClose: () => void
 }
 
-function UnitFacts({ unit, flow, onOpenFlow }: { unit: FlowCodeUnit; flow: ServiceFlow; onOpenFlow: (id: string) => void }) {
+function UnitFacts({ unit, flow }: { unit: FlowCodeUnit; flow: ServiceFlow }) {
   const repo = connectivityMap.services.find(s => s.name === unit.service)?.repoUrl
   const pin = resourceSurface.pins[unit.service]
   const href = repo && unit.path ? `${repo}/blob/${pin ?? 'HEAD'}/${unit.path}` : null
@@ -41,26 +41,26 @@ function UnitFacts({ unit, flow, onOpenFlow }: { unit: FlowCodeUnit; flow: Servi
       {others.length > 0 && (
         <section>
           <h3>Same file in other flows</h3>
-          <ul className={styles.plain}>{others.map(f => <li key={f.id}><button type="button" onClick={() => onOpenFlow(f.id)}>{f.name}</button></li>)}</ul>
+          <ul className={styles.plain}>{others.map(f => <li key={f.id}><NavLink patch={flowPatch(f.id)}>{f.name}</NavLink></li>)}</ul>
         </section>
       )}
     </>
   )
 }
 
-function StoreFacts({ store, onOpenResource }: { store: FlowInfraNode; onOpenResource: (id: string) => void }) {
+function StoreFacts({ store }: { store: FlowInfraNode }) {
   return (
     <>
       <p className={styles.muted}>{`${STORE_META[store.type].icon} ${STORE_META[store.type].label}`}</p>
       {store.description && <p>{store.description}</p>}
       {(store.resources ?? []).length > 0 && (
-        <ul className={styles.plain}>{(store.resources ?? []).map(r => <li key={r}><button type="button" onClick={() => onOpenResource(r)}>{r}</button></li>)}</ul>
+        <ul className={styles.plain}>{(store.resources ?? []).map(r => <li key={r}><NavLink patch={resourcePatch(r)}>{r}</NavLink></li>)}</ul>
       )}
     </>
   )
 }
 
-export function UnitDetail({ flow, id, onOpenFlow, onOpenResource, onClose }: Props) {
+export function UnitDetail({ flow, id, onClose }: Props) {
   const unit = (flow.codeUnits ?? []).find(u => u.id === id)
   const store = (flow.infraNodes ?? []).find(n => n.id === id)
   const labelOf = (ref: string) => (flow.codeUnits ?? []).find(u => u.id === ref)?.label ?? (flow.infraNodes ?? []).find(n => n.id === ref)?.label ?? ref
@@ -76,9 +76,9 @@ export function UnitDetail({ flow, id, onOpenFlow, onOpenResource, onClose }: Pr
         <h2>{title}</h2>
         <CloseButton onClick={onClose} />
       </header>
-      {unit && <UnitFacts unit={unit} flow={flow} onOpenFlow={onOpenFlow} />}
-      {unit && <ListenerFacts flow={flow} unit={unit} onOpenResource={onOpenResource} />}
-      {store && <StoreFacts store={store} onOpenResource={onOpenResource} />}
+      {unit && <UnitFacts unit={unit} flow={flow} />}
+      {unit && <ListenerFacts flow={flow} unit={unit} />}
+      {store && <StoreFacts store={store} />}
       {facts && (
         <section>
           <h3>State machine</h3>

@@ -1,64 +1,96 @@
+// @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
-import { renderToStaticMarkup } from 'react-dom/server'
+import { screen, within } from '@testing-library/react'
 import { allResourceRelations, resourceSurface } from '@dependency-explorer/data'
-import { ResourcePage } from './ResourcePage'
 import { parseUrl } from '../../hooks/useUrlState'
+import { renderWithNav } from '../../test/renderWithNav'
+import { ResourcePage } from './ResourcePage'
 import { ResourcesIndex } from './ResourcesIndex'
 
 const noop = () => {}
-const props = { onOpenResource: noop, onOpenFile: noop, onOpenFlow: noop, onSelectService: noop, onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
+const SHIFTS = 'pg:skello_production.shifts'
+const props = { onOpenResource: noop, onOpenFlow: noop, onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
+const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))
 
 describe('ResourcePage', () => {
-  it('shows the change impact of the shifts table with graded files and flows', () => {
-    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
-    expect(html).toContain('<h1')
-    expect(html).toContain('shifts')
-    expect(html).toMatch(/\d+ services · \d+ files · \d+ flows/)
-    expect(html).toContain('app/models/shift.rb')
-    expect(html).toContain('aria-label="Writers"')
-    expect(html).toContain('instance writes')
+  it('heads the shifts table with its name', () => {
+    renderWithNav(<ResourcePage id={SHIFTS} {...props} />)
+
+    expect(screen.getByRole('heading', { level: 1, name: 'shifts' })).toBeTruthy()
   })
+
+  it('counts the services, files and flows the shifts table changes', () => {
+    renderWithNav(<ResourcePage id={SHIFTS} {...props} />)
+
+    expect(screen.getAllByText(/\d+ services · \d+ files · \d+ flows/).length).toBeGreaterThan(0)
+  })
+
+  it('shows the graded writer files', () => {
+    renderWithNav(<ResourcePage id={SHIFTS} {...props} />)
+
+    expect(within(screen.getByRole('region', { name: 'Writers' })).getAllByText('app/models/shift.rb', { exact: false }).length).toBeGreaterThan(0)
+  })
+
+  it('explains where instance writes appear', () => {
+    renderWithNav(<ResourcePage id={SHIFTS} {...props} />)
+
+    expect(screen.getByText(/instance writes/)).toBeTruthy()
+  })
+
   it('links evidence to GitHub at the pinned commit', () => {
-    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
-    expect(html).toMatch(/href="https:\/\/github\.com\/skelloapp\/skello-app\/blob\/[0-9a-f]{40}\/db\/schema\.rb"/)
+    renderWithNav(<ResourcePage id={SHIFTS} {...props} />)
+
+    expect(screen.getAllByRole('link').map(l => l.getAttribute('href'))).toContainEqual(expect.stringMatching(/^https:\/\/github\.com\/skelloapp\/skello-app\/blob\/[0-9a-f]{40}\/db\/schema\.rb$/))
   })
+
   it('lists the tables of the monolith database', () => {
-    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production" {...props} />)
-    expect(html).toContain('aria-label="Tables"')
-    expect(html).toContain('>shifts</button>')
+    renderWithNav(<ResourcePage id="pg:skello_production" {...props} />)
+
+    expect(within(screen.getByRole('region', { name: 'Tables' })).getByRole('button', { name: 'shifts' })).toBeTruthy()
   })
+
   it('lists the shifts table listeners from the committed surface', () => {
-    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
-    expect(html).toContain('aria-label="Listeners"')
-    expect(html).toContain('update_paid_leaves')
+    renderWithNav(<ResourcePage id={SHIFTS} {...props} />)
+
+    expect(within(screen.getByRole('region', { name: 'Listeners' })).getAllByText('update_paid_leaves', { exact: false }).length).toBeGreaterThan(0)
   })
 
   it('renders a resource with no relations without throwing', () => {
-    const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))
+    renderWithNav(quiet && <ResourcePage id={quiet.id} {...props} />)
+
     expect(quiet, 'the registry holds at least one untouched resource (dataset-only stores)').toBeDefined()
-    expect(renderToStaticMarkup(<ResourcePage id={quiet?.id ?? ''} {...props} />)).toContain('No code, config or flow touches this resource')
+    expect(screen.getByText('No code, config or flow touches this resource', { exact: false })).toBeTruthy()
   })
-  it('shows what else a shift write changes and how each path writes it', () => {
-    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
-    expect(html).toContain('aria-label="Also changes"')
-    expect(html).toContain('aria-label="Write paths"')
-    expect(html).toContain('Runs no listener')
+
+  it.each(['Also changes', 'Write paths'])('shows the %s section of a shift write', name => {
+    renderWithNav(<ResourcePage id={SHIFTS} {...props} />)
+
+    expect(screen.getByRole('region', { name })).toBeTruthy()
   })
+
+  it('groups the shift write paths that run no listener', () => {
+    renderWithNav(<ResourcePage id={SHIFTS} {...props} />)
+
+    expect(within(screen.getByRole('region', { name: 'Write paths' })).getAllByRole('heading', { name: /^Runs no listener/ }).length).toBeGreaterThan(0)
+  })
+
   it('shows the CDC feed and its target stream inside the Feeds section', () => {
-    const html = renderToStaticMarkup(<ResourcePage id="pg:skello_production.shifts" {...props} />)
-    const [, afterFeeds = ''] = html.split('aria-label="Feeds"')
-    const feeds = afterFeeds.split('</section>')[0] ?? ''
-    expect(afterFeeds).not.toBe('')
-    expect(feeds).toContain('kinesis:skelloapp-bus')
+    renderWithNav(<ResourcePage id={SHIFTS} {...props} />)
+
+    expect(within(screen.getByRole('region', { name: 'Feeds' })).getAllByText('kinesis:skelloapp-bus', { exact: false }).length).toBeGreaterThan(0)
   })
 })
 
 describe('ResourcesIndex', () => {
-  it('groups every resource by store', () => {
-    const html = renderToStaticMarkup(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} onOpenResource={noop} />)
-    for (const store of new Set(resourceSurface.resources.map(r => r.store))) {
-      expect(html).toContain(`aria-label="${store}"`)
-    }
-    expect(html).toContain('aria-label="Owner"')
+  it.each([...new Set(resourceSurface.resources.map(r => r.store))])('groups the resources of the %s store', store => {
+    renderWithNav(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} onOpenResource={noop} />)
+
+    expect(screen.getByRole('region', { name: store })).toBeTruthy()
+  })
+
+  it('filters the index by owner', () => {
+    renderWithNav(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} onOpenResource={noop} />)
+
+    expect(screen.getByRole('combobox', { name: 'Owner' })).toBeTruthy()
   })
 })
