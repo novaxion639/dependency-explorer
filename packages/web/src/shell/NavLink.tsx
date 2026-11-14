@@ -1,5 +1,5 @@
-import { createContext, use, type MouseEvent, type ReactNode } from 'react'
-import { SkChip, SkLink, type SkLinkProps } from '@skelloapp/skello-ds-web'
+import { createContext, use, type CSSProperties, type MouseEvent, type ReactNode } from 'react'
+import { SkCard, SkCardActionArea, SkChip, SkLink, type SkLinkProps } from '@skelloapp/skello-ds-web'
 import type { SxProps, Theme } from '@mui/material/styles'
 import { applyPatch, hrefFor, type UrlState } from '../hooks/useUrlState'
 
@@ -58,4 +58,14 @@ export function NavLink({ patch, push, onFollow, className, color, underline = '
 
 export function NavChip({ patch, label, title, sx }: { patch: Partial<UrlState>; label: string; title?: string; sx?: SxProps<Theme> }) {
   return <SkChip {...useNavTarget(patch)} component="a" clickable size="small" variant="outlined" label={label} title={title} sx={sx} />
+}
+
+export function NavCard({ patch, className, frameStyle, children }: { patch: Partial<UrlState>; className?: string; frameStyle?: CSSProperties; children: ReactNode }) {
+  return (
+    <SkCard variant="outlined" style={frameStyle}>
+      <SkCardActionArea {...useNavTarget(patch)} className={className}>
+        {children}
+      </SkCardActionArea>
+    </SkCard>
+  )
 }

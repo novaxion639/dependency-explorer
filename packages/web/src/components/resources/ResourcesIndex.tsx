@@ -5,6 +5,8 @@ import { plural } from '../../utils/plural'
 import { filterResources, type ResourceSort } from './resourceFilter'
 import styles from './ResourcesIndex.module.css'
 import { SkCheckbox, SkSelect } from '@skelloapp/skello-ds-web'
+import { NavCard } from '../../shell/NavLink'
+import { resourcePatch } from '../../hooks/useUrlState'
 
 const metrics = listenerMetrics(listenerSurface)
 export const SORTS: readonly ResourceSort[] = ['name', 'listeners', 'alsoChanges', 'bypassing']
@@ -18,10 +20,9 @@ const KINDS: ReadonlyArray<Resource['kind'] | 'all'> = ['all', 'table', 'queue',
 interface Props {
   url: Pick<UrlState, 'rkind' | 'rowner' | 'rsort' | 'orphans' | 'cycles'>
   patch: (p: Partial<UrlState>) => void
-  onOpenResource: (id: string) => void
 }
 
-export function ResourcesIndex({ url, patch, onOpenResource }: Props) {
+export function ResourcesIndex({ url, patch }: Props) {
   const kind = KINDS.find(k => k === url.rkind) ?? 'all'
   const owner = url.rowner ?? 'all'
   const sort = SORTS.find(x => x === url.rsort) ?? 'name'
@@ -46,10 +47,10 @@ export function ResourcesIndex({ url, patch, onOpenResource }: Props) {
               const m = metrics.get(r.id) ?? NO_METRICS
               return (
                 <li key={r.id}>
-                  <button type="button" className={styles.card} onClick={() => onOpenResource(r.id)}>
+                  <NavCard patch={resourcePatch(r.id)} className={styles.card}>
                     {r.name}<small>{r.kind}{r.owner ? ` · ${r.owner}` : ''}</small>
                     {isPgTable(r) && <small>{`${plural(m.listeners, 'listener')} · ${plural(m.alsoChanges, 'also change')} · ${plural(m.bypassing, 'bypassing write')}`}</small>}
-                  </button>
+                  </NavCard>
                 </li>
               )
             })}

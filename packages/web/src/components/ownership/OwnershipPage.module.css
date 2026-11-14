@@ -10,8 +10,8 @@
 .track { height: 6px; border-radius: var(--radius-sm); background: var(--rule); overflow: hidden; }
 .fill { height: 100%; background: var(--ok); }
 .teams { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--space-3); }
-.card { width: 100%; height: 100%; text-align: left; padding: var(--space-3); border-radius: var(--radius-md); cursor: pointer; background: var(--card); border: 1.5px solid var(--ink); display: flex; flex-direction: column; gap: var(--space-1); }
-.card[data-empty='true'] { border-color: var(--rule-strong); background: var(--paper); color: var(--ink-muted); }
+.card { height: 100%; padding: var(--space-3); display: flex; flex-direction: column; align-items: stretch; gap: var(--space-1); color: inherit; text-decoration: none; }
+.cardDim { color: var(--ink-muted); }
 .cardHead { display: flex; justify-content: space-between; align-items: center; font-size: var(--text-sm); }
 .badge { font-size: var(--text-xs); font-weight: 700; padding: 0 var(--space-2); border-radius: 9px; border: 1px solid currentColor; }
 .cardServices { display: flex; flex-direction: column; gap: 2px; font-size: var(--text-xs); margin-top: var(--space-2); }
