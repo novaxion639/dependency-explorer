@@ -1,17 +1,16 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
 import { screen, within } from '@testing-library/react'
-import { allResourceRelations, resourceSurface } from '@dependency-explorer/data'
 import { parseUrl } from '../../hooks/useUrlState'
 import { renderInApp } from '../../test/renderInApp'
 import { ResourcePage } from './ResourcePage'
 import { ResourcesIndex } from './ResourcesIndex'
-import { dataset } from '../../shell/dataIndexes'
+import { dataset } from '../../test/resourceFixtures'
 
 const noop = () => {}
 const SHIFTS = 'pg:skello_production.shifts'
 const props = { onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
-const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))
+const quiet = dataset.resources.resources.find(r => !dataset.relations.some(x => x.resource === r.id))
 
 describe('ResourcePage', () => {
   it('heads the shifts table with its name', () => {
@@ -83,7 +82,7 @@ describe('ResourcePage', () => {
 })
 
 describe('ResourcesIndex', () => {
-  it.each([...new Set(resourceSurface.resources.map(r => r.store))])('groups the resources of the %s store', store => {
+  it.each([...new Set(dataset.resources.resources.map(r => r.store))])('groups the resources of the %s store', store => {
     renderInApp(<ResourcesIndex data={dataset} url={parseUrl('?page=resources')} patch={noop} />)
 
     expect(screen.getByRole('region', { name: store })).toBeTruthy()

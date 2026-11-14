@@ -2,14 +2,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { listenerMetrics, listenerSurface, resourceSurface } from '@dependency-explorer/data'
+import { listenerMetrics } from '@dependency-explorer/data'
 import { parseUrl, type UrlState } from '../../hooks/useUrlState'
 import { renderInApp } from '../../test/renderInApp'
 import { ResourcesIndex } from './ResourcesIndex'
-import { dataset } from '../../shell/dataIndexes'
+import { dataset } from '../../test/resourceFixtures'
 
 const COUNTS = /^(\d+) listeners?( · \d+ also changes?)( · \d+ bypassing writes?)$/
-const pgTables = resourceSurface.resources.filter(r => r.kind === 'table' && r.id.startsWith('pg:'))
+const pgTables = dataset.resources.resources.filter(r => r.kind === 'table' && r.id.startsWith('pg:'))
 
 const renderIndex = (qs = '?page=resources') => {
   const patch = vi.fn<(p: Partial<UrlState>) => void>()
@@ -27,7 +27,7 @@ describe('ResourcesIndex cards', () => {
   })
 
   it('has a pg table with no listener in the dataset', () => {
-    const metrics = listenerMetrics(listenerSurface)
+    const metrics = listenerMetrics(dataset.listeners)
 
     expect(pgTables.some(r => !metrics.has(r.id))).toBe(true)
   })

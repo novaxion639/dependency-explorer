@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { selectServicePatch } from '../../hooks/useUrlState'
 import { renderInApp } from '../../test/renderInApp'
 import { ImpactPage } from './ImpactPage'
-import { dataset } from '../../shell/dataIndexes'
+import { dataset } from '../../test/resourceFixtures'
 
 const noop = () => {}
 

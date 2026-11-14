@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
 import { screen, within } from '@testing-library/react'
-import { connectivityMap, resourceIdForDatabase, resourceSurface } from '@dependency-explorer/data'
+import { resourceIdForDatabase } from '@dependency-explorer/data'
 import { renderInApp } from '../../test/renderInApp'
 import { ServiceStores } from './ServiceStores'
-import { dataset } from '../../shell/dataIndexes'
+import { dataset } from '../../test/resourceFixtures'
 
-const storesWithResources = connectivityMap.services.flatMap(service =>
+const storesWithResources = dataset.map.services.flatMap(service =>
   (service.databases ?? []).flatMap(db => {
-    const id = resourceIdForDatabase(service.name, db, resourceSurface.resources)
+    const id = resourceIdForDatabase(service.name, db, dataset.resources.resources)
     return id ? [{ service, db, id }] : []
   }))
 
