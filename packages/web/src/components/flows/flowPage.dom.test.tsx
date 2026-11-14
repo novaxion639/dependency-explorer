@@ -4,12 +4,12 @@ import userEvent from '@testing-library/user-event'
 import { connectivityMap } from '@dependency-explorer/data'
 import { parseUrl } from '../../hooks/useUrlState'
 import { validateUrlState } from '../../shell/validateUrlState'
-import { renderWithNav } from '../../test/renderWithNav'
+import { renderInApp } from '../../test/renderInApp'
 import { FlowPage } from './FlowPage'
 
 const shift = connectivityMap.flows.find(f => f.id === 'shift-creation')
 const PRESENT = '?page=flows&flow=shift-creation&present=1&renderer=svg'
-const renderAt = (qs: string, patch: () => void) => renderWithNav(shift && <FlowPage flow={shift} url={validateUrlState(parseUrl(qs))} patch={patch} onBack={() => {}} />, qs)
+const renderAt = (qs: string, patch: () => void) => renderInApp(shift && <FlowPage flow={shift} url={validateUrlState(parseUrl(qs))} patch={patch} onBack={() => {}} />, qs)
 
 describe('FlowPage stepping', () => {
   beforeAll(() => {

@@ -4,13 +4,13 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { connectivityMap } from '@dependency-explorer/data'
 import { resourcePatch } from '../../hooks/useUrlState'
-import { renderWithNav } from '../../test/renderWithNav'
+import { renderInApp } from '../../test/renderInApp'
 import { ListenerFacts } from './ListenerFacts'
 
 const mount = (id: string, flowId = 'shift-update') => {
   const flow = connectivityMap.flows.find(f => f.id === flowId)
   const unit = (flow?.codeUnits ?? []).find(u => u.id === id)
-  return renderWithNav(flow && unit && <ListenerFacts flow={flow} unit={unit} />)
+  return renderInApp(flow && unit && <ListenerFacts flow={flow} unit={unit} />)
 }
 
 const rowOf = (element: HTMLElement): HTMLElement => {

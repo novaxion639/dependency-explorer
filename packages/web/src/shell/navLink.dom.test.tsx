@@ -3,11 +3,11 @@ import { describe, it, expect } from 'vitest'
 import { fireEvent, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { flowPatch } from '../hooks/useUrlState'
-import { renderWithNav } from '../test/renderWithNav'
+import { renderInApp } from '../test/renderInApp'
 import { NavLink } from './NavLink'
 
 const renderLink = (qs: string) => {
-  const { onNavigate } = renderWithNav(<NavLink patch={flowPatch('shift-creation')}>Shift creation</NavLink>, qs)
+  const { onNavigate } = renderInApp(<NavLink patch={flowPatch('shift-creation')}>Shift creation</NavLink>, qs)
   return { onNavigate, link: screen.getByRole('link', { name: 'Shift creation' }) }
 }
 

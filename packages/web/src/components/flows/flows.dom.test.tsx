@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import { connectivityMap, resourceSurface } from '@dependency-explorer/data'
 import { parseUrl } from '../../hooks/useUrlState'
 import { validateUrlState } from '../../shell/validateUrlState'
-import { renderWithNav } from '../../test/renderWithNav'
+import { renderInApp } from '../../test/renderInApp'
 import { FlowPage } from './FlowPage'
 import { FlowStory } from './FlowStory'
 import { UnitDetail } from './UnitDetail'
@@ -13,7 +13,7 @@ const noop = () => {}
 const shift = connectivityMap.flows.find(f => f.id === 'shift-creation')
 const EXPLORE = '?page=flows&flow=shift-creation&renderer=svg'
 const PRESENT = '?page=flows&flow=shift-creation&renderer=svg&present=1&chapter=2'
-const renderPage = (qs: string) => renderWithNav(shift && <FlowPage flow={shift} url={validateUrlState(parseUrl(qs))} patch={noop} onBack={noop} />, qs)
+const renderPage = (qs: string) => renderInApp(shift && <FlowPage flow={shift} url={validateUrlState(parseUrl(qs))} patch={noop} onBack={noop} />, qs)
 
 describe('FlowPage', () => {
   beforeAll(() => {
@@ -73,19 +73,19 @@ describe('UnitDetail', () => {
     '← V3::Api::Plannings::ShiftsController#create',
     'background job · if absence shifts only',
   ])('shows %s on a unit', text => {
-    renderWithNav(shift && <UnitDetail flow={shift} id="cu-create-service" onClose={noop} />)
+    renderInApp(shift && <UnitDetail flow={shift} id="cu-create-service" onClose={noop} />)
 
     expect(screen.getAllByText(text, { exact: false }).length).toBeGreaterThan(0)
   })
 
   it('links the unit file at the pinned commit', () => {
-    renderWithNav(shift && <UnitDetail flow={shift} id="cu-create-service" onClose={noop} />)
+    renderInApp(shift && <UnitDetail flow={shift} id="cu-create-service" onClose={noop} />)
 
     expect(screen.getByRole('link', { name: 'app/services/v3/shifts/create_service.rb ↗' }).getAttribute('href')).toContain(`/blob/${resourceSurface.pins['skello-app']}/app/services/v3/shifts/create_service.rb`)
   })
 
   it('shows a store with its resources', () => {
-    renderWithNav(shift && <UnitDetail flow={shift} id="pg-skello-shifts" onClose={noop} />)
+    renderInApp(shift && <UnitDetail flow={shift} id="pg-skello-shifts" onClose={noop} />)
 
     expect(screen.getAllByText('PostgreSQL', { exact: false }).length).toBeGreaterThan(0)
     expect(screen.getByRole('link', { name: 'pg:skello_production.shifts' }).getAttribute('href')).toBe('/?page=resources&resource=pg%3Askello_production.shifts')

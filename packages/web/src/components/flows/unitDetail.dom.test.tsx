@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest'
 import { screen } from '@testing-library/react'
 import { autoFlow } from '../../diagram/layouts/fixtures'
-import { renderWithNav } from '../../test/renderWithNav'
+import { renderInApp } from '../../test/renderInApp'
 import { UnitDetail } from './UnitDetail'
 
 const noop = () => {}
@@ -10,31 +10,31 @@ const texts = (role: string) => screen.getAllByRole(role).map(e => e.textContent
 
 describe('UnitDetail with a state machine', () => {
   it('heads a machine opened from its frame with its name', () => {
-    renderWithNav(<UnitDetail flow={autoFlow} id="sm-auto" onClose={noop} />)
+    renderInApp(<UnitDetail flow={autoFlow} id="sm-auto" onClose={noop} />)
 
     expect(screen.getAllByRole('heading', { level: 2 }).map(h => h.textContent)).toEqual(['AutoAssign state machine'])
   })
 
   it('names where a machine falls on error', () => {
-    renderWithNav(<UnitDetail flow={autoFlow} id="sm-auto" onClose={noop} />)
+    renderInApp(<UnitDetail flow={autoFlow} id="sm-auto" onClose={noop} />)
 
     expect(texts('term')).toContain('Falls to the error handler')
   })
 
   it('lists the machine states in order', () => {
-    renderWithNav(<UnitDetail flow={autoFlow} id="sm-auto" onClose={noop} />)
+    renderInApp(<UnitDetail flow={autoFlow} id="sm-auto" onClose={noop} />)
 
     expect(texts('definition')).toContain('fetch data, filter users, per batch, aggregate, solve, assign shifts, finish job')
   })
 
   it('heads a choice opened from its node with its question', () => {
-    renderWithNav(<UnitDetail flow={autoFlow} id="empty" onClose={noop} />)
+    renderInApp(<UnitDetail flow={autoFlow} id="empty" onClose={noop} />)
 
     expect(screen.getAllByRole('heading', { level: 2 }).map(h => h.textContent)).toEqual(['empty?'])
   })
 
   it('names where a choice leads', () => {
-    renderWithNav(<UnitDetail flow={autoFlow} id="empty" onClose={noop} />)
+    renderInApp(<UnitDetail flow={autoFlow} id="empty" onClose={noop} />)
 
     expect(texts('definition')).toContain('→ finish job')
   })

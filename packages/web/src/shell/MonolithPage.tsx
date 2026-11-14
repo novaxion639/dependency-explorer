@@ -11,6 +11,7 @@ import { selectPatch } from '../diagram/refPatch'
 import { map } from './dataIndexes'
 import { MicroservicesPage } from './MicroservicesPage'
 import styles from './MonolithPage.module.css'
+import { SkSegmentedButton, SkSegmentedButtonItem } from '@skelloapp/skello-ds-web'
 
 interface Props {
   url: UrlState
@@ -27,10 +28,15 @@ export function MonolithPage({ url, patch }: Props) {
   const focus = useMemo<FocusState>(() => ({ spotlight, impact: null }), [spotlight])
   return (
     <div className={styles.page}>
-      <div role="group" aria-label="Monolith view" className={styles.switch}>
-        <button type="button" aria-pressed={inside} onClick={() => patch({ s: null, drawer: null, ep: null, edge: null })}>Inside · by product area</button>
-        <button type="button" aria-pressed={!inside} onClick={() => patch({ s: MONOLITH, area: null })}>Connections</button>
-      </div>
+      <SkSegmentedButton
+        aria-label="Monolith view"
+        className={styles.switch}
+        value={inside ? 'inside' : 'connections'}
+        onChange={(_, view) => patch(view === 'inside' ? { s: null, drawer: null, ep: null, edge: null } : { s: MONOLITH, area: null })}
+      >
+        <SkSegmentedButtonItem value="inside">Inside · by product area</SkSegmentedButtonItem>
+        <SkSegmentedButtonItem value="connections">Connections</SkSegmentedButtonItem>
+      </SkSegmentedButton>
       {!inside ? <MicroservicesPage url={url} patch={patch} />
         : url.present ? (
           <Diagram

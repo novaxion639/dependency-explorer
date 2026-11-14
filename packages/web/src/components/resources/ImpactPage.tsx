@@ -4,7 +4,7 @@ import { computeImpact } from '../../utils/impact'
 import type { Renderer } from '../../diagram/model'
 import { ImpactMap } from './ImpactMap'
 import styles from './ImpactPage.module.css'
-import { SkButton } from '@skelloapp/skello-ds-web'
+import { SkButton, SkSegmentedButton, SkSegmentedButtonItem } from '@skelloapp/skello-ds-web'
 import { NavLink } from '../../shell/NavLink'
 import { flowPatch, resourcePatch, selectServicePatch } from '../../hooks/useUrlState'
 
@@ -54,11 +54,10 @@ export function ImpactPage({ origin, onPick, onSelect, renderer = 'react-flow', 
   return (
     <section aria-label={`Impact of ${origin}`} className={styles.page}>
       <h1>If {origin} is down</h1>
-      <div role="group" aria-label="Filter" className={styles.filter}>
-        {(['all', 'sync'] as const).map(f => (
-          <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>{f === 'all' ? 'All effects' : 'Hard failures (sync)'}</button>
-        ))}
-      </div>
+      <SkSegmentedButton aria-label="Filter" className={styles.filter} value={filter} onChange={(_, next) => setFilter(next)}>
+        <SkSegmentedButtonItem value="all">All effects</SkSegmentedButtonItem>
+        <SkSegmentedButtonItem value="sync">Hard failures (sync)</SkSegmentedButtonItem>
+      </SkSegmentedButton>
       <SkButton variant="outlined" size="small" className={styles.mapToggle} aria-expanded={showMap} onClick={() => setShowMap(open => !open)}>{showMap ? 'Hide the map' : 'Show on the map'}</SkButton>
       {showMap && (
         <div className={styles.map}>
