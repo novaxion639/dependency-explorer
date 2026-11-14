@@ -4,6 +4,7 @@ import { computeImpact } from '../../utils/impact'
 import type { Renderer } from '../../diagram/model'
 import { ImpactMap } from './ImpactMap'
 import styles from './ImpactPage.module.css'
+import { SkButton } from '@skelloapp/skello-ds-web'
 
 interface Props {
   origin: string | null
@@ -55,7 +56,7 @@ export function ImpactPage({ origin, onPick, onSelect, onOpenFlow, renderer = 'r
           <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>{f === 'all' ? 'All effects' : 'Hard failures (sync)'}</button>
         ))}
       </div>
-      <button type="button" className={styles.mapToggle} aria-expanded={showMap} onClick={() => setShowMap(open => !open)}>{showMap ? 'Hide the map' : 'Show on the map'}</button>
+      <SkButton variant="outlined" size="small" className={styles.mapToggle} aria-expanded={showMap} onClick={() => setShowMap(open => !open)}>{showMap ? 'Hide the map' : 'Show on the map'}</SkButton>
       {showMap && (
         <div className={styles.map}>
           <ImpactMap origin={origin} renderer={renderer} onRenderer={onRenderer} onSelectService={onSelect} />

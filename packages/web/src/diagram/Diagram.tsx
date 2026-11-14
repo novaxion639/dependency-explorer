@@ -11,6 +11,7 @@ import { SvgDiagram } from './renderers/SvgDiagram'
 import { toMermaid } from './renderers/toMermaid'
 import { readRootToken } from './tokens'
 import styles from './Diagram.module.css'
+import { SkButton } from '@skelloapp/skello-ds-web'
 
 const RENDERER_LABEL: Record<Renderer, string> = { 'react-flow': 'React Flow', svg: 'SVG' }
 const MODES: EdgeMode[] = ['sync', 'async', 'data-feed']
@@ -87,8 +88,8 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
             <button key={r} type="button" role="radio" aria-checked={r === active} tabIndex={r === active ? 0 : -1} onClick={() => onRenderer(r)} onKeyDown={stepRenderer}>{RENDERER_LABEL[r]}</button>
           ))}
         </div>
-        <button type="button" onClick={() => { void exportPng() }}>Export PNG</button>
-        {active === 'svg' && <button type="button" onClick={exportSvg}>Export SVG</button>}
+        <SkButton variant="outlined" size="small" onClick={() => { void exportPng() }}>Export PNG</SkButton>
+        {active === 'svg' && <SkButton variant="outlined" size="small" onClick={exportSvg}>Export SVG</SkButton>}
         <CopyMermaid source={source} />
         {children}
       </div>

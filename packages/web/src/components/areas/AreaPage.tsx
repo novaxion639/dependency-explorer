@@ -7,6 +7,7 @@ import { useOverlay } from '../../hooks/useOverlay'
 import { plural } from '../../utils/plural'
 import { BugsSection } from './BugsSection'
 import styles from './AreaPage.module.css'
+import { ArrowLeftIcon, SkButton } from '@skelloapp/skello-ds-web'
 
 const PLATFORM_ORDER: Platform[] = ['monolith', 'web', 'mobile', 'tablet', 'superadmin', 'backend']
 const PLATFORM_LABEL: Record<Platform, string> = { monolith: 'Monolith', web: 'Web', mobile: 'Mobile', tablet: 'Tablet', superadmin: 'Superadmin', backend: 'Services' }
@@ -87,7 +88,7 @@ export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, on
 
   return (
     <section aria-label={area.name} className={styles.page}>
-      <button type="button" className={styles.back} onClick={onBack}>← All areas</button>
+      <SkButton variant="text" size="small" className={styles.back} startIcon={<ArrowLeftIcon />} onClick={onBack}>All areas</SkButton>
       <h1 className={styles.title} style={{ borderLeftColor: area.color }}>{area.name}</h1>
       <p className={styles.description}>{area.description}</p>
       <p className={styles.muted}>Owners: {owners.length ? owners.join(', ') : 'unassigned'}</p>

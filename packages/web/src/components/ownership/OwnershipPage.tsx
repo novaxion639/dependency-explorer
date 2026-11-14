@@ -4,6 +4,7 @@ import { getServiceLane, JiraOverlaySchema } from '@dependency-explorer/data'
 import { useOverlay } from '../../hooks/useOverlay'
 import { AreaChip } from '../areas/AreaChip'
 import styles from './OwnershipPage.module.css'
+import { ArrowLeftIcon, SkButton } from '@skelloapp/skello-ds-web'
 
 const NO_TEAMS: Team[] = []
 
@@ -138,7 +139,7 @@ function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }
   const datadogTeams = team.datadogTeams ?? []
   return (
     <div className={styles.detail}>
-      <button type="button" className={styles.back} onClick={onBack}>← All teams</button>
+      <SkButton variant="text" size="small" className={styles.back} startIcon={<ArrowLeftIcon />} onClick={onBack}>All teams</SkButton>
       <div className={styles.detailHead}>
         <h2>{team.name}</h2>
         <span className={styles.mono}>{(team.githubTeams ?? []).join(', ')}</span>
@@ -187,7 +188,7 @@ function TeamDetail({ team, services, map, onBack, onSelectService, onOpenArea }
                   </div>
                 )}
                 <div className={styles.actions}>
-                  <button type="button" onClick={() => onSelectService(svc.name)}>Open in graph</button>
+                  <SkButton size="small" onClick={() => onSelectService(svc.name)}>Open in graph</SkButton>
                   {svc.repoUrl && <a href={svc.repoUrl} target="_blank" rel="noreferrer">repo ↗</a>}
                 </div>
               </li>

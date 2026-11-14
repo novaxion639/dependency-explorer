@@ -2,6 +2,7 @@ import type { ConnectivityService } from '@dependency-explorer/data'
 import { ServiceStores } from '../components/resources/ServiceStores'
 import { map } from './dataIndexes'
 import styles from './ServiceHeader.module.css'
+import { SkButton } from '@skelloapp/skello-ds-web'
 
 interface Props {
   service: ConnectivityService
@@ -31,7 +32,7 @@ export function ServiceHeader({ service, onBlast, onOpenResource }: Props) {
         <div><dt>called by</dt><dd>{calledBy}</dd></div>
         <div><dt>endpoints</dt><dd>{service.endpoints.length}</dd></div>
       </dl>
-      <button type="button" className={styles.impact} onClick={onBlast}>If this is down…</button>
+      <SkButton variant="outlined" size="small" color="error" onClick={onBlast}>If this is down…</SkButton>
     </section>
   )
 }
