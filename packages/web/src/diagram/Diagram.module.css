@@ -4,6 +4,6 @@
 .canvas > svg { display: block; }
 .legend { display: flex; flex-wrap: wrap; gap: var(--space-3); list-style: none; font-size: var(--text-xs); color: var(--ink-muted); }
 .legend li { display: inline-flex; align-items: center; gap: var(--space-1); }
-.legend [data-effect='fails'] { color: var(--fails); font-weight: 700; }
-.legend [data-effect='starves'] { color: var(--starves); font-weight: 700; }
-.legend [data-effect='degrades'] { color: var(--degrades); font-weight: 700; }
+.legend [data-effect='fails'] { color: var(--fails); font-weight: var(--weight-semibold); }
+.legend [data-effect='starves'] { color: var(--starves); font-weight: var(--weight-semibold); }
+.legend [data-effect='degrades'] { color: var(--degrades); font-weight: var(--weight-semibold); }

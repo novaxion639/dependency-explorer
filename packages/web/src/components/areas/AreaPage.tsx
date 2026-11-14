@@ -49,13 +49,13 @@ export function AreaPage({ map, areaId, term, onBack, onOpenArea, onSelectServic
     const nodes: Node[] = [
       ...services.map((s, i) => ({
         id: `svc:${s}`, position: { x: 0, y: i * 56 }, data: { label: s },
-        style: { border: `1.5px solid ${area.color}`, background: 'var(--card)', color: 'var(--ink)', fontSize: 11 },
+        style: { border: `1.5px solid ${area.color}`, background: 'var(--card)', color: 'var(--ink)', fontSize: 'var(--text-xs)' },
       })),
       ...others.map((o, i) => {
         const other = areas.find(a => a.id === o)
         return {
           id: `area:${o}`, position: { x: 320, y: i * 56 }, data: { label: other?.name ?? o },
-          style: { border: `1.5px solid ${other?.color ?? 'var(--rule-strong)'}`, background: 'var(--paper-2)', color: 'var(--ink)', fontSize: 11 },
+          style: { border: `1.5px solid ${other?.color ?? 'var(--rule-strong)'}`, background: 'var(--paper-2)', color: 'var(--ink)', fontSize: 'var(--text-xs)' },
         }
       }),
     ]

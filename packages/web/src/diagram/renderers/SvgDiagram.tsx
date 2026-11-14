@@ -79,7 +79,7 @@ export function SvgDiagram({ model, emphases, zoomTo = null, onSelect, standalon
         return (
           <Clickable key={g.id} label={g.label} target={g.ref} onSelect={onSelect}>
             <rect x={g.x} y={g.y} width={g.w} height={g.h} rx={6} style={{ fill, stroke: paint.stroke, strokeWidth: g.kind === 'machine' ? 1.5 : 1, strokeDasharray: GROUP_DASH[g.kind], opacity: paint.opacity }} />
-            <text x={g.x + PAD_X} y={baseline(g, g.fontSize, 0)} style={{ fill: paint.text, fontSize: g.fontSize, fontWeight: 600, opacity: paint.opacity }}>{g.label}</text>
+            <text x={g.x + PAD_X} y={baseline(g, g.fontSize, 0)} style={{ fill: paint.text, fontSize: g.fontSize, fontWeight: 'var(--weight-semibold)', opacity: paint.opacity }}>{g.label}</text>
           </Clickable>
         )
       })}
