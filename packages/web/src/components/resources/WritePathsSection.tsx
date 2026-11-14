@@ -1,11 +1,13 @@
 import { connectivityMap, listenerSurface, type Runs } from '@dependency-explorer/data'
 import { GradeGlyph, Source } from './ListenersSection'
 import styles from './ResourcePage.module.css'
+import { NavChip } from '../../shell/NavLink'
+import { flowPatch } from '../../hooks/useUrlState'
 
 const ORDER: readonly Runs[] = ['all', 'subset', 'validation', 'touch', 'none']
 const LABEL: Record<Runs, string> = { all: 'Runs every listener', subset: 'Hand-fires a subset', validation: 'Runs validation listeners only', touch: 'Runs touch and commit listeners', none: 'Runs no listener' }
 
-export function WritePathsSection({ table, onOpenFlow }: { table: string; onOpenFlow: (id: string) => void }) {
+export function WritePathsSection({ table }: { table: string }) {
   const sites = listenerSurface.writeSites.filter(s => s.table === table)
   if (!sites.length) {
     return null
@@ -30,7 +32,7 @@ export function WritePathsSection({ table, onOpenFlow }: { table: string; onOpen
                     <GradeGlyph unverified={s.grade === 'text'} />
                     <code>{s.call}</code> <span className={styles.meta}>written at </span><Source at={{ file: s.file, line: s.line }} />
                     {s.fires && <span className={styles.meta}>{` fires ${s.fires.map(id => methodOf.get(id) ?? id).join(', ')}`}</span>}
-                    {flows.map(f => <button key={f.id} type="button" className={styles.chip} onClick={() => onOpenFlow(f.id)}>{f.name}</button>)}
+                    {flows.map(f => <NavChip key={f.id} patch={flowPatch(f.id)} label={f.name} />)}
                   </li>
                 )
               })}

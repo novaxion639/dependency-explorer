@@ -9,7 +9,7 @@ import { ResourcesIndex } from './ResourcesIndex'
 
 const noop = () => {}
 const SHIFTS = 'pg:skello_production.shifts'
-const props = { onOpenResource: noop, onOpenFlow: noop, onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
+const props = { onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
 const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x => x.resource === r.id))
 
 describe('ResourcePage', () => {
@@ -46,7 +46,7 @@ describe('ResourcePage', () => {
   it('lists the tables of the monolith database', () => {
     renderInApp(<ResourcePage id="pg:skello_production" {...props} />)
 
-    expect(within(screen.getByRole('region', { name: 'Tables' })).getByRole('button', { name: 'shifts' })).toBeTruthy()
+    expect(within(screen.getByRole('region', { name: 'Tables' })).getByRole('link', { name: 'shifts' })).toBeTruthy()
   })
 
   it('lists the shifts table listeners from the committed surface', () => {
