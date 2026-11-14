@@ -19,7 +19,7 @@
     "discover:scaffold": "pnpm --filter @dependency-explorer/discovery discover:scaffold",
     "docs:gen": "pnpm --filter @dependency-explorer/discovery docs:gen",
     "check": "pnpm typecheck && pnpm lint && pnpm check:exports && pnpm test && pnpm build",
-    "lint": "eslint packages/web packages/schema",
+    "lint": "eslint packages test-support",
     "discover:trace": "pnpm --filter @dependency-explorer/discovery discover:trace",
     "check:exports": "knip --include files,exports,types"
   },

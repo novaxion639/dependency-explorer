@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { walkTree } from '../walk'
+import { isRecord } from '../guards'
 
 /**
  * How an SDK dependency is actually imported in the repo's source:
@@ -45,24 +46,24 @@ function readText(filePath: string): string | null {
 
 function normalizeRepoUrl(raw: unknown, repo: string): string {
   let url: string | null = null
-  if (typeof raw === 'string') url = raw
-  else if (raw && typeof raw === 'object' && 'url' in raw) {
-    url = (raw as Record<string, string>).url ?? null
+  if (typeof raw === 'string') {url = raw}
+  else if (isRecord(raw) && typeof raw.url === 'string') {
+    url = raw.url
   }
-  if (!url) return `https://github.com/skelloapp/${repo}`
+  if (!url) {return `https://github.com/skelloapp/${repo}`}
   return url.replace(/^git\+/, '').replace(/\.git$/, '')
 }
 
 function extractCodeowners(repoPath: string): CodeownersFacts {
   const content = readText(path.join(repoPath, '.github', 'CODEOWNERS'))
   const facts: CodeownersFacts = { counts: {}, wildcardOwners: [] }
-  if (!content) return facts
+  if (!content) {return facts}
   for (const line of content.split('\n')) {
     const trimmed = line.trim()
-    if (!trimmed || trimmed.startsWith('#')) continue
+    if (!trimmed || trimmed.startsWith('#')) {continue}
     const matches = trimmed.match(/@skelloapp\/[\w-]+/g) ?? []
-    for (const m of matches) facts.counts[m] = (facts.counts[m] ?? 0) + 1
-    if (/^\*\s/.test(trimmed)) facts.wildcardOwners.push(...matches)
+    for (const m of matches) {facts.counts[m] = (facts.counts[m] ?? 0) + 1}
+    if (/^\*\s/.test(trimmed)) {facts.wildcardOwners.push(...matches)}
   }
   return facts
 }
@@ -73,10 +74,10 @@ export function classifyImports(content: string, pkg: string): 'value' | 'type-o
   const importRe = new RegExp(`import\\s+(type\\s+)?[^;'"]*?from\\s+['"]${escaped}(/[^'"]*)?['"]`, 'g')
   let sawTypeOnly = false
   for (const m of content.matchAll(importRe)) {
-    if (m[1]) sawTypeOnly = true
-    else return 'value'
+    if (m[1]) {sawTypeOnly = true}
+    else {return 'value'}
   }
-  if (new RegExp(`require\\(['"]${escaped}(/[^'"]*)?['"]\\)`).test(content)) return 'value'
+  if (new RegExp(`require\\(['"]${escaped}(/[^'"]*)?['"]\\)`).test(content)) {return 'value'}
   return sawTypeOnly ? 'type-only' : 'none'
 }
 
@@ -94,10 +95,10 @@ export function findPackageDirs(repoPath: string, maxDepth = 3): string[] {
     } catch {
       return
     }
-    if (entries.some(e => e.isFile() && e.name === 'package.json')) out.push(dir)
-    if (depth >= maxDepth) return
+    if (entries.some(e => e.isFile() && e.name === 'package.json')) {out.push(dir)}
+    if (depth >= maxDepth) {return}
     for (const e of entries) {
-      if (!e.isDirectory() || e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) continue
+      if (!e.isDirectory() || e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.')) {continue}
       walk(path.join(dir, e.name), depth + 1)
     }
   }
@@ -109,12 +110,12 @@ const walkSourceFiles = (dir: string): string[] =>
   walkTree(dir, e => e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.'), e => /\.(ts|tsx|js|vue)$/.test(e.name) && !/\.(test|spec)\./.test(e.name))
 
 function classifySdkUsage(pkgDirs: string[], sdkPackages: string[]): Record<string, SdkUsage> {
-  const usage: Record<string, SdkUsage> = Object.fromEntries(sdkPackages.map(p => [p, 'declared-only' as SdkUsage]))
-  if (!sdkPackages.length) return usage
+  const usage: Record<string, SdkUsage> = Object.fromEntries(sdkPackages.map(p => [p, 'declared-only'] as const))
+  if (!sdkPackages.length) {return usage}
   const files = pkgDirs.flatMap(dir => walkSourceFiles(path.join(dir, 'src')))
   const pending = new Set(sdkPackages)
   for (const file of files) {
-    if (!pending.size) break
+    if (!pending.size) {break}
     let content: string
     try {
       content = fs.readFileSync(file, 'utf-8')
@@ -138,21 +139,21 @@ function classifySdkUsage(pkgDirs: string[], sdkPackages: string[]): Record<stri
 export function extractTsRepo(repoBase: string, repo: string): TsRepoFacts | null {
   const repoPath = path.join(repoBase, repo)
   const pkgDirs = findPackageDirs(repoPath)
-  if (!pkgDirs.length) return null
+  if (!pkgDirs.length) {return null}
 
   const sdkSet = new Set<string>()
   let repoUrlRaw: unknown
   for (const dir of pkgDirs) {
     const pkg = readJson(path.join(dir, 'package.json'))
-    if (!pkg) continue
-    if (pkg.repository && (dir === repoPath || repoUrlRaw === undefined)) repoUrlRaw = pkg.repository
+    if (!pkg) {continue}
+    if (pkg.repository && (dir === repoPath || repoUrlRaw === undefined)) {repoUrlRaw = pkg.repository}
     const deps = {
-      ...(pkg.dependencies as Record<string, string> | undefined ?? {}),
-      ...(pkg.devDependencies as Record<string, string> | undefined ?? {}),
+      ...(isRecord(pkg.dependencies) ? pkg.dependencies : {}),
+      ...(isRecord(pkg.devDependencies) ? pkg.devDependencies : {}),
     }
     for (const d of Object.keys(deps)) {
       // '-js' covers the mobile SDK flavor (@skelloapp/svc-punch-js)
-      if (d.startsWith('@skelloapp/') && (d.includes('-sdk') || d.includes('-client') || d.endsWith('-js'))) sdkSet.add(d)
+      if (d.startsWith('@skelloapp/') && (d.includes('-sdk') || d.includes('-client') || d.endsWith('-js'))) {sdkSet.add(d)}
     }
   }
   const sdkPackages = [...sdkSet].sort()

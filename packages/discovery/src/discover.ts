@@ -177,10 +177,10 @@ function printMarkdown(r: Report, unscanned: string[]) {
     for (const t of r.terraform) {
       const bits: string[] = []
       const byType = new Map<string, number>()
-      for (const res of t.facts.resources) byType.set(res.tfType, (byType.get(res.tfType) ?? 0) + 1)
-      for (const [ty, n] of byType) bits.push(`${ty.replace('aws_', '')}×${n}`)
-      if (t.facts.dmsTasks.length) bits.push(`dms-task×${t.facts.dmsTasks.length}`)
-      if (t.facts.iamActions.length) bits.push(`iam[${t.facts.iamActions.slice(0, 4).join(',')}${t.facts.iamActions.length > 4 ? ',…' : ''}]`)
+      for (const res of t.facts.resources) {byType.set(res.tfType, (byType.get(res.tfType) ?? 0) + 1)}
+      for (const [ty, n] of byType) {bits.push(`${ty.replace('aws_', '')}×${n}`)}
+      if (t.facts.dmsTasks.length) {bits.push(`dms-task×${t.facts.dmsTasks.length}`)}
+      if (t.facts.iamActions.length) {bits.push(`iam[${t.facts.iamActions.slice(0, 4).join(',')}${t.facts.iamActions.length > 4 ? ',…' : ''}]`)}
       console.log(`- **${t.tfRepo}**${t.inMap ? ` → ${t.service}` : ' _(platform)_'} — ${bits.join(' ') || 'no data resources'}`)
       for (const task of t.facts.dmsTasks) {
         const target = t.facts.dmsEndpoints.find(e => e.endpointType === 'target')
@@ -222,19 +222,19 @@ function printMarkdown(r: Report, unscanned: string[]) {
     }
     if (live.mapEdgesWithoutLiveBinding.length) {
       console.log(`\nMap cdc/kinesis edges with no live binding (informational — absence in this account is weak evidence):`)
-      for (const e of live.mapEdgesWithoutLiveBinding) console.log(`- ⏭ ${e.from} → ${e.to} (${e.protocol})`)
+      for (const e of live.mapEdgesWithoutLiveBinding) {console.log(`- ⏭ ${e.from} → ${e.to} (${e.protocol})`)}
     }
     if (live.orphanQueues.length) {
       console.log(`\nService-prefixed queues with NO consumer binding (orphan candidates):`)
-      for (const q of live.orphanQueues) console.log(`- ❓ ${q}`)
+      for (const q of live.orphanQueues) {console.log(`- ❓ ${q}`)}
     }
     if (live.bucketCouplings.length) {
       console.log(`\nBucket-notification couplings:`)
-      for (const b of live.bucketCouplings) console.log(`- ${b.bucket} → ${b.targets.join(' | ')}`)
+      for (const b of live.bucketCouplings) {console.log(`- ${b.bucket} → ${b.targets.join(' | ')}`)}
     }
     if (live.dmsTasks.length) {
       console.log(`\nDMS replication tasks:`)
-      for (const t of live.dmsTasks) console.log(`- ${t.status.padEnd(8)} ${t.id} [${t.type}]`)
+      for (const t of live.dmsTasks) {console.log(`- ${t.status.padEnd(8)} ${t.id} [${t.type}]`)}
     }
     if (live.scheduledRules.length) {
       console.log(`\nScheduled rules:`)
@@ -287,7 +287,7 @@ function printMarkdown(r: Report, unscanned: string[]) {
       for (const a of f.ambiguousCalls) {
         console.log(`  ~ ambiguous .${a.method}() — one of [${a.candidateIds.join(', ')}] (${a.files.join(', ')})`)
       }
-      for (const id of f.unproven) console.log(`  ? unproven \`${id}\` (no call site, not even ambiguous)`)
+      for (const id of f.unproven) {console.log(`  ? unproven \`${id}\` (no call site, not even ambiguous)`)}
       for (const c of f.calledMethods.filter(c => !c.endpointId)) {
         console.log(`  ! unmatched call .${c.method}() → ${c.httpMethod} ${c.path} (no endpoint on ${f.to})`)
       }

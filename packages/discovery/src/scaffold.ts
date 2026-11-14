@@ -22,6 +22,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { ConnectivityServiceSchema } from '@dependency-explorer/schema'
 import type { ConnectivityService, ServiceConnection, ServiceEndpoint } from '@dependency-explorer/schema'
 import { extractServerless, type DiscoveredEndpoint } from './extractors/serverless'
 import { normalizeEndpoint, normalizeEndpointVersionless, kebab, isBoilerplateEndpoint } from './endpoints'
@@ -48,8 +49,8 @@ async function loadConnections(): Promise<ServiceConnection[]> {
 
 // ── Serialization (mirrors the existing file shapes exactly) ─────────────────
 
-function serializeServiceFile(svc: Record<string, unknown>): string {
-  const varName = (svc.name as string).replace(/-/g, '_')
+function serializeServiceFile(svc: ConnectivityService): string {
+  const varName = svc.name.replace(/-/g, '_')
   return `import { ConnectivityServiceSchema } from '@dependency-explorer/schema'
 import type { ConnectivityService } from '@dependency-explorer/schema'
 
@@ -70,12 +71,14 @@ interface ScaffoldResult {
   removed: string[]
 }
 
+const EndpointMethodSchema = ConnectivityServiceSchema.shape.endpoints.element.shape.method
+
 function buildEndpoint(code: DiscoveredEndpoint, usedIds: Set<string>): ServiceEndpoint {
   let id = code.functionName ? kebab(code.functionName) : kebab(`${code.method} ${code.path.replace(/[/{}]/g, ' ')}`).replace(/-+/g, '-')
-  while (usedIds.has(id)) id = `${id}-2`
+  while (usedIds.has(id)) {id = `${id}-2`}
   usedIds.add(id)
   const params = [...code.path.matchAll(/\{([^}]+)\}/g)].map(m => ({
-    name: m[1]!,
+    name: m[1],
     in: 'path' as const,
     type: 'string',
     required: true,
@@ -84,7 +87,7 @@ function buildEndpoint(code: DiscoveredEndpoint, usedIds: Set<string>): ServiceE
   return {
     id,
     path: code.path,
-    method: code.method.toUpperCase() as ServiceEndpoint['method'],
+    method: EndpointMethodSchema.parse(code.method.toUpperCase()),
     description: code.description ?? `${code.method.toUpperCase()} ${code.path}`,
     useCase: '',
     params,
@@ -96,7 +99,7 @@ function scaffoldEndpoints(svc: ConnectivityService, code: DiscoveredEndpoint[])
   const result: ScaffoldResult = { service: svc.name, kept: 0, updated: [], added: [], removed: [], }
   const byExact = new Map(code.map(e => [normalizeEndpoint(e.method, e.path), e]))
   const byVersionless = new Map(code.map(e => [normalizeEndpointVersionless(e.method, e.path), e]))
-  const byFnId = new Map(code.filter(e => e.functionName).map(e => [kebab(e.functionName!), e]))
+  const byFnId = new Map(code.flatMap(e => e.functionName ? [[kebab(e.functionName), e] as const] : []))
 
   const matchedCode = new Set<DiscoveredEndpoint>()
   const endpoints: ServiceEndpoint[] = []
@@ -117,7 +120,7 @@ function scaffoldEndpoints(svc: ConnectivityService, code: DiscoveredEndpoint[])
     const fnMatch = byFnId.get(ep.id)
     if (fnMatch && !matchedCode.has(fnMatch)) {
       matchedCode.add(fnMatch)
-      endpoints.push({ ...ep, path: fnMatch.path, method: fnMatch.method.toUpperCase() as ServiceEndpoint['method'] })
+      endpoints.push({ ...ep, path: fnMatch.path, method: EndpointMethodSchema.parse(fnMatch.method.toUpperCase()) })
       usedIds.add(ep.id)
       result.updated.push({ id: ep.id, from: `${ep.method} ${ep.path}`, to: `${fnMatch.method} ${fnMatch.path}` })
       continue
@@ -127,8 +130,8 @@ function scaffoldEndpoints(svc: ConnectivityService, code: DiscoveredEndpoint[])
   }
 
   for (const codeEp of code) {
-    if (matchedCode.has(codeEp)) continue
-    if (isBoilerplateEndpoint(codeEp.method, codeEp.path)) continue // swagger/health noise
+    if (matchedCode.has(codeEp)) {continue}
+    if (isBoilerplateEndpoint(codeEp.method, codeEp.path)) {continue} // swagger/health noise
     const ep = buildEndpoint(codeEp, usedIds)
     endpoints.push(ep)
     result.added.push(`${ep.id} (${ep.method} ${ep.path})`)
@@ -147,7 +150,7 @@ async function main() {
     console.log('# Scaffoldable services (endpoint docs vs serverless config)\n')
     for (const name of allServices) {
       const sls = extractServerless(REPO_BASE, name)
-      if (!sls || sls.endpoints.length === 0) continue
+      if (!sls || sls.endpoints.length === 0) {continue}
       const svc = await loadService(name)
       const { result } = scaffoldEndpoints(svc, sls.endpoints)
       const drift = result.removed.length + result.added.length + result.updated.length
@@ -175,14 +178,14 @@ async function main() {
     const svc = await loadService(name)
     const { endpoints, result } = scaffoldEndpoints(svc, sls.endpoints)
 
-    const rewritten: Record<string, unknown> = { ...svc, endpoints }
+    const rewritten: ConnectivityService = { ...svc, endpoints }
     fs.writeFileSync(path.join(DATA_SRC, 'services', `${name}.ts`), serializeServiceFile(rewritten))
 
     // Clean connections.usedEndpoints referencing removed endpoints
     if (result.removed.length) {
       const validIds = new Set(endpoints.map(e => e.id))
       for (const conn of connections) {
-        if (conn.to !== name) continue
+        if (conn.to !== name) {continue}
         const dropped = conn.usedEndpoints.filter(id => !validIds.has(id))
         if (dropped.length) {
           conn.usedEndpoints = conn.usedEndpoints.filter(id => validIds.has(id))

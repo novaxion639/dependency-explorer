@@ -38,6 +38,9 @@ export interface PiiFacts {
   candidates: PiiCandidate[]
 }
 
+const ANONYMIZERS = ['RandomAnonymizer', 'PasswordAnonymizer', 'DeleteAnonymizer'] as const
+const isAnonymizer = (value: string): value is PiiFieldFact['anonymizer'] => ANONYMIZERS.some(a => a === value)
+
 const DECORATOR_RE = /@(RandomAnonymizer|PasswordAnonymizer|DeleteAnonymizer|NoAnonymizer)\(([^)]*)\)\s*\n\s*(?:public |readonly |private )*([A-Za-z_]\w*)/g
 const PII_NAME_RE = /^(email|e?mail\w*|first_?name|last_?name|maiden_?name|phone\w*|iban|bic|ssn|nir|social_?security\w*|birth_?date|date_?of_?birth|address\w*|nationality|gender|bank_?account\w*|userEmail|recipientEmail|recipientFirstName|recipientLastName)$/i
 const FIELD_DECL_RE = /^\s*(?:public |readonly |private )*([A-Za-z_]\w*)\??[!:]\s*(?:string|String)/
@@ -47,14 +50,14 @@ const walkTs = (dir: string): string[] =>
 
 export function extractPiiFacts(repoBase: string, libsRepo = 'skello-libs-ts'): PiiFacts | null {
   const pkgsDir = path.join(repoBase, libsRepo, 'packages')
-  if (!fs.existsSync(pkgsDir)) return null
+  if (!fs.existsSync(pkgsDir)) {return null}
 
   const facts: PiiFacts = { piiTyped: [], explicitNonPii: 0, decoratedPackages: [], candidates: [] }
   const decorated = new Set<string>()
   const candidateFiles = new Map<string, PiiCandidate[]>()
 
   for (const pkg of fs.readdirSync(pkgsDir)) {
-    if (pkg === 'lib-anonymizer') continue // the library itself, not a data contract
+    if (pkg === 'lib-anonymizer') {continue} // the library itself, not a data contract
     const src = path.join(pkgsDir, pkg, 'src')
     for (const file of walkTs(src)) {
       const rel = path.relative(pkgsDir, file)
@@ -72,10 +75,10 @@ export function extractPiiFacts(repoBase: string, libsRepo = 'skello-libs-ts'): 
         const [, kind, arg, field] = m
         if (kind === 'NoAnonymizer') {
           facts.explicitNonPii++
-        } else {
+        } else if (isAnonymizer(kind)) {
           facts.piiTyped.push({
-            pkg, file: rel, field: field!,
-            anonymizer: kind as PiiFieldFact['anonymizer'],
+            pkg, file: rel, field: field,
+            anonymizer: kind,
             format: arg?.match(/RandomAnonymizerFormat\.(\w+)/)?.[1],
           })
         }
@@ -85,9 +88,9 @@ export function extractPiiFacts(repoBase: string, libsRepo = 'skello-libs-ts'): 
       if (!hasDecorators && /\/(Dto|Entity|Model)\//.test(file)) {
         for (const line of content.split('\n')) {
           const decl = line.match(FIELD_DECL_RE)
-          if (decl && PII_NAME_RE.test(decl[1]!)) {
+          if (decl && PII_NAME_RE.test(decl[1])) {
             const list = candidateFiles.get(pkg) ?? []
-            list.push({ pkg, file: rel, field: decl[1]! })
+            list.push({ pkg, file: rel, field: decl[1] })
             candidateFiles.set(pkg, list)
           }
         }
@@ -96,7 +99,7 @@ export function extractPiiFacts(repoBase: string, libsRepo = 'skello-libs-ts'): 
   }
 
   for (const [pkg, list] of candidateFiles) {
-    if (!decorated.has(pkg)) facts.candidates.push(...list)
+    if (!decorated.has(pkg)) {facts.candidates.push(...list)}
   }
   facts.decoratedPackages = [...decorated].sort()
   return facts

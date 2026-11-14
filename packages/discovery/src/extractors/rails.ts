@@ -20,8 +20,8 @@ const CLIENTS_DIR = ['app', 'services', 'microservices']
 function detectTransport(content: string): 'rest' | 'sqs' | 'unknown' {
   const hasHttp = /HTTParty|Faraday|Net::HTTP/.test(content)
   const hasSqs = /Aws::SQS|send_message|sqs/i.test(content)
-  if (hasHttp) return 'rest'
-  if (hasSqs) return 'sqs'
+  if (hasHttp) {return 'rest'}
+  if (hasSqs) {return 'sqs'}
   return 'unknown'
 }
 
@@ -32,7 +32,7 @@ function detectTransport(content: string): 'rest' | 'sqs' | 'unknown' {
  */
 export function extractRailsMonolith(repoBase: string, repo = 'skello-app'): RailsFacts | null {
   const clientsPath = path.join(repoBase, repo, ...CLIENTS_DIR)
-  if (!fs.existsSync(clientsPath)) return null
+  if (!fs.existsSync(clientsPath)) {return null}
 
   const edgesByTarget = new Map<string, RailsClientEdge>()
   const unmapped: string[] = []
@@ -42,7 +42,7 @@ export function extractRailsMonolith(repoBase: string, repo = 'skello-app'): Rai
     const transport = detectTransport(content)
     if (existing) {
       existing.evidence.push(relPath)
-      if (existing.transport === 'unknown') existing.transport = transport
+      if (existing.transport === 'unknown') {existing.transport = transport}
     } else {
       edgesByTarget.set(target, { to: target, evidence: [relPath], transport })
     }
@@ -62,7 +62,7 @@ export function extractRailsMonolith(repoBase: string, repo = 'skello-app'): Rai
         continue
       }
       const content = fs.readFileSync(path.join(clientsPath, entry.name), 'utf-8')
-      addEvidence(target!, relBase, content)
+      addEvidence(target, relBase, content)
     }
 
     if (entry.isDirectory()) {
@@ -72,7 +72,7 @@ export function extractRailsMonolith(repoBase: string, repo = 'skello-app'): Rai
       }
       const target = RAILS_CLIENT_DIR_TARGETS[entry.name]
       if (target === null) {
-        if (entry.name !== 'transformers') unmapped.push(`${relBase}/ (ambiguous target)`)
+        if (entry.name !== 'transformers') {unmapped.push(`${relBase}/ (ambiguous target)`)}
         continue
       }
       const dirPath = path.join(clientsPath, entry.name)
@@ -80,7 +80,7 @@ export function extractRailsMonolith(repoBase: string, repo = 'skello-app'): Rai
       const content = rbFiles
         .map(f => fs.readFileSync(path.join(dirPath, f), 'utf-8'))
         .join('\n')
-      addEvidence(target!, `${relBase}/`, content)
+      addEvidence(target, `${relBase}/`, content)
     }
   }
 
