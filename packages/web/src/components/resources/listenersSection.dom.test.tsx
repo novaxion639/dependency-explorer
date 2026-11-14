@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { ListenerSchema, type Listener } from '@dependency-explorer/data'
 import { renderInApp } from '../../test/renderInApp'
 import { ListenersSection } from './ListenersSection'
-import { dataset } from '../../shell/dataIndexes'
+import { dataset } from '../../test/resourceFixtures'
 
 const at = { file: 'app/models/shift.rb', line: 196 }
 const listener = ListenerSchema.parse({

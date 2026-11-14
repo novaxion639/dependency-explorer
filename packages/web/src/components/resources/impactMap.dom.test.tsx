@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { renderInApp } from '../../test/renderInApp'
 import { ImpactMap } from './ImpactMap'
-import { dataset } from '../../shell/dataIndexes'
+import { dataset } from '../../test/resourceFixtures'
 
 const noop = () => {}
 const render = () => renderInApp(<ImpactMap map={dataset.map} relations={dataset.relations} origin="svc-requests" renderer="svg" onRenderer={noop} onSelectService={noop} />)

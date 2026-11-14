@@ -4,7 +4,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderInApp } from '../../test/renderInApp'
 import { ImpactPage } from './ImpactPage'
-import { dataset } from '../../shell/dataIndexes'
+import { dataset } from '../../test/resourceFixtures'
 
 const noop = () => {}
 const syncFilter = () => screen.getByRole('button', { name: 'Hard failures (sync)' })

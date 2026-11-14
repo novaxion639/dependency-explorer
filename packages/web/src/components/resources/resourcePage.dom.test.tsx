@@ -2,15 +2,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'react'
 import { screen } from '@testing-library/react'
-import { allResourceRelations, connectivityMap, resourceImpact, resourceSurface } from '@dependency-explorer/data'
+import { resourceImpact } from '@dependency-explorer/data'
 import { renderInApp } from '../../test/renderInApp'
 import { overlayOf } from '../health/overlayFixture'
 import { ResourcePage } from './ResourcePage'
-import { dataset } from '../../shell/dataIndexes'
+import { dataset } from '../../test/resourceFixtures'
 
 const noop = () => {}
 const props = { onOpenResource: noop, onOpenFlow: noop, onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
-const source = resourceSurface.resources.map(r => resourceImpact(r.id, connectivityMap, resourceSurface.resources, allResourceRelations)).find(i => i?.dlq)
+const source = dataset.resources.resources.map(r => resourceImpact(r.id, dataset.map, dataset.resources.resources, dataset.relations)).find(i => i?.dlq)
 const sourceId = source?.resource.id ?? ''
 const dlqId = source?.dlq ?? ''
 

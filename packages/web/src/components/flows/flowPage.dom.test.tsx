@@ -1,16 +1,14 @@
 // @vitest-environment jsdom
 import { beforeAll, describe, it, expect, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
-import { connectivityMap } from '@dependency-explorer/data'
 import { parseUrl } from '../../hooks/useUrlState'
 import { validateUrlState } from '../../shell/validateUrlState'
 import { renderInApp } from '../../test/renderInApp'
 import { FlowPage } from './FlowPage'
-import { dataset } from '../../shell/dataIndexes'
+import { flowDataset, shiftCreationFlow } from '../../test/flowFixtures'
 
-const shift = connectivityMap.flows.find(f => f.id === 'shift-creation')
 const PRESENT = '?page=flows&flow=shift-creation&present=1&renderer=svg'
-const renderAt = (qs: string, patch: () => void) => renderInApp(shift && <FlowPage map={dataset.map} flow={shift} url={validateUrlState(parseUrl(qs))} patch={patch} onBack={() => {}} />, qs)
+const renderAt = (qs: string, patch: () => void) => renderInApp(<FlowPage map={flowDataset.map} flow={shiftCreationFlow} url={validateUrlState(parseUrl(qs))} patch={patch} onBack={() => {}} />, qs)
 
 describe('FlowPage stepping', () => {
   beforeAll(() => {
@@ -28,7 +26,7 @@ describe('FlowPage stepping', () => {
 
   it('steps the story from the last chapter back to the first', async () => {
     const patch = vi.fn()
-    renderAt(`${PRESENT}&chapter=${shift?.chapters?.length ?? 0}`, patch)
+    renderAt(`${PRESENT}&chapter=${shiftCreationFlow.chapters.length}`, patch)
 
     await userEvent.keyboard('{ArrowRight}')
 

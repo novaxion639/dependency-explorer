@@ -6,7 +6,7 @@ import { resourcePatch } from '../../hooks/useUrlState'
 import { renderInApp } from '../../test/renderInApp'
 import { CascadeSection } from './CascadeSection'
 import { WritePathsSection } from './WritePathsSection'
-import { dataset } from '../../shell/dataIndexes'
+import { dataset } from '../../test/resourceFixtures'
 
 const SHIFTS = 'pg:skello_production.shifts'
 const noop = () => {}

@@ -2,16 +2,14 @@
 import { describe, it, expect } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { connectivityMap } from '@dependency-explorer/data'
 import { resourcePatch } from '../../hooks/useUrlState'
 import { renderInApp } from '../../test/renderInApp'
 import { ListenerFacts } from './ListenerFacts'
-import { dataset } from '../../shell/dataIndexes'
+import { flowListenerSurface, selfServeSignupFlow, shiftUpdateFlow } from '../../test/flowFixtures'
 
-const mount = (id: string, flowId = 'shift-update') => {
-  const flow = connectivityMap.flows.find(f => f.id === flowId)
-  const unit = (flow?.codeUnits ?? []).find(u => u.id === id)
-  return renderInApp(flow && unit && <ListenerFacts surface={dataset.listeners} flow={flow} unit={unit} />)
+const mount = (id: string, flow = shiftUpdateFlow) => {
+  const unit = (flow.codeUnits ?? []).find(u => u.id === id)
+  return renderInApp(unit && <ListenerFacts surface={flowListenerSurface} flow={flow} unit={unit} />)
 }
 
 const rowOf = (element: HTMLElement): HTMLElement => {
@@ -66,7 +64,7 @@ describe('ListenerFacts', () => {
   })
 
   it('labels a table-event link unverified', () => {
-    mount('cu-ss-prospect', 'self-serve-signup')
+    mount('cu-ss-prospect', selfServeSignupFlow)
 
     expect(screen.getAllByText('by table event — unverified', { exact: false }).length).toBeGreaterThan(0)
   })
@@ -91,14 +89,14 @@ describe('ListenerFacts', () => {
   })
 
   it('shows no source on a table-event row', () => {
-    mount('cu-ss-prospect', 'self-serve-signup')
+    mount('cu-ss-prospect', selfServeSignupFlow)
     const [glyph] = screen.getAllByRole('img', { name: 'unverified, matched by table event' })
 
     expect(rowOf(glyph ?? document.body).textContent?.split('→')[0]).not.toMatch(/\.rb:\d+/)
   })
 
   it('announces a table-event row as matched by table event', () => {
-    mount('cu-ss-prospect', 'self-serve-signup')
+    mount('cu-ss-prospect', selfServeSignupFlow)
 
     expect(screen.getAllByRole('img', { name: 'unverified, matched by table event' }).length).toBeGreaterThan(0)
   })
