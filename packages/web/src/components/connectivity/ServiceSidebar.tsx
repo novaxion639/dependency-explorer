@@ -36,8 +36,8 @@ export function ServiceSidebar({ services, teams, selected, onSelect, search, on
   })
 
   return (
-    <nav aria-label="Services" className={`sidebar ${styles.sidebar}`} data-open={open}>
-      <CloseButton label="Close services menu" className={`mobile-only ${styles.close}`} onClick={onClose} />
+    <nav aria-label="Services" className={styles.sidebar} data-open={open}>
+      <CloseButton label="Close services menu" className={styles.close} onClick={onClose} />
       <div className={styles.search}>
         <SkTextField size="small" fullWidth value={search} onChange={e => onSearch(e.target.value)} placeholder="Filter by name or team…" slotProps={{ htmlInput: { 'aria-label': 'Filter services' } }} />
       </div>

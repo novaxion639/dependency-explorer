@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { DatadogOverlaySchema, DeliveryOverlaySchema, resourceSurface, type ConnectivityService } from '@dependency-explorer/data'
 import { selectServicePatch, type UrlState } from '../hooks/useUrlState'
 import { useOverlay } from '../hooks/useOverlay'
@@ -16,7 +16,7 @@ import { serviceByArea } from '../diagram/layouts/serviceByArea'
 import { serviceByHow } from '../diagram/layouts/serviceByHow'
 import { ServiceHeader } from './ServiceHeader'
 import { map } from './dataIndexes'
-import { keyInfo, presentStepKey, stepThrough } from './presentMode'
+import { usePresentSteps } from './usePresentSteps'
 import styles from './MicroservicesPage.module.css'
 import { SkButton } from '@skelloapp/skello-ds-web'
 
@@ -35,20 +35,7 @@ function Overview({ url, patch }: Props) {
   const spotlight = url.area ? areaId(url.area) : null
   const model = useMemo(() => (url.present ? areaGraph(map, minWeight) : overviewMap(map, spotlight)), [url.present, minWeight, spotlight])
   const focus = useMemo<FocusState>(() => ({ spotlight, impact: null }), [spotlight])
-  useEffect(() => {
-    if (!url.present) {
-      return
-    }
-    const onKey = (e: KeyboardEvent) => {
-      const dir = presentStepKey(keyInfo(e))
-      if (dir) {
-        e.preventDefault()
-        patch({ area: stepThrough(AREA_STEPS, url.area, dir) })
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [url.present, url.area, patch])
+  usePresentSteps(url.present, AREA_STEPS, url.area, useCallback((area: string | null) => patch({ area }), [patch]))
   return (
     <Diagram
       model={model}

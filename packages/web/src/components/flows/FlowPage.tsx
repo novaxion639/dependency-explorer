@@ -1,11 +1,11 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import type { ServiceFlow } from '@dependency-explorer/data'
 import type { UrlState } from '../../hooks/useUrlState'
 import { Diagram } from '../../diagram/Diagram'
 import type { FocusState } from '../../diagram/focus'
 import { chapterFocus, swimlanes } from '../../diagram/layouts/swimlane'
 import { selectPatch } from '../../diagram/refPatch'
-import { keyInfo, presentStepKey, stepThrough } from '../../shell/presentMode'
+import { usePresentSteps } from '../../shell/usePresentSteps'
 import { FlowHeader } from './FlowHeader'
 import { FlowStory } from './FlowStory'
 import styles from './flows.module.css'
@@ -27,22 +27,9 @@ export function FlowPage({ flow, url, patch, onBack }: Props) {
     () => ({ spotlight: null, impact: null, chapter: url.present && current ? chapterFocus(model, flow, current.refs) : null }),
     [url.present, current, model, flow],
   )
-  useEffect(() => {
-    if (!url.present) {
-      return
-    }
-    const steps = chapters.map((_, i) => String(i + 1))
-    const onKey = (e: KeyboardEvent) => {
-      const dir = presentStepKey(keyInfo(e))
-      if (dir) {
-        e.preventDefault()
-        const next = stepThrough(steps, url.chapter ? String(url.chapter) : null, dir)
-        patch({ chapter: next ? Number(next) : null })
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [url.present, url.chapter, chapters, patch])
+  const steps = useMemo(() => chapters.map((_, i) => String(i + 1)), [chapters])
+  const stepTo = useCallback((next: string | null) => patch({ chapter: next ? Number(next) : null }), [patch])
+  usePresentSteps(url.present, steps, url.chapter ? String(url.chapter) : null, stepTo)
   const diagram = (
     <Diagram
       model={model}
