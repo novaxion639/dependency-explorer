@@ -5,8 +5,8 @@ import { useOverlay } from '../../hooks/useOverlay'
 import { AreaChip } from '../areas/AreaChip'
 import styles from './OwnershipPage.module.css'
 import { ArrowLeftIcon, SkButton } from '@skelloapp/skello-ds-web'
-import { NavChip } from '../../shell/NavLink'
-import { selectServicePatch } from '../../hooks/useUrlState'
+import { NavCard, NavChip } from '../../shell/NavLink'
+import { pagePatch, selectServicePatch } from '../../hooks/useUrlState'
 
 const NO_TEAMS: Team[] = []
 
@@ -67,7 +67,7 @@ export function OwnershipPage({
         <>
           <ul className={styles.teams}>
             {sortedTeams.map(team => (
-              <li key={team.id}><TeamCard team={team} services={byTeam.get(team.id) ?? []} onClick={() => onFocusTeam(team.id)} /></li>
+              <li key={team.id}><TeamCard team={team} services={byTeam.get(team.id) ?? []} /></li>
             ))}
           </ul>
           <UnownedSection services={unowned} />
@@ -90,10 +90,10 @@ function CoverageBar({ owned, total }: { owned: number; total: number }) {
   )
 }
 
-function TeamCard({ team, services, onClick }: { team: Team; services: ConnectivityService[]; onClick: () => void }) {
+function TeamCard({ team, services }: { team: Team; services: ConnectivityService[] }) {
   const hasServices = services.length > 0
   return (
-    <button type="button" className={styles.card} data-empty={hasServices ? 'false' : 'true'} onClick={onClick}>
+    <NavCard patch={{ ...pagePatch('ownership'), team: team.id }} className={hasServices ? styles.card : `${styles.card} ${styles.cardDim}`} frameStyle={{ height: '100%' }}>
       <span className={styles.cardHead}>
         <b>{team.name}</b>
         <span className={styles.badge}>{services.length}</span>
@@ -102,7 +102,7 @@ function TeamCard({ team, services, onClick }: { team: Team; services: Connectiv
       {hasServices
         ? <span className={styles.cardServices}>{services.map(svc => <span key={svc.name}>{svc.name}</span>)}</span>
         : <span className={styles.empty}>No CODEOWNERS ownership resolved yet</span>}
-    </button>
+    </NavCard>
   )
 }
 

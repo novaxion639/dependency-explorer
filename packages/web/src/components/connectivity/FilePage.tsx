@@ -1,15 +1,13 @@
-import type { ServiceFlow } from '@dependency-explorer/data'
 import type { FileIndexEntry } from '../../utils/fileIndex'
 import styles from './listPage.module.css'
-import { NavLink } from '../../shell/NavLink'
-import { resourcePatch, routePatch } from '../../hooks/useUrlState'
+import { NavCard, NavLink } from '../../shell/NavLink'
+import { flowPatch, resourcePatch, routePatch } from '../../hooks/useUrlState'
 
 interface Props {
   entry: FileIndexEntry
-  onSelectFlow: (flow: ServiceFlow) => void
 }
 
-export function FilePage({ entry, onSelectFlow }: Props) {
+export function FilePage({ entry }: Props) {
   return (
     <section aria-label="File" className={styles.page}>
       <h1 className={styles.title}><span aria-hidden="true">📄</span><code>{entry.path}</code></h1>
@@ -21,11 +19,11 @@ export function FilePage({ entry, onSelectFlow }: Props) {
       <ul className={styles.cards}>
         {entry.flows.map(flow => (
           <li key={flow.id}>
-            <button type="button" className={styles.card} onClick={() => onSelectFlow(flow)}>
+            <NavCard patch={{ ...flowPatch(flow.id), unit: (flow.codeUnits ?? []).find(u => u.service === entry.service && u.path === entry.path)?.id ?? null }} className={styles.card}>
               <b>{flow.name}</b>
               <small>{(flow.codeUnits ?? []).filter(u => u.service === entry.service && u.path === entry.path).map(u => u.label).join(' · ')}</small>
               <small className={styles.go}>Open in the flow →</small>
-            </button>
+            </NavCard>
           </li>
         ))}
       </ul>

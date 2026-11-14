@@ -9,11 +9,10 @@ import { ResourcesIndex } from './ResourcesIndex'
 
 const COUNTS = /^(\d+) listeners?( · \d+ also changes?)( · \d+ bypassing writes?)$/
 const pgTables = resourceSurface.resources.filter(r => r.kind === 'table' && r.id.startsWith('pg:'))
-const noop = () => {}
 
 const renderIndex = (qs = '?page=resources') => {
   const patch = vi.fn<(p: Partial<UrlState>) => void>()
-  renderInApp(<ResourcesIndex url={parseUrl(qs)} patch={patch} onOpenResource={noop} />, qs)
+  renderInApp(<ResourcesIndex url={parseUrl(qs)} patch={patch} />, qs)
   return patch
 }
 
@@ -84,5 +83,13 @@ describe('ResourcesIndex filters', () => {
     await userEvent.click(screen.getByRole('checkbox', { name: 'Cycles only' }))
 
     expect(patch).toHaveBeenCalledWith({ cycles: true })
+  })
+})
+
+describe('ResourcesIndex cards as links', () => {
+  it('links each card to its resource page', () => {
+    renderIndex()
+
+    expect(screen.getByText('shifts').closest('a')?.getAttribute('href')).toBe(`/?page=resources&resource=${encodeURIComponent('pg:skello_production.shifts')}`)
   })
 })

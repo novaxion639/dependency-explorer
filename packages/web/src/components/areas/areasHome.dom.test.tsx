@@ -13,7 +13,7 @@ const platform = (connectivityMap.areas ?? []).filter(a => a.kind === 'platform'
 const renderWithOverlay = async (body: unknown, status = 200) => {
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(body), { status })))
   await act(async () => {
-    renderInApp(<AreasHome map={connectivityMap} onOpenArea={noop} onOpenContext={noop} />)
+    renderInApp(<AreasHome map={connectivityMap} onOpenContext={noop} />)
   })
 }
 
@@ -61,5 +61,13 @@ describe('AreasHome', () => {
     await renderWithOverlay({}, 404)
 
     expect(screen.queryByText(/Bugs with no product area/)).toBeNull()
+  })
+})
+
+describe('AreasHome product cards', () => {
+  it('link each product area to its page', async () => {
+    await renderWithOverlay({}, 404)
+
+    expect(screen.getByRole('link', { name: /^Planning/ }).getAttribute('href')).toBe('/?page=areas&area=planning')
   })
 })

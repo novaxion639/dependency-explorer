@@ -3,12 +3,13 @@ import { getFlowAreas } from '@dependency-explorer/data'
 import { AreaChip } from '../areas/AreaChip'
 import styles from './listPage.module.css'
 import own from './FlowsIndex.module.css'
+import { NavCard } from '../../shell/NavLink'
+import { flowPatch } from '../../hooks/useUrlState'
 
 interface Props {
   service: string | null
   flows: ServiceFlow[]
   map: ConnectivityMap
-  onSelectFlow: (flow: ServiceFlow) => void
 }
 
 function firstSentence(text: string): string {
@@ -20,10 +21,10 @@ function chain(flow: ServiceFlow): string[] {
   return [...new Set(flow.steps.flatMap(s => [s.from, s.to]))]
 }
 
-function FlowCard({ flow, service, map, onSelect }: { flow: ServiceFlow; service: string | null; map: ConnectivityMap; onSelect: () => void }) {
+function FlowCard({ flow, service, map }: { flow: ServiceFlow; service: string | null; map: ConnectivityMap }) {
   const areas = getFlowAreas(flow, map.areas ?? [])
   return (
-    <button type="button" className={styles.card} onClick={onSelect}>
+    <NavCard patch={flowPatch(flow.id)} className={styles.card}>
       <b>{flow.name}</b>
       <small>{firstSentence(flow.description)}</small>
       {areas.length > 0 && <span className={own.areas}>{areas.map(a => <AreaChip key={a.id} area={a} primary={a.id === flow.primaryArea} />)}</span>}
@@ -32,11 +33,11 @@ function FlowCard({ flow, service, map, onSelect }: { flow: ServiceFlow; service
           <span key={name}>{i > 0 && ' → '}{name === service ? <mark>{name}</mark> : name}</span>
         ))}
       </small>
-    </button>
+    </NavCard>
   )
 }
 
-export function FlowsIndex({ service, flows, map, onSelectFlow }: Props) {
+export function FlowsIndex({ service, flows, map }: Props) {
   if (service) {
     const relevant = flows.filter(f => f.steps.some(s => s.from === service || s.to === service))
     return (
@@ -44,7 +45,7 @@ export function FlowsIndex({ service, flows, map, onSelectFlow }: Props) {
         <h1 className={styles.title}>Flows through {service}</h1>
         <p className={styles.meta}>{service} takes part in {relevant.length} flow{relevant.length !== 1 ? 's' : ''}</p>
         {relevant.length === 0 ? <p className={styles.meta}>No flows found for this service.</p> : (
-          <ul className={styles.cards}>{relevant.map(f => <li key={f.id}><FlowCard flow={f} service={service} map={map} onSelect={() => onSelectFlow(f)} /></li>)}</ul>
+          <ul className={styles.cards}>{relevant.map(f => <li key={f.id}><FlowCard flow={f} service={service} map={map} /></li>)}</ul>
         )}
       </section>
     )
@@ -64,7 +65,7 @@ export function FlowsIndex({ service, flows, map, onSelectFlow }: Props) {
       {[...groups].filter(([, list]) => list.length > 0).map(([name, list]) => (
         <section key={name} aria-label={name}>
           <h2 className={styles.group}>{name}</h2>
-          <ul className={styles.cards}>{list.map(f => <li key={f.id}><FlowCard flow={f} service={null} map={map} onSelect={() => onSelectFlow(f)} /></li>)}</ul>
+          <ul className={styles.cards}>{list.map(f => <li key={f.id}><FlowCard flow={f} service={null} map={map} /></li>)}</ul>
         </section>
       ))}
     </section>
