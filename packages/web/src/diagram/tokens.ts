@@ -1,5 +1,5 @@
 export function inlineTokens(svg: string, read: (token: string) => string): string {
-  return svg.replace(/var\((--[a-z0-9-]+)\)/g, (match, token: string) => read(token).trim() || match)
+  return svg.replace(/var\((--[a-z0-9-]+)\)/g, (match, token: string) => read(token).trim().replaceAll('"', '&quot;') || match)
 }
 
 export function readRootToken(token: string): string {

@@ -2,7 +2,7 @@
 
 The canonical, continuously verified map of Skello's distributed architecture: every service, endpoint, connection, queue and business flow, **generated from code and deployed state, enriched by humans where automation can't reach**.
 
-It is a local proof of concept: a static bundle with no backend and no external dependencies, run on your own machine ([ADR-0005](docs/adr/0005-local-poc-first.md)). Hosting, SSO and network integration wait on validation with the Infrastructure team and Architects; the static bundle can sit behind any SSO proxy, ALB or CDN they choose.
+It is a local proof of concept: a static bundle with no backend, run on your own machine ([ADR-0005](docs/adr/0005-local-poc-first.md)). Hosting, SSO and network integration wait on validation with the Infrastructure team and Architects; the static bundle can sit behind any SSO proxy, ALB or CDN they choose.
 
 ## What it shows
 
@@ -15,9 +15,13 @@ It is a local proof of concept: a static bundle with no backend and no external 
 ## Quickstart
 
 ```bash
+gh auth refresh -s read:packages   # the Skello Design System is on GitHub Packages
+echo "//npm.pkg.github.com/:_authToken=$(gh auth token)" >> ~/.npmrc
 pnpm install
 pnpm dev        # → http://localhost:5173
 ```
+
+The repo's `.npmrc` maps `@skelloapp` to GitHub Packages; the token in `~/.npmrc` needs `read:packages` ([ADR-0012](docs/adr/0012-skello-design-system.md)). CI reads it from the `SKELLO_PACKAGES_TOKEN` secret.
 
 No database, no seeding, no Docker: the dataset is imported at build time and validated on load.
 

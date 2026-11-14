@@ -10,7 +10,7 @@ A question-first home: a search box over the ⌘K index, plus four entry tiles (
 - **Change:** Resources, Impact.
 - **People:** Ownership.
 
-A breadcrumb and a right-hand detail panel for connections and endpoints complete the frame. The visual style is Paper: ink on warm paper, with meaning carried by line style and colour kept for highlights. At phone width the rail opens from a Menu button.
+A breadcrumb and a right-hand detail panel for connections and endpoints complete the frame. The visual style is the Skello brand from `@skelloapp/skello-ds-web` ([ADR-0012](../adr/0012-skello-design-system.md)): Gellix, white surfaces, the DS semantic colours, with meaning carried by line style and colour kept for highlights and failure effects. The DS theme feeds the app's CSS custom properties (`src/styles/themeVars.tsx`), so the CSS modules, the diagrams and the image export all read the DS values. At phone width the rail opens from a Menu button.
 
 **Present mode** — `P`, the Present button or `?present=1` on any page hides the rail and the panel and enlarges the type for a shared screen; `Esc` exits.
 
@@ -169,7 +169,7 @@ Every architecture and flow diagram is one model, drawn by a choice of two rende
 
 **Export:**
 - PNG from both; React Flow keeps dragged nodes. Flow swimlanes export too.
-- SVG from the SVG renderer: a standalone file with the Paper colours resolved.
+- SVG from the SVG renderer: a standalone file with the theme colours and font resolved.
 - Copy Mermaid from either renderer: the diagram's Mermaid source, checked in tests against the `mermaid` parser.
 
 A view a renderer cannot draw hides that option.
