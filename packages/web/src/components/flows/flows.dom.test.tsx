@@ -32,10 +32,16 @@ describe('FlowPage', () => {
     expect(screen.getByText('👤 manager', { exact: false })).toBeTruthy()
   })
 
-  it.each(['A planner creates a shift on the planning page.', 'more'])('shows %s under the name', text => {
+  it('shows the summary under the name', () => {
     renderPage(EXPLORE)
 
-    expect(screen.getByText(text)).toBeTruthy()
+    expect(screen.getByText('A planner creates a shift on the planning page.')).toBeTruthy()
+  })
+
+  it('folds the rest of the description behind a collapsed More accordion', () => {
+    renderPage(EXPLORE)
+
+    expect(screen.getByRole('button', { name: 'More' }).getAttribute('aria-expanded')).toBe('false')
   })
 
   it('draws the swimlanes when exploring', () => {
