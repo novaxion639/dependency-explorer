@@ -1,36 +1,57 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
-import { act } from 'react'
-import { createRoot } from 'react-dom/client'
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest'
+import { act, screen, within } from '@testing-library/react'
+import { renderInApp } from '../test/renderInApp'
 import { map } from './dataIndexes'
 import { Explorer } from './Explorer'
 
-const openRow = (host: HTMLElement) => host.querySelector('[aria-label="Endpoints"] [aria-expanded="true"]')?.textContent ?? null
+const servicesWithEndpoints = () => {
+  const [first, second] = map.services.filter(s => s.endpoints.length > 1 && s.name !== 'skello-app')
+  if (!first || !second) {
+    throw new Error('the dataset needs two services with endpoints')
+  }
+  return { first, second }
+}
+
+const drawerQs = (name: string) => `?page=microservices&s=${name}&drawer=${name}`
+
+const openRow = () => within(screen.getByRole('article', { name: 'Endpoints' })).getByRole('button', { expanded: true }).textContent
+
+const renderExplorerAt = (name: string) => {
+  window.history.replaceState(null, '', `/${drawerQs(name)}`)
+  renderInApp(<Explorer />, drawerQs(name))
+}
+
+const scrollIntoView = Element.prototype.scrollIntoView
+
+beforeEach(() => {
+  Element.prototype.scrollIntoView = vi.fn()
+  vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} })
+})
+
+afterEach(() => {
+  Element.prototype.scrollIntoView = scrollIntoView
+  vi.unstubAllGlobals()
+})
 
 describe('endpoint drawer', () => {
-  it('opens the first endpoint of the new service when the drawer switches service', async () => {
-    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
-    const scrollIntoView = Element.prototype.scrollIntoView
-    Element.prototype.scrollIntoView = () => {}
-    globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} }
-    const [first, second] = map.services.filter(s => s.endpoints.length > 1 && s.name !== 'skello-app')
-    if (!first || !second) {
-      throw new Error('the dataset needs two services with endpoints')
-    }
-    window.history.replaceState(null, '', `/?page=microservices&s=${first.name}&drawer=${first.name}`)
-    const host = document.createElement('div')
-    document.body.append(host)
-    const root = createRoot(host)
-    await act(async () => root.render(<Explorer />))
-    expect(openRow(host)).toContain(first.endpoints[0]?.path ?? '')
+  it('opens the first endpoint of the drawer service', () => {
+    const { first } = servicesWithEndpoints()
 
-    await act(async () => {
-      window.history.pushState(null, '', `/?page=microservices&s=${second.name}&drawer=${second.name}`)
+    renderExplorerAt(first.name)
+
+    expect(openRow()).toContain(first.endpoints[0]?.path ?? '')
+  })
+
+  it('opens the first endpoint of the new service when the drawer switches service', () => {
+    const { first, second } = servicesWithEndpoints()
+    renderExplorerAt(first.name)
+
+    act(() => {
+      window.history.pushState(null, '', `/${drawerQs(second.name)}`)
       window.dispatchEvent(new PopStateEvent('popstate'))
     })
 
-    expect(openRow(host)).toContain(second.endpoints[0]?.path ?? '')
-    await act(async () => root.unmount())
-    Element.prototype.scrollIntoView = scrollIntoView
+    expect(openRow()).toContain(second.endpoints[0]?.path ?? '')
   })
 })

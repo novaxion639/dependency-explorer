@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { connectivityMap } from '@dependency-explorer/data'
-import { renderWithNav } from '../../test/renderWithNav'
+import { renderInApp } from '../../test/renderInApp'
 import { FlowsIndex } from './FlowsIndex'
 import { ImpactPage } from '../resources/ImpactPage'
 
@@ -24,13 +24,13 @@ describe('module pages', () => {
   })
 
   it('asks for an origin before showing impact', () => {
-    renderWithNav(<ImpactPage origin={null} onPick={noop} onSelect={noop} />)
+    renderInApp(<ImpactPage origin={null} onPick={noop} onSelect={noop} />)
 
     expect(screen.getByRole('combobox', { name: 'Service or resource' })).toBeTruthy()
   })
 
   it('shows the impact of a picked origin', () => {
-    renderWithNav(<ImpactPage origin="svc-requests" onPick={noop} onSelect={noop} />)
+    renderInApp(<ImpactPage origin="svc-requests" onPick={noop} onSelect={noop} />)
 
     expect(screen.getByRole('heading', { name: 'If svc-requests is down' })).toBeTruthy()
   })

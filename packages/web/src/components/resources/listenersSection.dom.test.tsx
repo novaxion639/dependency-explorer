@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeAll } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ListenerSchema, type Listener } from '@dependency-explorer/data'
-import { renderWithNav } from '../../test/renderWithNav'
+import { renderInApp } from '../../test/renderInApp'
 import { ListenersSection } from './ListenersSection'
 
 const at = { file: 'app/models/shift.rb', line: 196 }
@@ -28,7 +28,7 @@ const mount = ({ open = null, filters = NO_FILTERS, listeners = [listener], onFi
   listeners?: Listener[]
   onFilters?: (p: Partial<Filters>) => void
   onToggle?: (id: string | null) => void
-} = {}) => renderWithNav(<ListenersSection listeners={listeners} filters={filters} open={open} onFilters={onFilters} onToggle={onToggle} />)
+} = {}) => renderInApp(<ListenersSection listeners={listeners} filters={filters} open={open} onFilters={onFilters} onToggle={onToggle} />)
 
 describe('ListenersSection', () => {
   beforeAll(() => {

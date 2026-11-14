@@ -5,6 +5,7 @@ import { LISTENER_EVENTS, tableName } from './listenerView'
 import styles from './ResourcePage.module.css'
 import { NavLink } from '../../shell/NavLink'
 import { resourcePatch } from '../../hooks/useUrlState'
+import { SkSegmentedButton, SkSegmentedButtonItem } from '@skelloapp/skello-ds-web'
 
 interface Props {
   table: string
@@ -41,9 +42,9 @@ export function CascadeSection({ table, event, onEvent }: Props) {
   return (
     <section aria-label="Also changes" className={styles.section}>
       <h2>{`Also changes · ${plural(reached.length, 'table')} across all events`}</h2>
-      <div role="group" aria-label="Cascade event" className={styles.filters}>
-        {LISTENER_EVENTS.map(e => <button key={e} type="button" className={styles.chip} aria-pressed={e === selected} onClick={() => onEvent(e)}>{e}</button>)}
-      </div>
+      <SkSegmentedButton aria-label="Cascade event" value={selected} onChange={(_, next) => onEvent(next)}>
+        {LISTENER_EVENTS.map(e => <SkSegmentedButtonItem key={e} value={e}>{e}</SkSegmentedButtonItem>)}
+      </SkSegmentedButton>
       {nodes.some(n => n.hops.length > 0)
         ? <CascadeHops nodes={nodes} />
         : <p className={styles.meta}>{`No table changes on ${selected}.`}</p>}

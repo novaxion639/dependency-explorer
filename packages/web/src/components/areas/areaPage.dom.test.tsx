@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'react'
 import { screen } from '@testing-library/react'
 import { connectivityMap } from '@dependency-explorer/data'
-import { renderWithNav } from '../../test/renderWithNav'
+import { renderInApp } from '../../test/renderInApp'
 import { AreaPage } from './AreaPage'
 import { areaBugs, jiraOverlayOf } from './jiraOverlayFixture'
 
@@ -14,7 +14,7 @@ const areaId = map.areas[0]?.id ?? ''
 const render = async (body: unknown, status = 200) => {
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(body), { status })))
   await act(async () => {
-    renderWithNav(<AreaPage map={map} areaId={areaId} term={null} onBack={noop} onOpenArea={noop} onSelectService={noop} />)
+    renderInApp(<AreaPage map={map} areaId={areaId} term={null} onBack={noop} onOpenArea={noop} onSelectService={noop} />)
   })
 }
 

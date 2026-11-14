@@ -11,7 +11,7 @@ import { SvgDiagram } from './renderers/SvgDiagram'
 import { toMermaid } from './renderers/toMermaid'
 import { readRootToken } from './tokens'
 import styles from './Diagram.module.css'
-import { SkButton } from '@skelloapp/skello-ds-web'
+import { SkButton, SkSegmentedButton, SkSegmentedButtonItem } from '@skelloapp/skello-ds-web'
 
 const RENDERER_LABEL: Record<Renderer, string> = { 'react-flow': 'React Flow', svg: 'SVG' }
 const MODES: EdgeMode[] = ['sync', 'async', 'data-feed']
@@ -65,29 +65,12 @@ export function Diagram({ model, focus, renderer, onRenderer, onSelect, filename
     download(exportName(filename, 'svg'), `data:image/svg+xml;charset=utf-8,${encodeURIComponent(standalone())}`)
   }
 
-  const stepRenderer = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0
-    if (step === 0) {
-      return
-    }
-    e.preventDefault()
-    const list = model.renderers
-    const index = (list.indexOf(active) + step + list.length) % list.length
-    const next = list[index]
-    if (next) {
-      onRenderer(next)
-      e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[index]?.focus()
-    }
-  }
-
   return (
     <section className={styles.frame} aria-label={model.title}>
       <div role="toolbar" aria-label="Diagram tools" className={styles.toolbar}>
-        <div role="radiogroup" aria-label="Renderer" className={styles.renderers}>
-          {model.renderers.map(r => (
-            <button key={r} type="button" role="radio" aria-checked={r === active} tabIndex={r === active ? 0 : -1} onClick={() => onRenderer(r)} onKeyDown={stepRenderer}>{RENDERER_LABEL[r]}</button>
-          ))}
-        </div>
+        <SkSegmentedButton aria-label="Renderer" value={active} onChange={(_, renderer) => onRenderer(renderer)}>
+          {model.renderers.map(r => <SkSegmentedButtonItem key={r} value={r}>{RENDERER_LABEL[r]}</SkSegmentedButtonItem>)}
+        </SkSegmentedButton>
         <SkButton variant="outlined" size="small" onClick={() => { void exportPng() }}>Export PNG</SkButton>
         {active === 'svg' && <SkButton variant="outlined" size="small" onClick={exportSvg}>Export SVG</SkButton>}
         <CopyMermaid source={source} />

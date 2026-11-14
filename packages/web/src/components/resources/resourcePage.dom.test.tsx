@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'react'
 import { screen } from '@testing-library/react'
 import { allResourceRelations, connectivityMap, resourceImpact, resourceSurface } from '@dependency-explorer/data'
-import { renderWithNav } from '../../test/renderWithNav'
+import { renderInApp } from '../../test/renderInApp'
 import { overlayOf } from '../health/overlayFixture'
 import { ResourcePage } from './ResourcePage'
 
@@ -16,7 +16,7 @@ const dlqId = source?.dlq ?? ''
 const render = async (id: string, body: unknown, status = 200) => {
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(body), { status })))
   await act(async () => {
-    renderWithNav(<ResourcePage id={id} {...props} />)
+    renderInApp(<ResourcePage id={id} {...props} />)
   })
 }
 
