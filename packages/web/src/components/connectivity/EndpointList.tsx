@@ -3,7 +3,7 @@ import type { ServiceEndpoint, RecurringTask } from '@dependency-explorer/data'
 import { STORE_META } from '../storeTypes'
 import styles from './EndpointList.module.css'
 import { CloseButton } from '../CloseButton'
-import { ArrowRightIcon, SkButton } from '@skelloapp/skello-ds-web'
+import { ArrowRightIcon, SkAccordion, SkButton } from '@skelloapp/skello-ds-web'
 
 interface Props {
   serviceName: string
@@ -71,13 +71,13 @@ export function EndpointList({ serviceName, endpoints, recurringTasks, highlight
           const isOpen = open === ep.id
           return (
             <li key={ep.id} id={`ep-row-${ep.id}`} className={highlightId === ep.id ? styles.highlight : undefined}>
-              <button type="button" className={styles.row} aria-expanded={isOpen} onClick={() => setOpen(prev => (prev === ep.id ? null : ep.id))}>
-                <span className={styles.method}>{ep.method}</span>
-                <code>{ep.path}</code>
-                {ep.provenance?.source === 'discovered' && <span className={styles.okText} title={`Code-verified ${ep.provenance.lastVerified ?? ''} — ${ep.provenance.evidence ?? ''}`}>✓</span>}
-                <span aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
-              </button>
-              {isOpen && (
+              <SkAccordion
+                title={`${ep.method} ${ep.path}${ep.provenance?.source === 'discovered' ? ' ✓' : ''}`}
+                expanded={isOpen}
+                onChange={(_, expanded) => setOpen(expanded ? ep.id : null)}
+                disableGutters
+                slotProps={{ transition: { unmountOnExit: true } }}
+              >
                 <div className={styles.body}>
                   <p className={ep.provenance?.source === 'discovered' ? styles.okText : styles.muted}>
                     {ep.provenance?.source === 'discovered'
@@ -120,7 +120,7 @@ export function EndpointList({ serviceName, endpoints, recurringTasks, highlight
                     ))}
                   </dl>
                 </div>
-              )}
+              </SkAccordion>
             </li>
           )
         })}

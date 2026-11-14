@@ -79,17 +79,17 @@ export function Explorer() {
     url.page === 'home' ? <HomePage index={searchIndex} />
     : url.page === 'areas' ? (url.area
       ? <AreaPage map={map} areaId={url.area} term={url.term} onBack={() => patch({ area: null, term: null })} onOpenArea={id => patch({ area: id, term: null })} onSelectService={selectService} />
-      : <AreasHome map={map} onOpenArea={id => patch({ area: id, term: null })} onOpenContext={() => patch({ page: 'microservices', s: null })} />)
+      : <AreasHome map={map} onOpenContext={() => patch({ page: 'microservices', s: null })} />)
     : url.page === 'microservices' ? <MicroservicesPage url={url} patch={patch} />
     : url.page === 'monolith' ? <MonolithPage url={url} patch={patch} />
     : url.page === 'flows' ? (selectedFlow
       ? <FlowPage flow={selectedFlow} url={url} patch={patch} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, unit: null, chapter: null }))} />
-      : flagEntry ? <FlagPage entry={flagEntry} onSelectFlow={flow => patch({ flow: flow.id, flag: null })} />
-      : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, file: null, unit: (flow.codeUnits ?? []).find(u => u.service === fileEntry.service && u.path === fileEntry.path)?.id ?? null })} />
-      : <FlowsIndex service={url.flows} flows={map.flows} map={map} onSelectFlow={flow => patch({ flow: flow.id })} />)
+      : flagEntry ? <FlagPage entry={flagEntry} />
+      : fileEntry ? <FilePage entry={fileEntry} />
+      : <FlowsIndex service={url.flows} flows={map.flows} map={map} />)
     : url.page === 'resources' ? (url.resource
       ? <ResourcePage id={url.resource} onBlast={id => patch({ page: 'impact', blast: id })} listeners={url} onListeners={patch} />
-      : <ResourcesIndex url={url} patch={patch} onOpenResource={openResource} />)
+      : <ResourcesIndex url={url} patch={patch} />)
     : url.page === 'impact' ? <ImpactPage origin={url.blast} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onPick={id => patch({ blast: id })} onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))} />
     : <OwnershipPage map={map} focusedTeam={url.team} onFocusTeam={team => patch({ team })} onSelectService={selectService} />
 

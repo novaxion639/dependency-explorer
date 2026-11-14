@@ -7,7 +7,7 @@ import { useOverlay } from '../../hooks/useOverlay'
 import { plural } from '../../utils/plural'
 import { BugsSection } from './BugsSection'
 import styles from './AreaPage.module.css'
-import { ArrowLeftIcon, SkButton } from '@skelloapp/skello-ds-web'
+import { ArrowLeftIcon, SkAccordion, SkButton } from '@skelloapp/skello-ds-web'
 import { NavLink } from '../../shell/NavLink'
 import { flowPatch, selectServicePatch } from '../../hooks/useUrlState'
 
@@ -125,8 +125,14 @@ export function AreaPage({ map, areaId, term, onBack, onOpenArea, onSelectServic
           const repos = [...new Set(locs.map(l => l.repo))]
           const files = globs.reduce((n, g) => n + (g.files ?? 0), 0)
           return (
-            <details key={platform} open={globs.length <= OPEN_GLOB_LIMIT} className={styles.platform}>
-              <summary>{PLATFORM_LABEL[platform]} — {repos.join(', ')} · {plural(globs.length, 'location')} · {plural(files, 'file')}</summary>
+            <SkAccordion
+              key={platform}
+              title={`${PLATFORM_LABEL[platform]} — ${repos.join(', ')} · ${plural(globs.length, 'location')} · ${plural(files, 'file')}`}
+              defaultExpanded={globs.length <= OPEN_GLOB_LIMIT}
+              className={styles.platform}
+              disableGutters
+              slotProps={{ transition: { unmountOnExit: true } }}
+            >
               <ul>
                 {globs.map(g => (
                   <li key={`${g.repo}:${g.glob}`}>
@@ -136,7 +142,7 @@ export function AreaPage({ map, areaId, term, onBack, onOpenArea, onSelectServic
                   </li>
                 ))}
               </ul>
-            </details>
+            </SkAccordion>
           )
         })}
       </section>
