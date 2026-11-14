@@ -8,13 +8,9 @@ type SearchResultType = 'service' | 'endpoint' | 'connection' | 'flow' | 'area' 
 
 export interface SearchEntry {
   type: SearchResultType
-  /** Primary display text — matched with the highest weight */
   label: string
-  /** Secondary display line */
   sublabel: string
-  /** Extra matchable text (descriptions, SDK packages, queue names) — never displayed */
   haystack: string
-  /** URL-state patch applied when the entry is chosen — results ARE permalinks */
   patch: Partial<UrlState>
 }
 
@@ -152,12 +148,6 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
   return entries
 }
 
-/**
- * Token-AND substring matching, dependency-free. Every whitespace-separated
- * query token must appear somewhere; entries are ranked by where the tokens
- * hit (label prefix > label > sublabel > haystack), then by type, then by
- * label length (shorter = more exact).
- */
 export function searchEntries(index: SearchEntry[], query: string, limit = 40): SearchEntry[] {
   const tokens = query.toLowerCase().split(/\s+/).filter(Boolean)
   if (!tokens.length) {
