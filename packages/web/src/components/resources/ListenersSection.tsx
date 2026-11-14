@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
-import type { Listener } from '@dependency-explorer/data'
-import { listenerSurface } from '@dependency-explorer/data'
+import type { Listener, ListenerSurface } from '@dependency-explorer/data'
 import { LISTENER_EVENTS, LISTENER_GRADES, LISTENER_KINDS, effectText, filterListeners, gradeGlyph, gradeLabel, hasText, listenerHeading, sourceHref, type ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
 import { NavLink } from '../../shell/NavLink'
@@ -8,9 +7,11 @@ import { resourcePatch } from '../../hooks/useUrlState'
 import { SkSelect } from '@skelloapp/skello-ds-web'
 
 type Filters = Pick<ListenerUrl, 'lev' | 'lkind' | 'lgrade'>
+type Pins = ListenerSurface['pins']
 
 interface Props {
   listeners: Listener[]
+  pins: Pins
   filters: Filters
   open: string | null
   onFilters: (p: Partial<Filters>) => void
@@ -23,8 +24,8 @@ export function GradeGlyph({ unverified, title, reason }: { unverified: boolean;
   return <span role="img" aria-label={gradeLabel(unverified, reason)} title={title} className={styles.grade} data-grade={unverified ? 'flow' : 'code'}>{gradeGlyph(unverified)}</span>
 }
 
-export function Source({ at }: { at: { file: string; line: number } }) {
-  const href = sourceHref(at, listenerSurface.pins)
+export function Source({ at, pins }: { at: { file: string; line: number }; pins: Pins }) {
+  const href = sourceHref(at, pins)
   const text = `${at.file}:${at.line}`
   return href ? <a href={href} target="_blank" rel="noreferrer">{text}</a> : <code>{text}</code>
 }
@@ -37,7 +38,7 @@ function FilterSelect({ label, value, options, onChange }: { label: string; valu
   )
 }
 
-export function ListenersSection({ listeners, filters, open, onFilters, onToggle }: Props) {
+export function ListenersSection({ listeners, pins, filters, open, onFilters, onToggle }: Props) {
   useEffect(() => {
     if (open) {
       document.getElementById(`listener-${open}`)?.scrollIntoView({ block: 'center' })
@@ -67,7 +68,7 @@ export function ListenersSection({ listeners, filters, open, onFilters, onToggle
                 <code>{listenerHeading(l)}</code>{` · ${l.events.join(' ')}`}
               </button>
               {l.condition && <code className={styles.condition}>{l.condition}</code>}
-              <span className={styles.meta}> declared <Source at={l.declaredAt} />{l.definedAt && <> · defined <Source at={l.definedAt} /></>}</span>
+              <span className={styles.meta}> declared <Source at={l.declaredAt} pins={pins} />{l.definedAt && <> · defined <Source at={l.definedAt} pins={pins} /></>}</span>
               {expanded && (
                 <ul className={styles.rels}>
                   {l.effects.length === 0 && <li className={styles.meta}>No effect on another table, job or service.</li>}

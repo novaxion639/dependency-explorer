@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { allResourceRelations, connectivityMap, resourceSurface } from '@dependency-explorer/data'
+import type { Dataset } from '../../utils/dataset'
 import { computeImpact } from '../../utils/impact'
 import type { Renderer } from '../../diagram/model'
 import { ImpactMap } from './ImpactMap'
@@ -8,9 +8,8 @@ import { SkButton, SkSegmentedButton, SkSegmentedButtonItem, SkTextField } from 
 import { NavLink } from '../../shell/NavLink'
 import { flowPatch, resourcePatch, selectServicePatch } from '../../hooks/useUrlState'
 
-const RESOURCE_IDS = new Set(resourceSurface.resources.map(r => r.id))
-
 interface Props {
+  data: Dataset
   origin: string | null
   onPick: (id: string) => void
   onSelect: (node: string) => void
@@ -18,10 +17,9 @@ interface Props {
   onRenderer?: (renderer: Renderer) => void
 }
 
-const ORIGINS = [...connectivityMap.services.map(s => s.name), ...resourceSurface.resources.map(r => r.id)]
-const KNOWN = new Set(ORIGINS)
-
-function Picker({ onPick }: { onPick: (id: string) => void }) {
+function Picker({ data, onPick }: { data: Dataset; onPick: (id: string) => void }) {
+  const origins = [...data.map.services.map(s => s.name), ...data.resources.resources.map(r => r.id)]
+  const known = new Set(origins)
   return (
     <section aria-label="Impact" className={styles.page}>
       <h1>If something is down…</h1>
@@ -31,23 +29,24 @@ function Picker({ onPick }: { onPick: (id: string) => void }) {
         placeholder="svc-requests · pg:skello_production.shifts · sqs:…"
         slotProps={{ htmlInput: { list: 'impact-origins', 'aria-label': 'Service or resource' } }}
         onChange={e => {
-          if (KNOWN.has(e.target.value)) {
+          if (known.has(e.target.value)) {
             onPick(e.target.value)
           }
         }}
       />
-      <datalist id="impact-origins">{ORIGINS.map(id => <option key={id} value={id} />)}</datalist>
+      <datalist id="impact-origins">{origins.map(id => <option key={id} value={id} />)}</datalist>
     </section>
   )
 }
 
-export function ImpactPage({ origin, onPick, onSelect, renderer = 'react-flow', onRenderer = () => {} }: Props) {
+export function ImpactPage({ data, origin, onPick, onSelect, renderer = 'react-flow', onRenderer = () => {} }: Props) {
   const [filter, setFilter] = useState<'all' | 'sync'>('all')
   const [showMap, setShowMap] = useState(false)
   if (!origin) {
-    return <Picker onPick={onPick} />
+    return <Picker data={data} onPick={onPick} />
   }
-  const impact = computeImpact(connectivityMap, allResourceRelations, origin)
+  const impact = computeImpact(data.map, data.relations, origin)
+  const resourceIds = new Set(data.resources.resources.map(r => r.id))
   const entries = impact.entries.filter(e => filter === 'all' || (e.mode === 'sync' && e.effect === 'fails'))
   const hops = [...new Set(entries.map(e => e.hop))].sort((a, b) => a - b)
   return (
@@ -60,7 +59,7 @@ export function ImpactPage({ origin, onPick, onSelect, renderer = 'react-flow', 
       <SkButton variant="outlined" size="small" className={styles.mapToggle} aria-expanded={showMap} onClick={() => setShowMap(open => !open)}>{showMap ? 'Hide the map' : 'Show on the map'}</SkButton>
       {showMap && (
         <div className={styles.map}>
-          <ImpactMap origin={origin} renderer={renderer} onRenderer={onRenderer} onSelectService={onSelect} />
+          <ImpactMap map={data.map} relations={data.relations} origin={origin} renderer={renderer} onRenderer={onRenderer} onSelectService={onSelect} />
         </div>
       )}
       {entries.length === 0 && <p className={styles.muted}>Nothing on the map depends on {origin}.</p>}
@@ -70,7 +69,7 @@ export function ImpactPage({ origin, onPick, onSelect, renderer = 'react-flow', 
           <ul className={styles.entries}>
             {entries.filter(e => e.hop === hop).map(e => (
               <li key={e.node}>
-                <NavLink patch={RESOURCE_IDS.has(e.node) ? resourcePatch(e.node) : selectServicePatch(e.node)}>{e.node}</NavLink>
+                <NavLink patch={resourceIds.has(e.node) ? resourcePatch(e.node) : selectServicePatch(e.node)}>{e.node}</NavLink>
                 <span className={styles.effect} data-effect={e.effect}>{e.effect === 'fails' && e.hop > 1 ? 'may fail' : e.effect}</span>
                 <span className={styles.muted}>via {e.via} ({e.mode})</span>
               </li>

@@ -258,7 +258,7 @@ export const allResourceRelations = [...resourceSurface.relations, ...flowRelati
 
 export * from '@dependency-explorer/schema'
 export { globToRegExp } from './glob'
-export { resourceNotes } from './resource-notes'
+export { resourceNotes, type ResourceNote } from './resource-notes'
 export { normalizeResourceName } from './resource-names'
 export { kebab, stepService } from './names'
 export { resourceImpact, resourceIdForDatabase } from './resources-derive'

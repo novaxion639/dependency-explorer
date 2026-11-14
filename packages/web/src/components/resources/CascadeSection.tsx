@@ -1,4 +1,4 @@
-import { WRITE_EVENTS, alsoChanges, cascadeFrom, listenerSurface, type CascadeNode, type WriteEvent } from '@dependency-explorer/data'
+import { WRITE_EVENTS, alsoChanges, cascadeFrom, type CascadeNode, type ListenerSurface, type WriteEvent } from '@dependency-explorer/data'
 import { plural } from '../../utils/plural'
 import { GradeGlyph } from './ListenersSection'
 import { LISTENER_EVENTS, tableName } from './listenerView'
@@ -8,6 +8,7 @@ import { resourcePatch } from '../../hooks/useUrlState'
 import { SkSegmentedButton, SkSegmentedButtonItem } from '@skelloapp/skello-ds-web'
 
 interface Props {
+  surface: ListenerSurface
   table: string
   event: WriteEvent | null
   onEvent: (e: WriteEvent) => void
@@ -32,13 +33,13 @@ export function CascadeHops({ nodes }: { nodes: CascadeNode[] }) {
   )
 }
 
-export function CascadeSection({ table, event, onEvent }: Props) {
-  const reached = alsoChanges(listenerSurface, table)
+export function CascadeSection({ surface, table, event, onEvent }: Props) {
+  const reached = alsoChanges(surface, table)
   if (!reached.length) {
     return null
   }
   const selected = event ?? 'update'
-  const nodes = cascadeFrom(listenerSurface, table, selected)
+  const nodes = cascadeFrom(surface, table, selected)
   return (
     <section aria-label="Also changes" className={styles.section}>
       <h2>{`Also changes · ${plural(reached.length, 'table')} across all events`}</h2>

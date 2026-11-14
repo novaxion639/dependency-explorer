@@ -1,6 +1,7 @@
 import type { ResourceRelation } from '@dependency-explorer/data'
-import { allResourceRelations, connectivityMap, DatadogOverlaySchema, inRailsOrder, listenerSurface, resourceImpact, resourceNotes, resourceSurface } from '@dependency-explorer/data'
+import { DatadogOverlaySchema, inRailsOrder, resourceImpact } from '@dependency-explorer/data'
 import { useOverlay } from '../../hooks/useOverlay'
+import type { Dataset } from '../../utils/dataset'
 import { evidenceHref } from '../../utils/evidenceLink'
 import { plural } from '../../utils/plural'
 import { CascadeSection } from './CascadeSection'
@@ -12,8 +13,6 @@ import { SkButton } from '@skelloapp/skello-ds-web'
 import { NavLink } from '../../shell/NavLink'
 import { filePatch, flowPatch, resourcePatch, selectServicePatch } from '../../hooks/useUrlState'
 import { NavChip } from '../../shell/NavLink'
-
-const serviceNames = new Set(connectivityMap.services.map(s => s.name))
 
 const GRADE_BADGE: Record<ResourceRelation['grade'], { symbol: string; title: string }> = {
   code: { symbol: '✓', title: 'call site at the pinned commit' },
@@ -29,31 +28,33 @@ const SECTIONS: Array<{ relation: ResourceRelation['relation']; label: string }>
 ]
 
 interface Props {
+  data: Dataset
   id: string
   onBlast: (id: string) => void
   listeners: ListenerUrl
   onListeners: (p: Partial<ListenerUrl>) => void
 }
 
-export function ResourcePage({ id, onBlast, listeners, onListeners }: Props) {
+export function ResourcePage({ data, id, onBlast, listeners, onListeners }: Props) {
   const overlay = useOverlay('datadog', DatadogOverlaySchema)
-  const impact = resourceImpact(id, connectivityMap, resourceSurface.resources, allResourceRelations)
+  const impact = resourceImpact(id, data.map, data.resources.resources, data.relations)
   if (!impact) {
     return null
   }
   const { resource, byService, flows, dlq, counts } = impact
-  const note = resourceNotes[id]
-  const tableListeners = resource.kind === 'table' ? inRailsOrder(listenerSurface.listeners.filter(l => l.table === id)) : []
+  const serviceNames = new Set(data.map.services.map(s => s.name))
+  const note = data.notes[id]
+  const tableListeners = resource.kind === 'table' ? inRailsOrder(data.listeners.listeners.filter(l => l.table === id)) : []
   const depth = overlay?.queues[id]
   const dlqDepth = dlq ? overlay?.queues[dlq] : undefined
-  const tables = resource.kind === 'database' ? resourceSurface.resources.filter(r => r.id.startsWith(`${id}.`)) : []
+  const tables = resource.kind === 'database' ? data.resources.resources.filter(r => r.id.startsWith(`${id}.`)) : []
   return (
     <section aria-label={resource.name} className={styles.page}>
       <header className={styles.head}>
         <h1>{resource.name}</h1>
         <p className={styles.meta}>
           {resource.kind} · {resource.store}{resource.owner ? <> · owned by {serviceNames.has(resource.owner) ? <NavLink patch={selectServicePatch(resource.owner)}>{resource.owner}</NavLink> : `${resource.owner} (not in the map)`}</> : null} · evidence {resource.evidence.map((e, i) => {
-            const href = evidenceHref(e, resourceSurface.pins)
+            const href = evidenceHref(e, data.resources.pins)
             return <span key={e}>{i > 0 && ', '}{href ? <a href={href} target="_blank" rel="noreferrer">{e}</a> : e}</span>
           })}
         </p>
@@ -98,9 +99,9 @@ export function ResourcePage({ id, onBlast, listeners, onListeners }: Props) {
           </section>
         )
       })}
-      <ListenersSection listeners={tableListeners} filters={listeners} open={listeners.listener} onFilters={onListeners} onToggle={listener => onListeners({ listener })} />
-      {resource.kind === 'table' && <CascadeSection table={id} event={listeners.event} onEvent={event => onListeners({ event })} />}
-      {resource.kind === 'table' && <WritePathsSection table={id} />}
+      <ListenersSection listeners={tableListeners} pins={data.listeners.pins} filters={listeners} open={listeners.listener} onFilters={onListeners} onToggle={listener => onListeners({ listener })} />
+      {resource.kind === 'table' && <CascadeSection surface={data.listeners} table={id} event={listeners.event} onEvent={event => onListeners({ event })} />}
+      {resource.kind === 'table' && <WritePathsSection table={id} surface={data.listeners} flows={data.map.flows} />}
       {dlq && <p className={styles.meta}>Dead letters go to <NavLink patch={resourcePatch(dlq)}>{dlq}</NavLink>{dlqDepth && ` (${dlqDepth.depthNow} waiting)`}</p>}
       {(resource.related ?? []).length > 0 && (
         <section aria-label="Related tables" className={styles.section}>

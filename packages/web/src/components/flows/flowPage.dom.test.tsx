@@ -6,10 +6,11 @@ import { parseUrl } from '../../hooks/useUrlState'
 import { validateUrlState } from '../../shell/validateUrlState'
 import { renderInApp } from '../../test/renderInApp'
 import { FlowPage } from './FlowPage'
+import { dataset } from '../../shell/dataIndexes'
 
 const shift = connectivityMap.flows.find(f => f.id === 'shift-creation')
 const PRESENT = '?page=flows&flow=shift-creation&present=1&renderer=svg'
-const renderAt = (qs: string, patch: () => void) => renderInApp(shift && <FlowPage flow={shift} url={validateUrlState(parseUrl(qs))} patch={patch} onBack={() => {}} />, qs)
+const renderAt = (qs: string, patch: () => void) => renderInApp(shift && <FlowPage map={dataset.map} flow={shift} url={validateUrlState(parseUrl(qs))} patch={patch} onBack={() => {}} />, qs)
 
 describe('FlowPage stepping', () => {
   beforeAll(() => {

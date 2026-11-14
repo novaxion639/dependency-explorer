@@ -3,10 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { screen } from '@testing-library/react'
 import { renderInApp } from '../../test/renderInApp'
 import { ResourcePage } from './ResourcePage'
+import { dataset } from '../../shell/dataIndexes'
 
 const noop = () => {}
 const NO_LISTENERS = { event: null, listener: null, lev: null, lkind: null, lgrade: null }
-const mount = (id: string) => renderInApp(<ResourcePage id={id} onBlast={noop} listeners={NO_LISTENERS} onListeners={noop} />)
+const mount = (id: string) => renderInApp(<ResourcePage data={dataset} id={id} onBlast={noop} listeners={NO_LISTENERS} onListeners={noop} />)
 
 describe('ResourcePage owner', () => {
   it('links an owner the map holds', () => {

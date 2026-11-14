@@ -6,6 +6,7 @@ import { parseUrl } from '../../hooks/useUrlState'
 import { renderInApp } from '../../test/renderInApp'
 import { ResourcePage } from './ResourcePage'
 import { ResourcesIndex } from './ResourcesIndex'
+import { dataset } from '../../shell/dataIndexes'
 
 const noop = () => {}
 const SHIFTS = 'pg:skello_production.shifts'
@@ -14,68 +15,68 @@ const quiet = resourceSurface.resources.find(r => !allResourceRelations.some(x =
 
 describe('ResourcePage', () => {
   it('heads the shifts table with its name', () => {
-    renderInApp(<ResourcePage id={SHIFTS} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={SHIFTS} {...props} />)
 
     expect(screen.getByRole('heading', { level: 1, name: 'shifts' })).toBeTruthy()
   })
 
   it('counts the services, files and flows the shifts table changes', () => {
-    renderInApp(<ResourcePage id={SHIFTS} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={SHIFTS} {...props} />)
 
     expect(screen.getAllByText(/\d+ services · \d+ files · \d+ flows/).length).toBeGreaterThan(0)
   })
 
   it('shows the graded writer files', () => {
-    renderInApp(<ResourcePage id={SHIFTS} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={SHIFTS} {...props} />)
 
     expect(within(screen.getByRole('region', { name: 'Writers' })).getAllByText('app/models/shift.rb', { exact: false }).length).toBeGreaterThan(0)
   })
 
   it('explains where instance writes appear', () => {
-    renderInApp(<ResourcePage id={SHIFTS} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={SHIFTS} {...props} />)
 
     expect(screen.getByText(/instance writes/)).toBeTruthy()
   })
 
   it('links evidence to GitHub at the pinned commit', () => {
-    renderInApp(<ResourcePage id={SHIFTS} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={SHIFTS} {...props} />)
 
     expect(screen.getAllByRole('link').map(l => l.getAttribute('href'))).toContainEqual(expect.stringMatching(/^https:\/\/github\.com\/skelloapp\/skello-app\/blob\/[0-9a-f]{40}\/db\/schema\.rb$/))
   })
 
   it('lists the tables of the monolith database', () => {
-    renderInApp(<ResourcePage id="pg:skello_production" {...props} />)
+    renderInApp(<ResourcePage data={dataset} id="pg:skello_production" {...props} />)
 
     expect(within(screen.getByRole('region', { name: 'Tables' })).getByRole('link', { name: 'shifts' })).toBeTruthy()
   })
 
   it('lists the shifts table listeners from the committed surface', () => {
-    renderInApp(<ResourcePage id={SHIFTS} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={SHIFTS} {...props} />)
 
     expect(within(screen.getByRole('region', { name: 'Listeners' })).getAllByText('update_paid_leaves', { exact: false }).length).toBeGreaterThan(0)
   })
 
   it('renders a resource with no relations without throwing', () => {
-    renderInApp(quiet && <ResourcePage id={quiet.id} {...props} />)
+    renderInApp(quiet && <ResourcePage data={dataset} id={quiet.id} {...props} />)
 
     expect(quiet, 'the registry holds at least one untouched resource (dataset-only stores)').toBeDefined()
     expect(screen.getByText('No code, config or flow touches this resource', { exact: false })).toBeTruthy()
   })
 
   it.each(['Also changes', 'Write paths'])('shows the %s section of a shift write', name => {
-    renderInApp(<ResourcePage id={SHIFTS} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={SHIFTS} {...props} />)
 
     expect(screen.getByRole('region', { name })).toBeTruthy()
   })
 
   it('groups the shift write paths that run no listener', () => {
-    renderInApp(<ResourcePage id={SHIFTS} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={SHIFTS} {...props} />)
 
     expect(within(screen.getByRole('region', { name: 'Write paths' })).getAllByRole('heading', { name: /^Runs no listener/ }).length).toBeGreaterThan(0)
   })
 
   it('shows the CDC feed and its target stream inside the Feeds section', () => {
-    renderInApp(<ResourcePage id={SHIFTS} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={SHIFTS} {...props} />)
 
     expect(within(screen.getByRole('region', { name: 'Feeds' })).getAllByText('kinesis:skelloapp-bus', { exact: false }).length).toBeGreaterThan(0)
   })
@@ -83,13 +84,13 @@ describe('ResourcePage', () => {
 
 describe('ResourcesIndex', () => {
   it.each([...new Set(resourceSurface.resources.map(r => r.store))])('groups the resources of the %s store', store => {
-    renderInApp(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} />)
+    renderInApp(<ResourcesIndex data={dataset} url={parseUrl('?page=resources')} patch={noop} />)
 
     expect(screen.getByRole('region', { name: store })).toBeTruthy()
   })
 
   it('filters the index by owner', () => {
-    renderInApp(<ResourcesIndex url={parseUrl('?page=resources')} patch={noop} />)
+    renderInApp(<ResourcesIndex data={dataset} url={parseUrl('?page=resources')} patch={noop} />)
 
     expect(screen.getByRole('combobox', { name: 'Owner' })).toBeTruthy()
   })
