@@ -1,7 +1,7 @@
 import type { ConnectivityService, Team } from '@dependency-explorer/data'
 import styles from './ServiceSidebar.module.css'
 import { CloseButton } from '../CloseButton'
-import { SkTag } from '@skelloapp/skello-ds-web'
+import { SkTag, SkTextField } from '@skelloapp/skello-ds-web'
 
 interface Props {
   services: ConnectivityService[]
@@ -39,7 +39,7 @@ export function ServiceSidebar({ services, teams, selected, onSelect, search, on
     <nav aria-label="Services" className={`sidebar ${styles.sidebar}`} data-open={open}>
       <CloseButton label="Close services menu" className={`mobile-only ${styles.close}`} onClick={onClose} />
       <div className={styles.search}>
-        <input aria-label="Filter services" value={search} onChange={e => onSearch(e.target.value)} placeholder="Filter by name or team…" />
+        <SkTextField size="small" fullWidth value={search} onChange={e => onSearch(e.target.value)} placeholder="Filter by name or team…" slotProps={{ htmlInput: { 'aria-label': 'Filter services' } }} />
       </div>
       <p className={styles.count}>{filtered.length} service{filtered.length !== 1 ? 's' : ''}</p>
       <ul className={styles.list}>
