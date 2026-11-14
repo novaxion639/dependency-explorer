@@ -56,7 +56,7 @@ export function MonolithPage({ url, patch }: Props) {
         ) : (
           <>
             <p className={styles.coverage}>{`${COVERAGE.mapped} of ${COVERAGE.total} skello-app files under the mapped roots belong to a product area.`}</p>
-            <MonolithTable rows={ROWS} onOpenArea={id => patch({ area: id })} />
+            <MonolithTable rows={ROWS} />
           </>
         )}
     </div>

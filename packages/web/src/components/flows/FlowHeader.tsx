@@ -1,7 +1,7 @@
 import { connectivityMap, getFlowAreas, type FlowLinkKind, type ServiceFlow } from '@dependency-explorer/data'
 import { AreaChip } from '../areas/AreaChip'
 import styles from './flows.module.css'
-import { ArrowLeftIcon, SkButton } from '@skelloapp/skello-ds-web'
+import { ArrowLeftIcon, SkAccordion, SkButton } from '@skelloapp/skello-ds-web'
 import { NavLink } from '../../shell/NavLink'
 import { flowPatch } from '../../hooks/useUrlState'
 
@@ -41,7 +41,7 @@ export function FlowHeader({ flow, onBack }: Props) {
         {getFlowAreas(flow, connectivityMap.areas ?? []).map(a => <AreaChip key={a.id} area={a} primary={a.id === flow.primaryArea} linked />)}
       </div>
       <p className={styles.summary}>{summary}</p>
-      {rest && <details className={styles.more}><summary>more</summary><p>{rest}</p></details>}
+      {rest && <SkAccordion title="More" className={styles.more} disableGutters slotProps={{ transition: { unmountOnExit: true } }}><p>{rest}</p></SkAccordion>}
       {links.length > 0 && (
         <ul aria-label="Related flows" className={styles.links}>
           {links.map(l => <li key={l.text}><NavLink patch={flowPatch(l.id)}>{l.text}</NavLink></li>)}
@@ -49,10 +49,9 @@ export function FlowHeader({ flow, onBack }: Props) {
       )}
       {flags.length > 0 && <p className={styles.flags}>{flags.map(f => <code key={f}>{`🚩 ${f}`}</code>)}</p>}
       {rules.length > 0 && (
-        <details className={styles.more}>
-          <summary>{`Domain rules · ${rules.length}`}</summary>
+        <SkAccordion title={`Domain rules · ${rules.length}`} className={styles.more} disableGutters slotProps={{ transition: { unmountOnExit: true } }}>
           {rules.map(r => <section key={r.id}><h3>{`📐 ${r.title}`}</h3><p>{r.statement}</p></section>)}
-        </details>
+        </SkAccordion>
       )}
     </header>
   )
