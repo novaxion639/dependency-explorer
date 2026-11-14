@@ -4,7 +4,7 @@ import { computeImpact } from '../../utils/impact'
 import type { Renderer } from '../../diagram/model'
 import { ImpactMap } from './ImpactMap'
 import styles from './ImpactPage.module.css'
-import { SkButton, SkSegmentedButton, SkSegmentedButtonItem } from '@skelloapp/skello-ds-web'
+import { SkButton, SkSegmentedButton, SkSegmentedButtonItem, SkTextField } from '@skelloapp/skello-ds-web'
 import { NavLink } from '../../shell/NavLink'
 import { flowPatch, resourcePatch, selectServicePatch } from '../../hooks/useUrlState'
 
@@ -26,11 +26,10 @@ function Picker({ onPick }: { onPick: (id: string) => void }) {
     <section aria-label="Impact" className={styles.page}>
       <h1>If something is down…</h1>
       <p className={styles.muted}>Pick a service or a resource to see what depends on it, by hop.</p>
-      <input
-        className={styles.pick}
-        list="impact-origins"
-        aria-label="Service or resource"
+      <SkTextField
+        fullWidth
         placeholder="svc-requests · pg:skello_production.shifts · sqs:…"
+        slotProps={{ htmlInput: { list: 'impact-origins', 'aria-label': 'Service or resource' } }}
         onChange={e => {
           if (KNOWN.has(e.target.value)) {
             onPick(e.target.value)

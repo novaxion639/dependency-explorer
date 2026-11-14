@@ -4,6 +4,7 @@ import { listenerMetrics, listenerSurface, resourceSurface } from '@dependency-e
 import { plural } from '../../utils/plural'
 import { filterResources, type ResourceSort } from './resourceFilter'
 import styles from './ResourcesIndex.module.css'
+import { SkCheckbox, SkSelect } from '@skelloapp/skello-ds-web'
 
 const metrics = listenerMetrics(listenerSurface)
 export const SORTS: readonly ResourceSort[] = ['name', 'listeners', 'alsoChanges', 'bypassing']
@@ -30,11 +31,11 @@ export function ResourcesIndex({ url, patch, onOpenResource }: Props) {
     <section aria-label="Resources" className={styles.page}>
       <h1>Resources</h1>
       <div className={styles.filters}>
-        <label>Kind <select aria-label="Kind" value={kind} onChange={e => patch({ rkind: e.target.value === 'all' ? null : e.target.value })}>{KINDS.map(k => <option key={k} value={k}>{k}</option>)}</select></label>
-        <label>Owner <select aria-label="Owner" value={owner} onChange={e => patch({ rowner: e.target.value === 'all' ? null : e.target.value })}>{['all', ...owners].map(o => <option key={o} value={o}>{o}</option>)}</select></label>
-        <label><input type="checkbox" checked={url.orphans} onChange={e => patch({ orphans: e.target.checked })} /> Not in any flow</label>
-        <label>Sort <select aria-label="Sort" value={sort} onChange={e => patch({ rsort: e.target.value === 'name' ? null : e.target.value })}>{SORTS.map(x => <option key={x} value={x}>{SORT_LABEL[x]}</option>)}</select></label>
-        <label><input type="checkbox" checked={url.cycles} onChange={e => patch({ cycles: e.target.checked })} /> Cycles only</label>
+        <SkSelect native size="small" label="Kind" value={kind} onChange={e => patch({ rkind: e.target.value === 'all' ? null : String(e.target.value) })}>{KINDS.map(k => <option key={k} value={k}>{k}</option>)}</SkSelect>
+        <SkSelect native size="small" label="Owner" value={owner} onChange={e => patch({ rowner: e.target.value === 'all' ? null : String(e.target.value) })}>{['all', ...owners].map(o => <option key={o} value={o}>{o}</option>)}</SkSelect>
+        <label><SkCheckbox size="small" checked={url.orphans} onChange={e => patch({ orphans: e.target.checked })} /> Not in any flow</label>
+        <SkSelect native size="small" label="Sort" value={sort} onChange={e => patch({ rsort: e.target.value === 'name' ? null : String(e.target.value) })}>{SORTS.map(x => <option key={x} value={x}>{SORT_LABEL[x]}</option>)}</SkSelect>
+        <label><SkCheckbox size="small" checked={url.cycles} onChange={e => patch({ cycles: e.target.checked })} /> Cycles only</label>
         <span>{visible.length} of {resourceSurface.resources.length}</span>
       </div>
       {stores.map(store => (

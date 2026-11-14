@@ -1,5 +1,4 @@
 .home { max-width: 760px; margin: var(--space-6) auto; display: flex; flex-direction: column; gap: var(--space-4); padding: 0 var(--space-4); }
-.ask { width: 100%; border: var(--line); border-radius: var(--radius-lg); background: var(--card); padding: var(--space-3) var(--space-4); font-size: var(--text-lg); }
 .examples { display: flex; flex-wrap: wrap; gap: var(--space-2); color: var(--ink-muted); font-size: var(--text-sm); }
 .examples button { background: none; border: none; cursor: pointer; color: var(--ink-muted); text-decoration: underline; }
 .results { list-style: none; border: var(--line); border-radius: var(--radius-md); background: var(--card); }

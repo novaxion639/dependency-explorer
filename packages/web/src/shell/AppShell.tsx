@@ -5,7 +5,7 @@ import { Breadcrumb } from './Breadcrumb'
 import { NavLink } from './NavLink'
 import { Rail } from './Rail'
 import styles from './AppShell.module.css'
-import { SkButton } from '@skelloapp/skello-ds-web'
+import { SkButton, SkKeyboardShortcut } from '@skelloapp/skello-ds-web'
 
 interface Props {
   url: UrlState
@@ -27,7 +27,7 @@ export function AppShell({ url, onSearch, onTogglePresent, panel, children }: Pr
         )}
         <NavLink patch={pagePatch('home')} className={styles.title} color="inherit" underline="none">Skello · Dependency Explorer</NavLink>
         <div className={styles.actions}>
-          {!url.present && <SkButton variant="outlined" size="small" onClick={onSearch}>Search <kbd>⌘K</kbd></SkButton>}
+          {!url.present && <SkButton variant="outlined" size="small" onClick={onSearch}>Search <SkKeyboardShortcut>⌘K</SkKeyboardShortcut></SkButton>}
           <SkButton variant="outlined" size="small" onClick={onTogglePresent}>{url.present ? 'Exit present' : 'Present'}</SkButton>
         </div>
       </header>

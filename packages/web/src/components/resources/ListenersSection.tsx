@@ -5,6 +5,7 @@ import { LISTENER_EVENTS, LISTENER_GRADES, LISTENER_KINDS, effectText, filterLis
 import styles from './ResourcePage.module.css'
 import { NavLink } from '../../shell/NavLink'
 import { resourcePatch } from '../../hooks/useUrlState'
+import { SkSelect } from '@skelloapp/skello-ds-web'
 
 type Filters = Pick<ListenerUrl, 'lev' | 'lkind' | 'lgrade'>
 
@@ -30,12 +31,9 @@ export function Source({ at }: { at: { file: string; line: number } }) {
 
 function FilterSelect({ label, value, options, onChange }: { label: string; value: string | null; options: readonly string[]; onChange: (v: string | null) => void }) {
   return (
-    <label className={styles.meta}>
-      {label}{' '}
-      <select aria-label={label} value={value ?? 'all'} onChange={e => onChange(e.target.value === 'all' ? null : e.target.value)}>
-        {['all', ...options].map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
-    </label>
+    <SkSelect native size="small" label={label} value={value ?? 'all'} onChange={e => onChange(e.target.value === 'all' ? null : String(e.target.value))}>
+      {['all', ...options].map(o => <option key={o} value={o}>{o}</option>)}
+    </SkSelect>
   )
 }
 
