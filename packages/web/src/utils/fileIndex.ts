@@ -1,9 +1,5 @@
 import type { ConnectivityMap, MonolithRoute, ResourceRelation, ServiceFlow } from '@dependency-explorer/data'
 
-/**
- * Reverse code→flows index: source file → the flows whose code layer traverses
- * it, plus the monolith routes it serves. Keyed "<service>/<path>".
- */
 export interface FileIndexEntry {
   service: string
   path: string

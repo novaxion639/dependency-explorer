@@ -3,32 +3,6 @@ import { WRITE_EVENTS, type WriteEvent } from '@dependency-explorer/data'
 import { MONOLITH } from '../diagram/layouts/ids'
 import type { Renderer } from '../diagram/model'
 
-/**
- * Permalink state — every shareable bit of UI state lives in the query string
- * (never in a path segment: the bundle must work from any static host or
- * SSO proxy without rewrite rules, see ADR-0005).
- *
- *   (no params)                          home (question-first landing)
- *   ?page=areas&area=planning&term=Poste product area page, glossary term highlighted
- *   ?page=microservices                  microservices overview
- *   ?page=microservices&area=planning    overview, area spotlit (also on monolith)
- *   ?page=microservices&s=svc-users      one service
- *   ?page=monolith                       skello-app
- *   ?page=flows&flow=shift-creation      flow page
- *   ?page=flows&flows=svc-users          flows a service takes part in
- *   ?page=flows&file=svc-punch/src/…     flows traversing a file
- *   ?page=flows&flag=FEATUREDEV_X        flows gated by a feature flag
- *   ?page=resources&resource=pg:…        resource page (change impact)
- *   &event=create|update|destroy · &listener=<id> · &lev · &lkind · &lgrade   resource page listener sections
- *   ?page=impact&blast=svc-users         impact of a failing service or resource
- *   ?page=ownership&team=team-salsa      ownership, team focused
- *   &edge=from~to~protocol[,…] · &drawer=svc · &ep=id   detail panel content
- *   &unit=<unit or store id> · &chapter=<n>   flow page panel · story step
- *   &present=1                           present mode
- *   &renderer=svg | mermaid              diagram renderer (React Flow by default)
- *
- * Legacy keys (`view=…`, a bare `s`, `flow`, `blast=1&s=…`) parse into the page form.
- */
 export type Page = 'home' | 'areas' | 'microservices' | 'monolith' | 'flows' | 'resources' | 'impact' | 'ownership'
 
 const PAGES: readonly Page[] = ['home', 'areas', 'microservices', 'monolith', 'flows', 'resources', 'impact', 'ownership']
@@ -239,14 +213,6 @@ export function commitPatch(
   return next
 }
 
-/**
- * URL-backed state. `validate` strips params that don't resolve against the
- * dataset (unknown service, retired flow id…) and records the first one in
- * `notFound` so stale shared links show where they went wrong.
- *
- * Picks (a new navigation-key value or a page change) push history so Back
- * undoes them; closes and toggles replace. `opts.push` overrides the rule.
- */
 export function useUrlState(validate: (st: UrlState) => UrlState) {
   const [state, setState] = useState<UrlState>(() => validate(parseUrl(window.location.search)))
   const current = useRef(state)

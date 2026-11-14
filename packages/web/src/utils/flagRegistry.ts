@@ -1,10 +1,5 @@
 import type { ConnectivityMap, ServiceFlow, FeatureFlagRef } from '@dependency-explorer/data'
 
-/**
- * The flag → flows registry — DERIVED from the dataset at build time, never
- * authored (docs/spec.md §3). A flag exists here iff at least one flow's code
- * unit or edge carries a typed ref to it.
- */
 export interface FlagRegistryEntry {
   name: string
   kind: FeatureFlagRef['kind']

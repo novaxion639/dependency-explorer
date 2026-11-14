@@ -180,20 +180,42 @@ A view a renderer cannot draw hides that option.
 
 One palette over every service, endpoint, connection, flow, product area, glossary term, external system, database, queue and table listener. Picking a result navigates to a permalink-backed view. An endpoint hit opens the endpoint list in the detail panel, scrolled to that endpoint. The palette is an `SkDialog`: focus starts in the search box and stays there on Tab, the arrow keys move through the results, Enter opens one, and Escape or a click outside closes it and returns focus to where it was.
 
+Every word of the query must match. Results rank by where the words match (a label prefix, then the label, the second line, then hidden text such as descriptions and queue names), then by result type, then shorter labels first.
+
 A listener method or an enqueued job lands on its table's Listeners section with that listener's row open. A job's sublabel names the listener that enqueues it.
 
 ⌘K also accepts a source-file path: see [the reverse code → flows index](flows.md#reverse-code--flows-index).
 
 ## Permalinks
 
-Every view state is encoded in the query string:
-- a `page` key: `home`, `areas`, `microservices`, `monolith`, `flows`, `resources`, `impact` or `ownership`;
-- the page's own keys: `area`, `term`, `s`, `flow`, `unit`, `chapter`, `file`, `flag`, `resource`, `blast`, `team`;
-- the detail-panel keys: `edge` (one or more `from~to~protocol` keys joined by `,`), `drawer`, `ep`;
-- `area` on the architecture pages (spotlight and slice);
-- `renderer`.
+Every view state is encoded in the query string, never in a path segment, so the bundle works from any static host or SSO proxy without rewrite rules ([ADR-0005](../adr/0005-local-poc-first.md)).
+
+| URL | Opens |
+|---|---|
+| no parameters | home |
+| `?page=areas&area=planning&term=Poste` | an area page, with a glossary term highlighted |
+| `?page=microservices` | the microservices overview |
+| `?page=microservices&area=planning` | the overview with an area spotlit (also on `monolith`) |
+| `?page=microservices&s=svc-users` | one service |
+| `?page=monolith` | skello-app |
+| `?page=flows&flow=shift-creation` | a flow page |
+| `?page=flows&flows=svc-users` | the flows a service takes part in |
+| `?page=flows&file=svc-punch/src/…` | the flows crossing a file |
+| `?page=flows&flag=FEATUREDEV_X` | the flows gated by a feature flag |
+| `?page=resources&resource=pg:…` | a resource page |
+| `?page=resources&rkind=table&rowner=…&rsort=listeners&orphans=1&cycles=1` | the resources index with its filters and sort |
+| `?page=impact&blast=svc-users` | the impact of a failing service or resource |
+| `?page=ownership&team=team-salsa` | ownership, with a team focused |
+
+Keys added to a page:
+- the detail panel: `edge` (one or more `from~to~protocol` keys joined by `,`), `drawer` (a service), `ep` (an endpoint);
+- a flow page: `unit` (a code unit or store, in the panel) and `chapter` (a story step);
+- a resource page: `event`, `listener`, `lev`, `lkind`, `lgrade` ([Table listeners](#table-listeners));
+- every page: `present=1` (present mode) and `renderer=svg` (React Flow when absent).
 
 Older links still open the equivalent page: `?view=…`, a bare `?s=…`, `?flow=…`, `?blast=1&s=…`, `&detail=code|sequence`.
+
+**Outdated links:** a key that does not resolve against the dataset (an unknown service, a retired flow) is dropped, and the first one names itself in a banner.
 
 **History:** picks (a new page, area, service, flow, connection or impact origin) push a history entry, so Back undoes them; closing a panel replaces the entry. A URL keeps only the keys its page uses.
 
