@@ -1,40 +1,44 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
-import { act } from 'react'
-import { createRoot } from 'react-dom/client'
+import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { renderInApp } from '../test/renderInApp'
 import { CopyMermaid } from './CopyMermaid'
 
 function stubClipboard(writeText: (text: string) => Promise<void>) {
   Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
 }
 
-async function mount(source: string) {
-  Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
-  const host = document.createElement('div')
-  document.body.append(host)
-  const root = createRoot(host)
-  await act(async () => root.render(<CopyMermaid source={source} />))
-  const button = () => host.querySelector('button')
-  return { root, button }
+const refuse = async () => {
+  throw new Error('denied')
 }
 
 describe('CopyMermaid', () => {
-  it('confirms a copy, and resets when the diagram changes', async () => {
+  it('confirms a copy', async () => {
     stubClipboard(async () => {})
-    const { root, button } = await mount('flowchart LR')
-    await act(async () => button()?.click())
-    expect(button()?.textContent).toBe('Copied')
-    await act(async () => root.render(<CopyMermaid source="flowchart TB" />))
-    expect(button()?.textContent).toBe('Copy Mermaid')
-    root.unmount()
+    renderInApp(<CopyMermaid source="flowchart LR" />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Copy Mermaid' }))
+
+    expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy()
   })
+
+  it('resets when the diagram changes', async () => {
+    stubClipboard(async () => {})
+    const { rerender } = renderInApp(<CopyMermaid source="flowchart LR" />)
+    await userEvent.click(screen.getByRole('button', { name: 'Copy Mermaid' }))
+
+    rerender(<CopyMermaid source="flowchart TB" />)
+
+    expect(screen.getByRole('button', { name: 'Copy Mermaid' })).toBeTruthy()
+  })
+
   it('reports a refused clipboard write', async () => {
-    stubClipboard(async () => {
-      throw new Error('denied')
-    })
-    const { root, button } = await mount('flowchart LR')
-    await act(async () => button()?.click())
-    expect(button()?.textContent).toBe('Copy failed')
-    root.unmount()
+    stubClipboard(refuse)
+    renderInApp(<CopyMermaid source="flowchart LR" />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Copy Mermaid' }))
+
+    expect(screen.getByRole('button', { name: 'Copy failed' })).toBeTruthy()
   })
 })
