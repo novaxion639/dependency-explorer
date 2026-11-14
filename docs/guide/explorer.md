@@ -23,7 +23,7 @@ There are 14 product areas (Planning, Time & attendance, Leave & requests…) pl
 - what the area is: a glossary anchored to the defining classes;
 - where it lives: verified code locations per platform, with file counts;
 - what to read first: an ordered reading path of flows;
-- how it connects to other areas;
+- how it connects to other areas: a map of the area's services and the areas they call or are called by, one arrow per direction and mode, labelled by protocol. A service node opens the service, an area node opens that area. The map is a regular diagram, with the renderer switch and export ([Renderers and export](#renderers-and-export));
 - which external systems it relies on.
 
 Every flow carries a primary area. Its full area set is derived from its code-unit paths (`?page=areas&area=planning`). The areas home lists the external systems no single area claims (Stripe, Intercom, Segment, Metabase, Zelty) under "Shared by every area", with the repos that use them.

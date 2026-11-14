@@ -70,7 +70,7 @@ function PageContent({ url, patch }: { url: UrlState; patch: Patch }) {
       return <HomePage index={searchIndex} />
     case 'areas':
       return url.area
-        ? <AreaPage map={map} areaId={url.area} term={url.term} onBack={() => patch({ area: null, term: null })} onOpenArea={id => patch({ area: id, term: null })} onSelectService={selectService} />
+        ? <AreaPage map={map} areaId={url.area} term={url.term} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onBack={() => patch({ area: null, term: null })} onOpenArea={id => patch({ area: id, term: null })} onSelectService={selectService} />
         : <AreasHome map={map} onOpenContext={() => patch({ page: 'microservices', s: null })} />
     case 'microservices':
       return <MicroservicesPage url={url} patch={patch} />

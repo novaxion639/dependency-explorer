@@ -19,5 +19,5 @@
 .flow { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .path { padding-left: var(--space-4); font-size: var(--text-sm); }
 .path li { margin-top: var(--space-1); }
-.map { border: var(--line); border-radius: var(--radius-md); margin-top: var(--space-2); background: var(--card); }
+.map { --canvas-min: 320px; }
 .externals { list-style: none; font-size: var(--text-sm); }
