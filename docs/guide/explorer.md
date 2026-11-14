@@ -176,7 +176,7 @@ A view a renderer cannot draw hides that option.
 
 ## Global search (⌘K)
 
-One palette over every service, endpoint, connection, flow, product area, glossary term, external system, database, queue and table listener. Picking a result navigates to a permalink-backed view. An endpoint hit opens the endpoint list in the detail panel, scrolled to that endpoint.
+One palette over every service, endpoint, connection, flow, product area, glossary term, external system, database, queue and table listener. Picking a result navigates to a permalink-backed view. An endpoint hit opens the endpoint list in the detail panel, scrolled to that endpoint. The palette is an `SkDialog`: focus starts in the search box and stays there on Tab, the arrow keys move through the results, Enter opens one, and Escape or a click outside closes it and returns focus to where it was.
 
 A listener method or an enqueued job lands on its table's Listeners section with that listener's row open. A job's sublabel names the listener that enqueues it.
 
