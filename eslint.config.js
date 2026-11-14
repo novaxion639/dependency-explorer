@@ -22,6 +22,7 @@ export default defineConfig(
     rules: {
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'error',
+      'jsx-a11y/label-has-associated-control': ['error', { controlComponents: ['SkCheckbox'], depth: 3 }],
     },
   },
 )

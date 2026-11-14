@@ -3,6 +3,7 @@ import { NavLink, useNav } from './NavLink'
 import { searchEntries, type SearchEntry } from '../utils/searchIndex'
 import { EXAMPLES, HOME_TILES } from './home'
 import styles from './HomePage.module.css'
+import { SkTextField } from '@skelloapp/skello-ds-web'
 
 export function HomePage({ index }: { index: SearchEntry[] }) {
   const { onNavigate } = useNav()
@@ -10,10 +11,10 @@ export function HomePage({ index }: { index: SearchEntry[] }) {
   const results = useMemo(() => (query.trim() ? searchEntries(index, query, 8) : []), [index, query])
   return (
     <div className={styles.home}>
-      <input
-        className={styles.ask}
-        aria-label="What do you want to know?"
+      <SkTextField
+        fullWidth
         placeholder="What do you want to know?"
+        slotProps={{ htmlInput: { 'aria-label': 'What do you want to know?' } }}
         value={query}
         onChange={e => setQuery(e.target.value)}
         onKeyDown={e => {
