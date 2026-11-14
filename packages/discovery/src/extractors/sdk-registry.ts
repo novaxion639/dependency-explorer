@@ -28,7 +28,7 @@ const URL_ASSIGN_RE = /\burl\s*=\s*[`'"]([^`'"]+)[`'"]/
 
 function normalizeTemplatePath(p: string): string {
   // ${dto.token} / ${params.email} → {param}; query strings are not part of endpoint identity
-  return p.replace(/\$\{[^}]+\}/g, '{param}').split('?')[0]!
+  return p.replace(/\$\{[^}]+\}/g, '{param}').split('?')[0]
 }
 
 /** Parse one Repository/Client source file for method → HTTP call mappings. Exported for tests. */
@@ -40,19 +40,19 @@ export function parseSdkSource(content: string): SdkMethod[] {
   for (const line of content.split('\n')) {
     const decl = line.match(METHOD_DECL_RE)
     if (decl && decl[1] !== 'constructor' && decl[1] !== 'if' && decl[1] !== 'for' && decl[1] !== 'switch') {
-      currentMethod = decl[1]!
+      currentMethod = decl[1]
       pendingUrl = null
     }
 
     const urlAssign = line.match(URL_ASSIGN_RE)
-    if (urlAssign) {pendingUrl = normalizeTemplatePath(urlAssign[1]!)}
+    if (urlAssign) {pendingUrl = normalizeTemplatePath(urlAssign[1])}
 
     const call = line.match(HTTP_CALL_RE)
     if (call && currentMethod) {
       const inline = call[2] ? normalizeTemplatePath(call[2]) : null
       const p = inline ?? pendingUrl
       if (p) {
-        methods.push({ name: currentMethod, httpMethod: call[1]!.toUpperCase(), path: p })
+        methods.push({ name: currentMethod, httpMethod: call[1].toUpperCase(), path: p })
         currentMethod = null // one endpoint per method — first call wins
       }
     }

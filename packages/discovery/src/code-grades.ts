@@ -6,6 +6,7 @@ import { escapeRegExp, importedFiles, loadWiring, readerFor, stripComments, wire
 export { stripComments }
 import { routeGrade, type RouteRef } from './route-grades'
 import { loadVueRoutes, routerGrade, type VueRoute } from './router-grades'
+import { isRecord } from './guards'
 
 export type Grade = 'graph' | 'constant' | 'import' | 'text' | 'none'
 
@@ -19,10 +20,6 @@ export interface RepoGraph {
 const STRUCTURAL = new Set(['calls', 'references', 'method', 'contains', 'inherits', 'mixes_in'])
 const IMPORTS = new Set(['imports', 'imports_from', 're_exports'])
 const LAST_SEGMENT_MIN = 8
-
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
 
 function str(v: unknown): string {
   return typeof v === 'string' ? v : ''

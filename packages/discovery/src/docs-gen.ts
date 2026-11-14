@@ -62,7 +62,7 @@ export function renderPlanningCoverageSection(map: ConnectivityMap): string {
 
 /** Flow ids cited as ✅ in a hand-maintained doc — verified to exist by the gate. */
 export function extractCitedFlowIds(content: string): string[] {
-  return [...new Set([...content.matchAll(/✅ `([a-z0-9-]+)`/g)].map(m => m[1]!))]
+  return [...new Set([...content.matchAll(/✅ `([a-z0-9-]+)`/g)].map(m => m[1]))]
 }
 
 /** Replace the named generated section inside a document. Throws if markers are missing. */

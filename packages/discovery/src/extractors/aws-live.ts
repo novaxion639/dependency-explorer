@@ -19,6 +19,7 @@
 
 import { awsSnapshotFolder } from '../aws-snapshot'
 import { streamSourceService } from '../mapping'
+import { getOrCreate } from '../collections'
 
 // ── Snapshot shape (file names match the `aws` CLI dump layout) ─────────────
 
@@ -59,7 +60,7 @@ export function stripEnvSuffix(name: string): string {
 }
 
 function camelOf(kebab: string): string {
-  return kebab.split('-').map((p, i) => (i === 0 ? p : p[0]!.toUpperCase() + p.slice(1))).join('')
+  return kebab.split('-').map((p, i) => (i === 0 ? p : p[0].toUpperCase() + p.slice(1))).join('')
 }
 
 /**
@@ -74,7 +75,7 @@ export function buildServiceResolver(serviceNames: string[]): (resourceName: str
   byCamel.set('websocket', 'svc-websockets') // legacy queue family naming
 
   return (resourceName: string) => {
-    const direct = byCamel.get(resourceName.split('-')[0]!.toLowerCase())
+    const direct = byCamel.get(resourceName.split('-')[0].toLowerCase())
     if (direct) {return direct}
     const norm = resourceName.replace(/[^a-z0-9]/gi, '').toLowerCase()
     let best: string | null = null
@@ -120,8 +121,7 @@ export function analyzeAwsLive(snapshot: AwsSnapshot, inputs: AwsLiveInputs): Aw
   const pairProtocols = new Map<string, Set<string>>()
   for (const c of inputs.connections) {
     const k = `${c.from}→${c.to}`
-    if (!pairProtocols.has(k)) {pairProtocols.set(k, new Set())}
-    pairProtocols.get(k)!.add(c.protocol)
+    getOrCreate(pairProtocols, k, () => new Set()).add(c.protocol)
   }
 
   // event source mappings → stream consumption + sqs bindings
@@ -135,23 +135,23 @@ export function analyzeAwsLive(snapshot: AwsSnapshot, inputs: AwsLiveInputs): Aw
     const kind = src.split(':')[2]
     const consumer = resolve(fnName)
     if (!consumer) {
-      if (fnName) {unresolved.add(fnName.split('-')[0]!)}
+      if (fnName) {unresolved.add(fnName.split('-')[0])}
       continue
     }
 
     let source: string | null = null
     let via = ''
     if (kind === 'kinesis') {
-      const stream = stripEnvSuffix((src.split(':stream/')[1] ?? '').split('/')[0]!)
+      const stream = stripEnvSuffix((src.split(':stream/')[1] ?? '').split('/')[0])
       const resolved = streamSourceService(stream, consumer, inputs.serviceNames)
       source = resolved === 'self' ? consumer : resolved
       via = `kinesis ${stream}`
     } else if (kind === 'dynamodb') {
-      const table = stripEnvSuffix((src.split(':table/')[1] ?? '').split('/stream/')[0]!)
+      const table = stripEnvSuffix((src.split(':table/')[1] ?? '').split('/stream/')[0])
       source = resolve(table)
       via = `dynamo-stream ${table}`
     } else if (kind === 'sqs') {
-      boundQueues.add(stripEnvSuffix(src.split(':').pop()!).toLowerCase())
+      boundQueues.add(stripEnvSuffix(src.slice(src.lastIndexOf(':') + 1)).toLowerCase())
       continue
     } else {
       continue
@@ -175,7 +175,7 @@ export function analyzeAwsLive(snapshot: AwsSnapshot, inputs: AwsLiveInputs): Aw
 
   // orphan queues: service-prefixed, no consumer binding, not a DLQ
   const orphanQueues = snapshot.sqsQueueUrls
-    .map(u => stripEnvSuffix(u.split('/').pop()!))
+    .map(u => stripEnvSuffix(u.slice(u.lastIndexOf('/') + 1)))
     .filter(q => resolve(q) !== null)
     .filter(q => !boundQueues.has(q.toLowerCase()) && !/dlq|dead-?letter|-dl$/i.test(q))
     .sort()

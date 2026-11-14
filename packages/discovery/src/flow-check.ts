@@ -245,21 +245,22 @@ export function checkAuthContext(
       const auth = edge.auth
       if (!auth) {continue}
 
-      if (auth.gate) {
+      const gate = auth.gate
+      if (gate) {
         const candidates = [edge.from, edge.to]
           .map(id => unitById.get(id))
-          .filter((u): u is NonNullable<typeof u> => !!u?.path)
+          .filter((u): u is NonNullable<typeof u> & { path: string } => !!u?.path)
         const present = candidates.filter(u => fs.existsSync(path.join(repoBase, u.service)))
         candidates.filter(u => !fs.existsSync(path.join(repoBase, u.service))).forEach(u => skipped.add(u.service))
         if (present.length) {
           result.gatesChecked++
-          const hit = present.some(u => readFile(u.service, u.path!)?.includes(auth.gate!))
+          const hit = present.some(u => readFile(u.service, u.path)?.includes(gate))
           if (hit) {
             result.gatesVerified++
           } else {
             result.findings.push({
               flow: flow.id, kind: 'gate-not-in-source',
-              detail: `edge "${edge.from} → ${edge.to}": gate "${auth.gate}" in neither ${present.map(u => `${u.service}/${u.path}`).join(' nor ')}`,
+              detail: `edge "${edge.from} → ${edge.to}": gate "${gate}" in neither ${present.map(u => `${u.service}/${u.path}`).join(' nor ')}`,
             })
           }
         }
@@ -453,10 +454,10 @@ export function checkFeatureFlags(map: ConnectivityMap, repoBase: string): FlagC
         distinct.add(flag.name)
         const candidates = [edge.from, edge.to]
           .map(id => unitById.get(id))
-          .filter((u): u is NonNullable<typeof u> => !!u?.path && !repoMissing(u.service))
+          .filter((u): u is NonNullable<typeof u> & { path: string } => !!u?.path && !repoMissing(u.service))
         if (!candidates.length) {continue}
         result.refsChecked++
-        const hit = candidates.some(u => readFile(u.service, u.path!)?.includes(flag.name))
+        const hit = candidates.some(u => readFile(u.service, u.path)?.includes(flag.name))
         if (hit) {
           result.refsVerified++
         } else {
@@ -593,8 +594,8 @@ export function checkFlows(map: ConnectivityMap): FlowCheckResult {
       if (!eps || eps.count === 0) {continue} // nothing to verify against (e.g. monolith)
       for (const m of step.action.matchAll(PATH_FRAGMENT_RE)) {
         result.pathsChecked++
-        const ok = eps.exact.has(normalizeEndpoint(m[1]!, m[2]!))
-          || eps.versionless.has(normalizeEndpointVersionless(m[1]!, m[2]!))
+        const ok = eps.exact.has(normalizeEndpoint(m[1], m[2]))
+          || eps.versionless.has(normalizeEndpointVersionless(m[1], m[2]))
         if (!ok) {
           result.findings.push({
             flow: flow.id,

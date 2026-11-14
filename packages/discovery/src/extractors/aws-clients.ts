@@ -64,10 +64,15 @@ const REGISTRY: Record<AwsUsageKind, KindSignals> = {
   },
 }
 
+const isAwsUsageKind = (key: string): key is AwsUsageKind => Object.hasOwn(REGISTRY, key)
+
 /** Classify one source file's AWS usage. Exported for tests. */
 export function classifyAwsUsage(content: string): Array<{ kind: AwsUsageKind; operations: string[] }> {
   const out: Array<{ kind: AwsUsageKind; operations: string[] }> = []
-  for (const [kind, signals] of Object.entries(REGISTRY) as Array<[AwsUsageKind, KindSignals]>) {
+  for (const [kind, signals] of Object.entries(REGISTRY)) {
+    if (!isAwsUsageKind(kind)) {
+      continue
+    }
     if (!signals.imports.test(content)) {continue}
     const operations = Object.entries(signals.operations)
       .filter(([, re]) => re.test(content))

@@ -62,7 +62,7 @@ export function extractRailsMonolith(repoBase: string, repo = 'skello-app'): Rai
         continue
       }
       const content = fs.readFileSync(path.join(clientsPath, entry.name), 'utf-8')
-      addEvidence(target!, relBase, content)
+      addEvidence(target, relBase, content)
     }
 
     if (entry.isDirectory()) {
@@ -80,7 +80,7 @@ export function extractRailsMonolith(repoBase: string, repo = 'skello-app'): Rai
       const content = rbFiles
         .map(f => fs.readFileSync(path.join(dirPath, f), 'utf-8'))
         .join('\n')
-      addEvidence(target!, `${relBase}/`, content)
+      addEvidence(target, `${relBase}/`, content)
     }
   }
 

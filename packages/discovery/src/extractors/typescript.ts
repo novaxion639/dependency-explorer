@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { walkTree } from '../walk'
+import { isRecord } from '../guards'
 
 /**
  * How an SDK dependency is actually imported in the repo's source:
@@ -46,8 +47,8 @@ function readText(filePath: string): string | null {
 function normalizeRepoUrl(raw: unknown, repo: string): string {
   let url: string | null = null
   if (typeof raw === 'string') {url = raw}
-  else if (raw && typeof raw === 'object' && 'url' in raw) {
-    url = (raw as Record<string, string>).url ?? null
+  else if (isRecord(raw) && typeof raw.url === 'string') {
+    url = raw.url
   }
   if (!url) {return `https://github.com/skelloapp/${repo}`}
   return url.replace(/^git\+/, '').replace(/\.git$/, '')
@@ -109,7 +110,7 @@ const walkSourceFiles = (dir: string): string[] =>
   walkTree(dir, e => e.name === 'node_modules' || e.name === 'dist' || e.name.startsWith('.'), e => /\.(ts|tsx|js|vue)$/.test(e.name) && !/\.(test|spec)\./.test(e.name))
 
 function classifySdkUsage(pkgDirs: string[], sdkPackages: string[]): Record<string, SdkUsage> {
-  const usage: Record<string, SdkUsage> = Object.fromEntries(sdkPackages.map(p => [p, 'declared-only' as SdkUsage]))
+  const usage: Record<string, SdkUsage> = Object.fromEntries(sdkPackages.map(p => [p, 'declared-only'] as const))
   if (!sdkPackages.length) {return usage}
   const files = pkgDirs.flatMap(dir => walkSourceFiles(path.join(dir, 'src')))
   const pending = new Set(sdkPackages)
@@ -147,8 +148,8 @@ export function extractTsRepo(repoBase: string, repo: string): TsRepoFacts | nul
     if (!pkg) {continue}
     if (pkg.repository && (dir === repoPath || repoUrlRaw === undefined)) {repoUrlRaw = pkg.repository}
     const deps = {
-      ...(pkg.dependencies as Record<string, string> | undefined ?? {}),
-      ...(pkg.devDependencies as Record<string, string> | undefined ?? {}),
+      ...(isRecord(pkg.dependencies) ? pkg.dependencies : {}),
+      ...(isRecord(pkg.devDependencies) ? pkg.devDependencies : {}),
     }
     for (const d of Object.keys(deps)) {
       // '-js' covers the mobile SDK flavor (@skelloapp/svc-punch-js)

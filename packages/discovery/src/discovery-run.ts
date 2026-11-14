@@ -41,6 +41,7 @@ import { extractListeners } from './extractors/rails-listeners'
 import { cdcRelations } from './cdc'
 import { surfaceDrift, type ListenerCheck } from './listener-check'
 import { readerFor } from './code-wiring'
+import { getOrCreate } from './collections'
 
 const APP_REPOS = ['skello-app', 'skello-app-front', 'superadmin', 'skello-mobile', 'skello-punchclock']
 const isAppRepo = (name: string): boolean => name.startsWith('svc-') || APP_REPOS.includes(name)
@@ -180,7 +181,7 @@ function findRepos(repoBase: string): string[] {
  */
 function pickTeamId(slugToTeamId: Map<string, string>, wildcardOwners: string[]): string | undefined {
   const mapped = [...new Set(wildcardOwners.filter(slug => slugToTeamId.has(slug)))]
-  return mapped.length === 1 ? slugToTeamId.get(mapped[0]!) : undefined
+  return mapped.length === 1 ? slugToTeamId.get(mapped[0]) : undefined
 }
 
 
@@ -409,8 +410,8 @@ export function runDiscovery(options: DiscoveryOptions): Report {
         awsFacts.map(f => KIND_TO_DB_TYPE[f.kind]).filter((t): t is string => t != null),
       )
       const AWS_DB_TYPES = new Set(['kinesis', 's3', 'dynamodb', 'postgresql'])
-      const declaredTypes = new Set(
-        (svcDef?.databases ?? []).map(d => d.type as string).filter(t => AWS_DB_TYPES.has(t)),
+      const declaredTypes = new Set<string>(
+        (svcDef?.databases ?? []).map(d => d.type).filter(t => AWS_DB_TYPES.has(t)),
       )
       report.awsClientUsage.push({
         service: repo,
@@ -519,8 +520,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
       const service = fact.pkg.replace(/-sdk$/, '').replace(/-js$/, '')
       const target = service.startsWith('svc-') ? service : `svc-${service}`
       if (!serviceNames.has(target)) {continue}
-      if (!piiTypedByService.has(target)) {piiTypedByService.set(target, new Set())}
-      piiTypedByService.get(target)!.add(fact.field)
+      getOrCreate(piiTypedByService, target, () => new Set()).add(fact.field)
     }
     report.piiCheck = checkPiiRefs(connectivityMap, piiTypedByService)
   }

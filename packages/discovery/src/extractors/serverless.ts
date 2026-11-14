@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { walkTree } from '../walk'
+import { isRecord } from '../guards'
 
 export interface DiscoveredEndpoint {
   method: string
@@ -122,7 +123,7 @@ export function classifyStreamRef(raw: string, explicitType?: string): Omit<Stre
   } else {
     const ref = raw.match(/\$\{(?:self:|ssm:)?([^}]+)\}/)
     if (ref) {
-      const segments = ref[1]!.split(/[./:]/).filter(Boolean)
+      const segments = ref[1].split(/[./:]/).filter(Boolean)
       const param = segments[segments.length - 1] ?? raw
       stream = param
       if (/dynamo/i.test(param)) {kind = 'dynamodb'}
@@ -142,9 +143,10 @@ function queueNameFromArn(arn: unknown, resources: Record<string, any>): string 
     const last = arn.split(':').pop()
     return last && last.length > 3 ? last : null
   }
-  if (arn && typeof arn === 'object' && 'Fn::GetAtt' in (arn as Record<string, unknown>)) {
-    const logical = (arn as Record<string, string[]>)['Fn::GetAtt']?.[0]
-    if (!logical) {return null}
+  if (isRecord(arn)) {
+    const getAtt = arn['Fn::GetAtt']
+    const logical: unknown = Array.isArray(getAtt) ? getAtt[0] : undefined
+    if (typeof logical !== 'string' || !logical) {return null}
     const queueName = resources[logical]?.Properties?.QueueName
     return typeof queueName === 'string' ? queueName : logical
   }
@@ -288,6 +290,10 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
 
 const HTTP_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 
+const indentOf = (line: string): number => line.length - line.trimStart().length
+
+const afterLastColon = (value: string): string => value.slice(value.lastIndexOf(':') + 1)
+
 /**
  * Walk backward from an event line to identify the enclosing serverless
  * function: the nearest `Identifier: {` line with smaller indentation, plus
@@ -295,23 +301,23 @@ const HTTP_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
  * rather than guessing when nothing plausible is found.
  */
 function findFunctionIdentity(lines: string[], eventLineIdx: number): { functionName?: string; description?: string } {
-  const eventIndent = lines[eventLineIdx]!.match(/^\s*/)![0].length
+  const eventIndent = indentOf(lines[eventLineIdx])
   let description: string | undefined
   for (let j = eventLineIdx - 1; j >= Math.max(0, eventLineIdx - 60); j--) {
-    const line = lines[j]!
-    const indent = line.match(/^\s*/)![0].length
+    const line = lines[j]
+    const indent = indentOf(line)
     if (!line.trim()) {continue}
     if (indent < eventIndent) {
       const d = line.match(/^\s*description:\s*['"`]([^'"`]+)['"`]/)
       if (d && !description) {
-        description = d[1]!
+        description = d[1]
         continue
       }
       const fn = line.match(/^\s*([A-Za-z][A-Za-z0-9_]*):\s*\{\s*$/)
       const structural = ['events', 'httpApi', 'http', 'tags', 'environment', 'vpc', 'authorizer',
         'Properties', 'RequestParameters', 'Target', 'Resources', 'Integration']
-      if (fn && !structural.includes(fn[1]!)) {
-        return { functionName: fn[1]!, description }
+      if (fn && !structural.includes(fn[1])) {
+        return { functionName: fn[1], description }
       }
     }
   }
@@ -333,50 +339,50 @@ function parseDlqStatic(content: string): DlqWiringFact[] {
   for (let m = varRe.exec(content); m; m = varRe.exec(content)) {
     const block = content.slice(m.index, Math.min(content.length, m.index + 400))
     const name = block.match(/\bname:\s*['"`]([^'"`]+)['"`]/)
-    if (name) {varToName.set(m[1]!, stripTemplate(name[1]!) || name[1]!)}
+    if (name) {varToName.set(m[1], stripTemplate(name[1]) || name[1])}
   }
   const resolveRef = (ref: string): string => {
     const viaVar = ref.match(/^([A-Za-z_$][\w$]*)\.name$/)
-    if (viaVar) {return varToName.get(viaVar[1]!) ?? viaVar[1]!}
+    if (viaVar) {return varToName.get(viaVar[1]) ?? viaVar[1]}
     return stripTemplate(ref.replace(/['"`]/g, '')) || ref
   }
 
   // Pass 2a — helper call sites carrying dlqToAppend
   const helperRe = /create\w*Sqs\w*\(\{([^)]*?)\}\)/gs
   for (let m = helperRe.exec(content); m; m = helperRe.exec(content)) {
-    const body = m[1]!
+    const body = m[1]
     const dlqRef = body.match(/\bdlqToAppend:\s*([^,\n]+)/)
     if (!dlqRef) {continue}
     const name = body.match(/\bname:\s*['"`]([^'"`]+)['"`]/)
     const count = body.match(/\bmaxReceiveCount:\s*(\d+)/)
     facts.push({
-      queue: name ? stripTemplate(name[1]!) || name[1]! : null,
-      dlq: resolveRef(dlqRef[1]!.trim()),
+      queue: name ? stripTemplate(name[1]) || name[1] : null,
+      dlq: resolveRef(dlqRef[1].trim()),
       retry: count ? `maxReceiveCount ${count[1]}` : null,
       via: 'helper',
     })
   }
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]!
+    const line = lines[i]
 
     // Pass 2b — raw RedrivePolicy blocks: owning QueueName above, target/count within
     if (/\bRedrivePolicy:\s*\{/.test(line)) {
       let queue: string | null = null
       for (let j = i - 1; j >= Math.max(0, i - 12); j--) {
-        const q = lines[j]!.match(/\bQueueName:\s*['"`]([^'"`]+)['"`]/)
-        if (q) { queue = stripTemplate(q[1]!) || q[1]!; break }
+        const q = lines[j].match(/\bQueueName:\s*['"`]([^'"`]+)['"`]/)
+        if (q) { queue = stripTemplate(q[1]) || q[1]; break }
       }
       let dlq: string | null = null
       let retry: string | null = null
       for (let j = i; j < Math.min(lines.length, i + 8); j++) {
-        const inner = lines[j]!
+        const inner = lines[j]
         const getAtt = inner.match(/Fn::GetAtt['"`]?\]?\s*:\s*\[\s*['"`]?([\w$.]+)['"`]?/)
           ?? inner.match(/\[['"`]Fn::GetAtt['"`],?\s*['"`]?([\w$.]+)/)
-        if (getAtt && !dlq) {dlq = resolveRef(getAtt[1]!)}
+        if (getAtt && !dlq) {dlq = resolveRef(getAtt[1])}
         const arnLit = inner.match(/deadLetterTargetArn['"`]?:\s*['"`]([^'"`]+)['"`]/)
         if (arnLit && !dlq) {
-          const last = arnLit[1]!.split(':').pop()!
+          const last = afterLastColon(arnLit[1])
           dlq = stripTemplate(last) || last
         }
         const count = inner.match(/maxReceiveCount['"`]?:\s*(\d+)/)
@@ -391,12 +397,12 @@ function parseDlqStatic(content: string): DlqWiringFact[] {
     if (/\bonFailure:\s*\{/.test(line)) {
       let dlq: string | null = null
       for (let j = i; j < Math.min(lines.length, i + 6); j++) {
-        const inner = lines[j]!
+        const inner = lines[j]
         const getAtt = inner.match(/Fn::GetAtt['"`]?\]?\s*:\s*\[\s*([\w$.]+|['"`][^'"`]+['"`])/)
-        if (getAtt) { dlq = resolveRef(getAtt[1]!.trim()); break }
+        if (getAtt) { dlq = resolveRef(getAtt[1].trim()); break }
         const arnLit = inner.match(/\barn:\s*['"`]([^'"`]+)['"`]/)
         if (arnLit) {
-          const last = arnLit[1]!.split(':').pop()!
+          const last = afterLastColon(arnLit[1])
           dlq = stripTemplate(last) || last
           break
         }
@@ -404,7 +410,7 @@ function parseDlqStatic(content: string): DlqWiringFact[] {
       let retry: string | null = null
       let queue: string | null = null
       for (let j = Math.max(0, i - 14); j < Math.min(lines.length, i + 14); j++) {
-        const count = lines[j]!.match(/\bmaximumRetryAttempts:\s*(\d+)/)
+        const count = lines[j].match(/\bmaximumRetryAttempts:\s*(\d+)/)
         if (count) {retry = `maximumRetryAttempts ${count[1]}`}
       }
       const fn = findFunctionIdentity(lines, i).functionName
@@ -430,8 +436,8 @@ function parseTerraformDlq(content: string): DlqWiringFact[] {
     const name = [...before.matchAll(/\bname\s*=\s*"([^"]+)"/g)].pop()
     const count = after.match(/maxReceiveCount\s*=\s*(\d+)/)
     facts.push({
-      queue: name ? stripTemplate(name[1]!) || name[1]! : null,
-      dlq: stripTemplate(m[1]!) || m[1]!,
+      queue: name ? stripTemplate(name[1]) || name[1] : null,
+      dlq: stripTemplate(m[1]) || m[1],
       retry: count ? `maxReceiveCount ${count[1]}` : null,
       via: 'terraform',
     })
@@ -487,29 +493,29 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
   const lines = content.split('\n')
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]!
+    const line = lines[i]
 
     // Stream event source — shorthand: stream: 'arn:aws:kinesis:…'
     const streamShort = line.match(/\bstream:\s*['"`]([^'"`]+)['"`]/)
     if (streamShort) {
-      streamConsumers.push({ ...classifyStreamRef(streamShort[1]!), functionName: findFunctionIdentity(lines, i).functionName })
+      streamConsumers.push({ ...classifyStreamRef(streamShort[1]), functionName: findFunctionIdentity(lines, i).functionName })
       continue
     }
 
     // Stream event source — block form: arn/type literals before nested objects
     if (/\bstream:\s*\{\s*$/.test(line)) {
-      const indent = line.match(/^\s*/)![0].length
+      const indent = indentOf(line)
       let arn: string | null = null
       let explicitType: string | undefined
       for (let j = i + 1; j < Math.min(i + 14, lines.length); j++) {
-        const inner = lines[j]!
+        const inner = lines[j]
         if (/^\s*destinations:/.test(inner)) {break}
-        const innerIndent = inner.match(/^\s*/)![0].length
+        const innerIndent = indentOf(inner)
         if (/^\s*\}/.test(inner) && innerIndent <= indent) {break}
         const a = inner.match(/\barn:\s*['"`]([^'"`]+)['"`]/)
-        if (a && !arn) {arn = a[1]!}
+        if (a && !arn) {arn = a[1]}
         const t = inner.match(/\btype:\s*['"`](\w+)['"`]/)
-        if (t) {explicitType = t[1]!}
+        if (t) {explicitType = t[1]}
       }
       const block = braceBlock(lines, i)
       const tablePrefixes = [...block.matchAll(/\bprefix:\s*['"`](public\.[^'"`$]*)['"`]/g)].map(p => p[1] ?? '')
@@ -525,17 +531,17 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     // S3 bucket-notification event — shorthand or block with a bucket literal
     const s3Short = line.match(/^\s*s3:\s*['"`]([^'"`]+)['"`]/)
     if (s3Short) {
-      s3Triggers.push({ bucket: stripTemplate(s3Short[1]!) || s3Short[1]!, functionName: findFunctionIdentity(lines, i).functionName })
+      s3Triggers.push({ bucket: stripTemplate(s3Short[1]) || s3Short[1], functionName: findFunctionIdentity(lines, i).functionName })
       continue
     }
     if (/^\s*s3:\s*\{\s*$/.test(line)) {
       for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
-        const b = lines[j]!.match(/\bbucket:\s*['"`]([^'"`]+)['"`]/)
+        const b = lines[j].match(/\bbucket:\s*['"`]([^'"`]+)['"`]/)
         if (b) {
-          s3Triggers.push({ bucket: stripTemplate(b[1]!) || b[1]!, functionName: findFunctionIdentity(lines, i).functionName })
+          s3Triggers.push({ bucket: stripTemplate(b[1]) || b[1], functionName: findFunctionIdentity(lines, i).functionName })
           break
         }
-        if (/^\s*\}/.test(lines[j]!)) {break}
+        if (/^\s*\}/.test(lines[j])) {break}
       }
       continue
     }
@@ -543,7 +549,7 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     // Schedule event — shorthand: schedule: 'cron(…)' / schedule: ['rate(…)'] / template crons
     const schedShort = line.match(/\bschedule:\s*\[?\s*['"`]((?:rate|cron)\([^)]*\))['"`]/)
     if (schedShort) {
-      schedules.push({ expressions: [schedShort[1]!], functionName: findFunctionIdentity(lines, i).functionName })
+      schedules.push({ expressions: [schedShort[1]], functionName: findFunctionIdentity(lines, i).functionName })
       continue
     }
 
@@ -552,18 +558,18 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     // Blocks with zero literal expressions are ignored — that shape is almost
     // always a TS type declaration, not an event.
     if (/\bschedule:\s*\{\s*$/.test(line)) {
-      const indent = line.match(/^\s*/)![0].length
+      const indent = indentOf(line)
       let name: string | undefined
       let description: string | undefined
       const expressions: string[] = []
       for (let j = i + 1; j < Math.min(i + 22, lines.length); j++) {
-        const inner = lines[j]!
-        const innerIndent = inner.match(/^\s*/)![0].length
+        const inner = lines[j]
+        const innerIndent = indentOf(inner)
         if (/^\s*\}/.test(inner) && innerIndent <= indent) {break}
         const n = inner.match(/\bname:\s*['"`]([^'"`]+)['"`]/)
-        if (n && !name) {name = stripTemplate(n[1]!) || n[1]!}
+        if (n && !name) {name = stripTemplate(n[1]) || n[1]}
         const d = inner.match(/\bdescription:\s*['"`]([^'"`]+)['"`]/)
-        if (d && !description) {description = d[1]!}
+        if (d && !description) {description = d[1]}
         for (const expr of inner.match(/(?:rate|cron)\([^)]*\)/g) ?? []) {expressions.push(expr)}
       }
       if (expressions.length) {
@@ -574,23 +580,23 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
 
     // Owned CloudFormation resources: Type: 'AWS::DynamoDB::Table' etc.
     const cfType = line.match(/\bType:\s*['"`](AWS::[A-Za-z0-9:]+)['"`]/)
-    if (cfType && OWNED_RESOURCE_TYPES.has(cfType[1]!)) {
+    if (cfType && OWNED_RESOURCE_TYPES.has(cfType[1])) {
       let name: string | undefined
       for (let j = i + 1; j < Math.min(i + 14, lines.length); j++) {
-        const n = lines[j]!.match(/\b(?:TableName|BucketName|StreamName|TopicName|Name):\s*['"`]([^'"`]+)['"`]/)
+        const n = lines[j].match(/\b(?:TableName|BucketName|StreamName|TopicName|Name):\s*['"`]([^'"`]+)['"`]/)
         if (n) {
-          name = stripTemplate(n[1]!) || n[1]!
+          name = stripTemplate(n[1]) || n[1]
           break
         }
       }
-      ownedResources.push({ cfType: cfType[1]!, name: name ?? findFunctionIdentity(lines, i).functionName ?? '(unnamed)' })
+      ownedResources.push({ cfType: cfType[1], name: name ?? findFunctionIdentity(lines, i).functionName ?? '(unnamed)' })
       continue
     }
 
     // Shorthand: httpApi: 'GET /path'
     const shorthand = line.match(/\bhttpApi:\s*['"`]([A-Z]+)\s+([^'"`]+)['"`]/)
-    if (shorthand && HTTP_METHODS.has(shorthand[1]!)) {
-      endpoints.push({ method: shorthand[1]!, path: shorthand[2]!, ...findFunctionIdentity(lines, i) })
+    if (shorthand && HTTP_METHODS.has(shorthand[1])) {
+      endpoints.push({ method: shorthand[1], path: shorthand[2], ...findFunctionIdentity(lines, i) })
       continue
     }
 
@@ -599,12 +605,12 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
       let method: string | null = null
       let epPath: string | null = null
       for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
-        const inner = lines[j]!
+        const inner = lines[j]
         if (/^\s*\}/.test(inner)) {break}
         const m = inner.match(/\bmethod:\s*['"`]([A-Za-z]+)['"`]/)
-        if (m) {method = m[1]!.toUpperCase()}
+        if (m) {method = m[1].toUpperCase()}
         const p = inner.match(/\bpath:\s*['"`]([^'"`]+)['"`]/)
-        if (p) {epPath = p[1]!}
+        if (p) {epPath = p[1]}
         if (method && epPath) {break}
       }
       if (method && epPath && HTTP_METHODS.has(method)) {
@@ -616,23 +622,23 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     // API Gateway V2 route resources: RouteKey: 'POST /email/high-priority'
     // (e.g. SQS-SendMessage direct integrations — no Lambda event exists)
     const route = line.match(/\bRouteKey:\s*['"`]([A-Z]+)\s+([^'"`]+)['"`]/)
-    if (route && HTTP_METHODS.has(route[1]!)) {
-      endpoints.push({ method: route[1]!, path: route[2]!, ...findFunctionIdentity(lines, i) })
+    if (route && HTTP_METHODS.has(route[1])) {
+      endpoints.push({ method: route[1], path: route[2], ...findFunctionIdentity(lines, i) })
       continue
     }
 
     // Queue names: QueueName: 'literal' or `template-${stage}` (template parts stripped)
     const q = line.match(/\bQueueName:\s*['"`]([^'"`]+)['"`]/)
     if (q) {
-      const cleaned = q[1]!.replace(/\$\{[^}]*\}/g, '').replace(/^[-_.]+|[-_.]+$/g, '')
+      const cleaned = q[1].replace(/\$\{[^}]*\}/g, '').replace(/^[-_.]+|[-_.]+$/g, '')
       if (cleaned.length >= 6) {queueNames.add(cleaned)}
     }
   }
 
   // Gateway authorizers — bare string and object forms
   const authorizerNames = new Set<string>()
-  for (const m of content.matchAll(/\bauthorizer:\s*['"`]([A-Za-z][\w-]*)['"`]/g)) {authorizerNames.add(m[1]!)}
-  for (const m of content.matchAll(/\bauthorizer:\s*\{[^}]*?\bname:\s*['"`]([A-Za-z][\w-]*)['"`]/gs)) {authorizerNames.add(m[1]!)}
+  for (const m of content.matchAll(/\bauthorizer:\s*['"`]([A-Za-z][\w-]*)['"`]/g)) {authorizerNames.add(m[1])}
+  for (const m of content.matchAll(/\bauthorizer:\s*\{[^}]*?\bname:\s*['"`]([A-Za-z][\w-]*)['"`]/gs)) {authorizerNames.add(m[1])}
 
   for (const m of content.matchAll(QUEUE_FACTORY_OBJECT)) {
     const name = m[1]?.match(/\bname:\s*['"`]([^'"`]+)['"`]/)?.[1]
