@@ -11,6 +11,7 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { getOrCreate } from './collections'
 
 const INVOKE_RE = /([A-Z][A-Za-z0-9_]*(?:::[A-Z][A-Za-z0-9_]*)*)\s*(?:\.new\b|\.perform_async\b|\.perform_later\b|\.perform_now\b|\.run\b|\.call\b|\.create!?\b)/g
 const CALLBACK_RE = /^\s*(after_save|after_commit|after_create|after_destroy|before_save)\s+:(\w+)/
@@ -20,10 +21,10 @@ const IGNORED_CONSTANTS = new Set([
 ])
 
 function kindGuess(constant: string): string {
-  if (/Job$/.test(constant)) return 'job'
-  if (/Controller(#|$)/.test(constant)) return 'controller'
-  if (/(Manager)$/.test(constant)) return 'manager'
-  if (/(Service)$/.test(constant)) return 'service'
+  if (/Job$/.test(constant)) {return 'job'}
+  if (/Controller(#|$)/.test(constant)) {return 'controller'}
+  if (/(Manager)$/.test(constant)) {return 'manager'}
+  if (/(Service)$/.test(constant)) {return 'service'}
   return 'service?'
 }
 
@@ -51,18 +52,17 @@ console.log(`# trace: ${fileArg}\n`)
 const seen = new Map<string, Array<{ line: number; verb: string }>>()
 content.split('\n').forEach((line, i) => {
   for (const m of line.matchAll(INVOKE_RE)) {
-    const constant = m[1]!
-    const root = constant.split('::')[0]!
-    if (IGNORED_CONSTANTS.has(root)) continue
-    const verb = m[0]!.slice(constant.length).trim()
-    if (!seen.has(constant)) seen.set(constant, [])
-    seen.get(constant)!.push({ line: i + 1, verb })
+    const constant = m[1]
+    const root = constant.split('::')[0]
+    if (IGNORED_CONSTANTS.has(root)) {continue}
+    const verb = m[0].slice(constant.length).trim()
+    getOrCreate(seen, constant, () => []).push({ line: i + 1, verb })
   }
 })
 
 if (seen.size) {
   console.log('## invoked constants (codeUnit candidates)\n')
-  for (const [constant, hits] of [...seen.entries()].sort((a, b) => a[1][0]!.line - b[1][0]!.line)) {
+  for (const [constant, hits] of [...seen.entries()].sort((a, b) => a[1][0].line - b[1][0].line)) {
     const lines = hits.map(h => `L${h.line} ${h.verb}`).join(', ')
     console.log(`- ${constant}  [${kindGuess(constant)}]  (${lines})`)
   }
@@ -73,7 +73,7 @@ if (seen.size) {
 const callbacks: string[] = []
 content.split('\n').forEach((line, i) => {
   const m = line.match(CALLBACK_RE)
-  if (m) callbacks.push(`- L${i + 1} ${m[1]} :${m[2]}`)
+  if (m) {callbacks.push(`- L${i + 1} ${m[1]} :${m[2]}`)}
 })
 if (callbacks.length) {
   console.log('\n## AR callbacks declared (model-callback group candidates)\n')

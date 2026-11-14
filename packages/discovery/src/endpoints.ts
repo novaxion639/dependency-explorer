@@ -11,7 +11,7 @@
  */
 export function normalizeEndpoint(method: string, rawPath: string): string {
   let p = rawPath
-  if (!p.startsWith('/')) p = `/${p}`
+  if (!p.startsWith('/')) {p = `/${p}`}
   p = p.replace(/\{[^}]+\}/g, '{}').replace(/:[A-Za-z0-9_]+/g, '{}')
   const segments = p.split('/').map(seg => seg === '{}' ? seg : seg.toLowerCase().replace(/[-_]/g, ''))
   p = segments.join('/').replace(/\/+/g, '/').replace(/\/$/, '') || '/'
@@ -28,7 +28,7 @@ export function normalizeEndpointVersionless(method: string, rawPath: string): s
 /** Swagger/health self-endpoints every service exposes — architectural noise,
  *  excluded from scaffolding and from drift counts. */
 export function isBoilerplateEndpoint(method: string, rawPath: string): boolean {
-  if (method.toUpperCase() !== 'GET') return false
+  if (method.toUpperCase() !== 'GET') {return false}
   const p = rawPath.replace(/\/$/, '') || '/'
   return p === '/' || p === '/docs.json' || p === '/health' || p === '/healthz' || p.startsWith('/swagger')
 }

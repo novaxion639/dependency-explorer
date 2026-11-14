@@ -7,6 +7,7 @@ import type { ServerlessFacts, StreamConsumerFact } from './extractors/serverles
 import type { ListenerFinding } from './extractors/rails-listeners'
 import { tableId } from './resource-registry'
 import { MONOLITH, dmsSourceRepo, dmsTaskStream } from './resource-relations'
+import { isRecord } from './guards'
 
 const CDC_MIGRATIONS = new Set(['cdc', 'full-load-and-cdc'])
 const EXEMPT_TABLES = new Set(['ar_internal_metadata', 'schema_migrations', 'pg_stat_statements'])
@@ -31,10 +32,6 @@ export function terraformList(contents: string[], name: string): string[] {
 
 const SELECTION = /"rule-type"\s*[:=]\s*"selection"/
 const INCLUDE = /"rule-action"\s*[:=]\s*"include"/
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function withWildcard(names: string[], schemaTables: string[]): string[] {
   const unique = [...new Set(names)]

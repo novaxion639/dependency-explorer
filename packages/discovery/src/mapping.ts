@@ -42,9 +42,9 @@ const SDK_SERVICE_OVERRIDES: Record<string, string> = {
 
 /** Resolve an SDK package to a service name; null = ignored library/external. */
 export function sdkToServiceName(sdkPkg: string): string | null {
-  if (sdkPkg in IGNORED_SDKS) return null
+  if (sdkPkg in IGNORED_SDKS) {return null}
   const override = SDK_SERVICE_OVERRIDES[sdkPkg]
-  if (override) return override
+  if (override) {return override}
   const name = sdkPkg.replace('@skelloapp/', '').replace(/-sdk$/, '').replace(/-client$/, '')
   return name.startsWith('svc-') ? name : `svc-${name}`
 }
@@ -60,7 +60,7 @@ export const FRONTEND_HOST_ALIASES: Record<string, string | null> = {
 // squads and functional/org-wide teams. Excluded from the "unmapped product
 // team" report — only food-named product teams (teams.ts) own services.
 export function isStructuralGithubTeam(slug: string): boolean {
-  if (/^@skelloapp\/squad-/.test(slug)) return true
+  if (/^@skelloapp\/squad-/.test(slug)) {return true}
   return ['team-dev', 'team-infra', 'team-qa', 'team-tech', 'team-pm', 'team-tpm',
     'team-marketing', 'team-revops', 'team-stratops', 'team-support',
     'team-data', 'team-data-analytics']
@@ -116,28 +116,28 @@ export function streamSourceService(
     return 'skello-app'
   }
   // arn:…:stream/${serviceName}-${stage} — the service's own kinesis stream
-  if (/\$\{serviceName\}/.test(stream)) return 'self'
+  if (/\$\{serviceName\}/.test(stream)) {return 'self'}
 
   const norm = normalizeStreamToken(stream)
   const consumerToken = normalizeStreamToken(consumerRepo.replace(/^svc-/, ''))
-  if (norm.includes(consumerToken)) return 'self'
+  if (norm.includes(consumerToken)) {return 'self'}
 
   // Foreign-service parameter names — longest service token wins (kpis-v2 over kpis)
   let best: string | null = null
   let bestLen = 0
   for (const name of serviceNames) {
-    if (name === consumerRepo) continue
+    if (name === consumerRepo) {continue}
     const token = normalizeStreamToken(name.replace(/^svc-/, ''))
     if (token.length >= 3 && norm.includes(token) && token.length > bestLen) {
       best = name
       bestLen = token.length
     }
   }
-  if (best) return best
+  if (best) {return best}
 
   // Engine-only DynamoDB names (streamDynamodb, dynamoDBStream…) are the
   // service's own table stream — verified across docs-v2/hris/enrollment/pos.
-  if (/^(stream)?dynamodb(stream)?$/.test(norm)) return 'self'
+  if (/^(stream)?dynamodb(stream)?$/.test(norm)) {return 'self'}
   return null
 }
 

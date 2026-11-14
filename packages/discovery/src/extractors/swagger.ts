@@ -14,7 +14,7 @@ export interface SwaggerFacts {
 
 export function extractSwagger(repoBase: string, repo: string): SwaggerFacts | null {
   const specPath = path.join(repoBase, repo, 'tmp', 'swagger.json')
-  if (!fs.existsSync(specPath)) return null
+  if (!fs.existsSync(specPath)) {return null}
   let spec: any
   try {
     spec = JSON.parse(fs.readFileSync(specPath, 'utf-8'))

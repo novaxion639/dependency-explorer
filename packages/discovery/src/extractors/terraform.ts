@@ -87,7 +87,7 @@ const IAM_ACTION_RE = /"((?:dynamodb|s3|kinesis|firehose):[A-Za-z*][A-Za-z*]*)"/
 
 function attr(block: string, key: string): string | undefined {
   const m = block.match(new RegExp(`\\b${key}\\s*=\\s*(?:"([^"]+)"|([^\\n]+))`))
-  if (!m) return undefined
+  if (!m) {return undefined}
   return (m[1] ?? m[2])?.trim()
 }
 
@@ -141,14 +141,14 @@ export function parseTerraform(content: string): TerraformFacts {
     // never bleed into a neighbouring block's identically-named attributes
     const nextResource = content.indexOf('\nresource ', m.index + 1)
     const block = content.slice(m.index, nextResource === -1 ? m.index + 1600 : Math.min(nextResource, m.index + 1600))
-    if (OWNED_TF_TYPES.has(tfType!)) {
+    if (OWNED_TF_TYPES.has(tfType)) {
       const name = attr(block, 'name') ?? attr(block, 'bucket') ?? attr(block, 'identifier')
       const engine = ENGINE_TYPES.has(tfType ?? '') ? attr(block, 'engine') : undefined
       const forEach = attr(block, 'for_each')?.match(/^local\.(\w+)$/)?.[1]
-      resources.push({ tfType: tfType!, label: label!, ...(name ? { name } : {}), ...(engine ? { engine } : {}), ...(forEach ? { forEach } : {}) })
+      resources.push({ tfType: tfType, label: label, ...(name ? { name } : {}), ...(engine ? { engine } : {}), ...(forEach ? { forEach } : {}) })
     } else if (tfType === 'aws_dms_replication_task') {
       dmsTasks.push({
-        label: label!,
+        label: label,
         taskId: attr(block, 'replication_task_id'),
         migrationType: attr(block, 'migration_type'),
         source: attr(block, 'source_endpoint_arn'),
@@ -167,7 +167,7 @@ export function parseTerraform(content: string): TerraformFacts {
     } else if (tfType === 'aws_dms_endpoint') {
       const streamLabel = blockAt(content, m.index).match(/stream_arn\s*=\s*aws_kinesis_stream\.([\w-]+)/)?.[1]
       dmsEndpoints.push({
-        label: label!,
+        label: label,
         endpointId: attr(block, 'endpoint_id'),
         endpointType: attr(block, 'endpoint_type'),
         engineName: attr(block, 'engine_name'),
@@ -188,7 +188,7 @@ export function parseTerraform(content: string): TerraformFacts {
   }
 
   let a: RegExpExecArray | null
-  while ((a = IAM_ACTION_RE.exec(content))) iamActions.add(a[1]!)
+  while ((a = IAM_ACTION_RE.exec(content))) {iamActions.add(a[1])}
 
   return { resources, mongoRoles, dmsTasks, dmsEndpoints, iamActions: [...iamActions].sort() }
 }
@@ -307,7 +307,7 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
   } catch {
     return null
   }
-  if (!entries.length) return null
+  if (!entries.length) {return null}
 
   const merged: TerraformFacts = { resources: [], mongoRoles: [], dmsTasks: [], dmsEndpoints: [], iamActions: [] }
   const actions = new Set<string>()

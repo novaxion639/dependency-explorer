@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { ConnectivityMapSchema, DiscoveredOverlaySchema, ListenerSurfaceSchema, MonolithRouteSchema, ResourceSurfaceSchema } from '@dependency-explorer/schema'
-import type { ConnectivityMap } from '@dependency-explorer/schema'
+import type { ConnectivityMap, ConnectivityService } from '@dependency-explorer/schema'
 import connections from './connections'
 import teams from './teams'
 import rules from './rules'
@@ -120,15 +120,15 @@ export const areaFacts = {
   coverage: overlay.areaCoverage ?? {},
 }
 
-function enrichServices(services: unknown[]): unknown[] {
+function enrichServices(services: ConnectivityService[]): ConnectivityService[] {
   const endpointStamps = overlay.endpoints ?? {}
-  return (services as Array<Record<string, unknown>>).map(svc => {
-    const facts = overlay.services[svc.name as string]
-    const endpoints = (svc.endpoints as Array<Record<string, unknown>>).map(ep => {
+  return services.map(svc => {
+    const facts = overlay.services[svc.name]
+    const endpoints = svc.endpoints.map(ep => {
       const stamp = endpointStamps[`${svc.name}#${ep.id}`]
-      return stamp ? { ...ep, provenance: { source: 'discovered', ...stamp } } : ep
+      return stamp ? { ...ep, provenance: { source: 'discovered' as const, ...stamp } } : ep
     })
-    if (!facts) return { ...svc, endpoints }
+    if (!facts) {return { ...svc, endpoints }}
     return {
       ...svc,
       endpoints,
@@ -151,7 +151,7 @@ function enrichServices(services: unknown[]): unknown[] {
 function enrichConnections(conns: typeof connections): typeof connections {
   return conns.map(conn => {
     const stamp = overlay.connections[`${conn.from}→${conn.to}:${conn.protocol}`]
-    if (!stamp) return conn
+    if (!stamp) {return conn}
     return { ...conn, provenance: { source: 'discovered' as const, ...stamp } }
   })
 }

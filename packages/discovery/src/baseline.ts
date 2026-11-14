@@ -1,4 +1,5 @@
 import * as fs from 'node:fs'
+import { isRecord } from './guards'
 
 const SUBJECT_FIELDS = ['flow', 'rule', 'subject', 'service', 'edge'] as const
 const EDGE_DRIFT_SECTIONS = ['candidates', 'unknownTargets', 'stale', 'unverifiable']
@@ -6,10 +7,6 @@ const ADVISORY_SECTIONS = ['datadog', 'jira']
 
 export function stableDetail(detail: string): string {
   return detail.replace(/\b[0-9a-f]{12,}\b/g, '#').replace(/\b(L?)\d+\b/g, '$1N')
-}
-
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
 }
 
 export function findingKeys(report: Record<string, unknown>): string[] {
