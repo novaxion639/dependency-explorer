@@ -160,7 +160,9 @@ export function buildSearchIndex(map: ConnectivityMap, routes: MonolithRoute[] =
  */
 export function searchEntries(index: SearchEntry[], query: string, limit = 40): SearchEntry[] {
   const tokens = query.toLowerCase().split(/\s+/).filter(Boolean)
-  if (!tokens.length) return []
+  if (!tokens.length) {
+    return []
+  }
 
   const scored: Array<{ entry: SearchEntry; score: number }> = []
   for (const entry of index) {
@@ -170,13 +172,22 @@ export function searchEntries(index: SearchEntry[], query: string, limit = 40): 
     let score = 0
     let ok = true
     for (const t of tokens) {
-      if (label.startsWith(t)) score += 3
-      else if (label.includes(t)) score += 2
-      else if (sublabel.includes(t)) score += 1
-      else if (haystack.includes(t)) score += 0.5
-      else { ok = false; break }
+      if (label.startsWith(t)) {
+        score += 3
+      } else if (label.includes(t)) {
+        score += 2
+      } else if (sublabel.includes(t)) {
+        score += 1
+      } else if (haystack.includes(t)) {
+        score += 0.5
+      } else {
+        ok = false
+        break
+      }
     }
-    if (ok) scored.push({ entry, score })
+    if (ok) {
+      scored.push({ entry, score })
+    }
   }
 
   scored.sort((a, b) =>

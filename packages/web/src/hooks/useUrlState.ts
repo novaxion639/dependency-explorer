@@ -204,6 +204,16 @@ function forgetOtherPages(next: UrlState): UrlState {
   return KEY_ORDER.reduce<UrlState>((st, key) => (kept.has(key) ? st : { ...st, [key]: blank[key] ?? null }), next)
 }
 
+export function applyPatch(prev: UrlState, p: Partial<UrlState>): UrlState {
+  const merged = { ...prev, notFound: null, ...p }
+  return p.page !== undefined && p.page !== prev.page ? forgetOtherPages(merged) : merged
+}
+
+export function hrefFor(state: UrlState, base: string): string {
+  const qs = toQueryString(state)
+  return qs ? `${base}?${qs}` : base
+}
+
 type HistoryWriter = Pick<History, 'pushState' | 'replaceState'> & { state?: unknown }
 
 export function commitPatch(
@@ -213,10 +223,8 @@ export function commitPatch(
   history: HistoryWriter,
   pathname: string,
 ): UrlState {
-  const merged = { ...prev, notFound: null, ...p }
-  const next = p.page !== undefined && p.page !== prev.page ? forgetOtherPages(merged) : merged
-  const qs = toQueryString(next)
-  const url = qs ? `${pathname}?${qs}` : pathname
+  const next = applyPatch(prev, p)
+  const url = hrefFor(next, pathname)
   if (opts?.push ?? isNavigation(prev, p)) {
     history.pushState({ inApp: true }, '', url)
   } else {

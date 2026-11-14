@@ -76,7 +76,7 @@ export function Explorer() {
           : null)
 
   const content =
-    url.page === 'home' ? <HomePage index={searchIndex} onNavigate={patch} />
+    url.page === 'home' ? <HomePage url={url} index={searchIndex} onNavigate={patch} />
     : url.page === 'areas' ? (url.area
       ? <AreaPage map={map} areaId={url.area} term={url.term} onBack={() => patch({ area: null, term: null })} onOpenFlow={id => patch({ page: 'flows', flow: id })} onOpenArea={id => patch({ area: id, term: null })} onSelectService={selectService} />
       : <AreasHome map={map} onOpenArea={id => patch({ area: id, term: null })} onOpenContext={() => patch({ page: 'microservices', s: null })} />)

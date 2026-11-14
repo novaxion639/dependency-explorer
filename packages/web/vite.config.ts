@@ -47,6 +47,6 @@ function overlayServe(): Plugin {
 export default defineConfig({
   plugins: [react(), overlayServe()],
   test: {
-    setupFiles: ['../../test-support/guard.ts'],
+    setupFiles: ['../../test-support/guard.ts', './src/testSetup.ts'],
   },
 })

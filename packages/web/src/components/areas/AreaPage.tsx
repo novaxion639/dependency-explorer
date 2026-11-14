@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { ReactFlow, Background, BackgroundVariant, type Edge, type Node, type NodeMouseHandler } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import type { ConnectivityMap, Platform } from '@dependency-explorer/data'
+import type { ConnectivityMap, Platform, ProductArea } from '@dependency-explorer/data'
 import { areaFacts, getAreaExternals, getAreaFlows, getCrossAreaEdges, JiraOverlaySchema } from '@dependency-explorer/data'
 import { useOverlay } from '../../hooks/useOverlay'
 import { plural } from '../../utils/plural'
@@ -11,6 +11,7 @@ import styles from './AreaPage.module.css'
 const PLATFORM_ORDER: Platform[] = ['monolith', 'web', 'mobile', 'tablet', 'superadmin', 'backend']
 const PLATFORM_LABEL: Record<Platform, string> = { monolith: 'Monolith', web: 'Web', mobile: 'Mobile', tablet: 'Tablet', superadmin: 'Superadmin', backend: 'Services' }
 const OPEN_GLOB_LIMIT = 8
+const NO_AREAS: ProductArea[] = []
 
 interface Props {
   map: ConnectivityMap
@@ -23,7 +24,7 @@ interface Props {
 }
 
 export function AreaPage({ map, areaId, term, onBack, onOpenFlow, onOpenArea, onSelectService }: Props) {
-  const areas = map.areas ?? []
+  const areas = map.areas ?? NO_AREAS
   const area = areas.find(a => a.id === areaId)
   const repoUrl = new Map(map.services.map(s => [s.name, s.repoUrl]))
   const teamName = new Map((map.teams ?? []).map(t => [t.id, t.name]))

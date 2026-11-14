@@ -194,3 +194,5 @@ Every view state is encoded in the query string:
 Older links still open the equivalent page: `?view=…`, a bare `?s=…`, `?flow=…`, `?blast=1&s=…`, `&detail=code|sequence`.
 
 **History:** picks (a new page, area, service, flow, connection or impact origin) push a history entry, so Back undoes them; closing a panel replaces the entry. A URL keeps only the keys its page uses.
+
+**Links:** the title, the rail, the breadcrumb, the home tiles and the home search results are links to their permalink, so a modified click or the context menu opens them in a new tab or copies the address.

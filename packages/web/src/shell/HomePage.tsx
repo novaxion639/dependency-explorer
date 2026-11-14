@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import type { UrlState } from '../hooks/useUrlState'
+import { NavLink } from './NavLink'
 import { searchEntries, type SearchEntry } from '../utils/searchIndex'
 import { EXAMPLES, HOME_TILES } from './home'
 import styles from './HomePage.module.css'
 
-export function HomePage({ index, onNavigate }: { index: SearchEntry[]; onNavigate: (patch: Partial<UrlState>) => void }) {
+export function HomePage({ url, index, onNavigate }: { url: UrlState; index: SearchEntry[]; onNavigate: (patch: Partial<UrlState>) => void }) {
   const [query, setQuery] = useState('')
   const results = useMemo(() => (query.trim() ? searchEntries(index, query, 8) : []), [index, query])
   return (
@@ -25,10 +26,10 @@ export function HomePage({ index, onNavigate }: { index: SearchEntry[]; onNaviga
         <ul className={styles.results} aria-label="Results">
           {results.map(r => (
             <li key={`${r.type}:${r.label}:${r.sublabel}`}>
-              <button type="button" onClick={() => onNavigate(r.patch)}>
+              <NavLink url={url} patch={r.patch} onNavigate={onNavigate}>
                 <b>{r.label}</b> <span>{r.type}</span>
                 <small>{r.sublabel}</small>
-              </button>
+              </NavLink>
             </li>
           ))}
         </ul>
@@ -40,7 +41,7 @@ export function HomePage({ index, onNavigate }: { index: SearchEntry[]; onNaviga
       <ul className={styles.tiles}>
         {HOME_TILES.map(t => (
           <li key={t.title}>
-            <button type="button" onClick={() => onNavigate(t.patch)}><b>{t.title}</b><span>{t.blurb}</span></button>
+            <NavLink url={url} patch={t.patch} onNavigate={onNavigate}><b>{t.title}</b><span>{t.blurb}</span></NavLink>
           </li>
         ))}
       </ul>
