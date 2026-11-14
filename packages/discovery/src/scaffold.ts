@@ -72,7 +72,7 @@ interface ScaffoldResult {
 
 function buildEndpoint(code: DiscoveredEndpoint, usedIds: Set<string>): ServiceEndpoint {
   let id = code.functionName ? kebab(code.functionName) : kebab(`${code.method} ${code.path.replace(/[/{}]/g, ' ')}`).replace(/-+/g, '-')
-  while (usedIds.has(id)) id = `${id}-2`
+  while (usedIds.has(id)) {id = `${id}-2`}
   usedIds.add(id)
   const params = [...code.path.matchAll(/\{([^}]+)\}/g)].map(m => ({
     name: m[1]!,
@@ -127,8 +127,8 @@ function scaffoldEndpoints(svc: ConnectivityService, code: DiscoveredEndpoint[])
   }
 
   for (const codeEp of code) {
-    if (matchedCode.has(codeEp)) continue
-    if (isBoilerplateEndpoint(codeEp.method, codeEp.path)) continue // swagger/health noise
+    if (matchedCode.has(codeEp)) {continue}
+    if (isBoilerplateEndpoint(codeEp.method, codeEp.path)) {continue} // swagger/health noise
     const ep = buildEndpoint(codeEp, usedIds)
     endpoints.push(ep)
     result.added.push(`${ep.id} (${ep.method} ${ep.path})`)
@@ -147,7 +147,7 @@ async function main() {
     console.log('# Scaffoldable services (endpoint docs vs serverless config)\n')
     for (const name of allServices) {
       const sls = extractServerless(REPO_BASE, name)
-      if (!sls || sls.endpoints.length === 0) continue
+      if (!sls || sls.endpoints.length === 0) {continue}
       const svc = await loadService(name)
       const { result } = scaffoldEndpoints(svc, sls.endpoints)
       const drift = result.removed.length + result.added.length + result.updated.length
@@ -182,7 +182,7 @@ async function main() {
     if (result.removed.length) {
       const validIds = new Set(endpoints.map(e => e.id))
       for (const conn of connections) {
-        if (conn.to !== name) continue
+        if (conn.to !== name) {continue}
         const dropped = conn.usedEndpoints.filter(id => !validIds.has(id))
         if (dropped.length) {
           conn.usedEndpoints = conn.usedEndpoints.filter(id => validIds.has(id))

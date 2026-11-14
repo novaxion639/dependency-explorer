@@ -68,7 +68,7 @@ const REGISTRY: Record<AwsUsageKind, KindSignals> = {
 export function classifyAwsUsage(content: string): Array<{ kind: AwsUsageKind; operations: string[] }> {
   const out: Array<{ kind: AwsUsageKind; operations: string[] }> = []
   for (const [kind, signals] of Object.entries(REGISTRY) as Array<[AwsUsageKind, KindSignals]>) {
-    if (!signals.imports.test(content)) continue
+    if (!signals.imports.test(content)) {continue}
     const operations = Object.entries(signals.operations)
       .filter(([, re]) => re.test(content))
       .map(([op]) => op)
@@ -91,10 +91,10 @@ export function extractAwsClients(repoBase: string, repo: string): AwsUsageFact[
   const repoPath = path.join(repoBase, repo)
   const isLambdaRepo = fs.existsSync(path.join(repoPath, 'serverless.ts'))
     || fs.existsSync(path.join(repoPath, 'serverless'))
-  if (!isLambdaRepo) return null
+  if (!isLambdaRepo) {return null}
 
   const srcPath = path.join(repoPath, 'src')
-  if (!fs.existsSync(srcPath)) return null
+  if (!fs.existsSync(srcPath)) {return null}
 
   const byKind = new Map<AwsUsageKind, { operations: Set<string>; files: string[] }>()
   for (const file of walkSourceFiles(srcPath)) {
@@ -112,7 +112,7 @@ export function extractAwsClients(repoBase: string, repo: string): AwsUsageFact[
     }
   }
 
-  if (!byKind.size) return null
+  if (!byKind.size) {return null}
   return [...byKind.entries()].map(([kind, agg]) => ({
     kind,
     operations: [...agg.operations].sort(),

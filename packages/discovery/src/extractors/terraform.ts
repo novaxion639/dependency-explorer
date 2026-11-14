@@ -87,7 +87,7 @@ const IAM_ACTION_RE = /"((?:dynamodb|s3|kinesis|firehose):[A-Za-z*][A-Za-z*]*)"/
 
 function attr(block: string, key: string): string | undefined {
   const m = block.match(new RegExp(`\\b${key}\\s*=\\s*(?:"([^"]+)"|([^\\n]+))`))
-  if (!m) return undefined
+  if (!m) {return undefined}
   return (m[1] ?? m[2])?.trim()
 }
 
@@ -188,7 +188,7 @@ export function parseTerraform(content: string): TerraformFacts {
   }
 
   let a: RegExpExecArray | null
-  while ((a = IAM_ACTION_RE.exec(content))) iamActions.add(a[1]!)
+  while ((a = IAM_ACTION_RE.exec(content))) {iamActions.add(a[1]!)}
 
   return { resources, mongoRoles, dmsTasks, dmsEndpoints, iamActions: [...iamActions].sort() }
 }
@@ -307,7 +307,7 @@ export function extractTerraform(repoBase: string, tfRepo: string): TerraformFac
   } catch {
     return null
   }
-  if (!entries.length) return null
+  if (!entries.length) {return null}
 
   const merged: TerraformFacts = { resources: [], mongoRoles: [], dmsTasks: [], dmsEndpoints: [], iamActions: [] }
   const actions = new Set<string>()

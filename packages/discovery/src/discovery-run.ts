@@ -220,7 +220,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
   const connectionsByKey = new Map(connectivityMap.connections.map(c => [`${c.from}→${c.to}`, c]))
   const slugToTeamId = new Map<string, string>()
   for (const team of connectivityMap.teams ?? []) {
-    for (const slug of team.githubTeams ?? []) slugToTeamId.set(slug, team.id)
+    for (const slug of team.githubTeams ?? []) {slugToTeamId.set(slug, team.id)}
   }
 
   const repos = findRepos(repoBase)
@@ -316,7 +316,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
     Object.keys(codeowners.counts).forEach(s => allSlugs.add(s))
 
     const sls = extractServerless(repoBase, repo)
-    if (sls) serverlessByRepo.set(repo, sls)
+    if (sls) {serverlessByRepo.set(repo, sls)}
 
     if (!serviceNames.has(repo)) {
       report.reposWithoutServiceDefinition.push({
@@ -334,7 +334,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
       for (const sched of sls.schedules) {
         const name = sched.name ?? sched.functionName ?? 'scheduled task'
         const schedule = sched.expressions.join(' | ')
-        if (seenTask.has(`${name}|${schedule}`)) continue
+        if (seenTask.has(`${name}|${schedule}`)) {continue}
         seenTask.add(`${name}|${schedule}`)
         recurringTasks.push({ name, schedule, ...(sched.description ? { description: sched.description } : {}) })
       }
@@ -351,8 +351,8 @@ export function runDiscovery(options: DiscoveryOptions): Report {
       const byStream = new Map<string, { stream: string; kind: string; listeners: number }>()
       for (const sc of sls.streamConsumers) {
         const agg = byStream.get(`${sc.stream}:${sc.kind}`)
-        if (agg) agg.listeners++
-        else byStream.set(`${sc.stream}:${sc.kind}`, { stream: sc.stream, kind: sc.kind, listeners: 1 })
+        if (agg) {agg.listeners++}
+        else {byStream.set(`${sc.stream}:${sc.kind}`, { stream: sc.stream, kind: sc.kind, listeners: 1 })}
       }
       const streams = [...byStream.values()].map(s => {
         const source = streamSourceService(s.stream, repo, serviceNames)
@@ -430,7 +430,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
         report.unknownTargets.push({ from: repo, evidence: pkg, normalizedTarget: target ?? '(ignored)' })
         continue
       }
-      if (target === repo) continue
+      if (target === repo) {continue}
       const usage = tsFacts?.sdkUsage[pkg] ?? 'declared-only'
       // type-only import + an SQS connection is the documented DTO-contract
       // pattern (ADR-0007 / svc-requests→svc-events) — not weak evidence.
@@ -444,7 +444,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
       }
       // an unused (declared-only) dependency is never grounds to PROPOSE a
       // new connection — it only shows up in the weak-evidence section
-      if (!existing && usage === 'declared-only') continue
+      if (!existing && usage === 'declared-only') {continue}
       addEvidence(repo, target, `package.json: ${pkg} (${usage} import)`, MONGO_CONTRACT_SDKS.has(pkg) ? `mongodb (shared collections, ${usage} import of the DTO contract)` : `rest (SDK client, ${usage} import)`)
     }
   }
@@ -491,23 +491,23 @@ export function runDiscovery(options: DiscoveryOptions): Report {
   // ── Failure layer (🧯): async edges vs extracted DLQ wiring ────────────────
   const dlqByService = new Map<string, ServerlessFacts['dlqWirings']>()
   for (const [repo, sls] of serverlessByRepo) {
-    if (serviceNames.has(repo) && sls.dlqWirings.length) dlqByService.set(repo, sls.dlqWirings)
+    if (serviceNames.has(repo) && sls.dlqWirings.length) {dlqByService.set(repo, sls.dlqWirings)}
   }
   report.failureCheck = checkFailureLayer(connectivityMap, dlqByService)
 
   // ── Auth context (🔐): gates in source + authorizers vs extracted facts ────
   const authorizersByService = new Map<string, string[]>()
   for (const [repo, sls] of serverlessByRepo) {
-    if (serviceNames.has(repo) && sls.authorizerNames.length) authorizersByService.set(repo, sls.authorizerNames)
+    if (serviceNames.has(repo) && sls.authorizerNames.length) {authorizersByService.set(repo, sls.authorizerNames)}
   }
   report.authCheck = checkAuthContext(connectivityMap, repoBase, authorizersByService)
 
   // ── Contract refs (📜): edge refs vs generated TSOA specs ──────────────────
   const operationsByService = new Map<string, Map<string, string>>()
   for (const repo of repos) {
-    if (!serviceNames.has(repo)) continue
+    if (!serviceNames.has(repo)) {continue}
     const sw = extractSwagger(repoBase, repo)
-    if (sw) operationsByService.set(repo, sw.operations)
+    if (sw) {operationsByService.set(repo, sw.operations)}
   }
   report.contractCheck = checkContractRefs(connectivityMap, operationsByService)
 
@@ -518,8 +518,8 @@ export function runDiscovery(options: DiscoveryOptions): Report {
     for (const fact of report.piiFacts.piiTyped) {
       const service = fact.pkg.replace(/-sdk$/, '').replace(/-js$/, '')
       const target = service.startsWith('svc-') ? service : `svc-${service}`
-      if (!serviceNames.has(target)) continue
-      if (!piiTypedByService.has(target)) piiTypedByService.set(target, new Set())
+      if (!serviceNames.has(target)) {continue}
+      if (!piiTypedByService.has(target)) {piiTypedByService.set(target, new Set())}
       piiTypedByService.get(target)!.add(fact.field)
     }
     report.piiCheck = checkPiiRefs(connectivityMap, piiTypedByService)
@@ -528,9 +528,9 @@ export function runDiscovery(options: DiscoveryOptions): Report {
   // ── Async queue cross-reference ────────────────────────────────────────────
   const queueOwners = new Map<string, string>()
   for (const [repo, sls] of serverlessByRepo) {
-    if (!serviceNames.has(repo)) continue
+    if (!serviceNames.has(repo)) {continue}
     for (const q of sls.queueNames) {
-      if (!queueOwners.has(q)) queueOwners.set(q, repo)
+      if (!queueOwners.has(q)) {queueOwners.set(q, repo)}
     }
   }
   // skello-app-front excluded: its env mirrors backend config — a browser app
@@ -554,11 +554,11 @@ export function runDiscovery(options: DiscoveryOptions): Report {
   }
   for (const tfRepo of tfRepos) {
     const facts = extractTerraform(repoBase, tfRepo)
-    if (!facts) continue
+    if (!facts) {continue}
     const service = tfRepoToService(tfRepo)
     const inMap = serviceNames.has(service)
     report.terraform.push({ tfRepo, service, inMap, facts })
-    if (!inMap) continue
+    if (!inMap) {continue}
 
     // DMS task targeting a kinesis endpoint = the provisioned side of the
     // monolith CDC/full-load backbone — authoritative evidence for the
@@ -576,7 +576,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
   // ── Endpoint verification for dataset services ─────────────────────────────
   for (const svc of connectivityMap.services) {
     const sls = serverlessByRepo.get(svc.name)
-    if (!sls || svc.endpoints.length === 0) continue
+    if (!sls || svc.endpoints.length === 0) {continue}
     const codeEndpoints = new Map(sls.endpoints.map(e => [normalizeEndpoint(e.method, e.path), e]))
     const codeEndpointsVersionless = new Map(sls.endpoints.map(e => [normalizeEndpointVersionless(e.method, e.path), e]))
     const matchedCode = new Set<unknown>()
@@ -647,7 +647,7 @@ export function runDiscovery(options: DiscoveryOptions): Report {
 
   // ── Reverse pass: every dataset connection needs evidence or an explanation ─
   for (const conn of connectivityMap.connections) {
-    if (report.connectionEvidence[channelKey(conn)]?.length) continue
+    if (report.connectionEvidence[channelKey(conn)]?.length) {continue}
 
     if (!fs.existsSync(path.join(repoBase, conn.from))) {
       report.unverifiable.push({ from: conn.from, to: conn.to, protocol: conn.protocol, reason: 'repo not checked out locally' })

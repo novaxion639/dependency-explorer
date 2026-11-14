@@ -39,7 +39,7 @@ export function findQueueSenders(
   const searchable = [...queueOwners.entries()]
     .filter(([name]) => name.length >= MIN_QUEUE_NAME_LENGTH && /^svc[A-Z]/.test(name))
 
-  if (!searchable.length) return []
+  if (!searchable.length) {return []}
 
   const results = new Map<string, QueueSenderEvidence>() // "from→to"
 
@@ -59,13 +59,13 @@ export function findQueueSenders(
       }
 
       for (const [queue, owner] of searchable) {
-        if (owner === repo) continue // a service referencing its own queues is not a connection
-        if (!content.includes(queue)) continue
+        if (owner === repo) {continue} // a service referencing its own queues is not a connection
+        if (!content.includes(queue)) {continue}
         const key = `${repo}→${owner}`
         const entry = results.get(key) ?? { from: repo, to: owner, queues: [], files: [] }
-        if (!entry.queues.includes(queue)) entry.queues.push(queue)
+        if (!entry.queues.includes(queue)) {entry.queues.push(queue)}
         const rel = path.relative(repoPath, file)
-        if (entry.files.length < SAMPLE_CAP && !entry.files.includes(rel)) entry.files.push(rel)
+        if (entry.files.length < SAMPLE_CAP && !entry.files.includes(rel)) {entry.files.push(rel)}
         results.set(key, entry)
       }
     }

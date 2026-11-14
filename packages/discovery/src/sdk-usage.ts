@@ -75,7 +75,7 @@ export function verifySdkUsage(
       const loaded: Array<{ rel: string; content: string }> = []
       for (const f of files) {
         try {
-          if (fs.statSync(f).size > MAX_FILE_SIZE) continue
+          if (fs.statSync(f).size > MAX_FILE_SIZE) {continue}
           loaded.push({ rel: path.relative(root, f), content: fs.readFileSync(f, 'utf-8') })
         } catch {
           // skip unreadable
@@ -88,12 +88,12 @@ export function verifySdkUsage(
 
   for (const conn of connections) {
     const methods = registry.packages.get(conn.pkg)
-    if (!methods?.length) continue
+    if (!methods?.length) {continue}
     const targets = endpointIdsByService.get(conn.to)
-    if (!targets) continue
+    if (!targets) {continue}
 
     const importing = repoContents(conn.from).filter(f => f.content.includes(`'${conn.pkg}'`) || f.content.includes(`"${conn.pkg}"`))
-    if (!importing.length) continue
+    if (!importing.length) {continue}
 
     const resolveId = (httpMethod: string, p: string) =>
       targets.exact.get(normalizeEndpoint(httpMethod, p))
@@ -105,7 +105,7 @@ export function verifySdkUsage(
     // be attributed to a single endpoint statically.
     const byName = new Map<string, typeof methods>()
     for (const m of methods) {
-      if (!byName.has(m.name)) byName.set(m.name, [])
+      if (!byName.has(m.name)) {byName.set(m.name, [])}
       byName.get(m.name)!.push(m)
     }
 
@@ -114,7 +114,7 @@ export function verifySdkUsage(
     for (const [name, variants] of byName) {
       const callRe = new RegExp(`\\.${name}\\s*[(<]`)
       const files = importing.filter(f => callRe.test(f.content)).map(f => f.rel)
-      if (!files.length) continue
+      if (!files.length) {continue}
       const distinctTargets = new Map(variants.map(v => [`${v.httpMethod} ${v.path}`, v]))
       if (distinctTargets.size === 1 && !GENERIC_METHOD_NAMES.has(name)) {
         const m = [...distinctTargets.values()][0]!
@@ -126,7 +126,7 @@ export function verifySdkUsage(
         ambiguous.push({ method: name, candidateIds, files: files.slice(0, FILE_SAMPLE_CAP) })
       }
     }
-    if (!called.length && !ambiguous.length) continue
+    if (!called.length && !ambiguous.length) {continue}
 
     const evidencedIds = new Set(called.map(c => c.endpointId).filter((id): id is string => !!id))
     const plausibleIds = new Set([...evidencedIds, ...ambiguous.flatMap(a => a.candidateIds)])

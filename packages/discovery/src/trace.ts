@@ -20,10 +20,10 @@ const IGNORED_CONSTANTS = new Set([
 ])
 
 function kindGuess(constant: string): string {
-  if (/Job$/.test(constant)) return 'job'
-  if (/Controller(#|$)/.test(constant)) return 'controller'
-  if (/(Manager)$/.test(constant)) return 'manager'
-  if (/(Service)$/.test(constant)) return 'service'
+  if (/Job$/.test(constant)) {return 'job'}
+  if (/Controller(#|$)/.test(constant)) {return 'controller'}
+  if (/(Manager)$/.test(constant)) {return 'manager'}
+  if (/(Service)$/.test(constant)) {return 'service'}
   return 'service?'
 }
 
@@ -53,9 +53,9 @@ content.split('\n').forEach((line, i) => {
   for (const m of line.matchAll(INVOKE_RE)) {
     const constant = m[1]!
     const root = constant.split('::')[0]!
-    if (IGNORED_CONSTANTS.has(root)) continue
+    if (IGNORED_CONSTANTS.has(root)) {continue}
     const verb = m[0]!.slice(constant.length).trim()
-    if (!seen.has(constant)) seen.set(constant, [])
+    if (!seen.has(constant)) {seen.set(constant, [])}
     seen.get(constant)!.push({ line: i + 1, verb })
   }
 })
@@ -73,7 +73,7 @@ if (seen.size) {
 const callbacks: string[] = []
 content.split('\n').forEach((line, i) => {
   const m = line.match(CALLBACK_RE)
-  if (m) callbacks.push(`- L${i + 1} ${m[1]} :${m[2]}`)
+  if (m) {callbacks.push(`- L${i + 1} ${m[1]} :${m[2]}`)}
 })
 if (callbacks.length) {
   console.log('\n## AR callbacks declared (model-callback group candidates)\n')

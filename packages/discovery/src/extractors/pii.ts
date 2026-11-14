@@ -47,14 +47,14 @@ const walkTs = (dir: string): string[] =>
 
 export function extractPiiFacts(repoBase: string, libsRepo = 'skello-libs-ts'): PiiFacts | null {
   const pkgsDir = path.join(repoBase, libsRepo, 'packages')
-  if (!fs.existsSync(pkgsDir)) return null
+  if (!fs.existsSync(pkgsDir)) {return null}
 
   const facts: PiiFacts = { piiTyped: [], explicitNonPii: 0, decoratedPackages: [], candidates: [] }
   const decorated = new Set<string>()
   const candidateFiles = new Map<string, PiiCandidate[]>()
 
   for (const pkg of fs.readdirSync(pkgsDir)) {
-    if (pkg === 'lib-anonymizer') continue // the library itself, not a data contract
+    if (pkg === 'lib-anonymizer') {continue} // the library itself, not a data contract
     const src = path.join(pkgsDir, pkg, 'src')
     for (const file of walkTs(src)) {
       const rel = path.relative(pkgsDir, file)
@@ -96,7 +96,7 @@ export function extractPiiFacts(repoBase: string, libsRepo = 'skello-libs-ts'): 
   }
 
   for (const [pkg, list] of candidateFiles) {
-    if (!decorated.has(pkg)) facts.candidates.push(...list)
+    if (!decorated.has(pkg)) {facts.candidates.push(...list)}
   }
   facts.decoratedPackages = [...decorated].sort()
   return facts

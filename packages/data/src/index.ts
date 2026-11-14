@@ -128,7 +128,7 @@ function enrichServices(services: unknown[]): unknown[] {
       const stamp = endpointStamps[`${svc.name}#${ep.id}`]
       return stamp ? { ...ep, provenance: { source: 'discovered', ...stamp } } : ep
     })
-    if (!facts) return { ...svc, endpoints }
+    if (!facts) {return { ...svc, endpoints }}
     return {
       ...svc,
       endpoints,
@@ -151,7 +151,7 @@ function enrichServices(services: unknown[]): unknown[] {
 function enrichConnections(conns: typeof connections): typeof connections {
   return conns.map(conn => {
     const stamp = overlay.connections[`${conn.from}→${conn.to}:${conn.protocol}`]
-    if (!stamp) return conn
+    if (!stamp) {return conn}
     return { ...conn, provenance: { source: 'discovered' as const, ...stamp } }
   })
 }

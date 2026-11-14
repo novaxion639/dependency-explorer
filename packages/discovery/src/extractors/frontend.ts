@@ -30,7 +30,7 @@ export function parseEnvServiceUrls(content: string): Array<{ varName: string; s
   const out: Array<{ varName: string; service: string }> = []
   for (const line of content.split('\n')) {
     const m = line.match(/^([A-Z0-9_]+)\s*=\s*["']?https?:\/\/(svc-[a-z0-9-]+)\./)
-    if (m) out.push({ varName: m[1]!, service: m[2]! })
+    if (m) {out.push({ varName: m[1]!, service: m[2]! })}
   }
   return out
 }
@@ -44,7 +44,7 @@ const walkSourceFiles = (dir: string): string[] =>
  */
 export function extractFrontend(repoBase: string, repo = 'skello-app-front'): FrontendFacts | null {
   const repoPath = path.join(repoBase, repo)
-  if (!fs.existsSync(repoPath)) return null
+  if (!fs.existsSync(repoPath)) {return null}
 
   const varsByService = new Map<string, Set<string>>()
   for (const envFile of ENV_FILES) {
@@ -55,7 +55,7 @@ export function extractFrontend(repoBase: string, repo = 'skello-app-front'): Fr
       continue
     }
     for (const { varName, service } of parseEnvServiceUrls(content)) {
-      if (!varsByService.has(service)) varsByService.set(service, new Set())
+      if (!varsByService.has(service)) {varsByService.set(service, new Set())}
       varsByService.get(service)!.add(varName)
     }
   }
@@ -84,7 +84,7 @@ export function extractFrontend(repoBase: string, repo = 'skello-app-front'): Fr
     for (const [service, evidence] of Object.entries(services)) {
       for (const v of evidence.envVars) {
         for (const m of content.matchAll(new RegExp(`const\\s+(\\w+)\\s*=\\s*\\w+\\(['"]${v}['"]\\)`, 'g'))) {
-          if (!derivedByService.has(service)) derivedByService.set(service, new Set())
+          if (!derivedByService.has(service)) {derivedByService.set(service, new Set())}
           derivedByService.get(service)!.add(m[1]!)
         }
       }
@@ -94,7 +94,7 @@ export function extractFrontend(repoBase: string, repo = 'skello-app-front'): Fr
   for (const file of sourceFiles) {
     let content: string
     try {
-      if (fs.statSync(file).size > MAX_FILE_SIZE) continue
+      if (fs.statSync(file).size > MAX_FILE_SIZE) {continue}
       content = fs.readFileSync(file, 'utf-8')
     } catch {
       continue
@@ -108,7 +108,7 @@ export function extractFrontend(repoBase: string, repo = 'skello-app-front'): Fr
         || (derived ? [...derived].some(d => content.includes(d)) : false)
       if (hit) {
         evidence.usageCount++
-        if (evidence.usageFiles.length < SAMPLE_CAP) evidence.usageFiles.push(rel)
+        if (evidence.usageFiles.length < SAMPLE_CAP) {evidence.usageFiles.push(rel)}
       }
     }
 

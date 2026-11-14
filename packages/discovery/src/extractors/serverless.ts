@@ -125,13 +125,13 @@ export function classifyStreamRef(raw: string, explicitType?: string): Omit<Stre
       const segments = ref[1]!.split(/[./:]/).filter(Boolean)
       const param = segments[segments.length - 1] ?? raw
       stream = param
-      if (/dynamo/i.test(param)) kind = 'dynamodb'
-      else if (/kinesis/i.test(param)) kind = 'kinesis'
+      if (/dynamo/i.test(param)) {kind = 'dynamodb'}
+      else if (/kinesis/i.test(param)) {kind = 'kinesis'}
     }
   }
 
-  if (explicitType === 'dynamodb') kind = 'dynamodb'
-  else if (explicitType === 'kinesis') kind = 'kinesis'
+  if (explicitType === 'dynamodb') {kind = 'dynamodb'}
+  else if (explicitType === 'kinesis') {kind = 'kinesis'}
   return { stream, kind, raw }
 }
 
@@ -144,7 +144,7 @@ function queueNameFromArn(arn: unknown, resources: Record<string, any>): string 
   }
   if (arn && typeof arn === 'object' && 'Fn::GetAtt' in (arn as Record<string, unknown>)) {
     const logical = (arn as Record<string, string[]>)['Fn::GetAtt']?.[0]
-    if (!logical) return null
+    if (!logical) {return null}
     const queueName = resources[logical]?.Properties?.QueueName
     return typeof queueName === 'string' ? queueName : logical
   }
@@ -202,7 +202,7 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
           endpoints.push({ method: String(httpApi.method).toUpperCase(), path: httpApi.path ?? '/', ...identity })
         } else if (typeof httpApi === 'string') {
           const [method, p] = httpApi.split(/\s+/)
-          if (method && p) endpoints.push({ method: method.toUpperCase(), path: p, ...identity })
+          if (method && p) {endpoints.push({ method: method.toUpperCase(), path: p, ...identity })}
         }
         continue
       }
@@ -213,13 +213,13 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
       }
       if (typeof http === 'string') {
         const [method, p] = http.split(/\s+/)
-        if (method && p) endpoints.push({ method: method.toUpperCase(), path: p.startsWith('/') ? p : `/${p}`, ...identity })
+        if (method && p) {endpoints.push({ method: method.toUpperCase(), path: p.startsWith('/') ? p : `/${p}`, ...identity })}
         continue
       }
       const sqsArn = event?.sqs?.arn ?? (typeof event?.sqs === 'string' ? event.sqs : null)
       if (sqsArn) {
         const name = queueNameFromArn(sqsArn, resources)
-        if (name) queueNames.add(name)
+        if (name) {queueNames.add(name)}
         continue
       }
       const streamArn = typeof event?.stream === 'string' ? event.stream : event?.stream?.arn
@@ -266,8 +266,8 @@ export function parseServerlessState(state: any): Omit<ServerlessFacts, 'source'
   for (const fn of Object.values<any>(state?.service?.functions ?? {})) {
     for (const event of fn?.events ?? []) {
       const auth = event?.httpApi?.authorizer ?? event?.http?.authorizer
-      if (typeof auth === 'string') authorizerNames.add(auth)
-      else if (auth && typeof auth === 'object' && typeof auth.name === 'string') authorizerNames.add(auth.name)
+      if (typeof auth === 'string') {authorizerNames.add(auth)}
+      else if (auth && typeof auth === 'object' && typeof auth.name === 'string') {authorizerNames.add(auth.name)}
     }
   }
 
@@ -300,7 +300,7 @@ function findFunctionIdentity(lines: string[], eventLineIdx: number): { function
   for (let j = eventLineIdx - 1; j >= Math.max(0, eventLineIdx - 60); j--) {
     const line = lines[j]!
     const indent = line.match(/^\s*/)![0].length
-    if (!line.trim()) continue
+    if (!line.trim()) {continue}
     if (indent < eventIndent) {
       const d = line.match(/^\s*description:\s*['"`]([^'"`]+)['"`]/)
       if (d && !description) {
@@ -333,11 +333,11 @@ function parseDlqStatic(content: string): DlqWiringFact[] {
   for (let m = varRe.exec(content); m; m = varRe.exec(content)) {
     const block = content.slice(m.index, Math.min(content.length, m.index + 400))
     const name = block.match(/\bname:\s*['"`]([^'"`]+)['"`]/)
-    if (name) varToName.set(m[1]!, stripTemplate(name[1]!) || name[1]!)
+    if (name) {varToName.set(m[1]!, stripTemplate(name[1]!) || name[1]!)}
   }
   const resolveRef = (ref: string): string => {
     const viaVar = ref.match(/^([A-Za-z_$][\w$]*)\.name$/)
-    if (viaVar) return varToName.get(viaVar[1]!) ?? viaVar[1]!
+    if (viaVar) {return varToName.get(viaVar[1]!) ?? viaVar[1]!}
     return stripTemplate(ref.replace(/['"`]/g, '')) || ref
   }
 
@@ -346,7 +346,7 @@ function parseDlqStatic(content: string): DlqWiringFact[] {
   for (let m = helperRe.exec(content); m; m = helperRe.exec(content)) {
     const body = m[1]!
     const dlqRef = body.match(/\bdlqToAppend:\s*([^,\n]+)/)
-    if (!dlqRef) continue
+    if (!dlqRef) {continue}
     const name = body.match(/\bname:\s*['"`]([^'"`]+)['"`]/)
     const count = body.match(/\bmaxReceiveCount:\s*(\d+)/)
     facts.push({
@@ -373,15 +373,15 @@ function parseDlqStatic(content: string): DlqWiringFact[] {
         const inner = lines[j]!
         const getAtt = inner.match(/Fn::GetAtt['"`]?\]?\s*:\s*\[\s*['"`]?([\w$.]+)['"`]?/)
           ?? inner.match(/\[['"`]Fn::GetAtt['"`],?\s*['"`]?([\w$.]+)/)
-        if (getAtt && !dlq) dlq = resolveRef(getAtt[1]!)
+        if (getAtt && !dlq) {dlq = resolveRef(getAtt[1]!)}
         const arnLit = inner.match(/deadLetterTargetArn['"`]?:\s*['"`]([^'"`]+)['"`]/)
         if (arnLit && !dlq) {
           const last = arnLit[1]!.split(':').pop()!
           dlq = stripTemplate(last) || last
         }
         const count = inner.match(/maxReceiveCount['"`]?:\s*(\d+)/)
-        if (count) retry = `maxReceiveCount ${count[1]}`
-        if (/^\s*\},?\s*$/.test(inner) && j > i) break
+        if (count) {retry = `maxReceiveCount ${count[1]}`}
+        if (/^\s*\},?\s*$/.test(inner) && j > i) {break}
       }
       facts.push({ queue, dlq, retry, via: 'redrive' })
       continue
@@ -405,10 +405,10 @@ function parseDlqStatic(content: string): DlqWiringFact[] {
       let queue: string | null = null
       for (let j = Math.max(0, i - 14); j < Math.min(lines.length, i + 14); j++) {
         const count = lines[j]!.match(/\bmaximumRetryAttempts:\s*(\d+)/)
-        if (count) retry = `maximumRetryAttempts ${count[1]}`
+        if (count) {retry = `maximumRetryAttempts ${count[1]}`}
       }
       const fn = findFunctionIdentity(lines, i).functionName
-      if (fn) queue = fn
+      if (fn) {queue = fn}
       facts.push({ queue, dlq, retry, via: 'onfailure' })
       continue
     }
@@ -503,13 +503,13 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
       let explicitType: string | undefined
       for (let j = i + 1; j < Math.min(i + 14, lines.length); j++) {
         const inner = lines[j]!
-        if (/^\s*destinations:/.test(inner)) break
+        if (/^\s*destinations:/.test(inner)) {break}
         const innerIndent = inner.match(/^\s*/)![0].length
-        if (/^\s*\}/.test(inner) && innerIndent <= indent) break
+        if (/^\s*\}/.test(inner) && innerIndent <= indent) {break}
         const a = inner.match(/\barn:\s*['"`]([^'"`]+)['"`]/)
-        if (a && !arn) arn = a[1]!
+        if (a && !arn) {arn = a[1]!}
         const t = inner.match(/\btype:\s*['"`](\w+)['"`]/)
-        if (t) explicitType = t[1]!
+        if (t) {explicitType = t[1]!}
       }
       const block = braceBlock(lines, i)
       const tablePrefixes = [...block.matchAll(/\bprefix:\s*['"`](public\.[^'"`$]*)['"`]/g)].map(p => p[1] ?? '')
@@ -535,7 +535,7 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
           s3Triggers.push({ bucket: stripTemplate(b[1]!) || b[1]!, functionName: findFunctionIdentity(lines, i).functionName })
           break
         }
-        if (/^\s*\}/.test(lines[j]!)) break
+        if (/^\s*\}/.test(lines[j]!)) {break}
       }
       continue
     }
@@ -559,12 +559,12 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
       for (let j = i + 1; j < Math.min(i + 22, lines.length); j++) {
         const inner = lines[j]!
         const innerIndent = inner.match(/^\s*/)![0].length
-        if (/^\s*\}/.test(inner) && innerIndent <= indent) break
+        if (/^\s*\}/.test(inner) && innerIndent <= indent) {break}
         const n = inner.match(/\bname:\s*['"`]([^'"`]+)['"`]/)
-        if (n && !name) name = stripTemplate(n[1]!) || n[1]!
+        if (n && !name) {name = stripTemplate(n[1]!) || n[1]!}
         const d = inner.match(/\bdescription:\s*['"`]([^'"`]+)['"`]/)
-        if (d && !description) description = d[1]!
-        for (const expr of inner.match(/(?:rate|cron)\([^)]*\)/g) ?? []) expressions.push(expr)
+        if (d && !description) {description = d[1]!}
+        for (const expr of inner.match(/(?:rate|cron)\([^)]*\)/g) ?? []) {expressions.push(expr)}
       }
       if (expressions.length) {
         schedules.push({ expressions, name, description, functionName: findFunctionIdentity(lines, i).functionName })
@@ -600,12 +600,12 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
       let epPath: string | null = null
       for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
         const inner = lines[j]!
-        if (/^\s*\}/.test(inner)) break
+        if (/^\s*\}/.test(inner)) {break}
         const m = inner.match(/\bmethod:\s*['"`]([A-Za-z]+)['"`]/)
-        if (m) method = m[1]!.toUpperCase()
+        if (m) {method = m[1]!.toUpperCase()}
         const p = inner.match(/\bpath:\s*['"`]([^'"`]+)['"`]/)
-        if (p) epPath = p[1]!
-        if (method && epPath) break
+        if (p) {epPath = p[1]!}
+        if (method && epPath) {break}
       }
       if (method && epPath && HTTP_METHODS.has(method)) {
         endpoints.push({ method, path: epPath, ...findFunctionIdentity(lines, i) })
@@ -625,14 +625,14 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
     const q = line.match(/\bQueueName:\s*['"`]([^'"`]+)['"`]/)
     if (q) {
       const cleaned = q[1]!.replace(/\$\{[^}]*\}/g, '').replace(/^[-_.]+|[-_.]+$/g, '')
-      if (cleaned.length >= 6) queueNames.add(cleaned)
+      if (cleaned.length >= 6) {queueNames.add(cleaned)}
     }
   }
 
   // Gateway authorizers — bare string and object forms
   const authorizerNames = new Set<string>()
-  for (const m of content.matchAll(/\bauthorizer:\s*['"`]([A-Za-z][\w-]*)['"`]/g)) authorizerNames.add(m[1]!)
-  for (const m of content.matchAll(/\bauthorizer:\s*\{[^}]*?\bname:\s*['"`]([A-Za-z][\w-]*)['"`]/gs)) authorizerNames.add(m[1]!)
+  for (const m of content.matchAll(/\bauthorizer:\s*['"`]([A-Za-z][\w-]*)['"`]/g)) {authorizerNames.add(m[1]!)}
+  for (const m of content.matchAll(/\bauthorizer:\s*\{[^}]*?\bname:\s*['"`]([A-Za-z][\w-]*)['"`]/gs)) {authorizerNames.add(m[1]!)}
 
   for (const m of content.matchAll(QUEUE_FACTORY_OBJECT)) {
     const name = m[1]?.match(/\bname:\s*['"`]([^'"`]+)['"`]/)?.[1]
@@ -662,7 +662,7 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
   const tfDir = path.join(repoBase, `${repo}-tf`)
   if (fs.existsSync(tfDir)) {
     for (const entry of fs.readdirSync(tfDir)) {
-      if (!entry.endsWith('.tf')) continue
+      if (!entry.endsWith('.tf')) {continue}
       try {
         tfWirings.push(...parseTerraformDlq(fs.readFileSync(path.join(tfDir, entry), 'utf-8')))
       } catch {
@@ -687,9 +687,9 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
 
   const sources: string[] = []
   const rootConfig = path.join(repoPath, 'serverless.ts')
-  if (fs.existsSync(rootConfig)) sources.push(rootConfig)
+  if (fs.existsSync(rootConfig)) {sources.push(rootConfig)}
   sources.push(...walkTsFiles(path.join(repoPath, 'serverless')))
-  if (!sources.length) return null
+  if (!sources.length) {return null}
 
   const merged: Omit<ServerlessFacts, 'source'> = {
     endpoints: [], queueNames: [], streamConsumers: [], s3Triggers: [], schedules: [], ownedResources: [], dlqWirings: [], authorizerNames: [], sqsConsumers: null,
@@ -722,6 +722,6 @@ export function extractServerless(repoBase: string, repo: string): ServerlessFac
   if (!merged.endpoints.length && !merged.queueNames.length
     && !merged.streamConsumers.length && !merged.s3Triggers.length
     && !merged.schedules.length && !merged.ownedResources.length
-    && !merged.dlqWirings.length) return null
+    && !merged.dlqWirings.length) {return null}
   return { source: 'static-scan', ...merged }
 }

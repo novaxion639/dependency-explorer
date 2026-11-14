@@ -68,7 +68,7 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string, cont
 
   for (const flow of map.flows) {
     const units = flow.codeUnits ?? []
-    if (!units.length) continue
+    if (!units.length) {continue}
     result.flowsWithCodeLayer++
 
     for (const unit of units) {
@@ -79,7 +79,7 @@ export function checkFlowCodeLayers(map: ConnectivityMap, repoBase: string, cont
         })
         continue
       }
-      if (!unit.path) continue
+      if (!unit.path) {continue}
       if (controllerFiles && unit.service === 'skello-app' && unit.kind === 'controller' && !controllerFiles.has(unit.path) && !ABSTRACT_CONTROLLER.test(unit.path)) {
         result.findings.push({ flow: flow.id, kind: 'controller-without-route', detail: `codeUnit ${unit.id}: ${unit.path} serves no route in config/routes.rb` })
       }
@@ -243,7 +243,7 @@ export function checkAuthContext(
     const unitById = new Map((flow.codeUnits ?? []).map(u => [u.id, u]))
     for (const edge of flow.codeEdges ?? []) {
       const auth = edge.auth
-      if (!auth) continue
+      if (!auth) {continue}
 
       if (auth.gate) {
         const candidates = [edge.from, edge.to]
@@ -336,7 +336,7 @@ export function checkFailureLayer(
         && unitIds.has(edge.from)
         && serviceNames.has(edge.to)
         && edge.to.startsWith('svc-')
-      if (!inScope) continue
+      if (!inScope) {continue}
       result.inScopeEdges++
 
       const facts = dlqFactsByService.get(edge.to)
@@ -352,7 +352,7 @@ export function checkFailureLayer(
 
       if (!facts) {
         skipped.add(edge.to)
-        if (failure.dlqAbsent) result.waivers++
+        if (failure.dlqAbsent) {result.waivers++}
         continue
       }
 
@@ -423,7 +423,7 @@ export function checkFeatureFlags(map: ConnectivityMap, repoBase: string): FlagC
     }
   }
   const repoMissing = (service: string): boolean => {
-    if (fs.existsSync(path.join(repoBase, service))) return false
+    if (fs.existsSync(path.join(repoBase, service))) {return false}
     skipped.add(service)
     return true
   }
@@ -434,7 +434,7 @@ export function checkFeatureFlags(map: ConnectivityMap, repoBase: string): FlagC
     for (const unit of flow.codeUnits ?? []) {
       for (const flag of unit.flags ?? []) {
         distinct.add(flag.name)
-        if (!unit.path || repoMissing(unit.service)) continue
+        if (!unit.path || repoMissing(unit.service)) {continue}
         result.refsChecked++
         const content = readFile(unit.service, unit.path)
         if (content?.includes(flag.name)) {
@@ -454,7 +454,7 @@ export function checkFeatureFlags(map: ConnectivityMap, repoBase: string): FlagC
         const candidates = [edge.from, edge.to]
           .map(id => unitById.get(id))
           .filter((u): u is NonNullable<typeof u> => !!u?.path && !repoMissing(u.service))
-        if (!candidates.length) continue
+        if (!candidates.length) {continue}
         result.refsChecked++
         const hit = candidates.some(u => readFile(u.service, u.path!)?.includes(flag.name))
         if (hit) {
@@ -525,7 +525,7 @@ export function checkDomainRules(map: ConnectivityMap, repoBase: string): RuleCh
       result.pathsVerified++
 
       const stamp = stampByPath.get(sourcePath)
-      if (!stamp) continue // unstamped path — integrity tests enforce stamp completeness
+      if (!stamp) {continue} // unstamped path — integrity tests enforce stamp completeness
       const actual = createHash('sha256')
         .update(fs.readFileSync(path.join(repoBase, sourcePath)))
         .digest('hex')
@@ -544,9 +544,9 @@ export function checkDomainRules(map: ConnectivityMap, repoBase: string): RuleCh
 }
 
 function stepBase(name: string, serviceNames: Set<string>): string | null {
-  if (serviceNames.has(name)) return name
+  if (serviceNames.has(name)) {return name}
   const base = stepService(name)
-  if (serviceNames.has(base)) return base
+  if (serviceNames.has(base)) {return base}
   return null
 }
 
@@ -588,9 +588,9 @@ export function checkFlows(map: ConnectivityMap): FlowCheckResult {
       // 2. endpoint path fragments in the action, verified against the callee
       //    (skip response arrows: the path there belongs to the caller's API)
       const callee = to && (!from || !connectionKeys.has(`${to}→${from}`)) ? to : null
-      if (!callee) continue
+      if (!callee) {continue}
       const eps = endpointsByService.get(callee)
-      if (!eps || eps.count === 0) continue // nothing to verify against (e.g. monolith)
+      if (!eps || eps.count === 0) {continue} // nothing to verify against (e.g. monolith)
       for (const m of step.action.matchAll(PATH_FRAGMENT_RE)) {
         result.pathsChecked++
         const ok = eps.exact.has(normalizeEndpoint(m[1]!, m[2]!))

@@ -45,7 +45,7 @@ export function parseSdkSource(content: string): SdkMethod[] {
     }
 
     const urlAssign = line.match(URL_ASSIGN_RE)
-    if (urlAssign) pendingUrl = normalizeTemplatePath(urlAssign[1]!)
+    if (urlAssign) {pendingUrl = normalizeTemplatePath(urlAssign[1]!)}
 
     const call = line.match(HTTP_CALL_RE)
     if (call && currentMethod) {
@@ -66,11 +66,11 @@ const walkTs = (dir: string): string[] =>
 /** Build the registry from skello-libs-ts/packages. Returns null when the repo is absent. */
 export function extractSdkRegistry(repoBase: string): SdkRegistry | null {
   const packagesDir = path.join(repoBase, LIBS_REPO, 'packages')
-  if (!fs.existsSync(packagesDir)) return null
+  if (!fs.existsSync(packagesDir)) {return null}
 
   const registry: SdkRegistry = { packages: new Map() }
   for (const entry of fs.readdirSync(packagesDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue
+    if (!entry.isDirectory()) {continue}
     const pkgJsonPath = path.join(packagesDir, entry.name, 'package.json')
     let pkgName: string
     try {
@@ -78,7 +78,7 @@ export function extractSdkRegistry(repoBase: string): SdkRegistry | null {
     } catch {
       continue
     }
-    if (!pkgName?.startsWith('@skelloapp/')) continue
+    if (!pkgName?.startsWith('@skelloapp/')) {continue}
 
     const sources = [
       ...walkTs(path.join(packagesDir, entry.name, 'src', 'Repository')),

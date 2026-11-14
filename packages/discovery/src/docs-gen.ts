@@ -83,6 +83,6 @@ export function extractGenerated(content: string, name: string): string | null {
   const end = MARKERS.end(name)
   const b = content.indexOf(begin)
   const e = content.indexOf(end)
-  if (b === -1 || e === -1 || e < b) return null
+  if (b === -1 || e === -1 || e < b) {return null}
   return content.slice(b + begin.length, e).trim()
 }
