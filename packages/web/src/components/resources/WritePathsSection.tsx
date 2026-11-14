@@ -1,4 +1,4 @@
-import { connectivityMap, listenerSurface, type Runs } from '@dependency-explorer/data'
+import type { ListenerSurface, Runs, ServiceFlow } from '@dependency-explorer/data'
 import { GradeGlyph, Source } from './ListenersSection'
 import styles from './ResourcePage.module.css'
 import { NavChip } from '../../shell/NavLink'
@@ -7,12 +7,12 @@ import { flowPatch } from '../../hooks/useUrlState'
 const ORDER: readonly Runs[] = ['all', 'subset', 'validation', 'touch', 'none']
 const LABEL: Record<Runs, string> = { all: 'Runs every listener', subset: 'Hand-fires a subset', validation: 'Runs validation listeners only', touch: 'Runs touch and commit listeners', none: 'Runs no listener' }
 
-export function WritePathsSection({ table }: { table: string }) {
-  const sites = listenerSurface.writeSites.filter(s => s.table === table)
+export function WritePathsSection({ table, surface, flows }: { table: string; surface: ListenerSurface; flows: ServiceFlow[] }) {
+  const sites = surface.writeSites.filter(s => s.table === table)
   if (!sites.length) {
     return null
   }
-  const methodOf = new Map(listenerSurface.listeners.map(l => [l.id, l.method ?? l.hook]))
+  const methodOf = new Map(surface.listeners.map(l => [l.id, l.method ?? l.hook]))
   return (
     <section aria-label="Write paths" className={styles.section}>
       <h2>{`Write paths · ${sites.length}`}</h2>
@@ -26,13 +26,13 @@ export function WritePathsSection({ table }: { table: string }) {
             <h3 className={styles.groupTitle}>{LABEL[runs]}<span className={styles.count}>{` ${group.length}`}</span></h3>
             <ul className={styles.rels}>
               {group.map(s => {
-                const flows = connectivityMap.flows.filter(f => (f.codeUnits ?? []).some(u => u.service === 'skello-app' && u.path === s.file))
+                const reachedBy = flows.filter(f => (f.codeUnits ?? []).some(u => u.service === 'skello-app' && u.path === s.file))
                 return (
                   <li key={`${s.file}:${s.line}:${s.call}`}>
                     <GradeGlyph unverified={s.grade === 'text'} />
-                    <code>{s.call}</code> <span className={styles.meta}>written at </span><Source at={{ file: s.file, line: s.line }} />
+                    <code>{s.call}</code> <span className={styles.meta}>written at </span><Source at={{ file: s.file, line: s.line }} pins={surface.pins} />
                     {s.fires && <span className={styles.meta}>{` fires ${s.fires.map(id => methodOf.get(id) ?? id).join(', ')}`}</span>}
-                    {flows.map(f => <NavChip key={f.id} patch={flowPatch(f.id)} label={f.name} />)}
+                    {reachedBy.map(f => <NavChip key={f.id} patch={flowPatch(f.id)} label={f.name} />)}
                   </li>
                 )
               })}

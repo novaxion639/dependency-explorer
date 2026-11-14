@@ -23,7 +23,7 @@ import { PageErrorBoundary } from './PageErrorBoundary'
 import { HomePage } from './HomePage'
 import { MicroservicesPage } from './MicroservicesPage'
 import { MonolithPage } from './MonolithPage'
-import { fileIndex, flagRegistry, map, resourceIds, searchIndex } from './dataIndexes'
+import { dataset, fileIndex, flagRegistry, map, resourceIds, searchIndex } from './dataIndexes'
 import { panelFor, type Panel } from './panelFor'
 import { validateUrlState } from './validateUrlState'
 import { keyInfo, onPresentKey } from './presentMode'
@@ -33,7 +33,7 @@ type Patch = (p: Partial<UrlState>) => void
 function PanelView({ panel, patch }: { panel: Panel; patch: Patch }) {
   switch (panel.kind) {
     case 'unit':
-      return <UnitDetail flow={panel.flow} id={panel.unit} onClose={() => patch({ unit: null })} />
+      return <UnitDetail data={dataset} flow={panel.flow} id={panel.unit} onClose={() => patch({ unit: null })} />
     case 'connections':
       return <ConnectionList connections={panel.connections} onOpen={c => patch({ edge: edgeKey(c.from, c.to, c.protocol) })} onClose={() => patch({ edge: null })} />
     case 'edge':
@@ -50,7 +50,7 @@ function PanelView({ panel, patch }: { panel: Panel; patch: Patch }) {
 function FlowsContent({ url, patch }: { url: UrlState; patch: Patch }) {
   const flow = url.flow ? map.flows.find(f => f.id === url.flow) : undefined
   if (flow) {
-    return <FlowPage flow={flow} url={url} patch={patch} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, unit: null, chapter: null }))} />
+    return <FlowPage flow={flow} map={map} url={url} patch={patch} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, unit: null, chapter: null }))} />
   }
   const flag = url.flag ? flagRegistry.get(url.flag) : undefined
   if (flag) {
@@ -80,10 +80,10 @@ function PageContent({ url, patch }: { url: UrlState; patch: Patch }) {
       return <FlowsContent url={url} patch={patch} />
     case 'resources':
       return url.resource
-        ? <ResourcePage id={url.resource} onBlast={id => patch({ page: 'impact', blast: id })} listeners={url} onListeners={patch} />
-        : <ResourcesIndex url={url} patch={patch} />
+        ? <ResourcePage data={dataset} id={url.resource} onBlast={id => patch({ page: 'impact', blast: id })} listeners={url} onListeners={patch} />
+        : <ResourcesIndex data={dataset} url={url} patch={patch} />
     case 'impact':
-      return <ImpactPage origin={url.blast} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onPick={id => patch({ blast: id })} onSelect={node => patch(resourceIds.has(node) ? resourcePatch(node) : selectServicePatch(node))} />
+      return <ImpactPage data={dataset} origin={url.blast} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onPick={id => patch({ blast: id })} onSelect={node => patch(resourceIds.has(node) ? resourcePatch(node) : selectServicePatch(node))} />
     case 'ownership':
       return <OwnershipPage map={map} focusedTeam={url.team} onFocusTeam={team => patch({ team })} onSelectService={selectService} />
   }

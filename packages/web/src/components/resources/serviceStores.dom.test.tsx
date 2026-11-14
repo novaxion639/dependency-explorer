@@ -4,6 +4,7 @@ import { screen, within } from '@testing-library/react'
 import { connectivityMap, resourceIdForDatabase, resourceSurface } from '@dependency-explorer/data'
 import { renderInApp } from '../../test/renderInApp'
 import { ServiceStores } from './ServiceStores'
+import { dataset } from '../../shell/dataIndexes'
 
 const storesWithResources = connectivityMap.services.flatMap(service =>
   (service.databases ?? []).flatMap(db => {
@@ -17,7 +18,7 @@ describe('ServiceStores', () => {
   })
 
   it.each(storesWithResources.slice(0, 1).map(s => [s.service.name, s]))('links %s’s resolvable database to its resource page', (_name, { service, db, id }) => {
-    renderInApp(<ServiceStores service={service} />)
+    renderInApp(<ServiceStores resources={dataset.resources.resources} service={service} />)
 
     const link = within(screen.getByLabelText('Stores')).getAllByRole('link', { name: db.name })[0]
 

@@ -25,4 +25,18 @@ export default defineConfig(
       'jsx-a11y/label-has-associated-control': ['error', { controlComponents: ['SkCheckbox'], depth: 3 }],
     },
   },
+  {
+    files: ['packages/web/src/components/**/*.tsx'],
+    ignores: ['**/*.test.tsx'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: [{
+          name: '@dependency-explorer/data',
+          importNames: ['connectivityMap', 'resourceSurface', 'listenerSurface', 'allResourceRelations', 'resourceNotes'],
+          message: 'Components take the dataset as props; the shell reads it.',
+        }],
+        patterns: [{ group: ['**/shell/dataIndexes'], message: 'Components take the dataset as props; the shell reads it.' }],
+      }],
+    },
+  },
 )

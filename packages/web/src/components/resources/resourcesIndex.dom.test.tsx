@@ -6,13 +6,14 @@ import { listenerMetrics, listenerSurface, resourceSurface } from '@dependency-e
 import { parseUrl, type UrlState } from '../../hooks/useUrlState'
 import { renderInApp } from '../../test/renderInApp'
 import { ResourcesIndex } from './ResourcesIndex'
+import { dataset } from '../../shell/dataIndexes'
 
 const COUNTS = /^(\d+) listeners?( · \d+ also changes?)( · \d+ bypassing writes?)$/
 const pgTables = resourceSurface.resources.filter(r => r.kind === 'table' && r.id.startsWith('pg:'))
 
 const renderIndex = (qs = '?page=resources') => {
   const patch = vi.fn<(p: Partial<UrlState>) => void>()
-  renderInApp(<ResourcesIndex url={parseUrl(qs)} patch={patch} />, qs)
+  renderInApp(<ResourcesIndex data={dataset} url={parseUrl(qs)} patch={patch} />, qs)
   return patch
 }
 

@@ -1,12 +1,12 @@
-import type { ConnectivityService } from '@dependency-explorer/data'
-import { resourceIdForDatabase, resourceSurface } from '@dependency-explorer/data'
+import type { ConnectivityService, Resource } from '@dependency-explorer/data'
+import { resourceIdForDatabase } from '@dependency-explorer/data'
 import { SkChip } from '@skelloapp/skello-ds-web'
 import { resourcePatch } from '../../hooks/useUrlState'
 import { NavChip } from '../../shell/NavLink'
 import styles from './ServiceStores.module.css'
 
-export function ServiceStores({ service }: { service: ConnectivityService }) {
-  const stores = (service.databases ?? []).map(db => ({ db, id: resourceIdForDatabase(service.name, db, resourceSurface.resources) }))
+export function ServiceStores({ service, resources }: { service: ConnectivityService; resources: Resource[] }) {
+  const stores = (service.databases ?? []).map(db => ({ db, id: resourceIdForDatabase(service.name, db, resources) }))
   if (!stores.length) {
     return null
   }

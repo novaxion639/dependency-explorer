@@ -5,6 +5,7 @@ import { connectivityMap } from '@dependency-explorer/data'
 import { renderInApp } from '../../test/renderInApp'
 import { FlowsIndex } from './FlowsIndex'
 import { ImpactPage } from '../resources/ImpactPage'
+import { dataset } from '../../shell/dataIndexes'
 
 const noop = () => {}
 const outside = connectivityMap.flows.find(f => !f.steps.some(s => s.from === 'svc-punch' || s.to === 'svc-punch'))
@@ -24,13 +25,13 @@ describe('module pages', () => {
   })
 
   it('asks for an origin before showing impact', () => {
-    renderInApp(<ImpactPage origin={null} onPick={noop} onSelect={noop} />)
+    renderInApp(<ImpactPage data={dataset} origin={null} onPick={noop} onSelect={noop} />)
 
     expect(screen.getByRole('combobox', { name: 'Service or resource' })).toBeTruthy()
   })
 
   it('shows the impact of a picked origin', () => {
-    renderInApp(<ImpactPage origin="svc-requests" onPick={noop} onSelect={noop} />)
+    renderInApp(<ImpactPage data={dataset} origin="svc-requests" onPick={noop} onSelect={noop} />)
 
     expect(screen.getByRole('heading', { name: 'If svc-requests is down' })).toBeTruthy()
   })

@@ -1,4 +1,5 @@
-import { codeEdgeGrades, connectivityMap, resourceSurface, type FlowCodeUnit, type FlowInfraNode, type ServiceFlow } from '@dependency-explorer/data'
+import { codeEdgeGrades, type ConnectivityMap, type FlowCodeUnit, type FlowInfraNode, type ServiceFlow } from '@dependency-explorer/data'
+import type { Dataset } from '../../utils/dataset'
 import { STORE_META } from '../storeTypes'
 import { edgeFacts } from './edgeFacts'
 import styles from './flows.module.css'
@@ -14,18 +15,19 @@ const KIND_LABEL: Record<FlowCodeUnit['kind'], string> = {
 }
 
 interface Props {
+  data: Dataset
   flow: ServiceFlow
   id: string
   onClose: () => void
 }
 
-function UnitFacts({ unit, flow }: { unit: FlowCodeUnit; flow: ServiceFlow }) {
-  const repo = connectivityMap.services.find(s => s.name === unit.service)?.repoUrl
-  const pin = resourceSurface.pins[unit.service]
+function UnitFacts({ unit, flow, map, pins }: { unit: FlowCodeUnit; flow: ServiceFlow; map: ConnectivityMap; pins: Dataset['resources']['pins'] }) {
+  const repo = map.services.find(s => s.name === unit.service)?.repoUrl
+  const pin = pins[unit.service]
   const href = repo && unit.path ? `${repo}/blob/${pin ?? 'HEAD'}/${unit.path}` : null
   const ruleIds = new Set(unit.ruleRefs ?? [])
-  const rules = (connectivityMap.rules ?? []).filter(r => ruleIds.has(r.id))
-  const others = unit.path ? connectivityMap.flows.filter(f => f.id !== flow.id && (f.codeUnits ?? []).some(u => u.service === unit.service && u.path === unit.path)) : []
+  const rules = (map.rules ?? []).filter(r => ruleIds.has(r.id))
+  const others = unit.path ? map.flows.filter(f => f.id !== flow.id && (f.codeUnits ?? []).some(u => u.service === unit.service && u.path === unit.path)) : []
   return (
     <>
       <p className={styles.muted}>{`${KIND_LABEL[unit.kind]} · ${unit.service}`}</p>
@@ -60,7 +62,7 @@ function StoreFacts({ store }: { store: FlowInfraNode }) {
   )
 }
 
-export function UnitDetail({ flow, id, onClose }: Props) {
+export function UnitDetail({ data, flow, id, onClose }: Props) {
   const unit = (flow.codeUnits ?? []).find(u => u.id === id)
   const store = (flow.infraNodes ?? []).find(n => n.id === id)
   const labelOf = (ref: string) => (flow.codeUnits ?? []).find(u => u.id === ref)?.label ?? (flow.infraNodes ?? []).find(n => n.id === ref)?.label ?? ref
@@ -76,8 +78,8 @@ export function UnitDetail({ flow, id, onClose }: Props) {
         <h2>{title}</h2>
         <CloseButton onClick={onClose} />
       </header>
-      {unit && <UnitFacts unit={unit} flow={flow} />}
-      {unit && <ListenerFacts flow={flow} unit={unit} />}
+      {unit && <UnitFacts unit={unit} flow={flow} map={data.map} pins={data.resources.pins} />}
+      {unit && <ListenerFacts flow={flow} unit={unit} surface={data.listeners} />}
       {store && <StoreFacts store={store} />}
       {facts && (
         <section>

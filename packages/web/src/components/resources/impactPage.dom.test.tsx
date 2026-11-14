@@ -4,13 +4,14 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderInApp } from '../../test/renderInApp'
 import { ImpactPage } from './ImpactPage'
+import { dataset } from '../../shell/dataIndexes'
 
 const noop = () => {}
 const syncFilter = () => screen.getByRole('button', { name: 'Hard failures (sync)' })
 
 describe('ImpactPage filter', () => {
   it('presses the sync filter', async () => {
-    renderInApp(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+    renderInApp(<ImpactPage data={dataset} origin="svc-requests" onSelect={noop} onPick={noop} />)
 
     await userEvent.click(syncFilter())
 
@@ -18,7 +19,7 @@ describe('ImpactPage filter', () => {
   })
 
   it.each(['degrades', 'starves'])('drops the %s effects under the sync filter', async effect => {
-    renderInApp(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+    renderInApp(<ImpactPage data={dataset} origin="svc-requests" onSelect={noop} onPick={noop} />)
 
     await userEvent.click(syncFilter())
 
@@ -26,7 +27,7 @@ describe('ImpactPage filter', () => {
   })
 
   it('keeps the hard failures under the sync filter', async () => {
-    renderInApp(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+    renderInApp(<ImpactPage data={dataset} origin="svc-requests" onSelect={noop} onPick={noop} />)
 
     await userEvent.click(syncFilter())
 

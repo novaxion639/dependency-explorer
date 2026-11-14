@@ -1,6 +1,6 @@
 import type { ConnectivityService } from '@dependency-explorer/data'
 import { ServiceStores } from '../components/resources/ServiceStores'
-import { map } from './dataIndexes'
+import { dataset, map } from './dataIndexes'
 import styles from './ServiceHeader.module.css'
 import { SkButton } from '@skelloapp/skello-ds-web'
 
@@ -25,7 +25,7 @@ export function ServiceHeader({ service, onBlast }: Props) {
         )}
         <p className={styles.description} title={service.description}>{service.description}</p>
       </div>
-      <ServiceStores service={service} />
+      <ServiceStores service={service} resources={dataset.resources.resources} />
       <dl className={styles.counts}>
         <div><dt>calls</dt><dd>{calls}</dd></div>
         <div><dt>called by</dt><dd>{calledBy}</dd></div>

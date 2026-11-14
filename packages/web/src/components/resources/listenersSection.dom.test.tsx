@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { ListenerSchema, type Listener } from '@dependency-explorer/data'
 import { renderInApp } from '../../test/renderInApp'
 import { ListenersSection } from './ListenersSection'
+import { dataset } from '../../shell/dataIndexes'
 
 const at = { file: 'app/models/shift.rb', line: 196 }
 const listener = ListenerSchema.parse({
@@ -28,7 +29,7 @@ const mount = ({ open = null, filters = NO_FILTERS, listeners = [listener], onFi
   listeners?: Listener[]
   onFilters?: (p: Partial<Filters>) => void
   onToggle?: (id: string | null) => void
-} = {}) => renderInApp(<ListenersSection listeners={listeners} filters={filters} open={open} onFilters={onFilters} onToggle={onToggle} />)
+} = {}) => renderInApp(<ListenersSection pins={dataset.listeners.pins} listeners={listeners} filters={filters} open={open} onFilters={onFilters} onToggle={onToggle} />)
 
 describe('ListenersSection', () => {
   beforeAll(() => {

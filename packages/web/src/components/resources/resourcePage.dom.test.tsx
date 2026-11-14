@@ -6,6 +6,7 @@ import { allResourceRelations, connectivityMap, resourceImpact, resourceSurface 
 import { renderInApp } from '../../test/renderInApp'
 import { overlayOf } from '../health/overlayFixture'
 import { ResourcePage } from './ResourcePage'
+import { dataset } from '../../shell/dataIndexes'
 
 const noop = () => {}
 const props = { onOpenResource: noop, onOpenFlow: noop, onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
@@ -16,7 +17,7 @@ const dlqId = source?.dlq ?? ''
 const render = async (id: string, body: unknown, status = 200) => {
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(body), { status })))
   await act(async () => {
-    renderInApp(<ResourcePage id={id} {...props} />)
+    renderInApp(<ResourcePage data={dataset} id={id} {...props} />)
   })
 }
 

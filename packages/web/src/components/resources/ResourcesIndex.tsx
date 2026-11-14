@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import type { Resource } from '@dependency-explorer/data'
 import type { UrlState } from '../../hooks/useUrlState'
-import { listenerMetrics, listenerSurface, resourceSurface } from '@dependency-explorer/data'
+import { listenerMetrics } from '@dependency-explorer/data'
+import type { Dataset } from '../../utils/dataset'
 import { plural } from '../../utils/plural'
 import { filterResources, type ResourceSort } from './resourceFilter'
 import styles from './ResourcesIndex.module.css'
@@ -8,25 +10,26 @@ import { SkCheckbox, SkSelect } from '@skelloapp/skello-ds-web'
 import { NavCard } from '../../shell/NavLink'
 import { resourcePatch } from '../../hooks/useUrlState'
 
-const metrics = listenerMetrics(listenerSurface)
 export const SORTS: readonly ResourceSort[] = ['name', 'listeners', 'alsoChanges', 'bypassing']
 const SORT_LABEL: Record<ResourceSort, string> = { name: 'name', listeners: 'listeners', alsoChanges: 'also changes', bypassing: 'bypassing writes' }
 const NO_METRICS = { listeners: 0, alsoChanges: 0, bypassing: 0 }
 const isPgTable = (r: Resource) => r.kind === 'table' && r.id.startsWith('pg:')
-const owners = [...new Set(resourceSurface.resources.flatMap(r => (r.owner ? [r.owner] : [])))].sort()
 
 const KINDS: ReadonlyArray<Resource['kind'] | 'all'> = ['all', 'table', 'queue', 'topic', 'stream', 'bucket', 'database']
 
 interface Props {
+  data: Dataset
   url: Pick<UrlState, 'rkind' | 'rowner' | 'rsort' | 'orphans' | 'cycles'>
   patch: (p: Partial<UrlState>) => void
 }
 
-export function ResourcesIndex({ url, patch }: Props) {
+export function ResourcesIndex({ data, url, patch }: Props) {
+  const metrics = useMemo(() => listenerMetrics(data.listeners), [data.listeners])
+  const owners = [...new Set(data.resources.resources.flatMap(r => (r.owner ? [r.owner] : [])))].sort()
   const kind = KINDS.find(k => k === url.rkind) ?? 'all'
   const owner = url.rowner ?? 'all'
   const sort = SORTS.find(x => x === url.rsort) ?? 'name'
-  const visible = filterResources(resourceSurface.resources, { kind, owner, orphansOnly: url.orphans, cyclesOnly: url.cycles, sort }, metrics)
+  const visible = filterResources(data.resources.resources, { kind, owner, orphansOnly: url.orphans, cyclesOnly: url.cycles, sort }, metrics)
   const stores = [...new Set(visible.map(r => r.store))].sort()
   return (
     <section aria-label="Resources" className={styles.page}>
@@ -37,7 +40,7 @@ export function ResourcesIndex({ url, patch }: Props) {
         <label><SkCheckbox size="small" checked={url.orphans} onChange={e => patch({ orphans: e.target.checked })} /> Not in any flow</label>
         <SkSelect native size="small" label="Sort" value={sort} onChange={e => patch({ rsort: e.target.value === 'name' ? null : String(e.target.value) })}>{SORTS.map(x => <option key={x} value={x}>{SORT_LABEL[x]}</option>)}</SkSelect>
         <label><SkCheckbox size="small" checked={url.cycles} onChange={e => patch({ cycles: e.target.checked })} /> Cycles only</label>
-        <span>{visible.length} of {resourceSurface.resources.length}</span>
+        <span>{visible.length} of {data.resources.resources.length}</span>
       </div>
       {stores.map(store => (
         <section key={store} aria-label={store}>

@@ -1,4 +1,4 @@
-import { WRITE_EVENTS, cascadeOf, firedListeners, flowListenerDrift, flowListeners, listenerSurface, type FlowCodeUnit, type ServiceFlow } from '@dependency-explorer/data'
+import { WRITE_EVENTS, cascadeOf, firedListeners, flowListenerDrift, flowListeners, type FlowCodeUnit, type ListenerSurface, type ServiceFlow } from '@dependency-explorer/data'
 import { CascadeHops } from '../resources/CascadeSection'
 import { GradeGlyph, Source } from '../resources/ListenersSection'
 import { listenerHeading, listenerLabel, tableName } from '../resources/listenerView'
@@ -8,13 +8,13 @@ import { resourcePatch } from '../../hooks/useUrlState'
 
 const TABLE_EVENT_REASON = 'unverified, matched by table event'
 
-interface Props { flow: ServiceFlow; unit: FlowCodeUnit }
+interface Props { flow: ServiceFlow; unit: FlowCodeUnit; surface: ListenerSurface }
 
-export function ListenerFacts({ flow, unit }: Props) {
-  const links = flowListeners(flow, listenerSurface).filter(l => l.unit === unit.id)
+export function ListenerFacts({ flow, unit, surface }: Props) {
+  const links = flowListeners(flow, surface).filter(l => l.unit === unit.id)
   const isCallbacks = unit.kind === 'model-callback'
-  const derived = isCallbacks ? firedListeners(flow, listenerSurface) : []
-  const drift = isCallbacks ? flowListenerDrift(flow, listenerSurface) : []
+  const derived = isCallbacks ? firedListeners(flow, surface) : []
+  const drift = isCallbacks ? flowListenerDrift(flow, surface) : []
   return (
     <>
       {links.length > 0 && (
@@ -29,9 +29,9 @@ export function ListenerFacts({ flow, unit }: Props) {
                   <GradeGlyph unverified={link.grade === 'text'} reason={link.site ? undefined : TABLE_EVENT_REASON} />
                   <NavLink patch={resourcePatch(link.table)}>{tableName(link.table)}</NavLink>
                   <span className={styles.muted}>{link.site ? (runsNone ? '' : ` ${link.site.call} · runs ${link.site.runs}`) : ' by table event — unverified'}</span>
-                  {link.site && <span className={styles.muted}> <Source at={link.site} /></span>}
+                  {link.site && <span className={styles.muted}> <Source at={link.site} pins={surface.pins} /></span>}
                   {runsNone && link.site ? ` runs none (${link.site.call})` : ` → ${link.listeners.length ? link.listeners.map(listenerLabel).join(', ') : 'no listener'}`}
-                  <CascadeHops nodes={cascadeOf(listenerSurface, link.listeners, origin, link.grade)} />
+                  <CascadeHops nodes={cascadeOf(surface, link.listeners, origin, link.grade)} />
                 </li>
               )
             })}

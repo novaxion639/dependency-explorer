@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import type { ServiceFlow } from '@dependency-explorer/data'
+import type { ConnectivityMap, ServiceFlow } from '@dependency-explorer/data'
 import type { UrlState } from '../../hooks/useUrlState'
 import { Diagram } from '../../diagram/Diagram'
 import type { FocusState } from '../../diagram/focus'
@@ -12,6 +12,7 @@ import styles from './flows.module.css'
 
 interface Props {
   flow: ServiceFlow
+  map: ConnectivityMap
   url: UrlState
   patch: (p: Partial<UrlState>) => void
   onBack: () => void
@@ -19,7 +20,7 @@ interface Props {
 
 const NOTES = ['if = condition or feature flag', '⎇ = alternative outcome', 'dashed box = background job', '◇ = choice', '⚠ = falls to the error handler', 'solid frame = state machine']
 
-export function FlowPage({ flow, url, patch, onBack }: Props) {
+export function FlowPage({ flow, map, url, patch, onBack }: Props) {
   const model = useMemo(() => swimlanes(flow), [flow])
   const chapters = flow.chapters
   const current = url.chapter ? chapters[url.chapter - 1] : undefined
@@ -48,7 +49,7 @@ export function FlowPage({ flow, url, patch, onBack }: Props) {
   )
   return (
     <article aria-label={flow.name} className={styles.page}>
-      <FlowHeader flow={flow} onBack={onBack} />
+      <FlowHeader flow={flow} map={map} onBack={onBack} />
       {url.present
         ? <FlowStory chapters={chapters} current={url.chapter} onSelect={chapter => patch({ chapter })}>{diagram}</FlowStory>
         : diagram}
