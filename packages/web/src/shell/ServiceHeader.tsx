@@ -7,10 +7,9 @@ import { SkButton } from '@skelloapp/skello-ds-web'
 interface Props {
   service: ConnectivityService
   onBlast: () => void
-  onOpenResource: (id: string) => void
 }
 
-export function ServiceHeader({ service, onBlast, onOpenResource }: Props) {
+export function ServiceHeader({ service, onBlast }: Props) {
   const team = (map.teams ?? []).find(t => t.id === service.teamId)
   const calls = map.connections.filter(c => c.from === service.name).length
   const calledBy = map.connections.filter(c => c.to === service.name).length
@@ -26,7 +25,7 @@ export function ServiceHeader({ service, onBlast, onOpenResource }: Props) {
         )}
         <p className={styles.description} title={service.description}>{service.description}</p>
       </div>
-      <ServiceStores service={service} onOpenResource={onOpenResource} />
+      <ServiceStores service={service} />
       <dl className={styles.counts}>
         <div><dt>calls</dt><dd>{calls}</dd></div>
         <div><dt>called by</dt><dd>{calledBy}</dd></div>

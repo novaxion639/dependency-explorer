@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { resourcePatch } from '../../hooks/useUrlState'
 import { renderInApp } from '../../test/renderInApp'
@@ -85,25 +85,25 @@ describe('WritePathsSection', () => {
   const writePaths = () => screen.getByRole('region', { name: 'Write paths' })
 
   it('groups shift write paths by what they run', () => {
-    render(<WritePathsSection table={SHIFTS} onOpenFlow={noop} />)
+    renderInApp(<WritePathsSection table={SHIFTS} />)
 
     expect(within(writePaths()).getAllByRole('heading', { name: /^Runs no listener \d+$/ }).length).toBeGreaterThan(0)
   })
 
   it('gives each write path its source', () => {
-    render(<WritePathsSection table={SHIFTS} onOpenFlow={noop} />)
+    renderInApp(<WritePathsSection table={SHIFTS} />)
 
     expect(within(writePaths()).getAllByText('written at').length).toBeGreaterThan(0)
   })
 
   it('grades each write path with an accessible glyph', () => {
-    render(<WritePathsSection table={SHIFTS} onOpenFlow={noop} />)
+    renderInApp(<WritePathsSection table={SHIFTS} />)
 
     expect(within(writePaths()).getAllByRole('img', { name: /.+/ }).length).toBeGreaterThan(0)
   })
 
   it('renders nothing for a table with no write site', () => {
-    render(<WritePathsSection table="pg:skello_production.no_such_table" onOpenFlow={noop} />)
+    renderInApp(<WritePathsSection table="pg:skello_production.no_such_table" />)
 
     expect(screen.queryByRole('region')).toBeNull()
   })

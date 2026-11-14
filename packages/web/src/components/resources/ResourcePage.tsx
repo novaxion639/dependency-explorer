@@ -11,6 +11,7 @@ import { WritePathsSection } from './WritePathsSection'
 import { SkButton } from '@skelloapp/skello-ds-web'
 import { NavLink } from '../../shell/NavLink'
 import { filePatch, flowPatch, resourcePatch, selectServicePatch } from '../../hooks/useUrlState'
+import { NavChip } from '../../shell/NavLink'
 
 const serviceNames = new Set(connectivityMap.services.map(s => s.name))
 
@@ -29,14 +30,12 @@ const SECTIONS: Array<{ relation: ResourceRelation['relation']; label: string }>
 
 interface Props {
   id: string
-  onOpenResource: (id: string) => void
-  onOpenFlow: (id: string) => void
   onBlast: (id: string) => void
   listeners: ListenerUrl
   onListeners: (p: Partial<ListenerUrl>) => void
 }
 
-export function ResourcePage({ id, onOpenResource, onOpenFlow, onBlast, listeners, onListeners }: Props) {
+export function ResourcePage({ id, onBlast, listeners, onListeners }: Props) {
   const overlay = useOverlay('datadog', DatadogOverlaySchema)
   const impact = resourceImpact(id, connectivityMap, resourceSurface.resources, allResourceRelations)
   if (!impact) {
@@ -101,18 +100,18 @@ export function ResourcePage({ id, onOpenResource, onOpenFlow, onBlast, listener
       })}
       <ListenersSection listeners={tableListeners} filters={listeners} open={listeners.listener} onFilters={onListeners} onToggle={listener => onListeners({ listener })} />
       {resource.kind === 'table' && <CascadeSection table={id} event={listeners.event} onEvent={event => onListeners({ event })} />}
-      {resource.kind === 'table' && <WritePathsSection table={id} onOpenFlow={onOpenFlow} />}
+      {resource.kind === 'table' && <WritePathsSection table={id} />}
       {dlq && <p className={styles.meta}>Dead letters go to <NavLink patch={resourcePatch(dlq)}>{dlq}</NavLink>{dlqDepth && ` (${dlqDepth.depthNow} waiting)`}</p>}
       {(resource.related ?? []).length > 0 && (
         <section aria-label="Related tables" className={styles.section}>
           <h2>Related tables</h2>
-          {(resource.related ?? []).map(t => <button key={t} type="button" className={styles.chip} onClick={() => onOpenResource(t)}>{t.split('.').pop()}</button>)}
+          {(resource.related ?? []).map(t => <NavChip key={t} patch={resourcePatch(t)} label={t.split('.').pop() ?? t} />)}
         </section>
       )}
       {tables.length > 0 && (
         <section aria-label="Tables" className={styles.section}>
           <h2>Tables ({tables.length})</h2>
-          {tables.map(t => <button key={t.id} type="button" className={styles.chip} onClick={() => onOpenResource(t.id)}>{t.name}</button>)}
+          {tables.map(t => <NavChip key={t.id} patch={resourcePatch(t.id)} label={t.name} />)}
         </section>
       )}
       {flows.length > 0 && (

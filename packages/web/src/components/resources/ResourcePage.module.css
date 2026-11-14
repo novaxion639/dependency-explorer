@@ -18,7 +18,6 @@
 .grade[data-grade='flow'] { background: var(--highlight); padding: 0 3px; }
 .file { font-family: var(--font-mono); font-size: var(--text-xs); }
 .link { background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; font-size: inherit; }
-.chip { margin: var(--space-1) var(--space-1) 0 0; font-size: var(--text-xs); padding: 1px var(--space-2); border: 1px solid var(--ink); border-radius: var(--radius-sm); background: var(--card); cursor: pointer; }
 .groupTitle { font-size: var(--text-sm); font-weight: 700; }
 .flows { list-style: none; font-size: var(--text-sm); }
 .filters { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-1); }

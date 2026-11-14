@@ -37,4 +37,3 @@
 .unowned { display: grid; gap: var(--space-2); margin-top: var(--space-4); }
 .unowned h2 { font-size: var(--text-md); }
 .pills { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-.pills button { padding: 2px var(--space-3); border-radius: 12px; font-size: var(--text-xs); border: 1px solid var(--rule-strong); cursor: pointer; background: var(--card); }

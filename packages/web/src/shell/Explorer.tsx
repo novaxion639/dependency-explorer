@@ -88,10 +88,10 @@ export function Explorer() {
       : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, file: null, unit: (flow.codeUnits ?? []).find(u => u.service === fileEntry.service && u.path === fileEntry.path)?.id ?? null })} />
       : <FlowsIndex service={url.flows} flows={map.flows} map={map} onSelectFlow={flow => patch({ flow: flow.id })} />)
     : url.page === 'resources' ? (url.resource
-      ? <ResourcePage id={url.resource} onOpenResource={openResource} onOpenFlow={id => patch({ page: 'flows', flow: id })} onBlast={id => patch({ page: 'impact', blast: id })} listeners={url} onListeners={patch} />
+      ? <ResourcePage id={url.resource} onBlast={id => patch({ page: 'impact', blast: id })} listeners={url} onListeners={patch} />
       : <ResourcesIndex url={url} patch={patch} onOpenResource={openResource} />)
     : url.page === 'impact' ? <ImpactPage origin={url.blast} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onPick={id => patch({ blast: id })} onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))} />
-    : <OwnershipPage map={map} focusedTeam={url.team} onFocusTeam={team => patch({ team })} onSelectService={selectService} onOpenArea={id => patch({ page: 'areas', area: id, term: null })} />
+    : <OwnershipPage map={map} focusedTeam={url.team} onFocusTeam={team => patch({ team })} onSelectService={selectService} />
 
   return (
     <NavContext value={{ url, onNavigate: patch }}>

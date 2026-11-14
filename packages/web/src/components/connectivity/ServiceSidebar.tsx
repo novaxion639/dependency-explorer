@@ -1,7 +1,7 @@
 import type { ConnectivityService, Team } from '@dependency-explorer/data'
 import styles from './ServiceSidebar.module.css'
 import { CloseButton } from '../CloseButton'
-import { SkTextField } from '@skelloapp/skello-ds-web'
+import { SkTag, SkTextField } from '@skelloapp/skello-ds-web'
 
 interface Props {
   services: ConnectivityService[]
@@ -48,7 +48,7 @@ export function ServiceSidebar({ services, teams, selected, onSelect, search, on
           return (
             <li key={svc.name}>
               <button type="button" aria-current={svc.name === selected ? 'true' : undefined} onClick={() => onSelect(svc.name)}>
-                <span className={styles.name}><span className={styles.tag}>{TYPE_TAG[svc.type] ?? '·'}</span>{svc.name}</span>
+                <span className={styles.name}><SkTag size="small" color="skGrey">{TYPE_TAG[svc.type] ?? '·'}</SkTag>{svc.name}</span>
                 {team && <small>{team.name}</small>}
               </button>
             </li>
