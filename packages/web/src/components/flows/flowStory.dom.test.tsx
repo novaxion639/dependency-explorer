@@ -1,24 +1,25 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
-import { act } from 'react'
-import { createRoot } from 'react-dom/client'
+import { afterEach, describe, it, expect } from 'vitest'
+import { render } from '@testing-library/react'
 import { FlowStory } from './FlowStory'
 
 const chapters = ['One', 'Two', 'Three', 'Four', 'Five', 'Six'].map(title => ({ title, summary: `${title} happens.`, refs: ['a'] }))
+const originalScroll = Element.prototype.scrollIntoView
+
+afterEach(() => {
+  Element.prototype.scrollIntoView = originalScroll
+})
 
 describe('FlowStory in the browser', () => {
-  it('scrolls the selected chapter into view as the presenter steps', async () => {
-    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+  it('scrolls the selected chapter into view as the presenter steps', () => {
     const scrolled: string[] = []
     Element.prototype.scrollIntoView = function (this: Element) {
       scrolled.push(this.textContent ?? '')
     }
-    const host = document.createElement('div')
-    document.body.append(host)
-    const root = createRoot(host)
-    await act(async () => root.render(<FlowStory chapters={chapters} current={5} onSelect={() => {}}><p>diagram</p></FlowStory>))
-    await act(async () => root.render(<FlowStory chapters={chapters} current={6} onSelect={() => {}}><p>diagram</p></FlowStory>))
+    const { rerender } = render(<FlowStory chapters={chapters} current={5} onSelect={() => {}}><p>diagram</p></FlowStory>)
+
+    rerender(<FlowStory chapters={chapters} current={6} onSelect={() => {}}><p>diagram</p></FlowStory>)
+
     expect(scrolled).toEqual(['5FiveFive happens.', '6SixSix happens.'])
-    root.unmount()
   })
 })

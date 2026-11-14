@@ -11,6 +11,7 @@ interface Load {
   promise: Promise<unknown>
 }
 
+// Keyed by the fetch in use, so a page load shares one request per overlay and a replaced fetch starts empty.
 const loads = new WeakMap<typeof fetch, Map<string, Load>>()
 
 async function readOverlay(name: string, fetchImpl: typeof fetch): Promise<unknown> {
@@ -58,7 +59,8 @@ function parseOverlay<T>(name: string, schema: Schema<T>, load: Load): T | null 
   return parsed.data
 }
 
-export function useOverlay<T>(name: string, schema: Schema<T>, fetchImpl: typeof fetch = fetch): T | null {
+export function useOverlay<T>(name: string, schema: Schema<T>): T | null {
+  const fetchImpl = fetch
   const known = loads.get(fetchImpl)?.get(name)
   const parsedAtMount = useRef(known?.settled ? known : null)
   const [overlay, setOverlay] = useState(() => (known?.settled ? parseOverlay(name, schema, known) : null))
