@@ -1,6 +1,8 @@
 import type { ConnectivityMap, ServiceConnection } from '@dependency-explorer/data'
 import { STORE_META } from '../storeTypes'
 import styles from './EdgeDetail.module.css'
+import { CloseButton } from '../CloseButton'
+import { ArrowRightIcon, SkButton } from '@skelloapp/skello-ds-web'
 
 interface Props {
   connection: ServiceConnection
@@ -21,7 +23,7 @@ export function EdgeDetail({ connection, map, onSeeEndpoints, onClose }: Props) 
     <article aria-label="Connection" className={styles.edge}>
       <header className={styles.head}>
         <h2>{connection.from} <span aria-hidden="true">→</span> {connection.to}</h2>
-        <button type="button" aria-label="Close" onClick={onClose}>×</button>
+        <CloseButton onClick={onClose} />
       </header>
       <p className={styles.description}>{connection.description}</p>
       <p className={styles.via}>via <code>{connection.sdkPackage}</code></p>
@@ -49,9 +51,9 @@ export function EdgeDetail({ connection, map, onSeeEndpoints, onClose }: Props) 
         </ul>
       )}
       {more && (
-        <button type="button" className={styles.more} onClick={() => onSeeEndpoints(connection.to)}>
-          See all endpoints for {connection.to} →
-        </button>
+        <SkButton size="small" className={styles.more} endIcon={<ArrowRightIcon />} onClick={() => onSeeEndpoints(connection.to)}>
+          See all endpoints for {connection.to}
+        </SkButton>
       )}
     </article>
   )

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SkButton } from '@skelloapp/skello-ds-web'
 
 export function CopyMermaid({ source }: { source: string }) {
   const [status, setStatus] = useState<{ source: string; ok: boolean } | null>(null)
@@ -11,5 +12,5 @@ export function CopyMermaid({ source }: { source: string }) {
     }
   }
   const label = !status || status.source !== source ? 'Copy Mermaid' : status.ok ? 'Copied' : 'Copy failed'
-  return <button type="button" onClick={() => { void copy() }}>{label}</button>
+  return <SkButton variant="outlined" size="small" onClick={() => { void copy() }}>{label}</SkButton>
 }

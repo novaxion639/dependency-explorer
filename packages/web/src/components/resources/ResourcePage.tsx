@@ -8,6 +8,7 @@ import { ListenersSection } from './ListenersSection'
 import type { ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
 import { WritePathsSection } from './WritePathsSection'
+import { SkButton } from '@skelloapp/skello-ds-web'
 
 const serviceNames = new Set(connectivityMap.services.map(s => s.name))
 
@@ -60,7 +61,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
         {note?.description && <p className={styles.note}>{note.description}</p>}
         {depth && <p className={styles.meta}>Depth: {depth.depthNow} now, {depth.depthMax14d} max over 14 days</p>}
         <p className={styles.counts}>{plural(counts.services, 'service')} · {plural(counts.files, 'file')} · {plural(counts.flows, 'flow')}</p>
-        <button type="button" className={styles.impact} onClick={() => onBlast(id)}>If this is down…</button>
+        <SkButton variant="outlined" size="small" color="error" className={styles.impact} onClick={() => onBlast(id)}>If this is down…</SkButton>
       </header>
       {resource.model && (
         <p className={styles.meta}>

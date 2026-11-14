@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import type { AreaSliceData } from '../../utils/areaSlice'
 import styles from './AreaSlice.module.css'
+import { CloseButton } from '../CloseButton'
+import { ArrowRightIcon, SkButton } from '@skelloapp/skello-ds-web'
 
 const SHOWN = 12
 
@@ -28,10 +30,10 @@ export function AreaSlice({ slice, onOpenArea, onOpenResource, onSelectService, 
     <article aria-label={`${area.name} slice`} className={styles.slice}>
       <header className={styles.head}>
         <h2>{area.name}</h2>
-        <button type="button" aria-label="Close" onClick={onClose}>×</button>
+        <CloseButton onClick={onClose} />
       </header>
       <p className={styles.muted}>{area.description}</p>
-      <button type="button" className={styles.open} onClick={() => onOpenArea(area.id)}>Open the area page →</button>
+      <SkButton size="small" className={styles.open} endIcon={<ArrowRightIcon />} onClick={() => onOpenArea(area.id)}>Open the area page</SkButton>
       <Section title="Controllers" count={controllers.length}>
         {controllers.slice(0, SHOWN).map(c => <li key={c.name}><code>{c.name}</code> <span className={styles.muted}>{`${c.routes} routes`}</span></li>)}
         {controllers.length > SHOWN && <li className={styles.muted}>{`+${controllers.length - SHOWN} more`}</li>}

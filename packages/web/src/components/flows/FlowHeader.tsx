@@ -1,6 +1,7 @@
 import { connectivityMap, getFlowAreas, type FlowLinkKind, type ServiceFlow } from '@dependency-explorer/data'
 import { AreaChip } from '../areas/AreaChip'
 import styles from './flows.module.css'
+import { ArrowLeftIcon, SkButton } from '@skelloapp/skello-ds-web'
 
 const LINK_LABEL: Record<FlowLinkKind, string> = {
   continuation: 'continues in',
@@ -33,7 +34,7 @@ export function FlowHeader({ flow, onBack, onOpenFlow, onOpenArea }: Props) {
   const rules = (connectivityMap.rules ?? []).filter(r => ruleIds.has(r.id))
   return (
     <header className={styles.header}>
-      <button type="button" className={styles.back} onClick={onBack}>← Back</button>
+      <SkButton variant="text" size="small" className={styles.back} startIcon={<ArrowLeftIcon />} onClick={onBack}>Back</SkButton>
       <h1>{flow.name}</h1>
       <div className={styles.meta}>
         {flow.trigger && <span className={styles.trigger}>{`👤 ${flow.trigger.actor}${flow.trigger.role ? ` · ${flow.trigger.role}` : ''}`}</span>}

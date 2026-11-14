@@ -13,6 +13,10 @@ describe('app theme', () => {
     expect(theme).toMatch(/\[data-present='true'\]\s*\{[^}]*--text-md/)
   })
 
+  it('outlines keyboard focus, which the DS buttons do not draw', () => {
+    expect(base).toMatch(/:focus-visible\s*\{[^}]*outline:\s*2px solid/)
+  })
+
   it('paints the page from the theme background', () => {
     expect(base).toMatch(/body\s*\{[^}]*background:\s*var\(--paper\)/)
   })

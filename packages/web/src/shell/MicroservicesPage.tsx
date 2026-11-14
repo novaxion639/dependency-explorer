@@ -18,6 +18,7 @@ import { ServiceHeader } from './ServiceHeader'
 import { map } from './dataIndexes'
 import { keyInfo, presentStepKey, stepThrough } from './presentMode'
 import styles from './MicroservicesPage.module.css'
+import { SkButton } from '@skelloapp/skello-ds-web'
 
 interface Props {
   url: UrlState
@@ -120,7 +121,7 @@ export function MicroservicesPage({ url, patch }: Props) {
         <ServiceSidebar services={map.services} teams={map.teams} selected={url.s} onSelect={select} search={search} onSearch={setSearch} open={listOpen} onClose={() => setListOpen(false)} />
       )}
       <div className={styles.content}>
-        {!url.present && <button type="button" className={styles.listToggle} onClick={() => setListOpen(true)}>Services</button>}
+        {!url.present && <SkButton variant="outlined" size="small" className={styles.listToggle} onClick={() => setListOpen(true)}>Services</SkButton>}
         {service ? <ServiceView service={service} url={url} patch={patch} onSelectService={select} /> : <Overview url={url} patch={patch} />}
       </div>
     </div>

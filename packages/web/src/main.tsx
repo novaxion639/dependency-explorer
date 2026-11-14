@@ -1,8 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { StyledEngineProvider } from '@mui/material/styles'
 import { SkThemeProvider } from '@skelloapp/skello-ds-web'
 import App from './App'
-import { ThemeVars } from './styles/themeVars'
+import { ThemeBridge } from './styles/ThemeBridge'
 import './styles/theme.css'
 import './index.css'
 
@@ -13,9 +14,12 @@ if (!root) {
 
 createRoot(root).render(
   <StrictMode>
-    <SkThemeProvider>
-      <ThemeVars />
-      <App />
-    </SkThemeProvider>
+    <StyledEngineProvider injectFirst>
+      <SkThemeProvider>
+        <ThemeBridge>
+          <App />
+        </ThemeBridge>
+      </SkThemeProvider>
+    </StyledEngineProvider>
   </StrictMode>,
 )

@@ -4,6 +4,7 @@ import { useOverlay } from '../../hooks/useOverlay'
 import { jiraSearchUrl } from '../../utils/jiraSearchUrl'
 import { plural } from '../../utils/plural'
 import styles from './AreasHome.module.css'
+import { ArrowRightIcon, SkButton } from '@skelloapp/skello-ds-web'
 
 const PLATFORM_ICONS: Partial<Record<Platform, string>> = { web: '🖥', mobile: '📱', tablet: '⏱', superadmin: '🛠' }
 
@@ -32,7 +33,7 @@ export function AreasHome({ map, onOpenArea, onOpenContext }: Props) {
         <span className={styles.coverage} title="Share of each host repo's source files mapped to an area (pnpm discover 🗺)">
           Code mapped to an area: {Object.entries(areaFacts.coverage).map(([repo, c]) => `${repo} ${c.total ? Math.round((c.mapped / c.total) * 100) : 0}%`).join(' · ')}
         </span>
-        <button type="button" className={styles.context} onClick={onOpenContext}>Microservices overview →</button>
+        <SkButton variant="outlined" size="small" className={styles.context} endIcon={<ArrowRightIcon />} onClick={onOpenContext}>Microservices overview</SkButton>
       </header>
       <ul className={styles.grid}>
         {product.map(area => {

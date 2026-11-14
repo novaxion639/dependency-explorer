@@ -4,6 +4,7 @@ import { edgeFacts } from './edgeFacts'
 import styles from './flows.module.css'
 import { ListenerFacts } from './ListenerFacts'
 import { machineFacts } from './machineFacts'
+import { CloseButton } from '../CloseButton'
 
 const KIND_LABEL: Record<FlowCodeUnit['kind'], string> = {
   controller: 'Controller', service: 'Service', manager: 'Manager', job: 'Background job',
@@ -73,7 +74,7 @@ export function UnitDetail({ flow, id, onOpenFlow, onOpenResource, onClose }: Pr
     <article aria-label={title} className={styles.detail}>
       <header className={styles.detailHead}>
         <h2>{title}</h2>
-        <button type="button" aria-label="Close" onClick={onClose}>×</button>
+        <CloseButton onClick={onClose} />
       </header>
       {unit && <UnitFacts unit={unit} flow={flow} onOpenFlow={onOpenFlow} />}
       {unit && <ListenerFacts flow={flow} unit={unit} onOpenResource={onOpenResource} />}

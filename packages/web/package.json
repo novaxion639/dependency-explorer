@@ -13,6 +13,7 @@
   "dependencies": {
     "@dagrejs/dagre": "3.1.1",
     "@dependency-explorer/data": "workspace:*",
+    "@mui/material": "9.5.0",
     "@skelloapp/skello-ds-web": "0.158.2",
     "@xyflow/react": "12.10.2",
     "d3-hierarchy": "3.1.2",

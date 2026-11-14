@@ -1,5 +1,6 @@
 import type { ConnectivityService, Team } from '@dependency-explorer/data'
 import styles from './ServiceSidebar.module.css'
+import { CloseButton } from '../CloseButton'
 
 interface Props {
   services: ConnectivityService[]
@@ -35,7 +36,7 @@ export function ServiceSidebar({ services, teams, selected, onSelect, search, on
 
   return (
     <nav aria-label="Services" className={`sidebar ${styles.sidebar}`} data-open={open}>
-      <button type="button" className={`mobile-only ${styles.close}`} onClick={onClose} aria-label="Close services menu">✕</button>
+      <CloseButton label="Close services menu" className={`mobile-only ${styles.close}`} onClick={onClose} />
       <div className={styles.search}>
         <input aria-label="Filter services" value={search} onChange={e => onSearch(e.target.value)} placeholder="Filter by name or team…" />
       </div>

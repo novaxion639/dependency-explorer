@@ -2,6 +2,8 @@ import { useEffect, useState, type ReactNode } from 'react'
 import type { ServiceEndpoint, RecurringTask } from '@dependency-explorer/data'
 import { STORE_META } from '../storeTypes'
 import styles from './EndpointList.module.css'
+import { CloseButton } from '../CloseButton'
+import { ArrowRightIcon, SkButton } from '@skelloapp/skello-ds-web'
 
 interface Props {
   serviceName: string
@@ -45,9 +47,9 @@ export function EndpointList({ serviceName, endpoints, recurringTasks, highlight
           <h2>{serviceName}</h2>
           <p>{endpoints.length} endpoint{endpoints.length !== 1 ? 's' : ''}{verified > 0 && <span className={styles.okText}> · ✓ {verified} code-verified</span>}</p>
         </div>
-        <button type="button" aria-label="Close" onClick={onClose}>×</button>
+        <CloseButton onClick={onClose} />
       </header>
-      {onOpenService && <button type="button" className={styles.open} onClick={onOpenService}>Open {serviceName} →</button>}
+      {onOpenService && <SkButton size="small" className={styles.open} endIcon={<ArrowRightIcon />} onClick={onOpenService}>Open {serviceName}</SkButton>}
 
       {recurringTasks && recurringTasks.length > 0 && (
         <section className={styles.tasks}>

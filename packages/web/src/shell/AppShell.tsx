@@ -5,6 +5,7 @@ import { Breadcrumb } from './Breadcrumb'
 import { NavLink } from './NavLink'
 import { Rail } from './Rail'
 import styles from './AppShell.module.css'
+import { SkButton } from '@skelloapp/skello-ds-web'
 
 interface Props {
   url: UrlState
@@ -23,12 +24,12 @@ export function AppShell({ url, onNavigate, onSearch, onTogglePresent, panel, ch
     <div className={styles.shell} data-present={url.present ? 'true' : 'false'}>
       <header className={styles.bar}>
         {framed && (
-          <button type="button" className={styles.menu} aria-expanded={railOpen} onClick={() => setRailOpen(open => !open)}>Menu</button>
+          <SkButton variant="outlined" size="small" className={styles.menu} aria-expanded={railOpen} onClick={() => setRailOpen(open => !open)}>Menu</SkButton>
         )}
         <NavLink url={url} patch={pagePatch('home')} onNavigate={onNavigate} className={styles.title}>Skello · Dependency Explorer</NavLink>
         <div className={styles.actions}>
-          {!url.present && <button type="button" onClick={onSearch}>Search <kbd>⌘K</kbd></button>}
-          <button type="button" onClick={onTogglePresent}>{url.present ? 'Exit present' : 'Present'}</button>
+          {!url.present && <SkButton variant="outlined" size="small" onClick={onSearch}>Search <kbd>⌘K</kbd></SkButton>}
+          <SkButton variant="outlined" size="small" onClick={onTogglePresent}>{url.present ? 'Exit present' : 'Present'}</SkButton>
         </div>
       </header>
       <div className={styles.body}>

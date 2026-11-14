@@ -89,6 +89,9 @@ importers:
       '@dependency-explorer/data':
         specifier: workspace:*
         version: link:../data
+      '@mui/material':
+        specifier: 9.5.0
+        version: 9.5.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react@19.2.5))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@skelloapp/skello-ds-web':
         specifier: 0.158.2
         version: 0.158.2(@types/react@19.2.14)(csstype@3.2.3)(dayjs@1.11.23)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
