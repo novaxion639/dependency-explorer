@@ -11,7 +11,7 @@ See [README.md](README.md) for the product and `docs/guide/` for the guides.
 | `pnpm dev` | Serves the web app |
 | `pnpm check` | Typecheck, lint, unused exports, tests, build; the gate before every push |
 | `pnpm typecheck`, `pnpm lint`, `pnpm check:exports`, `pnpm test`, `pnpm build` | The five parts of `pnpm check` |
-| `pnpm lint` | ESLint on all four packages: no type assertion, no non-null assertion, braced bodies, hook rules, jsx-a11y |
+| `pnpm lint` | ESLint on all four packages and `test-support`: no type assertion, no non-null assertion, braced bodies, hook rules, jsx-a11y |
 | `pnpm check:exports` | Fails on an unused file, export or type (knip) |
 | `pnpm preview` | Serves the built bundle |
 | `pnpm discover` | Runs discovery and prints the report |
