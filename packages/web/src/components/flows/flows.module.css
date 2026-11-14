@@ -5,7 +5,6 @@
 .meta { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
 .trigger { font-size: var(--text-sm); border: 1px solid var(--ink); border-radius: var(--radius-sm); padding: 0 var(--space-2); }
 .summary { font-size: var(--text-lg); max-width: 880px; }
-.more summary { cursor: pointer; color: var(--ink-muted); font-size: var(--text-sm); }
 .more p, .more section { max-width: 880px; margin-top: var(--space-1); font-size: var(--text-sm); }
 .links { list-style: none; display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .flags { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-xs); }
