@@ -192,7 +192,6 @@ export function selectServicePatch(name: string): Partial<UrlState> {
 
 export const resourcePatch = (id: string): Partial<UrlState> => ({ ...pagePatch('resources'), resource: id })
 export const flowPatch = (id: string): Partial<UrlState> => ({ ...pagePatch('flows'), flow: id })
-export const areaPatch = (id: string): Partial<UrlState> => ({ ...pagePatch('areas'), area: id })
 export const filePatch = (key: string): Partial<UrlState> => ({ ...pagePatch('flows'), file: key })
 export const routePatch = (id: string): Partial<UrlState> => ({ ...pagePatch('monolith'), drawer: MONOLITH, ep: id })
 

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import userEvent from '@testing-library/user-event'
 import { screen, within } from '@testing-library/react'
 import { parseUrl } from '../hooks/useUrlState'
 import { AppShell } from './AppShell'
@@ -26,6 +27,17 @@ describe('Rail', () => {
     expect(monolith.getAttribute('aria-current')).toBe('page')
     expect(monolith.getAttribute('href')).toBe('/?page=monolith')
     expect(screen.getByRole('link', { name: /^Ownership/ }).getAttribute('aria-current')).toBeNull()
+  })
+})
+
+describe('Rail navigation', () => {
+  it('reports a followed link so the mobile rail can close', async () => {
+    const onFollow = vi.fn()
+    renderWithNav(<Rail onFollow={onFollow} />, '?page=monolith')
+
+    await userEvent.click(screen.getByRole('link', { name: /^Ownership/ }))
+
+    expect(onFollow).toHaveBeenCalledOnce()
   })
 })
 
