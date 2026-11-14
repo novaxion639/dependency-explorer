@@ -6,7 +6,7 @@
 .group { width: 100%; height: 100%; border: 1px solid var(--ink); border-radius: var(--radius-lg); background: var(--paper-2); padding: 6px 8px; cursor: pointer; }
 .group[data-kind='band'] { background: var(--paper); }
 .group[data-on='true'] { background: var(--highlight); }
-.groupLabel { font-weight: 600; }
+.groupLabel { font-weight: var(--weight-semibold); }
 .handle { opacity: 0; pointer-events: none; }
 .edgeLabel { position: absolute; pointer-events: all; font-size: var(--text-xs); background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0 var(--space-1); cursor: pointer; }
 .edgeLabel[data-wrapped='true'] { font-size: 11px; line-height: 17px; white-space: nowrap; }
