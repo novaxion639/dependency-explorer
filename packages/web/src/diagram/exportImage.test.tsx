@@ -14,6 +14,11 @@ describe('export', () => {
   it('replaces theme tokens with their values', () => {
     expect(inlineTokens('fill:var(--ink);stroke:var(--rule-strong)', t => (t === '--ink' ? '#111111' : '#222222'))).toBe('fill:#111111;stroke:#222222')
   })
+  it('keeps a quoted font stack inside the style attribute it is inlined into', () => {
+    const svg = standaloneSvg(model, emphasise(model, NO_FOCUS), token => (token === '--font-sans' ? '"Gellix", sans-serif' : '#111111'))
+
+    expect(svg).toContain('font-family:&quot;Gellix&quot;, sans-serif')
+  })
   it('serialises a standalone SVG with tokens resolved', () => {
     const svg = standaloneSvg(model, emphasise(model, NO_FOCUS), read)
     expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"')

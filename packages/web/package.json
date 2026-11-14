@@ -13,8 +13,10 @@
   "dependencies": {
     "@dagrejs/dagre": "3.1.1",
     "@dependency-explorer/data": "workspace:*",
+    "@skelloapp/skello-ds-web": "0.158.2",
     "@xyflow/react": "12.10.2",
     "d3-hierarchy": "3.1.2",
+    "dayjs": "1.11.23",
     "react": "19.2.5",
     "react-dom": "19.2.5"
   },

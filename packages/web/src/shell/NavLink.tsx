@@ -11,12 +11,14 @@ interface Props {
   children: ReactNode
 }
 
+const BASE = import.meta.env.BASE_URL
+
 const opensElsewhere = (e: MouseEvent) => e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey
 
 export function NavLink({ url, patch, onNavigate, push, className, 'aria-current': current, children }: Props) {
   return (
     <a
-      href={hrefFor(applyPatch(url, patch), import.meta.env.BASE_URL)}
+      href={hrefFor(applyPatch(url, patch), BASE)}
       className={className}
       aria-current={current}
       onClick={e => {
