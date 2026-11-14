@@ -1,22 +1,35 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
-import { act } from 'react'
-import { createRoot } from 'react-dom/client'
+import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { renderWithNav } from '../../test/renderWithNav'
 import { ImpactPage } from './ImpactPage'
 
+const noop = () => {}
+const syncFilter = () => screen.getByRole('button', { name: 'Hard failures (sync)' })
+
 describe('ImpactPage filter', () => {
-  it('keeps only hard failures through sync edges under the sync filter', async () => {
-    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
-    const host = document.createElement('div')
-    document.body.append(host)
-    const root = createRoot(host)
-    await act(async () => root.render(<ImpactPage origin="svc-requests" onSelect={() => {}} onOpenFlow={() => {}} onPick={() => {}} />))
-    const sync = [...host.querySelectorAll('button')].find(b => b.textContent === 'Hard failures (sync)')
-    await act(async () => sync?.click())
-    expect(sync?.getAttribute('aria-pressed')).toBe('true')
-    expect(host.innerHTML).not.toContain('>degrades<')
-    expect(host.innerHTML).not.toContain('>starves<')
-    expect(host.innerHTML).toContain('>fails<')
-    root.unmount()
+  it('presses the sync filter', async () => {
+    renderWithNav(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+
+    await userEvent.click(syncFilter())
+
+    expect(syncFilter().getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it.each(['degrades', 'starves'])('drops the %s effects under the sync filter', async effect => {
+    renderWithNav(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+
+    await userEvent.click(syncFilter())
+
+    expect(screen.queryByText(effect)).toBeNull()
+  })
+
+  it('keeps the hard failures under the sync filter', async () => {
+    renderWithNav(<ImpactPage origin="svc-requests" onSelect={noop} onPick={noop} />)
+
+    await userEvent.click(syncFilter())
+
+    expect(screen.getAllByText('fails').length).toBeGreaterThan(0)
   })
 })

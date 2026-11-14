@@ -1,32 +1,41 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
-import { act } from 'react'
-import { createRoot } from 'react-dom/client'
+import { screen } from '@testing-library/react'
 import { autoFlow } from '../../diagram/layouts/fixtures'
+import { renderWithNav } from '../../test/renderWithNav'
 import { UnitDetail } from './UnitDetail'
 
 const noop = () => {}
-
-function mount(id: string): HTMLElement {
-  const host = document.createElement('div')
-  act(() => {
-    createRoot(host).render(<UnitDetail flow={autoFlow} id={id} onOpenFlow={noop} onOpenResource={noop} onClose={noop} />)
-  })
-  return host
-}
-
-const texts = (host: HTMLElement, selector: string) => [...host.querySelectorAll(selector)].map(e => e.textContent)
+const texts = (role: string) => screen.getAllByRole(role).map(e => e.textContent)
 
 describe('UnitDetail with a state machine', () => {
-  it('explains a machine opened from its frame', () => {
-    const host = mount('sm-auto')
-    expect(texts(host, 'h2')).toEqual(['AutoAssign state machine'])
-    expect(texts(host, 'dt')).toContain('Falls to the error handler')
-    expect(texts(host, 'dd')).toContain('fetch data, filter users, per batch, aggregate, solve, assign shifts, finish job')
+  it('heads a machine opened from its frame with its name', () => {
+    renderWithNav(<UnitDetail flow={autoFlow} id="sm-auto" onClose={noop} />)
+
+    expect(screen.getAllByRole('heading', { level: 2 }).map(h => h.textContent)).toEqual(['AutoAssign state machine'])
   })
-  it('explains a choice opened from its node', () => {
-    const host = mount('empty')
-    expect(texts(host, 'h2')).toEqual(['empty?'])
-    expect(texts(host, 'dd')).toContain('→ finish job')
+
+  it('names where a machine falls on error', () => {
+    renderWithNav(<UnitDetail flow={autoFlow} id="sm-auto" onClose={noop} />)
+
+    expect(texts('term')).toContain('Falls to the error handler')
+  })
+
+  it('lists the machine states in order', () => {
+    renderWithNav(<UnitDetail flow={autoFlow} id="sm-auto" onClose={noop} />)
+
+    expect(texts('definition')).toContain('fetch data, filter users, per batch, aggregate, solve, assign shifts, finish job')
+  })
+
+  it('heads a choice opened from its node with its question', () => {
+    renderWithNav(<UnitDetail flow={autoFlow} id="empty" onClose={noop} />)
+
+    expect(screen.getAllByRole('heading', { level: 2 }).map(h => h.textContent)).toEqual(['empty?'])
+  })
+
+  it('names where a choice leads', () => {
+    renderWithNav(<UnitDetail flow={autoFlow} id="empty" onClose={noop} />)
+
+    expect(texts('definition')).toContain('→ finish job')
   })
 })

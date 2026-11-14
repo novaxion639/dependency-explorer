@@ -9,14 +9,14 @@
 .section { margin-top: var(--space-3); }
 .section h2 { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); }
 .group { margin-top: var(--space-2); background: var(--card); border: 1.5px solid var(--rule-strong); border-radius: var(--radius-md); padding: var(--space-2); }
-.service { background: none; border: none; padding: 0; cursor: pointer; font-weight: 700; font-size: var(--text-sm); text-decoration: underline; }
+.service { font-weight: 600; font-size: var(--text-sm); }
 .count { font-size: var(--text-xs); color: var(--ink-muted); }
 .rels { list-style: none; margin-top: var(--space-1); overflow-x: auto; }
 .rels li { font-size: var(--text-xs); white-space: nowrap; }
 .grade { margin-right: var(--space-2); font-weight: 700; }
 .grade[data-grade='code'], .grade[data-grade='config'] { color: var(--ok); }
 .grade[data-grade='flow'] { background: var(--highlight); padding: 0 3px; }
-.file { background: none; border: none; padding: 0; cursor: pointer; font-family: var(--font-mono); font-size: var(--text-xs); text-decoration: underline; }
+.file { font-family: var(--font-mono); font-size: var(--text-xs); }
 .link { background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; font-size: inherit; }
 .chip { margin: var(--space-1) var(--space-1) 0 0; font-size: var(--text-xs); padding: 1px var(--space-2); border: 1px solid var(--ink); border-radius: var(--radius-sm); background: var(--card); cursor: pointer; }
 .chip[aria-pressed='true'] { background: var(--ink); color: var(--card); }

@@ -9,6 +9,8 @@ import type { ListenerUrl } from './listenerView'
 import styles from './ResourcePage.module.css'
 import { WritePathsSection } from './WritePathsSection'
 import { SkButton } from '@skelloapp/skello-ds-web'
+import { NavLink } from '../../shell/NavLink'
+import { filePatch, flowPatch, resourcePatch, selectServicePatch } from '../../hooks/useUrlState'
 
 const serviceNames = new Set(connectivityMap.services.map(s => s.name))
 
@@ -28,15 +30,13 @@ const SECTIONS: Array<{ relation: ResourceRelation['relation']; label: string }>
 interface Props {
   id: string
   onOpenResource: (id: string) => void
-  onOpenFile: (key: string) => void
   onOpenFlow: (id: string) => void
-  onSelectService: (name: string) => void
   onBlast: (id: string) => void
   listeners: ListenerUrl
   onListeners: (p: Partial<ListenerUrl>) => void
 }
 
-export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSelectService, onBlast, listeners, onListeners }: Props) {
+export function ResourcePage({ id, onOpenResource, onOpenFlow, onBlast, listeners, onListeners }: Props) {
   const overlay = useOverlay('datadog', DatadogOverlaySchema)
   const impact = resourceImpact(id, connectivityMap, resourceSurface.resources, allResourceRelations)
   if (!impact) {
@@ -53,7 +53,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
       <header className={styles.head}>
         <h1>{resource.name}</h1>
         <p className={styles.meta}>
-          {resource.kind} · {resource.store}{resource.owner ? <> · owned by {serviceNames.has(resource.owner) ? <button type="button" className={styles.link} onClick={() => onSelectService(resource.owner ?? '')}>{resource.owner}</button> : `${resource.owner} (not in the map)`}</> : null} · evidence {resource.evidence.map((e, i) => {
+          {resource.kind} · {resource.store}{resource.owner ? <> · owned by {serviceNames.has(resource.owner) ? <NavLink patch={selectServicePatch(resource.owner)}>{resource.owner}</NavLink> : `${resource.owner} (not in the map)`}</> : null} · evidence {resource.evidence.map((e, i) => {
             const href = evidenceHref(e, resourceSurface.pins)
             return <span key={e}>{i > 0 && ', '}{href ? <a href={href} target="_blank" rel="noreferrer">{e}</a> : e}</span>
           })}
@@ -65,7 +65,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
       </header>
       {resource.model && (
         <p className={styles.meta}>
-          Model <code>{resource.model.className}</code> — <button type="button" className={styles.file} onClick={() => onOpenFile(`skello-app/${resource.model?.file ?? ''}`)}>{resource.model.file}</button>
+          Model <code>{resource.model.className}</code> — <NavLink patch={filePatch(`skello-app/${resource.model.file}`)} className={styles.file}>{resource.model.file}</NavLink>
         </p>
       )}
       {resource.kind === 'table' && <p className={styles.hint}>Writers are class-level write calls; instance writes (record.save, update!) appear as readers.</p>}
@@ -80,7 +80,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
             <h2>{label}</h2>
             {groups.map(g => (
               <div key={g.service} className={styles.group}>
-                <button type="button" className={styles.service} onClick={() => onSelectService(g.service)}>{g.service}</button>
+                <NavLink patch={selectServicePatch(g.service)} className={styles.service}>{g.service}</NavLink>
                 <span className={styles.count}> {g.rels.length}</span>
                 <ul className={styles.rels}>
                   {g.rels.map(r => {
@@ -88,8 +88,8 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
                     return (
                       <li key={`${r.grade}-${r.file ?? r.service}-${r.target ?? ''}`}>
                         <span title={badge.title} className={styles.grade} data-grade={r.grade}>{badge.symbol}</span>
-                        {r.file ? <button type="button" className={styles.file} onClick={() => onOpenFile(`${r.service}/${r.file ?? ''}`)}>{r.file}</button> : <span className={styles.meta}>{r.grade === 'config' ? 'declared in config' : 'flow edge'}</span>}
-                        {r.target && <> → <button type="button" className={styles.link} onClick={() => onOpenResource(r.target ?? '')}>{r.target}</button></>}
+                        {r.file ? <NavLink patch={filePatch(`${r.service}/${r.file}`)} className={styles.file}>{r.file}</NavLink> : <span className={styles.meta}>{r.grade === 'config' ? 'declared in config' : 'flow edge'}</span>}
+                        {r.target && <> → <NavLink patch={resourcePatch(r.target)}>{r.target}</NavLink></>}
                       </li>
                     )
                   })}
@@ -99,10 +99,10 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
           </section>
         )
       })}
-      <ListenersSection listeners={tableListeners} filters={listeners} open={listeners.listener} onFilters={onListeners} onToggle={listener => onListeners({ listener })} onOpenResource={onOpenResource} />
-      {resource.kind === 'table' && <CascadeSection table={id} event={listeners.event} onEvent={event => onListeners({ event })} onOpenResource={onOpenResource} />}
+      <ListenersSection listeners={tableListeners} filters={listeners} open={listeners.listener} onFilters={onListeners} onToggle={listener => onListeners({ listener })} />
+      {resource.kind === 'table' && <CascadeSection table={id} event={listeners.event} onEvent={event => onListeners({ event })} />}
       {resource.kind === 'table' && <WritePathsSection table={id} onOpenFlow={onOpenFlow} />}
-      {dlq && <p className={styles.meta}>Dead letters go to <button type="button" className={styles.link} onClick={() => onOpenResource(dlq)}>{dlq}</button>{dlqDepth && ` (${dlqDepth.depthNow} waiting)`}</p>}
+      {dlq && <p className={styles.meta}>Dead letters go to <NavLink patch={resourcePatch(dlq)}>{dlq}</NavLink>{dlqDepth && ` (${dlqDepth.depthNow} waiting)`}</p>}
       {(resource.related ?? []).length > 0 && (
         <section aria-label="Related tables" className={styles.section}>
           <h2>Related tables</h2>
@@ -119,7 +119,7 @@ export function ResourcePage({ id, onOpenResource, onOpenFile, onOpenFlow, onSel
         <section aria-label="Flows" className={styles.section}>
           <h2>Flows</h2>
           <ul className={styles.flows}>
-            {flows.map(f => <li key={f.flowId}><button type="button" className={styles.link} onClick={() => onOpenFlow(f.flowId)}>{f.name}</button> <span className={styles.count}>{f.crud.join(' ')}</span></li>)}
+            {flows.map(f => <li key={f.flowId}><NavLink patch={flowPatch(f.flowId)}>{f.name}</NavLink> <span className={styles.count}>{f.crud.join(' ')}</span></li>)}
           </ul>
         </section>
       )}

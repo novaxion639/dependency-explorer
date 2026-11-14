@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import type { UrlState } from '../hooks/useUrlState'
-import { NavLink } from './NavLink'
+import { NavLink, useNav } from './NavLink'
 import { searchEntries, type SearchEntry } from '../utils/searchIndex'
 import { EXAMPLES, HOME_TILES } from './home'
 import styles from './HomePage.module.css'
 
-export function HomePage({ url, index, onNavigate }: { url: UrlState; index: SearchEntry[]; onNavigate: (patch: Partial<UrlState>) => void }) {
+export function HomePage({ index }: { index: SearchEntry[] }) {
+  const { onNavigate } = useNav()
   const [query, setQuery] = useState('')
   const results = useMemo(() => (query.trim() ? searchEntries(index, query, 8) : []), [index, query])
   return (
@@ -26,7 +26,7 @@ export function HomePage({ url, index, onNavigate }: { url: UrlState; index: Sea
         <ul className={styles.results} aria-label="Results">
           {results.map(r => (
             <li key={`${r.type}:${r.label}:${r.sublabel}`}>
-              <NavLink url={url} patch={r.patch} onNavigate={onNavigate}>
+              <NavLink patch={r.patch} color="inherit" underline="none">
                 <b>{r.label}</b> <span>{r.type}</span>
                 <small>{r.sublabel}</small>
               </NavLink>
@@ -41,7 +41,7 @@ export function HomePage({ url, index, onNavigate }: { url: UrlState; index: Sea
       <ul className={styles.tiles}>
         {HOME_TILES.map(t => (
           <li key={t.title}>
-            <NavLink url={url} patch={t.patch} onNavigate={onNavigate}><b>{t.title}</b><span>{t.blurb}</span></NavLink>
+            <NavLink patch={t.patch} color="inherit" underline="none"><b>{t.title}</b><span>{t.blurb}</span></NavLink>
           </li>
         ))}
       </ul>

@@ -1,16 +1,16 @@
-import { pagePatch, type UrlState } from '../hooks/useUrlState'
-import { NavLink } from './NavLink'
+import { pagePatch, type Page } from '../hooks/useUrlState'
+import { NavLink, useNav } from './NavLink'
 import { RAIL, type RailItem } from './railModules'
 import styles from './Rail.module.css'
 
-interface Props { url: UrlState; onNavigate: (patch: Partial<UrlState>) => void }
+interface Props { onFollow?: () => void }
 
-function Item({ item, url, onNavigate }: { item: RailItem } & Props) {
+function Item({ item, page, onFollow }: { item: RailItem; page: Page } & Props) {
   const target = item.page
   return (
     <li>
       {target ? (
-        <NavLink url={url} patch={pagePatch(target)} onNavigate={onNavigate} className={styles.item} aria-current={url.page === target ? 'page' : undefined}>
+        <NavLink patch={pagePatch(target)} onFollow={onFollow} className={styles.item} color="inherit" underline="none" aria-current={page === target ? 'page' : undefined}>
           <span>{item.label}</span>
           <small>{item.hint}</small>
         </NavLink>
@@ -19,20 +19,21 @@ function Item({ item, url, onNavigate }: { item: RailItem } & Props) {
       )}
       {item.children && (
         <ul className={styles.children}>
-          {item.children.map(child => <Item key={child.label} item={child} url={url} onNavigate={onNavigate} />)}
+          {item.children.map(child => <Item key={child.label} item={child} page={page} onFollow={onFollow} />)}
         </ul>
       )}
     </li>
   )
 }
 
-export function Rail({ url, onNavigate }: Props) {
+export function Rail({ onFollow }: Props) {
+  const { page } = useNav().url
   return (
     <nav aria-label="Modules" className={styles.rail}>
       {RAIL.map(group => (
         <div key={group.title} role="group" aria-label={group.title}>
           <h2 className={styles.group}>{group.title}</h2>
-          <ul>{group.items.map(item => <Item key={item.label} item={item} url={url} onNavigate={onNavigate} />)}</ul>
+          <ul>{group.items.map(item => <Item key={item.label} item={item} page={page} onFollow={onFollow} />)}</ul>
         </div>
       ))}
     </nav>

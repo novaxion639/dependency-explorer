@@ -1,17 +1,19 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { screen, within } from '@testing-library/react'
 import { parseUrl } from '../hooks/useUrlState'
 import { AppShell } from './AppShell'
 import { Rail } from './Rail'
+import { renderWithNav } from '../test/renderWithNav'
 
 const noop = () => {}
 const renderShell = (qs: string, panel: string | null = null) =>
-  render(<AppShell url={parseUrl(qs)} onNavigate={noop} onSearch={noop} onTogglePresent={noop} panel={panel}><p>canvas</p></AppShell>)
+  renderWithNav(<AppShell url={parseUrl(qs)} onSearch={noop} onTogglePresent={noop} panel={panel}><p>canvas</p></AppShell>, qs)
 
 describe('Rail', () => {
   it('groups modules by question without a landmark per group', () => {
-    render(<Rail url={parseUrl('?page=monolith')} onNavigate={noop} />)
+    renderWithNav(<Rail />, '?page=monolith')
 
     const nav = screen.getByRole('navigation', { name: 'Modules' })
     expect(within(nav).getAllByRole('group').map(g => g.getAttribute('aria-label'))).toEqual(['Understand', 'Change', 'People'])
@@ -19,12 +21,23 @@ describe('Rail', () => {
   })
 
   it('links each module and marks the current page', () => {
-    render(<Rail url={parseUrl('?page=monolith')} onNavigate={noop} />)
+    renderWithNav(<Rail />, '?page=monolith')
 
     const monolith = screen.getByRole('link', { name: /^Monolith/ })
     expect(monolith.getAttribute('aria-current')).toBe('page')
     expect(monolith.getAttribute('href')).toBe('/?page=monolith')
     expect(screen.getByRole('link', { name: /^Ownership/ }).getAttribute('aria-current')).toBeNull()
+  })
+})
+
+describe('Rail navigation', () => {
+  it('reports a followed link so the mobile rail can close', async () => {
+    const onFollow = vi.fn()
+    renderWithNav(<Rail onFollow={onFollow} />, '?page=monolith')
+
+    await userEvent.click(screen.getByRole('link', { name: /^Ownership/ }))
+
+    expect(onFollow).toHaveBeenCalledOnce()
   })
 })
 

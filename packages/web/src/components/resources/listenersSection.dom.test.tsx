@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeAll, afterEach } from 'vitest'
-import { act } from 'react'
-import { createRoot } from 'react-dom/client'
-import { ListenerSchema } from '@dependency-explorer/data'
+import { describe, it, expect, vi, beforeAll } from 'vitest'
+import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { ListenerSchema, type Listener } from '@dependency-explorer/data'
+import { renderWithNav } from '../../test/renderWithNav'
 import { ListenersSection } from './ListenersSection'
 
 const at = { file: 'app/models/shift.rb', line: 196 }
@@ -17,95 +18,126 @@ const unverified = ListenerSchema.parse({
   events: ['update'], phase: 'commit', declaredAt: at, grade: 'code',
   effects: [{ kind: 'enqueues', target: 'TouchWeekJob', mode: 'async-job', at, grade: 'text' }],
 })
+const OPEN = 'shifts.after_commit.update_paid_leaves'
 const NO_FILTERS = { lev: null, lkind: null, lgrade: null }
+type Filters = { lev: string | null; lkind: string | null; lgrade: string | null }
 
-function mount(open: string | null, calls: string[], filters: { lev: string | null; lkind: string | null; lgrade: string | null } = NO_FILTERS, listeners = [listener]) {
-  const host = document.createElement('div')
-  document.body.append(host)
-  act(() => {
-    createRoot(host).render(<ListenersSection listeners={listeners} filters={filters} open={open} onFilters={p => calls.push(JSON.stringify(p))} onToggle={id => calls.push(`toggle:${id ?? ''}`)} onOpenResource={() => {}} />)
-  })
-  return host
-}
-const button = (host: HTMLElement, text: string) => [...host.querySelectorAll('button')].find(b => b.textContent?.includes(text))
+const mount = ({ open = null, filters = NO_FILTERS, listeners = [listener], onFilters = () => {}, onToggle = () => {} }: {
+  open?: string | null
+  filters?: Filters
+  listeners?: Listener[]
+  onFilters?: (p: Partial<Filters>) => void
+  onToggle?: (id: string | null) => void
+} = {}) => renderWithNav(<ListenersSection listeners={listeners} filters={filters} open={open} onFilters={onFilters} onToggle={onToggle} />)
 
 describe('ListenersSection', () => {
   beforeAll(() => {
-    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
-    Element.prototype.scrollIntoView = () => {}
-  })
-  afterEach(() => {
-    document.body.replaceChildren()
+    Element.prototype.scrollIntoView = vi.fn()
   })
 
-  it('lists each listener with its hook, method, events and condition', () => {
-    const host = mount(null, [])
-    expect(host.querySelector('section[aria-label="Listeners"] h2')?.textContent).toBe('Listeners · 1 of 1')
-    expect(button(host, 'update_paid_leaves')?.getAttribute('aria-expanded')).toBe('false')
-    expect(host.textContent).toContain('if: :user_id?')
+  it('counts the listeners in the heading', () => {
+    mount()
+
+    expect(screen.getByRole('heading', { name: 'Listeners · 1 of 1' })).toBeTruthy()
   })
-  it('toggles a row and shows its effects when open', () => {
-    const calls: string[] = []
-    const closed = mount(null, calls)
-    act(() => button(closed, 'update_paid_leaves')?.click())
-    expect(calls).toEqual(['toggle:shifts.after_commit.update_paid_leaves'])
-    expect(mount('shifts.after_commit.update_paid_leaves', []).textContent).toContain('enqueues UpdatePaidLeavesCounterJob · async')
+
+  it('lists each listener folded, with its hook, method and events', () => {
+    mount()
+
+    expect(screen.getByRole('button', { name: 'after_commit update_paid_leaves · create update destroy' }).getAttribute('aria-expanded')).toBe('false')
   })
-  it('reports filter changes', () => {
-    const calls: string[] = []
-    const host = mount(null, calls)
-    const select = host.querySelector('select[aria-label="Kind"]')
-    act(() => {
-      if (select instanceof HTMLSelectElement) {
-        select.value = 'cascade'
-        select.dispatchEvent(new Event('change', { bubbles: true }))
-      }
-    })
-    expect(calls).toEqual(['{"lkind":"cascade"}'])
+
+  it('shows each listener condition', () => {
+    mount()
+
+    expect(screen.getByText('if: :user_id?')).toBeTruthy()
   })
-  it('grades every row, verified or unverified, with an accessible name', () => {
-    const host = mount(null, [], NO_FILTERS, [listener, unverified])
-    const rows = [...host.querySelectorAll('li')]
-    const glyph = (row: Element | undefined, label: string) => row?.querySelector(`[role="img"][aria-label="${label}"]`)?.textContent
-    expect(glyph(rows[0], 'verified')).toBe('✓')
-    expect(glyph(rows[1], 'unverified, receiver named after a model')).toBe('~')
+
+  it('toggles a row', async () => {
+    const onToggle = vi.fn()
+    mount({ onToggle })
+
+    await userEvent.click(screen.getByRole('button', { name: /update_paid_leaves/ }))
+
+    expect(onToggle).toHaveBeenCalledWith(OPEN)
   })
+
+  it('shows the effects of an open row', () => {
+    mount({ open: OPEN })
+
+    expect(screen.getByText('enqueues UpdatePaidLeavesCounterJob · async', { exact: false })).toBeTruthy()
+  })
+
+  it('reports filter changes', async () => {
+    const onFilters = vi.fn()
+    mount({ onFilters })
+
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'Kind' }), 'cascade')
+
+    expect(onFilters).toHaveBeenCalledWith({ lkind: 'cascade' })
+  })
+
+  it.each([
+    ['verified', '✓'],
+    ['unverified, receiver named after a model', '~'],
+  ])('grades a %s row with an accessible glyph', (name, glyph) => {
+    mount({ listeners: [listener, unverified] })
+
+    expect(screen.getByRole('img', { name }).textContent).toBe(glyph)
+  })
+
   it('names the grade glyph of an opened effect', () => {
-    const host = mount('shifts.after_commit.update_paid_leaves', [])
-    expect(host.querySelectorAll('[role="img"][aria-label="verified"]').length).toBe(2)
+    mount({ open: OPEN })
+
+    expect(screen.getAllByRole('img', { name: 'verified' })).toHaveLength(2)
   })
+
   it('labels the event filter Listener event', () => {
-    const host = mount(null, [])
-    expect(host.querySelector('select[aria-label="Listener event"]')).toHaveProperty('value', 'all')
-    expect(host.querySelector('select[aria-label="Event"]')).toBeNull()
+    mount()
+
+    expect(screen.getByRole('combobox', { name: 'Listener event' })).toHaveProperty('value', 'all')
+    expect(screen.queryByRole('combobox', { name: 'Event' })).toBeNull()
   })
+
   it('treats a filter value outside its options as no filter', () => {
-    const host = mount(null, [], { lev: null, lkind: 'bogus', lgrade: null })
-    expect(host.querySelector('h2')?.textContent).toBe('Listeners · 1 of 1')
-    expect(host.querySelector('select[aria-label="Kind"]')).toHaveProperty('value', 'all')
+    mount({ filters: { lev: null, lkind: 'bogus', lgrade: null } })
+
+    expect(screen.getByRole('heading', { name: 'Listeners · 1 of 1' })).toBeTruthy()
+    expect(screen.getByRole('combobox', { name: 'Kind' })).toHaveProperty('value', 'all')
   })
+
   it('says so when the filters hide every listener', () => {
-    const host = mount(null, [], { lev: null, lkind: 'cascade', lgrade: null })
-    expect(host.textContent).toContain('No listener matches these filters.')
-    expect(host.querySelector('ol')).toBeNull()
+    mount({ filters: { lev: null, lkind: 'cascade', lgrade: null } })
+
+    expect(screen.getByText('No listener matches these filters.')).toBeTruthy()
+    expect(screen.queryByRole('list')).toBeNull()
   })
+
   it('prefixes the source links with declared and defined', () => {
-    const host = mount(null, [], NO_FILTERS, [ListenerSchema.parse({ ...listener, definedAt: { file: 'app/models/concerns/x.rb', line: 3 } })])
-    expect(host.textContent).toContain('declared app/models/shift.rb:196')
-    expect(host.textContent).toContain('defined app/models/concerns/x.rb:3')
+    mount({ listeners: [ListenerSchema.parse({ ...listener, definedAt: { file: 'app/models/concerns/x.rb', line: 3 } })] })
+    const sources = screen.getByText('declared', { exact: false }).textContent
+
+    expect(sources).toContain('declared app/models/shift.rb:196')
+    expect(sources).toContain('defined app/models/concerns/x.rb:3')
   })
+
   it('scrolls the open listener row into view', () => {
     const scrollIntoView = vi.fn()
     Element.prototype.scrollIntoView = scrollIntoView
-    const host = mount('shifts.after_commit.update_paid_leaves', [])
-    expect(scrollIntoView).toHaveBeenCalledTimes(1)
-    expect(scrollIntoView.mock.contexts[0]).toBe(host.querySelector('li[id="listener-shifts.after_commit.update_paid_leaves"]'))
+
+    mount({ open: OPEN })
+
+    expect(scrollIntoView.mock.contexts).toEqual([screen.getAllByRole('listitem')[0]])
   })
+
   it('names a cascade row after its target', () => {
     const cascade = ListenerSchema.parse({
       id: 'shifts.dependent.shift_swaps', table: 'pg:skello_production.shifts', kind: 'cascade', hook: 'dependent: :delete_all',
       events: ['destroy'], phase: 'event', declaredAt: at, grade: 'code', effects: [],
     })
-    expect(mount(null, [], NO_FILTERS, [cascade]).textContent).toContain('dependent: :delete_all shift_swaps')
+
+    mount({ listeners: [cascade] })
+
+    expect(screen.getByText('dependent: :delete_all shift_swaps')).toBeTruthy()
   })
 })

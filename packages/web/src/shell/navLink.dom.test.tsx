@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+import { fireEvent, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { pagePatch, parseUrl } from '../hooks/useUrlState'
+import { flowPatch } from '../hooks/useUrlState'
+import { renderWithNav } from '../test/renderWithNav'
 import { NavLink } from './NavLink'
 
 const renderLink = (qs: string) => {
-  const onNavigate = vi.fn()
-  render(<NavLink url={parseUrl(qs)} patch={{ ...pagePatch('flows'), flow: 'shift-creation' }} onNavigate={onNavigate}>Shift creation</NavLink>)
+  const { onNavigate } = renderWithNav(<NavLink patch={flowPatch('shift-creation')}>Shift creation</NavLink>, qs)
   return { onNavigate, link: screen.getByRole('link', { name: 'Shift creation' }) }
 }
 
@@ -23,7 +23,7 @@ describe('NavLink', () => {
 
     await userEvent.click(link)
 
-    expect(onNavigate).toHaveBeenCalledWith({ ...pagePatch('flows'), flow: 'shift-creation' }, undefined)
+    expect(onNavigate).toHaveBeenCalledWith(flowPatch('shift-creation'), undefined)
   })
 
   it.each([['metaKey'], ['ctrlKey'], ['shiftKey']])('leaves a %s click to the browser', modifier => {

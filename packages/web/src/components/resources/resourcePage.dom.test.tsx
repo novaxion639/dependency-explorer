@@ -1,30 +1,28 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
+import { screen } from '@testing-library/react'
 import { allResourceRelations, connectivityMap, resourceImpact, resourceSurface } from '@dependency-explorer/data'
+import { renderWithNav } from '../../test/renderWithNav'
 import { overlayOf } from '../health/overlayFixture'
 import { ResourcePage } from './ResourcePage'
 
 const noop = () => {}
-const props = { onOpenResource: noop, onOpenFile: noop, onOpenFlow: noop, onSelectService: noop, onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
+const props = { onOpenResource: noop, onOpenFlow: noop, onBlast: noop, listeners: { event: null, listener: null, lev: null, lkind: null, lgrade: null }, onListeners: noop }
 const source = resourceSurface.resources.map(r => resourceImpact(r.id, connectivityMap, resourceSurface.resources, allResourceRelations)).find(i => i?.dlq)
 const sourceId = source?.resource.id ?? ''
 const dlqId = source?.dlq ?? ''
-const roots: Root[] = []
 
 const render = async (id: string, body: unknown, status = 200) => {
-  Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(body), { status })))
-  const host = document.createElement('div')
-  const root = createRoot(host)
-  roots.push(root)
-  await act(async () => root.render(<ResourcePage id={id} {...props} />))
-  return host.textContent ?? ''
+  await act(async () => {
+    renderWithNav(<ResourcePage id={id} {...props} />)
+  })
 }
 
-afterEach(async () => {
-  await act(async () => roots.splice(0).forEach(r => r.unmount()))
+const deadLetterLine = () => screen.getByText('Dead letters go to', { exact: false }).textContent
+
+afterEach(() => {
   vi.unstubAllGlobals()
 })
 
@@ -34,17 +32,28 @@ describe('ResourcePage with the Datadog overlay', () => {
   it('finds a queue with a dead-letter queue in the registry', () => {
     expect(dlqId).not.toBe('')
   })
+
   it('shows the depth of a dead-letter queue in its header', async () => {
-    expect(await render(dlqId, withDepth)).toContain('Depth: 12 now, 40 max over 14 days')
+    await render(dlqId, withDepth)
+
+    expect(screen.getByText('Depth: 12 now, 40 max over 14 days', { exact: false })).toBeTruthy()
   })
+
   it('ends the source queue dead-letter line with the waiting count', async () => {
-    expect(await render(sourceId, withDepth)).toContain(`Dead letters go to ${dlqId} (12 waiting)`)
+    await render(sourceId, withDepth)
+
+    expect(deadLetterLine()).toBe(`Dead letters go to ${dlqId} (12 waiting)`)
   })
-  it('shows neither without an overlay', async () => {
-    const dlqPage = await render(dlqId, {}, 404)
-    const sourcePage = await render(sourceId, {}, 404)
-    expect(dlqPage).not.toContain('Depth:')
-    expect(sourcePage).toContain(`Dead letters go to ${dlqId}`)
-    expect(sourcePage).not.toContain('waiting')
+
+  it('shows no depth on a dead-letter queue without an overlay', async () => {
+    await render(dlqId, {}, 404)
+
+    expect(screen.queryByText('Depth:', { exact: false })).toBeNull()
+  })
+
+  it('shows no waiting count on the source queue without an overlay', async () => {
+    await render(sourceId, {}, 404)
+
+    expect(deadLetterLine()).toBe(`Dead letters go to ${dlqId}`)
   })
 })

@@ -11,5 +11,5 @@
 .card .go { color: var(--ink); text-decoration: underline; margin-top: var(--space-1); }
 .section h3 { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); margin-bottom: var(--space-1); }
 .section ul { list-style: none; }
-.link { background: none; border: none; padding: 2px 0; cursor: pointer; font-family: var(--font-mono); font-size: var(--text-xs); text-align: left; color: var(--ink); text-decoration: underline; }
+.link { font-family: var(--font-mono); font-size: var(--text-xs); }
 .group { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); margin: var(--space-3) 0 var(--space-1); }

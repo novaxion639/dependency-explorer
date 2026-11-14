@@ -3,15 +3,14 @@ import type { AreaSliceData } from '../../utils/areaSlice'
 import styles from './AreaSlice.module.css'
 import { CloseButton } from '../CloseButton'
 import { ArrowRightIcon, SkButton } from '@skelloapp/skello-ds-web'
+import { NavLink } from '../../shell/NavLink'
+import { flowPatch, resourcePatch, selectServicePatch } from '../../hooks/useUrlState'
 
 const SHOWN = 12
 
 interface Props {
   slice: AreaSliceData
   onOpenArea: (id: string) => void
-  onOpenResource: (id: string) => void
-  onSelectService: (name: string) => void
-  onOpenFlow: (id: string) => void
   onClose: () => void
 }
 
@@ -24,7 +23,7 @@ function Section({ title, count, children }: { title: string; count: number; chi
   )
 }
 
-export function AreaSlice({ slice, onOpenArea, onOpenResource, onSelectService, onOpenFlow, onClose }: Props) {
+export function AreaSlice({ slice, onOpenArea, onClose }: Props) {
   const { area, controllers, tables, calls, flows } = slice
   return (
     <article aria-label={`${area.name} slice`} className={styles.slice}>
@@ -39,13 +38,13 @@ export function AreaSlice({ slice, onOpenArea, onOpenResource, onSelectService, 
         {controllers.length > SHOWN && <li className={styles.muted}>{`+${controllers.length - SHOWN} more`}</li>}
       </Section>
       <Section title="Tables" count={tables.length}>
-        {tables.map(t => <li key={t.id}><button type="button" onClick={() => onOpenResource(t.id)}>{t.name}</button></li>)}
+        {tables.map(t => <li key={t.id}><NavLink patch={resourcePatch(t.id)}>{t.name}</NavLink></li>)}
       </Section>
       <Section title="Services it calls" count={calls.length}>
-        {calls.map(name => <li key={name}><button type="button" onClick={() => onSelectService(name)}>{name}</button></li>)}
+        {calls.map(name => <li key={name}><NavLink patch={selectServicePatch(name)}>{name}</NavLink></li>)}
       </Section>
       <Section title="Flows" count={flows.length}>
-        {flows.map(f => <li key={f.id}><button type="button" onClick={() => onOpenFlow(f.id)}>{f.name}</button></li>)}
+        {flows.map(f => <li key={f.id}><NavLink patch={flowPatch(f.id)}>{f.name}</NavLink></li>)}
       </Section>
     </article>
   )

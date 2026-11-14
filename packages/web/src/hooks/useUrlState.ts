@@ -190,6 +190,11 @@ export function selectServicePatch(name: string): Partial<UrlState> {
   return { ...pagePatch(servicePage(name)), s: name }
 }
 
+export const resourcePatch = (id: string): Partial<UrlState> => ({ ...pagePatch('resources'), resource: id })
+export const flowPatch = (id: string): Partial<UrlState> => ({ ...pagePatch('flows'), flow: id })
+export const filePatch = (key: string): Partial<UrlState> => ({ ...pagePatch('flows'), file: key })
+export const routePatch = (id: string): Partial<UrlState> => ({ ...pagePatch('monolith'), drawer: MONOLITH, ep: id })
+
 export function canGoBack(state: unknown): boolean {
   return typeof state === 'object' && state !== null && 'inApp' in state
 }

@@ -19,6 +19,7 @@ import { OwnershipPage } from '../components/ownership/OwnershipPage'
 import { FlowPage } from '../components/flows/FlowPage'
 import { UnitDetail } from '../components/flows/UnitDetail'
 import { AppShell } from './AppShell'
+import { NavContext } from './NavLink'
 import { HomePage } from './HomePage'
 import { MicroservicesPage } from './MicroservicesPage'
 import { MonolithPage } from './MonolithPage'
@@ -26,7 +27,6 @@ import { areaSlice } from '../utils/areaSlice'
 import { connectionsFor, fileIndex, flagRegistry, map, resourceIds, searchIndex } from './dataIndexes'
 import { validateUrlState } from './validateUrlState'
 import { keyInfo, onPresentKey } from './presentMode'
-import { MONOLITH } from '../diagram/layouts/ids'
 
 
 export function Explorer() {
@@ -62,7 +62,7 @@ export function Explorer() {
   const [firstEdge] = edgeConnections
   const slice = architecture && url.area ? areaSlice(map, monolithRoutes, resourceSurface.resources, url.area) : null
   const unitPanel = url.page === 'flows' && selectedFlow && url.unit
-    ? <UnitDetail flow={selectedFlow} id={url.unit} onOpenFlow={id => patch({ flow: id, unit: null, chapter: null })} onOpenResource={openResource} onClose={() => patch({ unit: null })} />
+    ? <UnitDetail flow={selectedFlow} id={url.unit} onClose={() => patch({ unit: null })} />
     : null
   const drawerService = (architecture || url.page === 'flows') && url.drawer ? map.services.find(s => s.name === url.drawer) ?? null : null
   const panel = unitPanel ?? (edgeConnections.length > 1
@@ -72,30 +72,30 @@ export function Explorer() {
       : drawerService
         ? <EndpointList key={drawerService.name} serviceName={drawerService.name} endpoints={drawerService.endpoints} recurringTasks={drawerService.recurringTasks} highlightId={url.ep} onClose={() => patch({ drawer: null, ep: null })} onOpenService={() => selectService(drawerService.name)} />
         : slice
-          ? <AreaSlice slice={slice} onOpenArea={id => patch({ ...pagePatch('areas'), area: id })} onOpenResource={openResource} onSelectService={selectService} onOpenFlow={id => patch({ ...pagePatch('flows'), flow: id })} onClose={() => patch({ area: null })} />
+          ? <AreaSlice slice={slice} onOpenArea={id => patch({ ...pagePatch('areas'), area: id })} onClose={() => patch({ area: null })} />
           : null)
 
   const content =
-    url.page === 'home' ? <HomePage url={url} index={searchIndex} onNavigate={patch} />
+    url.page === 'home' ? <HomePage index={searchIndex} />
     : url.page === 'areas' ? (url.area
-      ? <AreaPage map={map} areaId={url.area} term={url.term} onBack={() => patch({ area: null, term: null })} onOpenFlow={id => patch({ page: 'flows', flow: id })} onOpenArea={id => patch({ area: id, term: null })} onSelectService={selectService} />
+      ? <AreaPage map={map} areaId={url.area} term={url.term} onBack={() => patch({ area: null, term: null })} onOpenArea={id => patch({ area: id, term: null })} onSelectService={selectService} />
       : <AreasHome map={map} onOpenArea={id => patch({ area: id, term: null })} onOpenContext={() => patch({ page: 'microservices', s: null })} />)
     : url.page === 'microservices' ? <MicroservicesPage url={url} patch={patch} />
     : url.page === 'monolith' ? <MonolithPage url={url} patch={patch} />
     : url.page === 'flows' ? (selectedFlow
       ? <FlowPage flow={selectedFlow} url={url} patch={patch} onBack={() => (canGoBack(window.history.state) ? window.history.back() : patch({ flow: null, unit: null, chapter: null }))} />
       : flagEntry ? <FlagPage entry={flagEntry} onSelectFlow={flow => patch({ flow: flow.id, flag: null })} />
-      : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, file: null, unit: (flow.codeUnits ?? []).find(u => u.service === fileEntry.service && u.path === fileEntry.path)?.id ?? null })} onOpenRoute={id => patch({ page: 'monolith', file: null, drawer: MONOLITH, ep: id })} onOpenResource={openResource} />
+      : fileEntry ? <FilePage entry={fileEntry} onSelectFlow={flow => patch({ flow: flow.id, file: null, unit: (flow.codeUnits ?? []).find(u => u.service === fileEntry.service && u.path === fileEntry.path)?.id ?? null })} />
       : <FlowsIndex service={url.flows} flows={map.flows} map={map} onSelectFlow={flow => patch({ flow: flow.id })} />)
     : url.page === 'resources' ? (url.resource
-      ? <ResourcePage id={url.resource} onOpenResource={openResource} onOpenFile={key => patch({ page: 'flows', resource: null, file: key })} onOpenFlow={id => patch({ page: 'flows', flow: id })} onSelectService={selectService} onBlast={id => patch({ page: 'impact', blast: id })} listeners={url} onListeners={patch} />
+      ? <ResourcePage id={url.resource} onOpenResource={openResource} onOpenFlow={id => patch({ page: 'flows', flow: id })} onBlast={id => patch({ page: 'impact', blast: id })} listeners={url} onListeners={patch} />
       : <ResourcesIndex url={url} patch={patch} onOpenResource={openResource} />)
-    : url.page === 'impact' ? <ImpactPage origin={url.blast} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onPick={id => patch({ blast: id })} onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))} onOpenFlow={id => patch({ page: 'flows', flow: id })} />
+    : url.page === 'impact' ? <ImpactPage origin={url.blast} renderer={url.renderer} onRenderer={renderer => patch({ renderer })} onPick={id => patch({ blast: id })} onSelect={node => (resourceIds.has(node) ? openResource(node) : selectService(node))} />
     : <OwnershipPage map={map} focusedTeam={url.team} onFocusTeam={team => patch({ team })} onSelectService={selectService} onOpenArea={id => patch({ page: 'areas', area: id, term: null })} />
 
   return (
-    <>
-      <AppShell url={url} onNavigate={patch} onSearch={() => setSearchOpen(true)} onTogglePresent={() => patch({ present: !url.present })} panel={panel}>
+    <NavContext value={{ url, onNavigate: patch }}>
+      <AppShell url={url} onSearch={() => setSearchOpen(true)} onTogglePresent={() => patch({ present: !url.present })} panel={panel}>
         {url.notFound && <NotFoundBanner notFound={url.notFound} onDismiss={() => patch({ notFound: null })} />}
         {content}
       </AppShell>
@@ -109,6 +109,6 @@ export function Explorer() {
           onClose={() => setSearchOpen(false)}
         />
       )}
-    </>
+    </NavContext>
   )
 }
