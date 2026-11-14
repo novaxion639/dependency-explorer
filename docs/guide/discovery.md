@@ -221,7 +221,7 @@ The test suite guards discovery's behaviour and keeps tests off the network.
 - **`AGENTS.md`:** the repo's agent guidance: commands, hard rules and a code → doc sync table. A change to a code path in that table updates its doc in the same change.
 - **Exact pins:** every dependency in every `package.json` carries an exact version, never `^` or `~`; a new dependency takes a version published at least two weeks earlier.
 - **Unused code:** `pnpm check:exports` (knip) fails on an unused file, export or type.
-- **Lint:** `pnpm lint` (ESLint, `eslint.config.js`) fails on a type assertion other than `as const`, a non-null assertion, an unbraced `if`/`else` body, a hook rule or a jsx-a11y rule. It covers `packages/web` and `packages/schema`; `data` and `discovery` sit outside the gate: they carry type assertions, non-null assertions and unbraced bodies.
+- **Lint:** `pnpm lint` (ESLint, `eslint.config.js`) fails on a type assertion other than `as const`, a non-null assertion, an unbraced `if`/`else` body, a hook rule or a jsx-a11y rule. It covers all four packages: `schema`, `data`, `discovery` and `web`; the hook and jsx-a11y rules apply to `web`.
 - **`--no-fetch`:** a pinned run fetches each repo's origin first (prod for the pin, then `staging` with `--delivery`); `--no-fetch` skips both, for offline runs and tests. `DE_FIXED_NOW` (an ISO date) fixes the run's clock for reproducible output.
 
 ## Listener drift (👂)
