@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 
 const css = readFileSync(new URL('./AppShell.module.css', import.meta.url), 'utf-8')
+const shellCss = ['AppShell', 'Rail', 'Breadcrumb'].map(name => [name, readFileSync(new URL(`./${name}.module.css`, import.meta.url), 'utf-8')])
 const mobile = css.slice(css.indexOf('@media'))
 
 describe('AppShell layout', () => {
@@ -16,5 +17,9 @@ describe('AppShell layout', () => {
     expect(css).toMatch(/\.body\s*\{[^}]*position:\s*relative/)
     expect(mobile).toMatch(/\.railSlot\s*\{[^}]*position:\s*absolute[^}]*inset:\s*0/)
     expect(mobile).not.toMatch(/inset:\s*49px/)
+  })
+
+  it.each(shellCss)('reads weights and layers in %s from DS tokens', (_name, source) => {
+    expect(source).not.toMatch(/font-weight:\s*\d|z-index:\s*\d|letter-spacing/)
   })
 })

@@ -4,7 +4,7 @@ import { render } from '@testing-library/react'
 import { SkThemeProvider, useTheme } from '@skelloapp/skello-ds-web'
 import { ThemeBridge } from './ThemeBridge'
 
-const BRIDGED = ['--paper', '--paper-2', '--card', '--ink', '--ink-muted', '--ink-faint', '--rule', '--rule-strong', '--highlight', '--fails', '--starves', '--degrades', '--ok', '--font-sans', '--text-xs', '--text-sm', '--text-md', '--text-lg', '--text-xl', '--space-1', '--space-2', '--space-3', '--space-4', '--space-5', '--space-6', '--radius-sm', '--radius-md', '--radius-lg']
+const BRIDGED = ['--paper', '--paper-2', '--card', '--ink', '--ink-muted', '--ink-faint', '--rule', '--rule-strong', '--highlight', '--fails', '--starves', '--degrades', '--ok', '--font-sans', '--text-xs', '--text-sm', '--text-md', '--text-lg', '--text-xl', '--space-1', '--space-2', '--space-3', '--space-4', '--space-5', '--space-6', '--radius-sm', '--radius-md', '--radius-lg', '--weight-regular', '--weight-semibold', '--z-drawer']
 
 const rootToken = (token: string): string => getComputedStyle(document.documentElement).getPropertyValue(token).trim()
 
