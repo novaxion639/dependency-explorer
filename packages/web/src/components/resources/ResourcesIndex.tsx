@@ -29,7 +29,7 @@ export function ResourcesIndex({ data, url, patch }: Props) {
   const kind = KINDS.find(k => k === url.rkind) ?? 'all'
   const owner = url.rowner ?? 'all'
   const sort = SORTS.find(x => x === url.rsort) ?? 'name'
-  const visible = filterResources(data.resources.resources, { kind, owner, orphansOnly: url.orphans, cyclesOnly: url.cycles, sort }, metrics)
+  const visible = filterResources(data.resources.resources, { kind, owner, orphansOnly: url.orphans, cyclesOnly: url.cycles, sort }, metrics, data.map.flows)
   const stores = [...new Set(visible.map(r => r.store))].sort()
   return (
     <section aria-label="Resources" className={styles.page}>

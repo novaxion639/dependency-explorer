@@ -51,7 +51,7 @@ describe('runDraftCli', () => {
   it('prints one draft row per label with its open count', async () => {
     const dir = path.join(root, '2026-11-02')
     writeJiraSnapshot(dir, snapshot)
-    expect(await runDraftCli([], dir)).toBe(0)
+    expect(await runDraftCli([], root)).toBe(0)
     expect(out).toEqual([
       "{ label: 'Staff needs', tribe: 'Scheduling', area: null }, // catalog: Staff needs, 2 open BRs",
       "{ label: 'Staffing requirements', tribe: 'Scheduling', area: null }, // catalog: Staff needs, 0 open BRs",
@@ -66,31 +66,31 @@ describe('runDraftCli', () => {
   it('sorts by tribe, nulls last, then by code point', async () => {
     const dir = path.join(root, '2026-11-02')
     writeJiraSnapshot(dir, { ...snapshot, featureAreaLabels: ['Zeta', 'Staff needs', 'alpha', 'Clock-in API access', 'Analytics API access', 'Alpha', 'Staffing requirements'], bugs: [] })
-    expect(await runDraftCli([], dir)).toBe(0)
+    expect(await runDraftCli([], root)).toBe(0)
     expect(out.map((row) => /label: '([^']*)'/.exec(row)?.[1])).toEqual(['Analytics API access', 'Clock-in API access', 'Staff needs', 'Staffing requirements', 'Alpha', 'Zeta', 'alpha'])
   })
 
-  it('exits 1 naming the fetch script when the snapshot is missing', async () => {
-    expect(await runDraftCli([], path.join(root, 'nowhere'))).toBe(1)
-    expect(err.join('\n')).toContain('pnpm discover:jira:fetch')
+  it('exits 1 when --snapshot names a folder that exists nowhere', async () => {
+    expect(await runDraftCli(['--snapshot', path.join(root, 'nowhere')], root)).toBe(1)
+    expect(err.join('\n')).toContain('--snapshot snapshot directory not found')
     expect(out).toEqual([])
   })
 
   it('exits 1 naming the fetch script when there is no snapshot folder', async () => {
-    expect(await runDraftCli([], null)).toBe(1)
+    expect(await runDraftCli([], path.join(root, 'absent'))).toBe(1)
     expect(err.join('\n')).toContain('pnpm discover:jira:fetch')
   })
 
-  it('exits 1 on an unknown flag, before reading any snapshot', async () => {
+  it('exits 1 on an unknown flag, before resolving or reading any snapshot', async () => {
     const dir = path.join(root, '2026-11-02')
     writeJiraSnapshot(dir, snapshot)
-    expect(await runDraftCli(['--snapshott', dir], dir)).toBe(1)
+    expect(await runDraftCli(['--snapshott', dir, '--snapshot', 'no/such/dir'], root)).toBe(1)
     expect(out).toEqual([])
     expect(err.join('\n')).toContain('--snapshott')
   })
 
   it('prints usage on --help', async () => {
-    expect(await runDraftCli(['--help'], null)).toBe(0)
+    expect(await runDraftCli(['--help'], root)).toBe(0)
     expect(out.join('\n')).toContain('discover:jira:draft')
   })
 })

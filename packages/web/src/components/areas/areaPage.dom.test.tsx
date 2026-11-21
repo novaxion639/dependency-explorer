@@ -3,15 +3,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'react'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { connectivityMap } from '@dependency-explorer/data'
-import { areaCrossing } from '../../diagram/layouts/areaCrossing'
+import { fixtureMap as map } from '../../test/areaFixtures'
 import { renderInApp } from '../../test/renderInApp'
 import { AreaPage } from './AreaPage'
 import { areaBugs, jiraOverlayOf } from './jiraOverlayFixture'
 
 const noop = () => {}
-const map = { ...connectivityMap, areas: (connectivityMap.areas ?? []).filter(a => a.kind === 'product').slice(0, 1) }
-const areaId = map.areas[0]?.id ?? ''
+const areaId = 'onboarding'
 
 const render = async (body: unknown, status = 200, page: Partial<Parameters<typeof AreaPage>[0]> = {}) => {
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(body), { status })))
@@ -20,11 +18,6 @@ const render = async (body: unknown, status = 200, page: Partial<Parameters<type
   })
 }
 
-const crossed = (connectivityMap.areas ?? []).find(a => a.id === 'time-attendance')
-const crossing = crossed ? areaCrossing(connectivityMap, crossed) : null
-const otherArea = crossing?.nodes.find(n => n.kind === 'area')
-const service = crossing?.nodes.find(n => n.kind === 'service')
-
 const headings = () => screen.getAllByRole('heading').map(h => h.textContent)
 
 afterEach(() => {
@@ -32,10 +25,6 @@ afterEach(() => {
 })
 
 describe('AreaPage with the Jira overlay', () => {
-  it('finds a product area in the map', () => {
-    expect(areaId).not.toBe('')
-  })
-
   it('renders the Bugs section after the existing sections when the overlay names the area', async () => {
     await render(jiraOverlayOf({ areas: { [areaId]: areaBugs() } }))
 
@@ -71,27 +60,27 @@ describe('AreaPage map', () => {
   })
 
   it('draws the crossings with the shared diagram and its tools', async () => {
-    await render({}, 404, { map: connectivityMap, areaId: 'time-attendance' })
+    await render({}, 404, { areaId: 'time-attendance' })
 
-    expect(screen.getByRole('region', { name: crossing?.title })).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'How Time & Attendance connects to other areas' })).toBeTruthy()
     expect(screen.getByRole('toolbar', { name: 'Diagram tools' })).toBeTruthy()
   })
 
   it('opens another area from its node', async () => {
     const onOpenArea = vi.fn()
-    await render({}, 404, { map: connectivityMap, areaId: 'time-attendance', onOpenArea })
+    await render({}, 404, { areaId: 'time-attendance', onOpenArea })
 
-    await userEvent.click(screen.getByRole('button', { name: otherArea?.label }))
+    await userEvent.click(screen.getByRole('button', { name: 'Planning' }))
 
-    expect(onOpenArea).toHaveBeenCalledWith(otherArea?.id.replace('area:', ''))
+    expect(onOpenArea).toHaveBeenCalledWith('planning')
   })
 
   it('selects a service from its node', async () => {
     const onSelectService = vi.fn()
-    await render({}, 404, { map: connectivityMap, areaId: 'time-attendance', onSelectService })
+    await render({}, 404, { areaId: 'time-attendance', onSelectService })
 
-    await userEvent.click(screen.getByRole('button', { name: service?.label }))
+    await userEvent.click(screen.getByRole('button', { name: 'svc-punch' }))
 
-    expect(onSelectService).toHaveBeenCalledWith(service?.label)
+    expect(onSelectService).toHaveBeenCalledWith('svc-punch')
   })
 })
