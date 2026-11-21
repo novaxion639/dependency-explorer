@@ -180,6 +180,28 @@ describe('parseServerlessStatic', () => {
     ])
   })
 
+  it('mines httpApiEvents helper calls, one path or several, with function identity', () => {
+    const src = `
+    ApiClocksInOutReadById: apiFunction({
+      description: 'Reads one clockInOut',
+      events: httpApiEvents('SkelloLambdaAuthorizerJwtOrApiKey', 'GET', '/clocks-in-out/{id}'),
+    }),
+    ApiSettingPartialUpdate: apiFunction({
+      description: 'Partially updates a setting',
+      events: httpApiEvents(
+        'SkelloLambdaAuthorizerJwtOrApiKey',
+        'PATCH',
+        '/settings/shop/{shopId}',
+        '/settings/{shopId}',
+      ),
+    }),`
+    expect(parseServerlessStatic(src).endpoints).toEqual([
+      expect.objectContaining({ method: 'GET', path: '/clocks-in-out/{id}', functionName: 'ApiClocksInOutReadById' }),
+      expect.objectContaining({ method: 'PATCH', path: '/settings/shop/{shopId}', functionName: 'ApiSettingPartialUpdate' }),
+      expect.objectContaining({ method: 'PATCH', path: '/settings/{shopId}', functionName: 'ApiSettingPartialUpdate' }),
+    ])
+  })
+
   it('mines API Gateway V2 route resources (e.g. SQS-SendMessage integrations)', () => {
     const src = `
   BulkCreateHighPriorityEmailRoute: {
