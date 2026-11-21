@@ -41,23 +41,6 @@ const svc_payroll: ConnectivityService = ConnectivityServiceSchema.parse({
       "response": {}
     },
     {
-      "id": "api-company-mapping-get",
-      "path": "/v1/providers/{providerKey}/company-mapping",
-      "method": "GET",
-      "description": "Get the connected company (a3CompanyCode) for the payroll provider",
-      "useCase": "",
-      "params": [
-        {
-          "name": "providerKey",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": ""
-        }
-      ],
-      "response": {}
-    },
-    {
       "id": "api-sync-trigger",
       "path": "/v1/sync/trigger",
       "method": "POST",

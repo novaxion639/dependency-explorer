@@ -463,23 +463,6 @@ const svc_punch: ConnectivityService = ConnectivityServiceSchema.parse({
       "response": {}
     },
     {
-      "id": "api-users-read-by-id",
-      "path": "/users/{id}",
-      "method": "GET",
-      "description": "Reads one user",
-      "useCase": "",
-      "params": [
-        {
-          "name": "id",
-          "in": "path",
-          "type": "string",
-          "required": true,
-          "description": ""
-        }
-      ],
-      "response": {}
-    },
-    {
       "id": "api-users-by-shop-id",
       "path": "/users/shop/{shopId}",
       "method": "GET",
