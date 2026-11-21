@@ -313,7 +313,7 @@ function findFunctionIdentity(lines: string[], eventLineIdx: number): { function
         description = d[1]
         continue
       }
-      const fn = line.match(/^\s*([A-Za-z][A-Za-z0-9_]*):\s*\{\s*$/)
+      const fn = line.match(/^\s*([A-Za-z][A-Za-z0-9_]*):\s*(?:[A-Za-z_$][\w$]*\()?\{\s*$/)
       const structural = ['events', 'httpApi', 'http', 'tags', 'environment', 'vpc', 'authorizer',
         'Properties', 'RequestParameters', 'Target', 'Resources', 'Integration']
       if (fn && !structural.includes(fn[1])) {
@@ -590,6 +590,18 @@ export function parseServerlessStatic(content: string): Omit<ServerlessFacts, 's
         }
       }
       ownedResources.push({ cfType: cfType[1], name: name ?? findFunctionIdentity(lines, i).functionName ?? '(unnamed)' })
+      continue
+    }
+
+    const helperCall = /\bhttpApiEvents\(/.test(line)
+      ? lines.slice(i, i + 10).join(' ').match(/\bhttpApiEvents\(([^)]*)\)/)
+      : null
+    if (helperCall) {
+      const [, method, ...paths] = [...(helperCall[1] ?? '').matchAll(/['"`]([^'"`]+)['"`]/g)].map(m => m[1] ?? '')
+      const verb = method?.toUpperCase()
+      if (verb && HTTP_METHODS.has(verb)) {
+        for (const p of paths) {endpoints.push({ method: verb, path: p, ...findFunctionIdentity(lines, i) })}
+      }
       continue
     }
 

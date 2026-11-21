@@ -6,7 +6,7 @@
 
 - **Code and config:**
   - SDK usage;
-  - serverless config: HTTP, SQS, Kinesis/DynamoDB streams, S3 triggers, EventBridge schedules;
+  - serverless config: HTTP (the `httpApi` / `http` event forms, `RouteKey` routes and `httpApiEvents(authorizer, method, ...paths)` helper calls), SQS, Kinesis/DynamoDB streams, S3 triggers, EventBridge schedules;
   - serverless event sources and owned CloudFormation resources (🌀 report section), which feed the `RecurringTask` model and the CDC backbone edges;
   - Rails clients and routes;
   - frontend env usage.

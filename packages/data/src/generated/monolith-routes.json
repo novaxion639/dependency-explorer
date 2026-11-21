@@ -630,6 +630,13 @@
     "controllerFile": "app/controllers/private/svc_employees/shops_and_employees_controller.rb"
   },
   {
+    "verb": "POST",
+    "path": "/private/employees/staff_register",
+    "controller": "private/svc_employees/staff_registers",
+    "action": "create",
+    "controllerFile": "app/controllers/private/svc_employees/staff_registers_controller.rb"
+  },
+  {
     "verb": "GET",
     "path": "/private/hiring/users/:user_id/hiring_qualification",
     "controller": "private/svc_hiring/hiring_qualifications",
@@ -844,6 +851,13 @@
     "path": "/private/shops/organisations/:id/document_variables",
     "controller": "private/svc_shops/organisations",
     "action": "update_document_variables",
+    "controllerFile": "app/controllers/private/svc_shops/organisations_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/private/shops/organisations/:id/scope_shops",
+    "controller": "private/svc_shops/organisations",
+    "action": "scope_shops",
     "controllerFile": "app/controllers/private/svc_shops/organisations_controller.rb"
   },
   {
@@ -1859,6 +1873,13 @@
     "path": "/super_admin/api/users/:id/demote_super_admin",
     "controller": "super_admin/api/users",
     "action": "demote_super_admin",
+    "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/super_admin/api/users/:id/promote_system_admin",
+    "controller": "super_admin/api/users",
+    "action": "promote_system_admin",
     "controllerFile": "app/controllers/super_admin/api/users_controller.rb"
   },
   {
@@ -4114,6 +4135,27 @@
     "controller": "v3/api/shops/conventions",
     "action": "update_report_rules",
     "controllerFile": "app/controllers/v3/api/shops/conventions_controller.rb"
+  },
+  {
+    "verb": "GET",
+    "path": "/v3/api/shops/:shop_id/dimona_setting",
+    "controller": "v3/api/shops/dimona_settings",
+    "action": "show",
+    "controllerFile": "app/controllers/v3/api/shops/dimona_settings_controller.rb"
+  },
+  {
+    "verb": "PATCH",
+    "path": "/v3/api/shops/:shop_id/dimona_setting",
+    "controller": "v3/api/shops/dimona_settings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/dimona_settings_controller.rb"
+  },
+  {
+    "verb": "PUT",
+    "path": "/v3/api/shops/:shop_id/dimona_setting",
+    "controller": "v3/api/shops/dimona_settings",
+    "action": "update",
+    "controllerFile": "app/controllers/v3/api/shops/dimona_settings_controller.rb"
   },
   {
     "verb": "GET",

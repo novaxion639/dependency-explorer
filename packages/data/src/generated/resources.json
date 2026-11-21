@@ -23,17 +23,6 @@
       ]
     },
     {
-      "id": "ddb:svcDocuments-eSignature-V2",
-      "kind": "table",
-      "store": "dynamodb",
-      "name": "svcDocuments-eSignature-V2",
-      "owner": "svc-documents-esignature",
-      "evidence": [
-        "dataset:svc-documents-esignature",
-        "svc-documents-esignature-tf:terraform"
-      ]
-    },
-    {
       "id": "ddb:svcDocumentsV2",
       "kind": "table",
       "store": "dynamodb",
@@ -240,36 +229,6 @@
       ]
     },
     {
-      "id": "kinesis:eSignature",
-      "kind": "stream",
-      "store": "kinesis",
-      "name": "eSignature",
-      "owner": "svc-documents-esignature",
-      "evidence": [
-        "svc-documents-esignature-tf:terraform"
-      ]
-    },
-    {
-      "id": "kinesis:eSignature-full-load",
-      "kind": "stream",
-      "store": "kinesis",
-      "name": "eSignature-full-load",
-      "owner": "svc-documents-esignature",
-      "evidence": [
-        "svc-documents-esignature-tf:terraform"
-      ]
-    },
-    {
-      "id": "kinesis:eSignature-V2",
-      "kind": "stream",
-      "store": "kinesis",
-      "name": "eSignature-V2",
-      "owner": "svc-documents-esignature",
-      "evidence": [
-        "svc-documents-esignature-tf:terraform"
-      ]
-    },
-    {
       "id": "kinesis:skelloapp-bus",
       "kind": "stream",
       "store": "kinesis",
@@ -285,7 +244,6 @@
         "svc-kpis-v2:serverless",
         "svc-kpis:serverless",
         "svc-pos:serverless",
-        "svc-punch:serverless",
         "svc-requests:serverless",
         "svc-search:serverless",
         "svc-trackers:serverless",
@@ -324,17 +282,6 @@
       ]
     },
     {
-      "id": "kinesis:skelloapp-svcpunch-fullload",
-      "kind": "stream",
-      "store": "kinesis",
-      "name": "skelloapp-svcpunch-fullload",
-      "owner": "svc-punch",
-      "evidence": [
-        "svc-punch-tf:terraform",
-        "svc-punch:serverless"
-      ]
-    },
-    {
       "id": "kinesis:skelloapp-svcreports-fullload",
       "kind": "stream",
       "store": "kinesis",
@@ -350,9 +297,7 @@
       "kind": "stream",
       "store": "kinesis",
       "name": "skelloapp-svcsearch-fullload",
-      "owner": "svc-search",
       "evidence": [
-        "svc-search-tf:terraform",
         "svc-search:serverless"
       ]
     },
@@ -1111,6 +1056,43 @@
       },
       "related": [
         "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.dimona_declarations",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "dimona_declarations",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/dimona_declaration.rb",
+        "className": "DimonaDeclaration"
+      },
+      "related": [
+        "pg:skello_production.contracts",
+        "pg:skello_production.shifts",
+        "pg:skello_production.shops",
+        "pg:skello_production.users"
+      ]
+    },
+    {
+      "id": "pg:skello_production.dimona_shop_settings",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "dimona_shop_settings",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ],
+      "model": {
+        "file": "app/models/dimona_shop_setting.rb",
+        "className": "DimonaShopSetting"
+      },
+      "related": [
+        "pg:skello_production.shops"
       ]
     },
     {
@@ -1956,6 +1938,16 @@
       ]
     },
     {
+      "id": "pg:skello_production.shop_report_recipients",
+      "kind": "table",
+      "store": "postgresql",
+      "name": "shop_report_recipients",
+      "owner": "skello-app",
+      "evidence": [
+        "skello-app:db/schema.rb"
+      ]
+    },
+    {
       "id": "pg:skello_production.shops",
       "kind": "table",
       "store": "postgresql",
@@ -1977,6 +1969,7 @@
         "pg:skello_production.cancellation_modifications",
         "pg:skello_production.cluster_nodes",
         "pg:skello_production.conventions",
+        "pg:skello_production.dimona_shop_settings",
         "pg:skello_production.events",
         "pg:skello_production.feature_clicks",
         "pg:skello_production.global_integrations",
@@ -2512,8 +2505,7 @@
       "evidence": [
         "dataset:svc-documents-v2",
         "dataset:svc-events",
-        "skello-app-tf:terraform",
-        "svc-reports:serverless"
+        "skello-app-tf:terraform"
       ]
     },
     {
@@ -2534,6 +2526,16 @@
       "owner": "svc-employees",
       "evidence": [
         "dataset:svc-employees",
+        "svc-employees-tf:terraform"
+      ]
+    },
+    {
+      "id": "s3:skello-dpae-data-ew3",
+      "kind": "bucket",
+      "store": "s3",
+      "name": "skello-dpae-data-ew3",
+      "owner": "svc-employees",
+      "evidence": [
         "svc-employees-tf:terraform"
       ]
     },
@@ -2631,17 +2633,6 @@
       ]
     },
     {
-      "id": "s3:svc-documents",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-documents",
-      "owner": "svc-documents-esignature",
-      "evidence": [
-        "dataset:svc-documents-esignature",
-        "svc-documents-esignature-tf:terraform"
-      ]
-    },
-    {
       "id": "s3:svc-documents-v2",
       "kind": "bucket",
       "store": "s3",
@@ -2680,16 +2671,6 @@
       "owner": "svc-documents-v2",
       "evidence": [
         "svc-documents-v2-tf:terraform"
-      ]
-    },
-    {
-      "id": "s3:svc-documents.replication",
-      "kind": "bucket",
-      "store": "s3",
-      "name": "svc-documents.replication",
-      "owner": "svc-documents-esignature",
-      "evidence": [
-        "svc-documents-esignature-tf:terraform"
       ]
     },
     {
@@ -2824,7 +2805,7 @@
       "name": "mobilePermissions",
       "owner": "svc-punch",
       "evidence": [
-        "svc-punch:serverless"
+        "svc-punch-tf:terraform"
       ]
     },
     {
@@ -3667,6 +3648,16 @@
       ]
     },
     {
+      "id": "sqs:DeleteExpiredMediaFileJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "DeleteExpiredMediaFileJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
       "id": "sqs:deleteFilesJobDlq",
       "kind": "queue",
       "store": "sqs",
@@ -3984,6 +3975,26 @@
       "owner": "svc-punch",
       "evidence": [
         "svc-punch:serverless"
+      ]
+    },
+    {
+      "id": "sqs:fullLoadSqs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "fullLoadSqs",
+      "owner": "svc-reports",
+      "evidence": [
+        "svc-reports:serverless"
+      ]
+    },
+    {
+      "id": "sqs:fullLoadSqsDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "fullLoadSqsDlq",
+      "owner": "svc-reports",
+      "evidence": [
+        "svc-reports:serverless"
       ]
     },
     {
@@ -4487,36 +4498,6 @@
       ]
     },
     {
-      "id": "sqs:predictedShiftsFullLoad",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "predictedShiftsFullLoad",
-      "owner": "svc-kpis-v2",
-      "evidence": [
-        "svc-kpis-v2:serverless"
-      ]
-    },
-    {
-      "id": "sqs:predictedShiftsFullLoad-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "predictedShiftsFullLoad-dlq",
-      "owner": "svc-kpis-v2",
-      "evidence": [
-        "svc-kpis-v2:serverless"
-      ]
-    },
-    {
-      "id": "sqs:predictedShiftsFullLoad-rows-dlq",
-      "kind": "queue",
-      "store": "sqs",
-      "name": "predictedShiftsFullLoad-rows-dlq",
-      "owner": "svc-kpis-v2",
-      "evidence": [
-        "svc-kpis-v2:serverless"
-      ]
-    },
-    {
       "id": "sqs:PreviewGenerationQueue",
       "kind": "queue",
       "store": "sqs",
@@ -4524,6 +4505,26 @@
       "owner": "svc-hris",
       "evidence": [
         "svc-hris:serverless"
+      ]
+    },
+    {
+      "id": "sqs:printDocumentJob",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "printDocumentJob",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
+      ]
+    },
+    {
+      "id": "sqs:printDocumentJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "printDocumentJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
       ]
     },
     {
@@ -4714,6 +4715,16 @@
       "owner": "svc-employees",
       "evidence": [
         "svc-employees:serverless"
+      ]
+    },
+    {
+      "id": "sqs:s3FileListenerJobDlq",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "s3FileListenerJobDlq",
+      "owner": "svc-documents-v2",
+      "evidence": [
+        "svc-documents-v2:serverless"
       ]
     },
     {
@@ -5295,6 +5306,16 @@
       "owner": "svc-employees",
       "evidence": [
         "svc-employees:serverless"
+      ]
+    },
+    {
+      "id": "sqs:staffRegisterExportSqs",
+      "kind": "queue",
+      "store": "sqs",
+      "name": "staffRegisterExportSqs",
+      "owner": "svc-reports",
+      "evidence": [
+        "svc-reports:serverless"
       ]
     },
     {
@@ -6468,13 +6489,6 @@
     },
     {
       "resource": "pg:skello_production.cached_contracts_timelines",
-      "relation": "writes",
-      "service": "skello-app",
-      "file": "app/jobs/users/cache_contracts_timeline_job.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.cached_contracts_timelines",
       "relation": "reads",
       "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/compute_all_contracts_timeline_job.rb",
@@ -6485,6 +6499,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/update_all_cached_contracts_timeline_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.cached_contracts_timelines",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/jobs/users/cache_contracts_timeline_job.rb",
       "grade": "code"
     },
     {
@@ -6667,6 +6688,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/microservices/event_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.cluster_nodes",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/super_admin/system_admin_promoter.rb",
       "grade": "code"
     },
     {
@@ -6870,6 +6898,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/standardize_contract_types_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.contract_types",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/integrations/hris/base_files_parser.rb",
       "grade": "code"
     },
     {
@@ -7128,6 +7163,13 @@
       "resource": "pg:skello_production.contracts",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/queries/staff_registers/included_contracts_query.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.contracts",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/services/dashboard/departure_arrival_resolver.rb",
       "grade": "code"
     },
@@ -7184,6 +7226,13 @@
       "resource": "pg:skello_production.contracts",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/services/staff_registers/export_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.contracts",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/services/super_admin/imports/row_validator.rb",
       "grade": "code"
     },
@@ -7206,6 +7255,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/super_admin/imports/v3/user_importer_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.contracts",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/v3/contracts/update_service.rb",
       "grade": "code"
     },
     {
@@ -7409,6 +7465,62 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/v3/users/day_rate_counters/compute_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.dimona_declarations",
+      "relation": "writes",
+      "service": "skello-app",
+      "file": "app/services/dimona/sender.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.dimona_declarations",
+      "relation": "writes",
+      "service": "skello-app",
+      "file": "app/services/dimona/synchronizer.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.dimona_declarations",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/jobs/dimona/poll_sweeper_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.dimona_declarations",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/jobs/dimona/recap_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.dimona_declarations",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/dimona/poller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.dimona_declarations",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/dimona/recap_builder.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.dimona_declarations",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/dimona/reconciliation.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.dimona_shop_settings",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/dimona/employer.rb",
       "grade": "code"
     },
     {
@@ -8857,6 +8969,13 @@
       "resource": "pg:skello_production.organisations",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/services/staff_registers/export_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.organisations",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/services/super_admin/custom_order_list_manager.rb",
       "grade": "code"
     },
@@ -8886,6 +9005,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/super_admin/shop_features_states_update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.organisations",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/super_admin/system_admin_promoter.rb",
       "grade": "code"
     },
     {
@@ -9235,6 +9361,13 @@
       "resource": "pg:skello_production.planning_hours_data",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/jobs/esignatures/trigger_workflow_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.planning_hours_data",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/reset_planning_hours_data_has_shift_with_switchover_week_date_change_job.rb",
       "grade": "code"
     },
@@ -9249,6 +9382,13 @@
       "resource": "pg:skello_production.planning_hours_data",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/jobs/planning_hours_datas/recalcul_job_for_one_user.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.planning_hours_data",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/jobs/planning_hours_datas/recalcul_job_when_convention_dissociate_breaks.rb",
       "grade": "code"
     },
@@ -9256,7 +9396,28 @@
       "resource": "pg:skello_production.planning_hours_data",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/jobs/shifts/pause_compensation_recompute_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.planning_hours_data",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/jobs/update_planning_hours_data_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.planning_hours_data",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/jobs/update_planning_hours_data_job_v2.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.planning_hours_data",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/jobs/user_first_planning_hours_data_updater_job.rb",
       "grade": "code"
     },
     {
@@ -9620,6 +9781,13 @@
       "resource": "pg:skello_production.postes",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/exporters/skello_pay_exporter/fragonard_exporter.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.postes",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/jobs/delete_soft_destroy_postes_related_automatic_planning_competencies_job.rb",
       "grade": "code"
     },
@@ -9697,6 +9865,13 @@
       "resource": "pg:skello_production.postes",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/add_dev33534_additional_birth_leave_it_absence_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.postes",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/add_home_office_absence_job.rb",
       "grade": "code"
     },
@@ -9753,6 +9928,13 @@
       "resource": "pg:skello_production.postes",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/migrate_country_absences_on_single_shop_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.postes",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/populate_shop_annualization_config_excluded_absences_fields.rb",
       "grade": "code"
     },
@@ -9802,6 +9984,13 @@
       "resource": "pg:skello_production.postes",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/services/accounting/hr_infos/meals_data_provider.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.postes",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/services/adapters/leave_request_adapter.rb",
       "grade": "code"
     },
@@ -9810,6 +9999,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/labour_law/callbacks_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.postes",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/meals/meals_calculator.rb",
       "grade": "code"
     },
     {
@@ -9852,6 +10048,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/planning_templates/importer.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.postes",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/shop_merge_service.rb",
       "grade": "code"
     },
     {
@@ -10216,6 +10419,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/controllers/v3/api/rcr_counters_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.rcr_counters",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/exporters/skello_pay_exporter/adp_decidium/nous_epiceries_anti_gaspi/rcr_indemnity_lines.rb",
       "grade": "code"
     },
     {
@@ -11027,6 +11237,13 @@
       "resource": "pg:skello_production.shifts",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/services/dimona/declaration_builder.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shifts",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/services/hours_counters/hr_infos_builder.rb",
       "grade": "code"
     },
@@ -11468,13 +11685,6 @@
       "resource": "pg:skello_production.shop_annualization_configs",
       "relation": "reads",
       "service": "skello-app",
-      "file": "app/jobs/report/send_grouped_report_job.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shop_annualization_configs",
-      "relation": "reads",
-      "service": "skello-app",
       "file": "app/services/super_admin/organisations/annualization_configs_fetcher.rb",
       "grade": "code"
     },
@@ -11630,6 +11840,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/controllers/api/v2/personal_shifts_controller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/controllers/api/v2/received_leave_requests_controller.rb",
       "grade": "code"
     },
     {
@@ -12161,6 +12378,13 @@
       "resource": "pg:skello_production.shops",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/jobs/dimona/sync_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/jobs/duplicate_from_previous_week_job.rb",
       "grade": "code"
     },
@@ -12358,6 +12582,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/add_dev30674_additional_birth_leave_fr_absence_by_batch_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/add_dev33534_absences_by_batch_job.rb",
       "grade": "code"
     },
     {
@@ -12602,6 +12833,13 @@
       "resource": "pg:skello_production.shops",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/migrate_sunday_hours_disabled_columns_to_slice_positions_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/populate_features_states_job.rb",
       "grade": "code"
     },
@@ -12617,6 +12855,20 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/populate_shop_extended_info_table_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/pto_tracker_auto_migration_by_batch_job.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/pto_tracker_auto_migration_shop_job.rb",
       "grade": "code"
     },
     {
@@ -12742,13 +12994,6 @@
       "resource": "pg:skello_production.shops",
       "relation": "reads",
       "service": "skello-app",
-      "file": "app/jobs/report/export_report_job.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shops",
-      "relation": "reads",
-      "service": "skello-app",
       "file": "app/jobs/report/generate_automated_pam_report_job.rb",
       "grade": "code"
     },
@@ -12798,13 +13043,6 @@
       "resource": "pg:skello_production.shops",
       "relation": "reads",
       "service": "skello-app",
-      "file": "app/jobs/report/send_grouped_report_job.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shops",
-      "relation": "reads",
-      "service": "skello-app",
       "file": "app/jobs/report/send_integration_job.rb",
       "grade": "code"
     },
@@ -12820,13 +13058,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/jobs/report/send_shops_integrations_job.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.shops",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "app/jobs/report/send_shops_reports_job.rb",
       "grade": "code"
     },
     {
@@ -13050,6 +13281,27 @@
       "resource": "pg:skello_production.shops",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/services/dimona/declaration_builder.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/dimona/poller.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/dimona/recap_sender.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/services/duplicated_planning.rb",
       "grade": "code"
     },
@@ -13156,6 +13408,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/shops/document_variables/billing_data_update_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.shops",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/staff_registers/export_service.rb",
       "grade": "code"
     },
     {
@@ -13919,6 +14178,20 @@
       "relation": "writes",
       "service": "skello-app",
       "file": "app/services/integrations/hris/data_importer.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.user_licenses",
+      "relation": "writes",
+      "service": "skello-app",
+      "file": "app/services/super_admin/system_admin_promoter.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.user_licenses",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/controllers/v3/api/me/organisations_controller.rb",
       "grade": "code"
     },
     {
@@ -14758,6 +15031,13 @@
       "resource": "pg:skello_production.users",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/add_missing_default_document_template_to_organisations.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/add_missing_users_on_pg_search_job.rb",
       "grade": "code"
     },
@@ -14808,6 +15088,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/jobs/migration_jobs/exceptional_migrations/populate_users_policy_consent_columns.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/jobs/migration_jobs/exceptional_migrations/pto_tracker_auto_migration_shop_job.rb",
       "grade": "code"
     },
     {
@@ -14926,13 +15213,6 @@
       "resource": "pg:skello_production.users",
       "relation": "reads",
       "service": "skello-app",
-      "file": "app/jobs/report/export_report_job.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
       "file": "app/jobs/report/grouped_report/process_shop_job.rb",
       "grade": "code"
     },
@@ -14954,13 +15234,6 @@
       "resource": "pg:skello_production.users",
       "relation": "reads",
       "service": "skello-app",
-      "file": "app/jobs/report/send_grouped_report_job.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
       "file": "app/jobs/report/send_integration_job.rb",
       "grade": "code"
     },
@@ -14976,13 +15249,6 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/jobs/report/send_shops_integrations_job.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "app/jobs/report/send_shops_reports_job.rb",
       "grade": "code"
     },
     {
@@ -15080,20 +15346,6 @@
       "resource": "pg:skello_production.users",
       "relation": "reads",
       "service": "skello-app",
-      "file": "app/jobs/update_paid_leaves_counter_job.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
-      "file": "app/jobs/update_paid_leaves_counter_job_v2.rb",
-      "grade": "code"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "reads",
-      "service": "skello-app",
       "file": "app/jobs/update_planning_hours_data_job.rb",
       "grade": "code"
     },
@@ -15171,6 +15423,13 @@
       "resource": "pg:skello_production.users",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/models/cluster_node.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/models/concerns/shops/shops_user_concern.rb",
       "grade": "code"
     },
@@ -15186,6 +15445,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/models/contract.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/models/dimona_shop_setting.rb",
       "grade": "code"
     },
     {
@@ -15228,6 +15494,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/policies/shift_policy.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/policies/string_policy.rb",
       "grade": "code"
     },
     {
@@ -15318,6 +15591,34 @@
       "resource": "pg:skello_production.users",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/services/dimona/declaration_builder.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/dimona/recap_builder.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/dimona/recap_sender.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/dimona/synchronizer.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/services/employees/document_variables/batch_update_service.rb",
       "grade": "code"
     },
@@ -15367,6 +15668,13 @@
       "resource": "pg:skello_production.users",
       "relation": "reads",
       "service": "skello-app",
+      "file": "app/services/labor_costs_service.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
       "file": "app/services/managed_users/optimized_finder.rb",
       "grade": "code"
     },
@@ -15382,6 +15690,13 @@
       "relation": "reads",
       "service": "skello-app",
       "file": "app/services/paid_leaves_counters/history_exporter.rb",
+      "grade": "code"
+    },
+    {
+      "resource": "pg:skello_production.users",
+      "relation": "reads",
+      "service": "skello-app",
+      "file": "app/services/paid_leaves_counters/user_lock.rb",
       "grade": "code"
     },
     {
@@ -15822,14 +16137,14 @@
       "resource": "pg:skello_production.weekly_options",
       "relation": "reads",
       "service": "skello-app",
-      "file": "app/services/dashboard/revenues_by_shop_resolver.rb",
+      "file": "app/services/dashboard/revenues_resolver.rb",
       "grade": "code"
     },
     {
       "resource": "pg:skello_production.weekly_options",
       "relation": "reads",
       "service": "skello-app",
-      "file": "app/services/dashboard/revenues_resolver.rb",
+      "file": "app/services/dimona/declaration_builder.rb",
       "grade": "code"
     },
     {
@@ -15945,6 +16260,20 @@
       "grade": "code"
     },
     {
+      "resource": "kinesis:skelloapp-bus",
+      "relation": "produces",
+      "service": "svc-enrollment",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "kinesis:skelloapp-bus",
+      "relation": "produces",
+      "service": "svc-punch",
+      "file": "serverless.ts",
+      "grade": "config"
+    },
+    {
       "resource": "kinesis:svc-employees/apiCounter",
       "relation": "produces",
       "service": "svc-employees",
@@ -16031,6 +16360,13 @@
       "relation": "consumes",
       "service": "svc-kpis-v2",
       "grade": "config"
+    },
+    {
+      "resource": "sqs:activityPredictionSettings",
+      "relation": "produces",
+      "service": "svc-kpis-v2",
+      "file": "src/Manager/KpisManager.ts",
+      "grade": "code"
     },
     {
       "resource": "sqs:AddDocumentToSignatureSQS",
@@ -16386,6 +16722,19 @@
       "grade": "config"
     },
     {
+      "resource": "sqs:fullLoadSqs",
+      "relation": "consumes",
+      "service": "svc-reports",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:fullLoadSqs",
+      "relation": "produces",
+      "service": "svc-workload-plan",
+      "file": "serverless/resources/index.ts",
+      "grade": "config"
+    },
+    {
       "resource": "sqs:fullLoadToFirehose",
       "relation": "consumes",
       "service": "svc-intelligence",
@@ -16550,15 +16899,36 @@
       "grade": "config"
     },
     {
-      "resource": "sqs:predictedShiftsFullLoad",
-      "relation": "consumes",
-      "service": "svc-kpis-v2",
-      "grade": "config"
-    },
-    {
       "resource": "sqs:PreviewGenerationQueue",
       "relation": "consumes",
       "service": "svc-hris",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:printDocumentJob",
+      "relation": "consumes",
+      "service": "svc-documents-v2",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:printDocumentJob",
+      "relation": "produces",
+      "service": "svc-documents-v2",
+      "file": "src/Helper/EnvVarsHelper.ts",
+      "grade": "code"
+    },
+    {
+      "resource": "sqs:printDocumentJob",
+      "relation": "produces",
+      "service": "svc-reports",
+      "file": "serverless/custom/index.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:printDocumentJob",
+      "relation": "produces",
+      "service": "svc-reports",
+      "file": "serverless/resources/iam.ts",
       "grade": "config"
     },
     {
@@ -16799,6 +17169,12 @@
       "grade": "config"
     },
     {
+      "resource": "sqs:staffRegisterExportSqs",
+      "relation": "consumes",
+      "service": "svc-reports",
+      "grade": "config"
+    },
+    {
       "resource": "sqs:svc-automatic-scheduling/handleShopFeatureStateChangeRecoverySqs",
       "relation": "consumes",
       "service": "svc-automatic-scheduling",
@@ -16998,13 +17374,6 @@
       "grade": "config"
     },
     {
-      "resource": "sqs:websocket-pingShopIdAndDate",
-      "relation": "produces",
-      "service": "svc-kpis",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
       "resource": "sqs:websocket-pingTypeAndUuid",
       "relation": "produces",
       "service": "svc-billing-automation",
@@ -17050,6 +17419,20 @@
       "relation": "produces",
       "service": "svc-documents-v2",
       "file": "serverless/step_functions/Template/TemplateConversionSfn.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:websocket-topicMessage",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "serverless/provider/index.ts",
+      "grade": "config"
+    },
+    {
+      "resource": "sqs:websocket-topicMessage",
+      "relation": "produces",
+      "service": "svc-trackers",
+      "file": "serverless/resources/iam/lambdaExecutionRole.ts",
       "grade": "config"
     },
     {
@@ -17301,6 +17684,13 @@
       "grade": "config"
     },
     {
+      "resource": "sqs:printDocumentJob",
+      "relation": "dead-letters-to",
+      "service": "svc-documents-v2",
+      "target": "sqs:printDocumentJobDlq",
+      "grade": "config"
+    },
+    {
       "resource": "sqs:ProcessYousignWebhookQueue",
       "relation": "dead-letters-to",
       "service": "svc-documents-v2",
@@ -17499,18 +17889,6 @@
       "grade": "config"
     },
     {
-      "resource": "kinesis:skelloapp-bus",
-      "relation": "consumes",
-      "service": "svc-punch",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:skelloapp-svcpunch-fullload",
-      "relation": "consumes",
-      "service": "svc-punch",
-      "grade": "config"
-    },
-    {
       "resource": "sqs:FullLoadPunchSettings",
       "relation": "dead-letters-to",
       "service": "svc-punch",
@@ -17531,9 +17909,10 @@
       "grade": "config"
     },
     {
-      "resource": "s3:skello-app.temporary-assets",
-      "relation": "consumes",
+      "resource": "sqs:fullLoadSqs",
+      "relation": "dead-letters-to",
       "service": "svc-reports",
+      "target": "sqs:fullLoadSqsDlq",
       "grade": "config"
     },
     {
@@ -17707,12 +18086,6 @@
       "grade": "config"
     },
     {
-      "resource": "kinesis:skelloapp-svcpunch-fullload",
-      "relation": "produces",
-      "service": "skello-app",
-      "grade": "config"
-    },
-    {
       "resource": "kinesis:skelloapp-svcreports-fullload",
       "relation": "produces",
       "service": "skello-app",
@@ -17726,12 +18099,6 @@
     },
     {
       "resource": "kinesis:svc-requests/fullload",
-      "relation": "produces",
-      "service": "skello-app",
-      "grade": "config"
-    },
-    {
-      "resource": "kinesis:skelloapp-svcsearch-fullload",
       "relation": "produces",
       "service": "skello-app",
       "grade": "config"
@@ -18317,6 +18684,20 @@
       "grade": "config"
     },
     {
+      "resource": "pg:skello_production.dimona_shop_settings",
+      "relation": "feeds",
+      "service": "skello-app",
+      "target": "kinesis:skelloapp-bus",
+      "grade": "config"
+    },
+    {
+      "resource": "pg:skello_production.dimona_declarations",
+      "relation": "feeds",
+      "service": "skello-app",
+      "target": "kinesis:skelloapp-bus",
+      "grade": "config"
+    },
+    {
       "resource": "pg:skello_production.postes",
       "relation": "consumes",
       "service": "svc-automatic-scheduling",
@@ -18565,30 +18946,6 @@
       "grade": "config"
     },
     {
-      "resource": "pg:skello_production.memberships",
-      "relation": "consumes",
-      "service": "svc-punch",
-      "target": "kinesis:skelloapp-bus",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "pg:skello_production.shops",
-      "relation": "consumes",
-      "service": "svc-punch",
-      "target": "kinesis:skelloapp-bus",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
-      "resource": "pg:skello_production.users",
-      "relation": "consumes",
-      "service": "svc-punch",
-      "target": "kinesis:skelloapp-bus",
-      "file": "serverless.ts",
-      "grade": "config"
-    },
-    {
       "resource": "pg:skello_production.postes",
       "relation": "consumes",
       "service": "svc-requests",
@@ -18790,85 +19147,85 @@
     }
   ],
   "pins": {
-    "common-dms-tf": "91c1106da66c79969dbca7a156b4f944e0f294ef",
-    "skello-app": "d03882653ab851485111316d4a3d181d793cfba2",
-    "skello-app-front": "35c469c504648353736e513004933de565e3997d",
-    "skello-app-front-tf": "08c8766107b1b2788f76cf53223bbf3b8a47e3d6",
-    "skello-app-tf": "73b8947c4bd8a8c01869dc59160d11ba4f4629ec",
+    "common-dms-tf": "8663730043ad0dde82be53cf6288c0db3a76b196",
+    "skello-app": "37e9bbffe5c425c1009859558424fa385da312e2",
+    "skello-app-front": "3199829acbfa3091489783ae5d2c39ab499dace1",
+    "skello-app-front-tf": "82c176eb997bad52a4c684d0a312cca013d580ff",
+    "skello-app-tf": "a88504bee2e34836b2e51dbe75359d86be49ea83",
     "skello-app-to-data-tf": "803b54c11fcaf212eafa1ef93bba8514092a042e",
     "skello-dynamodb-full-load-tf": "d55bb7325fa54eedcdb2ab4aabe37f1f0445980b",
-    "skello-libs-ts": "bb3525b1c6eaa2c6ff4526d708d31456fe52184d",
-    "skello-mobile": "d9b56a14603c07a3c0c04d61e1d8ee53565f810c",
-    "skello-punchclock": "86e33102d8fcaddc2a62972ef066aae31f119deb",
-    "superadmin": "1ec5f84b943a12eedc5f5190939344512a3bfd66",
+    "skello-libs-ts": "f8a8ccb6c120f0ad74064e5bf91b92db659f99cf",
+    "skello-mobile": "94391dbfe91d71a6b796520574be7bc266bfe9ef",
+    "skello-punchclock": "220b0a2b4de1bbfb4f28a89201039793dbf7c401",
+    "superadmin": "8a7b8721bbd196b67369928cd21e23bd64ddb34c",
     "svc-automatic-planning": "91177862f939e20eea89b93e6604ca6aa5fc230f",
-    "svc-automatic-scheduling": "607612a0fb8de554f006d720c32bb396b9f428a4",
-    "svc-automatic-scheduling-tf": "5c194baae9ec3d9770c2ddae17928d0b7748b372",
-    "svc-bff": "6a8ea0519b3ebfc22d7eb283424195b529f8fb4d",
-    "svc-bff-tf": "e7665dd016182f977c03a55aa4dba2f5fb419489",
-    "svc-billing-automation": "1fd4d3100da45db3ea1272324310172bf362b665",
-    "svc-billing-automation-tf": "004d0bc0c7188cc87a8d5dde9fcf0243fb02cc63",
-    "svc-bitly-v2": "90dfe8665a1667d32d805473ead8ae475b879275",
-    "svc-communications-v2": "90d69480fe935753295be5876d8ab86d4463f311",
-    "svc-communications-v2-tf": "05c26cf89d06cd263d6326b1133626663cea7ae5",
+    "svc-automatic-scheduling": "e26f05025e413b50c54f0d27e3de7251ca5b1899",
+    "svc-automatic-scheduling-tf": "c4f1811e491e6ab1d18373e1750e71fb1db7d29e",
+    "svc-bff": "b930f885a6d66cbf6d322f54f1fb437651b3f2b0",
+    "svc-bff-tf": "74c73a31c98f75ede57f05d73336a72e29fce95d",
+    "svc-billing-automation": "7a4f05a727373449a79efc0057911de60803c76f",
+    "svc-billing-automation-tf": "4d960db518501a93f2b4faf64984ad92b8d08437",
+    "svc-bitly-v2": "a99c90a438b46f99a648723c4602888366339c08",
+    "svc-communications-v2": "123a305de99ea789a8d0c168e35ff8a1c70c5c07",
+    "svc-communications-v2-tf": "fbbd204a9d1ad7c471af3fad519044e8a0703a4b",
     "svc-documents-esignature": "f06ae4028d4201a485a882f9ed97920581a942f5",
     "svc-documents-esignature-tf": "71197ffe45e0ea25e84a444f778ae2488c4a1686",
-    "svc-documents-v2": "475d93b8b7f7e9d60a004ebc6fe262764b812b7a",
-    "svc-documents-v2-tf": "d2bf39824e3afab1c097824b2a3e19d582837a2e",
-    "svc-employees": "1d73a49b11494f7f49212aa45bd226643805762a",
-    "svc-employees-tf": "5cd176fffd2a3d194eb4a3b47dcfd4e2a7cea66c",
-    "svc-enrollment": "645c91df0b35fdf2f19ed403611171201db8c5f5",
-    "svc-enrollment-tf": "b7bb9b001a3b1288611fe571dac03a3b7f5a4724",
-    "svc-events": "099d798bd617b3ef5504d1bff437d73cc13a3834",
-    "svc-events-tf": "ce72fef8264eea5652235909572dd8a3e45a65d3",
-    "svc-feature-flags": "1774ba2dde7accfe37dd9f5cd3249b8397236261",
+    "svc-documents-v2": "ea10a5b877f65f893d2f32a96455e1a48cd76e99",
+    "svc-documents-v2-tf": "b39e4f9024c8e09387dfc378af1a857d3a2c3409",
+    "svc-employees": "c894c6780c8c6011cedefe2d14a2bd34b6f58929",
+    "svc-employees-tf": "aab16aa6996564c201f133ca4d11d198f5068e2d",
+    "svc-enrollment": "286ec05546eda1646f9858d3ee6e5b0a00ba3510",
+    "svc-enrollment-tf": "6ed0e37ccd09f246ec02f50e2e67db2584985758",
+    "svc-events": "315dab8170e31765a5c6c336b4305932f7cdf07e",
+    "svc-events-tf": "e3536e24e34863ce9f979c7fad472e8185c1dc49",
+    "svc-feature-flags": "b8409749c9eb063c9a84bc038edc63ab0799f0b8",
     "svc-feature-flags-infra": "8f420c4332ff292f4f3dd971556559e72b8c5638",
-    "svc-feature-flags-tf": "90f73b1931f1b6b22584958d62f7d8305dbb49da",
-    "svc-hiring": "059afc69678342a7d445ba447ab89d35db19a7c5",
-    "svc-hiring-tf": "5ad7aeaeaa631ba8d2558cbbcec8a63497f7f336",
-    "svc-hris": "d750469d92d7b6b23eb91b9f43452c3b841a190d",
-    "svc-hris-tf": "91a793e1f9050c264dac3c4707addcff8c669498",
+    "svc-feature-flags-tf": "5d215cd69478aa7568713a25bca8880a9fd92c58",
+    "svc-hiring": "84ce941d6d1de829e0d1f84952f82cbf44327111",
+    "svc-hiring-tf": "645b97dc370ff20542e04cdda9bf256be6358acc",
+    "svc-hris": "9785d84d163f15ac6ecf6c1fc7c3d84471e48505",
+    "svc-hris-tf": "3d280461e633e93d7db54ea309a47970089c6ba0",
     "svc-intelligence": "958aad5b98d5509ed713c2d1b7fef9fa985dc364",
-    "svc-intelligence-tf": "0a089f080a9c82ae17cd98b7af3211062c4db0bf",
+    "svc-intelligence-tf": "1a8ca5df7504aab91cc17a5628ba62c484d9dfa2",
     "svc-intercom-bot": "b0f0adad5e8cdd7ce02a7cd5642eb3635380aa28",
-    "svc-kpi-tf": "5725e11511c64ad7c4554fa8ab96a01fa49d26f2",
-    "svc-kpis": "7491597b02a9261409726429ab87a9a5544d1d63",
-    "svc-kpis-v2": "3eefdf8747dd764de8d8727a0f5aecb14f785c7f",
-    "svc-kpis-v2-tf": "ec5a39ecc5ead3bed2158ce7849a679cb8692a4e",
-    "svc-labour-laws": "abadb16536b369a8c40515f1405221a8de4f2b9a",
-    "svc-labour-laws-tf": "e4ce428ed8a2a9a432661dc50ce682785a76d838",
-    "svc-modularisation": "e6a44a85abe0abfd5f02ae1b408f2edc16910ead",
-    "svc-modularisation-tf": "fc4199d945e18e0f646614c7b5c6ee7be83923ff",
-    "svc-payroll": "73e441bcc3356da3adcb28985e6967be9addf5ba",
-    "svc-payroll-tf": "3fc40661874746525d1234d504402896e159f4bd",
-    "svc-pos": "b7cb449f874f1b0a7d376b469e7a69cc5fd8e44e",
-    "svc-pos-tf": "84ea96d112c9038e7173553d768b78a90f0e7c8d",
-    "svc-punch": "2a8c7b4a15a8856420c00ce29753c59b86c9504a",
+    "svc-kpi-tf": "817c2352a13bebe3392ccffe6228ce8c19ca9a20",
+    "svc-kpis": "3c6a3e9536526292ea415a851af1dfa704f7e3bc",
+    "svc-kpis-v2": "ef971ff404bfcdc6a8831e29981c305839c6dfbf",
+    "svc-kpis-v2-tf": "9e6eaffef9b8044199b5aea8ea29ccbe95b81365",
+    "svc-labour-laws": "6c3ef102e1702be16c1c5b4637274deab5f918da",
+    "svc-labour-laws-tf": "6c5cf9002821944bdfbcd3b7bb369d852a2f6e93",
+    "svc-modularisation": "2b562942c652b51e73c792d4e1ad12a0bd381653",
+    "svc-modularisation-tf": "98f6d2a2b60f561d5d5edc9e1529be27203f378a",
+    "svc-payroll": "eaa02d8df46ba1b7e2ab1508962d6c99584a72fc",
+    "svc-payroll-tf": "4d167e325ffacb13b73332fb15d182547d5cd54b",
+    "svc-pos": "74780f5025d7d8f5c1a339030edbbe5fad50dd2c",
+    "svc-pos-tf": "30b9e25d68134480dc89ec71354dcff2dc8856e1",
+    "svc-punch": "7cf96ff138b450d70195d86a93002dec0c2ca151",
     "svc-punch-infra": "07859c2812974f3b59d98d3b95196a5360232c29",
-    "svc-punch-tf": "47e678141bcc76f2f76ec8a6dcfe1633a33868d8",
-    "svc-reports": "c55a3f123c165e290af2494b8afa86699053cb83",
-    "svc-reports-tf": "49de21b3661ce8218da65e97b312bbad6ddecbdc",
-    "svc-requests": "3a4effad42d7535db2430d77da0f4a6b1723e126",
-    "svc-requests-tf": "a27902bb873e2a5a0658b9b9fdedd9dd799091e7",
-    "svc-search": "1ff462277bd7c34ae6cc5e4b4dee22ac971f3fa9",
-    "svc-search-tf": "6adf3fb5f0464c1188b57ec34bce4c27156596e3",
-    "svc-shifts": "afc6d087a1211446fa42b748bdb2888bbc56c555",
+    "svc-punch-tf": "d3ed20878b5e32952f18572c2062319575be0136",
+    "svc-reports": "a0e2519e2885c035d092a7ae2b9c0c95efabf350",
+    "svc-reports-tf": "1084b56a74e0b727beba17a8cba1a47aebda1633",
+    "svc-requests": "a180044d78307ede061d4d1f2aac718c8e0dfaf7",
+    "svc-requests-tf": "4c3948042aee90e5771fe32b01788f9280f5f3d1",
+    "svc-search": "d210f9a13ef2a50ffc8ef67b0cae81bdfc96f399",
+    "svc-search-tf": "94bcd028910a15bbf1e7d27d88ee4c10707f487f",
+    "svc-shifts": "291f66a1f9455fecbb5393eeafa7e4d3bb64c927",
     "svc-shifts-tf": "47b91926a325ffc7b23e2740de57c611411d7d68",
-    "svc-shops": "426e431ff16a3dcfc3bca0e789f789b4aa9435fe",
+    "svc-shops": "17a1c210a56d91a85aa20b944c3e4d4e2ae37097",
     "svc-shops-tf": "2d52ac9408f3035033f85f8e1e358b21387a7a0a",
-    "svc-skello-assistant": "5452f27aede60b7bf08c4375f879a77472b48901",
-    "svc-skello-assistant-tf": "fd46c7f1d7fe3207a28c868a8686f85107c44164",
+    "svc-skello-assistant": "c0ec1f15bba81e8679fdf456ffff3c1cf9fb4a19",
+    "svc-skello-assistant-tf": "491da007af227dfb26b8691859c050e1f9af17c8",
     "svc-smart-planner-brain": "b41a460c0c83ae250064a96d9c9aab5d452c438a",
-    "svc-superadmin-tf": "973da54ec638639ce4b115973f9be30034a1c85b",
+    "svc-superadmin-tf": "dcd3df9e6d1bbb181448a9fb2a922bd0a6a65f5f",
     "svc-testing-llms": "703e7c42f638ddff9cf277ce372270362c9bd1a2",
-    "svc-trackers": "82853ddeaf2cf78207d2a55c9afa9f20908251bb",
-    "svc-trackers-tf": "6da6fc4f839c593261b88bb810090e4bb460cd3c",
-    "svc-users": "e7529d9838dd77b85437eef417dd6fb1dee911d5",
-    "svc-users-tf": "944f5d1cec6ed84fcbf6e5b19e0ae551aa45b258",
-    "svc-websockets-v2": "b48d793ea7d9181e59b63f7c9d3e9a628489f03e",
-    "svc-websockets-v2-tf": "727a00a5a8d278181a802f964a84ca79fc9c45db",
-    "svc-workload-plan": "15b278bb9c75d6f799fb0b1bb57913ac5ec77d1a",
-    "svc-workload-plan-tf": "ef7b04cea4bb3d6fa261649fbdb8b355a053ce5e",
+    "svc-trackers": "16e55f764902bf164f9032e45ea7a6989a88107f",
+    "svc-trackers-tf": "51186d4ce1529d6915efb2cc8554a24bc1ddc48b",
+    "svc-users": "41689f6e647931fdd916ef3e7ab23b76d8c706a8",
+    "svc-users-tf": "1a9df9a0dc0c5b4144ddb980511a09bb6b2e21d1",
+    "svc-websockets-v2": "5ba16202397bb0fd5cbadcc795618f07acb1ff44",
+    "svc-websockets-v2-tf": "0a2124bf0eb6c971f4ae484fc346e30e16bc3ea4",
+    "svc-workload-plan": "de63f35b2a0bf1ab953447bde490594e037006f3",
+    "svc-workload-plan-tf": "d2ad375c55bd1046e3699d5ee3c69cf2dcdbe863",
     "websocket-tf": "05f2fd19982581503b392c731dbcb5075ad0dacc"
   }
 }
