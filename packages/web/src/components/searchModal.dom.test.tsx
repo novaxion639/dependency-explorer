@@ -2,10 +2,12 @@
 import { beforeAll, describe, it, expect, vi } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { searchIndex } from '../shell/dataIndexes'
-import { searchEntries } from '../utils/searchIndex'
+import { buildSearchIndex, searchEntries } from '../utils/searchIndex'
+import { fixtureMap } from '../test/areaFixtures'
 import { renderInApp } from '../test/renderInApp'
 import { SearchModal } from './SearchModal'
+
+const searchIndex = buildSearchIndex(fixtureMap)
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = () => {}

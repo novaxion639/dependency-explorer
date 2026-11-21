@@ -26,8 +26,8 @@ export default defineConfig(
     },
   },
   {
-    files: ['packages/web/src/components/**/*.tsx'],
-    ignores: ['**/*.test.tsx'],
+    files: ['packages/web/src/components/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-imports': ['error', {
         paths: [{

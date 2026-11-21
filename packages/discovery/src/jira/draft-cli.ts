@@ -29,7 +29,7 @@ const byTribeThenLabel = (a: { tribe: string | null; label: string }, b: { tribe
   return compare(a.label, b.label)
 }
 
-export async function runDraftCli(argv: string[], snapshotDir: string | null): Promise<number> {
+export async function runDraftCli(argv: string[], home: string): Promise<number> {
   let help: boolean | undefined
   try {
     help = parseArgs({ args: argv, options: OPTIONS }).values.help
@@ -40,6 +40,13 @@ export async function runDraftCli(argv: string[], snapshotDir: string | null): P
   if (help) {
     console.log(HELP)
     return 0
+  }
+  let snapshotDir: string | null
+  try {
+    snapshotDir = snapshotDirOf(argv, home)
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : String(e))
+    return 1
   }
   if (snapshotDir === null) {
     console.error(`No Jira snapshot found: run \`${FETCH_SCRIPT}\` first`)

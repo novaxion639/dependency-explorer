@@ -1,35 +1,36 @@
 // @vitest-environment jsdom
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { act, screen } from '@testing-library/react'
-import { connectivityMap, type Team } from '@dependency-explorer/data'
+import type { ConnectivityMap, Team } from '@dependency-explorer/data'
+import { fixtureMap } from '../../test/areaFixtures'
 import { renderInApp } from '../../test/renderInApp'
 import { jiraOverlayOf } from '../areas/jiraOverlayFixture'
 import { OwnershipPage } from './OwnershipPage'
 
 const noop = () => {}
 
-const renderPage = async (map: typeof connectivityMap, focusedTeam: string | null, body: unknown, status = 200) => {
+const renderPage = async (map: ConnectivityMap, focusedTeam: string | null, body: unknown, status = 200) => {
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(body), { status })))
   await act(async () => {
     renderInApp(<OwnershipPage map={map} focusedTeam={focusedTeam} onFocusTeam={noop} onSelectService={noop} />)
   })
 }
 
-const renderTeam = (team: Team, body: unknown, status = 200) => renderPage({ ...connectivityMap, teams: [team] }, team.id, body, status)
+const renderTeam = (team: Team, body: unknown, status = 200) => renderPage({ ...fixtureMap, teams: [team] }, team.id, body, status)
 
 afterEach(() => {
   vi.unstubAllGlobals()
 })
 
 describe('Ownership overview', () => {
-  it.each((connectivityMap.teams ?? []).map(t => [t.name]))('lists %s', async name => {
-    await renderPage(connectivityMap, null, {}, 404)
+  it.each(['Team Anchovy', 'Team Cheese'])('lists %s', async name => {
+    await renderPage(fixtureMap, null, {}, 404)
 
     expect(screen.getAllByText(name, { exact: false }).length).toBeGreaterThan(0)
   })
 
   it('keeps colours out of inline styles', async () => {
-    await renderPage(connectivityMap, null, {}, 404)
+    await renderPage(fixtureMap, null, {}, 404)
 
     expect(screen.getByRole('region', { name: 'Service ownership' }).outerHTML).not.toMatch(/style="[^"]*(#[0-9a-fA-F]{3,8}|rgba?\()/)
   })
@@ -70,8 +71,8 @@ describe('Ownership team detail', () => {
 })
 
 describe('Ownership team cards', () => {
-  it.each((connectivityMap.teams ?? []).slice(0, 1).map(t => [t.name, t.id]))('link %s to its team view', async (name, id) => {
-    await renderPage(connectivityMap, null, {}, 404)
+  it.each([['Team Anchovy', 'team-anchovy'], ['Team Cheese', 'team-cheese']])('link %s to its team view', async (name, id) => {
+    await renderPage(fixtureMap, null, {}, 404)
 
     expect(screen.getAllByRole('link', { name: new RegExp(`^${name}`) }).map(link => link.getAttribute('href'))).toContain(`/?page=ownership&team=${id}`)
   })

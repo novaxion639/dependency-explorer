@@ -1,19 +1,17 @@
 // @vitest-environment jsdom
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { act, screen } from '@testing-library/react'
-import { connectivityMap, getSharedExternals } from '@dependency-explorer/data'
+import { fixtureMap } from '../../test/areaFixtures'
 import { renderInApp } from '../../test/renderInApp'
 import { AreasHome } from './AreasHome'
 import { jiraOverlayOf } from './jiraOverlayFixture'
 
 const noop = () => {}
-const shared = getSharedExternals(connectivityMap.areas ?? [], connectivityMap.externals ?? [])
-const platform = (connectivityMap.areas ?? []).filter(a => a.kind === 'platform')
 
 const renderWithOverlay = async (body: unknown, status = 200) => {
   vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => new Response(JSON.stringify(body), { status })))
   await act(async () => {
-    renderInApp(<AreasHome map={connectivityMap} onOpenContext={noop} />)
+    renderInApp(<AreasHome map={fixtureMap} onOpenContext={noop} />)
   })
 }
 
@@ -28,16 +26,16 @@ describe('AreasHome', () => {
     expect(screen.getByText('Shared by every area')).toBeTruthy()
   })
 
-  it.each(shared.map(e => [e.name]))('lists the shared external system %s', async name => {
+  it('lists the shared external system', async () => {
     await renderWithOverlay({}, 404)
 
-    expect(screen.getAllByText(name, { exact: false }).length).toBeGreaterThan(0)
+    expect(screen.getByText('Sentry')).toBeTruthy()
   })
 
-  it.each(platform.map(a => [a.name, a.id]))('links the %s platform capability to its area page', async (name, id) => {
+  it('links a platform capability to its area page', async () => {
     await renderWithOverlay({}, 404)
 
-    expect(screen.getAllByRole('link', { name }).map(link => link.getAttribute('href'))).toContain(`/?page=areas&area=${id}`)
+    expect(screen.getByRole('link', { name: 'Events' }).getAttribute('href')).toBe('/?page=areas&area=events')
   })
 
   it('links the open bugs with no product area to their JQL in a new tab', async () => {
